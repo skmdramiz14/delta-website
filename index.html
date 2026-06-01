@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="bn">
 <head>
@@ -662,12 +661,12 @@ footer{background:var(--navy-dark);border-top:1px solid rgba(255,255,255,0.06);p
     <h2 class="reg-title-bn txt-bn">DELTA তে যোগ দিন।<br><span class="orange">৩ মাস বিনামূল্যে।</span></h2>
     <p class="reg-sub-bn txt-bn">এখনই আপনার দোকান নিবন্ধন করুন। মন্তেশ্বরের প্রথম বিক্রেতাদের মধ্যে থাকুন। প্রথম ৫০টি দোকান যেকোনো প্ল্যানে ৩ মাস বিনামূল্যে পাবে।</p>
     <p class="reg-sub-en txt-en">Register your shop now. Be among the first sellers in Manteswar. First 50 shops get 3 months free on any plan — no credit card needed.</p>
-    <form class="reg-form" onsubmit="handleSubmit(event)">
+    <form class="reg-form" id="delta-reg-form" onsubmit="handleSubmit(event)">
       <div class="form-row">
-        <input type="text" class="fi" placeholder="আপনার নাম / Your Name" required>
-        <input type="tel" class="fi" placeholder="মোবাইল নম্বর / Mobile Number" required>
+        <input type="text" class="fi" placeholder="আপনার নাম / Your Name" name="name" required>
+        <input type="tel" class="fi" placeholder="মোবাইল নম্বর / Mobile Number" name="mobile" required>
       </div>
-      <input type="text" class="fi" placeholder="দোকানের নাম / Shop Name" required>
+      <input type="text" class="fi" placeholder="দোকানের নাম / Shop Name" name="shop_name" required>
       <div class="form-row">
         <select class="fs" required>
           <option value="" disabled selected>ক্যাটাগরি / Category</option>
@@ -684,7 +683,7 @@ footer{background:var(--navy-dark);border-top:1px solid rgba(255,255,255,0.06);p
           <option>প্রযুক্তি সেবা / Tech Services</option>
           <option>অন্যান্য / Other</option>
         </select>
-        <input type="text" class="fi" placeholder="এলাকা / পিনকোড / Pincode" required>
+        <input type="text" class="fi" placeholder="এলাকা / পিনকোড / Pincode" name="area" required>
       </div>
       <select class="fs" required>
         <option value="" disabled selected>পছন্দের প্ল্যান / Preferred Plan</option>
@@ -777,13 +776,32 @@ document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 // Form submit
 function handleSubmit(e) {
   e.preventDefault();
-  const btn = e.target.querySelector('.f-submit');
+  const form = e.target;
+  const btn = form.querySelector('.f-submit');
   const isBn = document.body.classList.contains('show-bn');
-  btn.innerHTML = isBn
-    ? '<span>✅ নিবন্ধন সম্পন্ন! আমরা ২৪ ঘণ্টার মধ্যে যোগাযোগ করব।</span>'
-    : '<span>✅ Registered! We will contact you within 24 hours.</span>';
-  btn.style.background = '#1a5c38';
+  
+  btn.innerHTML = isBn ? '<span>⏳ পাঠানো হচ্ছে...</span>' : '<span>⏳ Submitting...</span>';
   btn.disabled = true;
+
+  const data = new FormData(form);
+  
+  fetch('https://forminit.com/f/jidiopadytv', {
+    method: 'POST',
+    body: data,
+    headers: { 'Accept': 'application/json' }
+  })
+  .then(res => {
+    btn.innerHTML = isBn
+      ? '<span>✅ নিবন্ধন সম্পন্ন! আমরা ২৪ ঘণ্টার মধ্যে যোগাযোগ করব।</span>'
+      : '<span>✅ Registered! We will contact you within 24 hours.</span>';
+    btn.style.background = '#1a5c38';
+    form.reset();
+  })
+  .catch(err => {
+    btn.innerHTML = isBn ? '<span>❌ সমস্যা হয়েছে। আবার চেষ্টা করুন।</span>' : '<span>❌ Error. Please try again.</span>';
+    btn.style.background = '#c0392b';
+    btn.disabled = false;
+  });
 }
 
 // Smooth scroll
