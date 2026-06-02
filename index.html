@@ -14,7 +14,8 @@ body{font-family:'Outfit',sans-serif;background:var(--navy-dark);color:var(--whi
 .bn{font-family:'Tiro Bangla',serif;}
 
 /* LANG TOGGLE */
-.lang-toggle{position:fixed;top:20px;right:140px;z-index:2000;display:flex;background:rgba(15,45,74,0.95);border:1px solid rgba(232,115,10,0.3);border-radius:30px;overflow:hidden;backdrop-filter:blur(10px);}
+.lang-toggle{display:none;}
+.lang-toggle-nav{display:flex;background:rgba(255,255,255,0.08);border:1px solid rgba(232,115,10,0.3);border-radius:30px;overflow:hidden;}
 .lang-btn{padding:7px 16px;font-size:12px;font-weight:700;letter-spacing:1px;cursor:pointer;border:none;background:transparent;color:var(--gray);transition:all 0.3s;}
 .lang-btn.active{background:var(--orange);color:var(--white);}
 
@@ -256,16 +257,12 @@ footer{background:var(--navy-dark);border-top:1px solid rgba(255,255,255,0.06);p
 
 /* RESPONSIVE */
 @media(max-width:1024px){.hero-right{display:none;}.sellers-grid{grid-template-columns:1fr;}}
-@media(max-width:768px){nav{padding:14px 16px;}.nav-links{display:none;}.hero{padding:94px 16px 52px;}.hero-stats{gap:18px;}.sec-wrap{padding:56px 16px;}.reg-sec{padding:56px 16px;}.band{gap:14px;padding:11px 16px;}.form-row{grid-template-columns:1fr;}footer{padding:36px 16px;}.f-top{flex-direction:column;}.f-links{gap:28px;}.lang-toggle{right:100px;top:16px;}}
+@media(max-width:768px){nav{padding:14px 16px;}.nav-links{display:none;}.hero{padding:94px 16px 52px;}.hero-stats{gap:18px;}.sec-wrap{padding:56px 16px;}.reg-sec{padding:56px 16px;}.band{gap:14px;padding:11px 16px;}.form-row{grid-template-columns:1fr;}footer{padding:36px 16px;}.f-top{flex-direction:column;}.f-links{gap:28px;}.lang-toggle{right:auto;left:16px;top:16px;}}
 </style>
 </head>
 <body class="show-bn">
 
-<!-- LANGUAGE TOGGLE -->
-<div class="lang-toggle">
-  <button class="lang-btn active" onclick="setLang('bn')" id="btn-bn">বাংলা</button>
-  <button class="lang-btn" onclick="setLang('en')" id="btn-en">English</button>
-</div>
+<!-- LANGUAGE TOGGLE - moved to navbar -->
 
 <!-- NAVBAR -->
 <nav>
@@ -279,10 +276,16 @@ footer{background:var(--navy-dark);border-top:1px solid rgba(255,255,255,0.06);p
     <li><a href="#pricing"><span class="txt-bn bn">মূল্য তালিকা</span><span class="txt-en">Pricing</span></a></li>
     <li><a href="#sellers"><span class="txt-bn bn">দোকানদারদের জন্য</span><span class="txt-en">For Sellers</span></a></li>
   </ul>
-  <a href="#register" class="nav-cta">
-    <span class="txt-bn bn">দোকান যোগ করুন →</span>
-    <span class="txt-en">Join as Seller →</span>
-  </a>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <div class="lang-toggle-nav">
+      <button class="lang-btn active" onclick="setLang('bn')" id="btn-bn">বাংলা</button>
+      <button class="lang-btn" onclick="setLang('en')" id="btn-en">EN</button>
+    </div>
+    <a href="#register" class="nav-cta">
+      <span class="txt-bn bn">যোগ করুন →</span>
+      <span class="txt-en">Join →</span>
+    </a>
+  </div>
 </nav>
 
 <!-- HERO -->
@@ -340,9 +343,9 @@ footer{background:var(--navy-dark);border-top:1px solid rgba(255,255,255,0.06);p
           <div class="p-cat"><span class="p-i">📚</span><span class="p-n-bn txt-bn">শিক্ষা</span><span class="p-n txt-en">Education</span></div>
           <div class="p-cat"><span class="p-i">🏥</span><span class="p-n-bn txt-bn">স্বাস্থ্য</span><span class="p-n txt-en">Health</span></div>
         </div>
-        <div class="p-order"><div class="p-oi">🍬</div><div><span class="p-on">রহমান মিষ্টান্ন</span><span class="p-os txt-bn">রসগোল্লা ১ কেজি</span><span class="p-os txt-en">Rasgolla 1kg</span></div><span class="p-op">₹120</span></div>
-        <div class="p-order"><div class="p-oi">🐟</div><div><span class="p-on">করিম ফিশারিজ</span><span class="p-os txt-bn">তাজা ইলিশ ১ কেজি</span><span class="p-os txt-en">Fresh Hilsa 1kg</span></div><span class="p-op">₹320</span></div>
-        <div class="p-order"><div class="p-oi">🌿</div><div><span class="p-on">আলি ফার্ম</span><span class="p-os txt-bn">টমেটো ২ কেজি</span><span class="p-os txt-en">Tomatoes 2kg</span></div><span class="p-op">₹40</span></div>
+        <div class="p-order"><div class="p-oi">🍬</div><div><span class="p-on">রহমান মিষ্টি ঘর</span><span class="p-os txt-bn">রসগোল্লা ১ কেজি</span><span class="p-os txt-en">Rasgolla 1kg</span></div><span class="p-op">₹120</span></div>
+        <div class="p-order"><div class="p-oi">🐟</div><div><span class="p-on">সিং ফিশ কর্নার</span><span class="p-os txt-bn">তাজা ইলিশ ১ কেজি</span><span class="p-os txt-en">Fresh Hilsa 1kg</span></div><span class="p-op">₹320</span></div>
+        <div class="p-order"><div class="p-oi">🌿</div><div><span class="p-on">শাহ ভেজিটেবল মার্ট</span><span class="p-os txt-bn">টমেটো ২ কেজি</span><span class="p-os txt-en">Tomatoes 2kg</span></div><span class="p-op">₹40</span></div>
       </div>
     </div>
   </div>
@@ -518,8 +521,8 @@ footer{background:var(--navy-dark);border-top:1px solid rgba(255,255,255,0.06);p
         <div class="dash-box">
           <div class="dash-head">
             <div>
-              <div class="dash-title-bn txt-bn">রহমান মিষ্টান্ন ড্যাশবোর্ড</div>
-              <div class="dash-title-en txt-en">Rahman Sweets Dashboard</div>
+              <div class="dash-title-bn txt-bn">DELTA বিক্রেতা ড্যাশবোর্ড</div>
+              <div class="dash-title-en txt-en">DELTA Seller Dashboard</div>
             </div>
             <span class="dash-badge txt-bn">৩ নতুন অর্ডার</span>
             <span class="dash-badge txt-en">3 New Orders</span>
@@ -532,9 +535,9 @@ footer{background:var(--navy-dark);border-top:1px solid rgba(255,255,255,0.06);p
             </div>
             <div class="d-ot txt-bn">সাম্প্রতিক অর্ডার</div>
             <div class="d-ot txt-en">Recent Orders</div>
-            <div class="d-order"><div><div class="d-oi-bn txt-bn">রসগোল্লা ১কেজি + সন্দেশ ৫০০গ্রা</div><div class="d-oi-en txt-en">Rasgolla 1kg + Sandesh 500g</div><div class="d-os">Sukanta Para · ₹210</div></div><span class="d-status s-new txt-bn">নতুন</span><span class="d-status s-new txt-en">New</span></div>
-            <div class="d-order"><div><div class="d-oi-bn txt-bn">নলেন গুড়ের সন্দেশ ১কেজি</div><div class="d-oi-en txt-en">Nolen Gur Sandesh 1kg</div><div class="d-os">Station Road · ₹300</div></div><span class="d-status s-prep txt-bn">তৈরি হচ্ছে</span><span class="d-status s-prep txt-en">Preparing</span></div>
-            <div class="d-order"><div><div class="d-oi-bn txt-bn">মিষ্টি দই ৫০০গ্রা</div><div class="d-oi-en txt-en">Mishti Doi 500g</div><div class="d-os">College Para · ₹80</div></div><span class="d-status s-done txt-bn">ডেলিভারি</span><span class="d-status s-done txt-en">Delivered</span></div>
+            <div class="d-order"><div><div class="d-oi-bn txt-bn">শেখ মিষ্টান্ন — রসগোল্লা ১কেজি</div><div class="d-oi-en txt-en">Sheikh Sweets — Rasgolla 1kg</div><div class="d-os">উত্তরপাড়া · ₹210</div></div><span class="d-status s-new txt-bn">নতুন</span><span class="d-status s-new txt-en">New</span></div>
+            <div class="d-order"><div><div class="d-oi-bn txt-bn">চক্রবর্তী মিষ্টি মহল — সন্দেশ</div><div class="d-oi-en txt-en">Chakraborty Sweets — Sandesh 1kg</div><div class="d-os">দক্ষিণপাড়া · ₹300</div></div><span class="d-status s-prep txt-bn">তৈরি হচ্ছে</span><span class="d-status s-prep txt-en">Preparing</span></div>
+            <div class="d-order"><div><div class="d-oi-bn txt-bn">সিং কিরানা স্টোর — দই</div><div class="d-oi-en txt-en">Singh Kirana — Mishti Doi</div><div class="d-os">বাজারপাড়া · ₹80</div></div><span class="d-status s-done txt-bn">ডেলিভারি</span><span class="d-status s-done txt-en">Delivered</span></div>
           </div>
         </div>
       </div>
