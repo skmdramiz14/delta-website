@@ -87,6 +87,10 @@ body{font-family:'Outfit',sans-serif;background:#f0f4f8;color:#0F2D4A;}
 .ebtn{background:rgba(15,45,74,0.08);color:#0F2D4A;border:none;padding:5px 10px;border-radius:6px;font-size:11px;cursor:pointer;font-family:'Outfit',sans-serif;}
 .dbtn2{background:rgba(192,57,43,0.08);color:#c0392b;border:none;padding:5px 10px;border-radius:6px;font-size:11px;cursor:pointer;font-family:'Outfit',sans-serif;}
 .empty{text-align:center;padding:36px;color:#8a9ab0;}
+.imgslot{border:2px dashed #ddd;border-radius:9px;aspect-ratio:1;display:flex;align-items:center;justify-content:center;cursor:pointer;background:#fff;overflow:hidden;transition:border-color 0.3s;font-size:20px;}
+.imgslot:hover{border-color:#E8730A;}
+.imgslot img{width:100%;height:100%;object-fit:cover;}
+.imgslot.has{border-color:#1a8a4a;border-style:solid;}
 .emico{font-size:44px;margin-bottom:10px;}
 /* Profile */
 .pgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
@@ -193,12 +197,19 @@ body{font-family:'Outfit',sans-serif;background:#f0f4f8;color:#0F2D4A;}
             <div><label class="flbl bn">প্রস্তুতি সময় (মিনিট)</label><input type="number" class="fc" id="fprep" placeholder="15"></div>
             <div class="full"><label class="flbl bn">বিবরণ / Description</label><input type="text" class="fc" id="fdesc" placeholder="সংক্ষিপ্ত বিবরণ..."></div>
             <div class="full">
-              <label class="flbl bn">পণ্যের ছবি / Product Image</label>
-              <div class="imgarea" onclick="document.getElementById('fimg').click()">
-                <img id="previewImg">
-                <span id="imgTxt">📷 <span class="bn">ছবি বেছে নিন</span></span>
+              <label class="flbl bn">পণ্যের ছবি / Product Images (সর্বোচ্চ ৫টি / Max 5)</label>
+              <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:6px">
+                <div class="imgslot" id="slot0" onclick="document.getElementById('fimg0').click()"><span>📷</span></div>
+                <div class="imgslot" id="slot1" onclick="document.getElementById('fimg1').click()"><span>📷</span></div>
+                <div class="imgslot" id="slot2" onclick="document.getElementById('fimg2').click()"><span>📷</span></div>
+                <div class="imgslot" id="slot3" onclick="document.getElementById('fimg3').click()"><span>📷</span></div>
+                <div class="imgslot" id="slot4" onclick="document.getElementById('fimg4').click()"><span>📷</span></div>
               </div>
-              <input type="file" id="fimg" accept="image/*" style="display:none" onchange="previmg(this)">
+              <input type="file" id="fimg0" accept="image/*" style="display:none" onchange="prevslot(this,0)">
+              <input type="file" id="fimg1" accept="image/*" style="display:none" onchange="prevslot(this,1)">
+              <input type="file" id="fimg2" accept="image/*" style="display:none" onchange="prevslot(this,2)">
+              <input type="file" id="fimg3" accept="image/*" style="display:none" onchange="prevslot(this,3)">
+              <input type="file" id="fimg4" accept="image/*" style="display:none" onchange="prevslot(this,4)">
               <div class="uprogress" id="uprog" class="bn">ছবি upload হচ্ছে...</div>
             </div>
           </div>
@@ -368,7 +379,7 @@ function renderprods(){
   var l=document.getElementById('plistEl');
   if(!prods.length){ l.innerHTML='<div class="empty"><div class="emico">📦</div><p class="bn">এখনো কোনো পণ্য নেই।</p></div>'; return; }
   l.innerHTML=prods.map(function(p){
-    var img=p.imageUrl?'<img src="'+p.imageUrl+'" style="width:46px;height:46px;object-fit:cover;border-radius:9px;">':'<div style="width:46px;height:46px;background:#fff;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:22px">'+pemo(p.category)+'</div>';
+    var firstImg=p.imageUrl||(p.images&&p.images[0])||''; var img=firstImg?'<img src="'+firstImg+'" style="width:46px;height:46px;object-fit:cover;border-radius:9px;">':'<div style="width:46px;height:46px;background:#fff;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:22px">'+pemo(p.category)+'</div>';
     var disc=p.discount?'<span class="dbadge">'+p.discount+'% OFF</span>':'';
     return '<div class="pitem">'+img+'<div class="pinfo"><div class="pname bn">'+(p.nameBn||p.nameEn||'')+disc+'</div><div class="pprice">₹'+p.price+' <span style="color:#8a9ab0;text-decoration:line-through;font-size:10px">₹'+p.mrp+'</span></div><div><span class="sbadge '+(p.stock>0?'ins':'oos')+'">'+(p.stock>0?'✅ স্টক আছে ('+p.stock+' '+p.unit+')':'❌ স্টক নেই')+'</span></div></div><div class="pacts"><button class="ebtn" onclick="editprod(\''+p.id+'\')">✏️</button><button class="dbtn2" onclick="delprod(\''+p.id+'\')">🗑️</button></div></div>';
   }).join('');
@@ -383,18 +394,21 @@ function togpform(){
 
 function clearform(){
   ['fnbn','fnen','fprice','fmrp','fstock','fdesc','fprep','fdisc'].forEach(function(id){ document.getElementById(id).value=''; });
-  document.getElementById('fimg').value='';
-  document.getElementById('previewImg').style.display='none';
-  document.getElementById('imgTxt').style.display='block';
+  for(var i=0;i<5;i++){
+    document.getElementById('fimg'+i).value='';
+    var slot=document.getElementById('slot'+i);
+    slot.innerHTML='<span>📷</span>';
+    slot.classList.remove('has');
+  }
 }
 
-function previmg(inp){
+function prevslot(inp, i){
   if(inp.files&&inp.files[0]){
     var r=new FileReader();
     r.onload=function(e){
-      var img=document.getElementById('previewImg');
-      img.src=e.target.result; img.style.display='block';
-      document.getElementById('imgTxt').style.display='none';
+      var slot=document.getElementById('slot'+i);
+      slot.innerHTML='<img src="'+e.target.result+'">';
+      slot.classList.add('has');
     };
     r.readAsDataURL(inp.files[0]);
   }
@@ -434,18 +448,28 @@ async function saveprod(){
   var unit=document.getElementById('funit').value, cat=document.getElementById('fcat').value;
   var desc=document.getElementById('fdesc').value, prep=parseInt(document.getElementById('fprep').value)||15;
   var disc=parseInt(document.getElementById('fdisc').value)||0;
-  var imgfile=document.getElementById('fimg').files[0];
   if(!nb&&!ne){ alert('পণ্যের নাম দিন।'); return; }
   if(!price){ alert('দাম দিন।'); return; }
-  var imgUrl='';
-  if(imgfile){
+  var imgUrls=[];
+  var hasImg=false;
+  for(var i=0;i<5;i++){ if(document.getElementById('fimg'+i).files[0]) hasImg=true; }
+  if(hasImg){
     document.getElementById('uprog').style.display='block';
-    try{ imgUrl=await uploadimg(imgfile); }
-    catch(e){ alert('ছবি upload ব্যর্থ: '+e.message); document.getElementById('uprog').style.display='none'; return; }
+    document.getElementById('uprog').textContent='ছবি upload হচ্ছে...';
+    try{
+      for(var i=0;i<5;i++){
+        var f=document.getElementById('fimg'+i).files[0];
+        if(f){ 
+          document.getElementById('uprog').textContent=(i+1)+'/5 ছবি upload হচ্ছে...';
+          var url=await uploadimg(f); 
+          imgUrls.push(url); 
+        }
+      }
+    }catch(e){ alert('ছবি upload ব্যর্থ: '+e.message); document.getElementById('uprog').style.display='none'; return; }
     document.getElementById('uprog').style.display='none';
   }
   var d={nameBn:nb,nameEn:ne,price:price,mrp:mrp,stock:stock,unit:unit,category:cat,desc:desc,prepTime:prep,discount:disc,updatedAt:new Date().toISOString()};
-  if(imgUrl) d.imageUrl=imgUrl;
+  if(imgUrls.length>0){ d.images=imgUrls; d.imageUrl=imgUrls[0]; }
   var ref=db.collection('sellers').doc(CU.uid).collection('products');
   var pr=editId?ref.doc(editId).update(d):ref.add(Object.assign({},d,{createdAt:new Date().toISOString()}));
   pr.then(function(){ loadprods(CU.uid); togpform(); editId=null; })
