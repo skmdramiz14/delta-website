@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DELTA — Seller Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Tiro+Bangla&display=swap" rel="stylesheet">
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <style>
 :root{--navy:#0F2D4A;--navy-dark:#071829;--orange:#E8730A;--white:#FFFFFF;--gray:#8a9ab0;--light:#f0f4f8;--green:#1a8a4a;--red:#c0392b;}
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -256,7 +260,7 @@ function initFB() {
     setTimeout(initFB, 200);
     return;
   }
-  if (!firebase.apps.length) firebase.initializeApp(fbConfig);
+  try { firebase.app(); } catch(e) { firebase.initializeApp(fbConfig); }
   auth = firebase.auth();
   db = firebase.firestore();
   auth.onAuthStateChanged(function(user) {
@@ -488,19 +492,8 @@ function renderProds() {
   }).join('');
 }
 
-// Load Firebase scripts then init
-function loadScript(src, cb) {
-  var s=document.createElement('script'); s.src=src;
-  s.onload=cb; s.onerror=function(){console.error('Failed: '+src);};
-  document.head.appendChild(s);
-}
-
-loadScript('https://cdn.jsdelivr.net/npm/firebase@9.22.0/firebase-app-compat.min.js', function(){
-  loadScript('https://cdn.jsdelivr.net/npm/firebase@9.22.0/firebase-auth-compat.min.js', function(){
-    loadScript('https://cdn.jsdelivr.net/npm/firebase@9.22.0/firebase-firestore-compat.min.js', function(){
-      initFB();
-    });
-  });
+window.addEventListener('load', function() {
+  initFB();
 });
 </script>
 </body>
