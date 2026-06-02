@@ -184,12 +184,12 @@ body{font-family:'Outfit',sans-serif;background:#f0f4f8;color:#0F2D4A;}
           <div class="fgrid2">
             <div><label class="flbl bn">পণ্যের নাম (বাংলা)</label><input type="text" class="fc" id="fnbn" placeholder="রসগোল্লা"></div>
             <div><label class="flbl">Name (English)</label><input type="text" class="fc" id="fnen" placeholder="Rasgolla"></div>
-            <div><label class="flbl">দাম ₹ / Price</label><input type="number" class="fc" id="fprice" placeholder="120"></div>
-            <div><label class="flbl">MRP ₹</label><input type="number" class="fc" id="fmrp" placeholder="150"></div>
+            <div><label class="flbl">দাম ₹ / Price</label><input type="number" class="fc" id="fprice" placeholder="120" oninput="calcdisc()"></div>
+            <div><label class="flbl">MRP ₹</label><input type="number" class="fc" id="fmrp" placeholder="150" oninput="calcdisc()"></div>
             <div><label class="flbl bn">স্টক / Stock</label><input type="number" class="fc" id="fstock" placeholder="50"></div>
             <div><label class="flbl bn">একক / Unit</label><select class="fc" id="funit"><option>kg</option><option>piece</option><option>litre</option><option>gram</option><option>set</option><option>box</option></select></div>
             <div><label class="flbl bn">ক্যাটাগরি</label><select class="fc" id="fcat"><option>🍬 মিষ্টি</option><option>🐟 মাছ</option><option>🥬 সবজি</option><option>🌾 চাল-ডাল</option><option>💊 ওষুধ</option><option>📱 ইলেকট্রনিক্স</option><option>👕 পোশাক</option><option>📦 অন্যান্য</option></select></div>
-            <div><label class="flbl bn">ছাড় % / Discount</label><input type="number" class="fc" id="fdisc" placeholder="20" min="0" max="100"></div>
+            <div><label class="flbl bn">ছাড় % / Discount <span id="discshow" style="color:#E8730A;font-weight:700"></span></label><input type="number" class="fc" id="fdisc" placeholder="Auto calculated" min="0" max="100" readonly style="background:#f9f9f9;color:#E8730A;font-weight:700"></div>
             <div><label class="flbl bn">প্রস্তুতি সময় (মিনিট)</label><input type="number" class="fc" id="fprep" placeholder="15"></div>
             <div class="full"><label class="flbl bn">বিবরণ / Description</label><input type="text" class="fc" id="fdesc" placeholder="সংক্ষিপ্ত বিবরণ..."></div>
             <div class="full">
@@ -409,6 +409,21 @@ async function uploadimg(file){
   var data=await res.json();
   if(data.secure_url) return data.secure_url;
   throw new Error(data.error?data.error.message:'Upload failed');
+}
+
+function calcdisc(){
+  var price=parseFloat(document.getElementById('fprice').value);
+  var mrp=parseFloat(document.getElementById('fmrp').value);
+  var disc=document.getElementById('fdisc');
+  var show=document.getElementById('discshow');
+  if(price&&mrp&&mrp>price){
+    var pct=Math.round(((mrp-price)/mrp)*100);
+    disc.value=pct;
+    show.textContent='— '+pct+'% OFF';
+  } else {
+    disc.value='';
+    show.textContent='';
+  }
 }
 
 async function saveprod(){
