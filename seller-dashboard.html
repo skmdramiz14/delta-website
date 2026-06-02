@@ -85,6 +85,9 @@ body{font-family:'Outfit',sans-serif;background:var(--light);color:var(--navy);}
 .toggle::after{content:'';position:absolute;width:20px;height:20px;background:white;border-radius:50%;top:3px;left:3px;transition:left 0.3s;box-shadow:0 1px 3px rgba(0,0,0,0.2);}
 .toggle.on::after{left:27px;}
 .loading{text-align:center;padding:20px;color:var(--gray);font-size:14px;}
+.img-upload-area{border:2px dashed #ddd;border-radius:10px;padding:20px;text-align:center;cursor:pointer;transition:border-color 0.3s;background:white;min-height:80px;display:flex;align-items:center;justify-content:center;}
+.img-upload-area:hover{border-color:var(--orange);}
+.discount-badge{background:var(--red);color:white;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;margin-left:6px;}
 @media(max-width:768px){.stats{grid-template-columns:1fr 1fr;}.fgrid{grid-template-columns:1fr;}.pgrid{grid-template-columns:1fr;}.topbar{padding:0 14px;}.main{padding:14px;}.auth-box{padding:24px;}.pitem{flex-wrap:wrap;}}
 </style>
 </head>
@@ -184,6 +187,16 @@ body{font-family:'Outfit',sans-serif;background:var(--light);color:var(--navy);}
             <div><label class="flabel bn">ক্যাটাগরি</label><select class="fctrl" id="fCat"><option>🍬 মিষ্টি</option><option>🐟 মাছ</option><option>🥬 সবজি</option><option>🌾 চাল-ডাল</option><option>💊 ওষুধ</option><option>📱 ইলেকট্রনিক্স</option><option>👕 পোশাক</option><option>📦 অন্যান্য</option></select></div>
             <div><label class="flabel bn">প্রস্তুতি সময় (মিনিট)</label><input type="number" class="fctrl" id="fPrep" placeholder="15"></div>
             <div class="full"><label class="flabel bn">বিবরণ / Description</label><input type="text" class="fctrl" id="fDesc" placeholder="সংক্ষিপ্ত বিবরণ..."></div>
+            <div class="full"><label class="flabel bn">ছাড় % / Discount %</label><input type="number" class="fctrl" id="fDiscount" placeholder="20" min="0" max="100"></div>
+            <div class="full">
+              <label class="flabel bn">পণ্যের ছবি / Product Image</label>
+              <div class="img-upload-area" id="imgUploadArea" onclick="document.getElementById('fImg').click()">
+                <div id="imgPreview" style="display:none"><img id="previewImg" style="max-height:120px;border-radius:8px"></div>
+                <div id="imgPlaceholder">📷 <span class="bn">ছবি বেছে নিন / Click to select image</span></div>
+              </div>
+              <input type="file" id="fImg" accept="image/*" style="display:none" onchange="previewImage(this)">
+              <div id="uploadProgress" style="display:none;margin-top:8px;font-size:12px;color:var(--orange)" class="bn">ছবি upload হচ্ছে...</div>
+            </div>
           </div>
           <div class="faction">
             <button class="btn-save" onclick="saveProd()">✅ <span class="bn">সংরক্ষণ</span> / Save</button>
@@ -324,19 +337,73 @@ function togglePForm() {
 }
 
 function clearForm(){
-  ['fNBn','fNEn','fPrice','fMRP','fStock','fDesc','fPrep'].forEach(function(id){document.getElementById(id).value='';});
+  ['fNBn','fNEn','fPrice','fMRP','fStock','fDesc','fPrep','fDiscount'].forEach(function(id){document.getElementById(id).value='';});
+  document.getElementById('fImg').value='';
+  document.getElementById('imgPreview').style.display='none';
+  document.getElementById('imgPlaceholder').style.display='block';
 }
 
-function saveProd() {
+var CLOUDINARY_CLOUD = 'djthojcmy';
+var CLOUDINARY_PRESET = 'delta_products';
+
+function previewImage(input) {
+  if(input.files && input.files[0]) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      document.getElementById('previewImg').src = e.target.result;
+      document.getElementById('imgPreview').style.display = 'block';
+      document.getElementById('imgPlaceholder').style.display = 'none';
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+
+async function uploadToCloudinary(file) {
+  var formData = new FormData();
+  formData.append('file', file);
+  formData.append('upload_preset', CLOUDINARY_PRESET);
+  formData.append('folder', 'delta/products');
+  var res = await fetch('https://api.cloudinary.com/v1_1/' + CLOUDINARY_CLOUD + '/image/upload', {
+    method: 'POST',
+    body: formData
+  });
+  var data = await res.json();
+  if(data.secure_url) return data.secure_url;
+  throw new Error(data.error ? data.error.message : 'Upload failed');
+}
+
+async function saveProd() {
   var nb=document.getElementById('fNBn').value, ne=document.getElementById('fNEn').value;
   var price=parseFloat(document.getElementById('fPrice').value);
   var mrp=parseFloat(document.getElementById('fMRP').value)||price;
   var stock=parseInt(document.getElementById('fStock').value)||0;
   var unit=document.getElementById('fUnit').value, cat=document.getElementById('fCat').value;
   var desc=document.getElementById('fDesc').value, prep=parseInt(document.getElementById('fPrep').value)||15;
+  var discount=parseInt(document.getElementById('fDiscount').value)||0;
+  var imgFile=document.getElementById('fImg').files[0];
+  
   if(!nb&&!ne){alert('পণ্যের নাম দিন।');return;}
   if(!price){alert('দাম দিন।');return;}
-  var d={nameBn:nb,nameEn:ne,price:price,mrp:mrp,stock:stock,unit:unit,category:cat,desc:desc,prepTime:prep,updatedAt:new Date().toISOString()};
+  
+  var imageUrl = '';
+  
+  if(imgFile) {
+    document.getElementById('uploadProgress').style.display='block';
+    try {
+      imageUrl = await uploadToCloudinary(imgFile);
+    } catch(e) {
+      alert('ছবি upload ব্যর্থ: ' + e.message + '
+
+Upload preset তৈরি করতে হবে।');
+      document.getElementById('uploadProgress').style.display='none';
+      return;
+    }
+    document.getElementById('uploadProgress').style.display='none';
+  }
+  
+  var d={nameBn:nb,nameEn:ne,price:price,mrp:mrp,stock:stock,unit:unit,category:cat,desc:desc,prepTime:prep,discount:discount,updatedAt:new Date().toISOString()};
+  if(imageUrl) d.imageUrl = imageUrl;
+  
   var ref=db.collection('sellers').doc(curUser.uid).collection('products');
   var pr=editId?ref.doc(editId).update(d):ref.add(Object.assign({},d,{createdAt:new Date().toISOString()}));
   pr.then(function(){loadProds(curUser.uid); togglePForm(); editId=null;})
