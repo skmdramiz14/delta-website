@@ -1,823 +1,1059 @@
-<!DOCTYPE html>    
+<!DOCTYPE html>
 <html lang="bn">
-<head> 
+<head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DELTA — পরিবর্তনের ব-দ্বীপ | Local Roots. Global Wings.</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&family=Tiro+Bangla:ital@0;1&display=swap" rel="stylesheet">
+<meta name="description" content="West Bengal's first local super app. Order from local shops, farmers, and artisans near you.">
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Tiro+Bangla&display=swap" rel="stylesheet">
 <style>
-:root{--navy:#0F2D4A;--navy-dark:#071829;--orange:#E8730A;--orange-light:#ff8c2a;--white:#FFFFFF;--gray:#8a9ab0;--light-gray:#F7F7F7;}
-*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
-html{scroll-behavior:smooth;}
-body{font-family:'Outfit',sans-serif;background:var(--navy-dark);color:var(--white);overflow-x:hidden;}
+:root{
+  --navy:#0F2D4A;--navy2:#1a3d5c;--navy3:#071829;
+  --orange:#E8730A;--orange2:#ff9230;
+  --white:#fff;--light:#f0f4f8;--light2:#e4ecf4;
+  --gray:#8a9ab0;--border:#dce6f0;
+  --text:#0F2D4A;--text2:#4a6070;
+  --green:#1a8a4a;--green2:#e8f7ef;
+  --red:#c0392b;--red2:#ffe8e8;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Outfit',sans-serif;background:var(--light);color:var(--text);}
 .bn{font-family:'Tiro Bangla',serif;}
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-thumb{background:#b0c4d8;border-radius:3px;}
 
-/* LANG TOGGLE */
-.lang-toggle{display:none;}
-.lang-toggle-nav{display:flex;background:rgba(255,255,255,0.08);border:1px solid rgba(232,115,10,0.3);border-radius:30px;overflow:hidden;}
-.lang-btn{padding:7px 16px;font-size:12px;font-weight:700;letter-spacing:1px;cursor:pointer;border:none;background:transparent;color:var(--gray);transition:all 0.3s;}
-.lang-btn.active{background:var(--orange);color:var(--white);}
+/* ===== TOPBAR ===== */
+.topbar{
+  background:var(--navy);position:sticky;top:0;z-index:100;
+  height:58px;display:flex;align-items:center;justify-content:space-between;
+  padding:0 24px;box-shadow:0 2px 12px rgba(0,0,0,0.2);
+}
+.tlogo{font-size:20px;font-weight:800;color:#fff;letter-spacing:2px;cursor:pointer;}
+.tlogo em{color:var(--orange);font-style:normal;}
+.t-center{flex:1;max-width:460px;margin:0 20px;}
+.search-bar{
+  display:flex;align-items:center;background:rgba(255,255,255,0.1);
+  border:1px solid rgba(255,255,255,0.2);border-radius:10px;
+  padding:0 14px;height:38px;gap:8px;transition:all 0.2s;
+}
+.search-bar:focus-within{background:rgba(255,255,255,0.18);border-color:var(--orange);}
+.search-bar input{
+  flex:1;background:transparent;border:none;outline:none;
+  color:#fff;font-family:'Outfit',sans-serif;font-size:13px;
+}
+.search-bar input::placeholder{color:rgba(255,255,255,0.45);}
+.search-bar .sico{color:rgba(255,255,255,0.5);font-size:15px;}
+.t-right{display:flex;align-items:center;gap:10px;}
+.t-btn{
+  padding:7px 16px;border-radius:8px;font-size:12px;font-weight:600;
+  cursor:pointer;border:none;font-family:'Outfit',sans-serif;transition:all 0.2s;
+}
+.t-btn-outline{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,0.3);}
+.t-btn-outline:hover{border-color:var(--orange);color:var(--orange);}
+.t-btn-orange{background:var(--orange);color:#fff;}
+.t-btn-orange:hover{background:var(--orange2);}
+.cart-btn{
+  position:relative;background:rgba(255,255,255,0.1);border:1.5px solid rgba(255,255,255,0.2);
+  color:#fff;padding:7px 14px;border-radius:8px;cursor:pointer;font-size:13px;
+  display:flex;align-items:center;gap:6px;font-family:'Outfit',sans-serif;
+}
+.cart-badge{
+  position:absolute;top:-6px;right:-6px;background:var(--orange);color:#fff;
+  width:18px;height:18px;border-radius:50%;font-size:10px;font-weight:700;
+  display:none;align-items:center;justify-content:center;
+}
+.user-btn{
+  background:rgba(255,255,255,0.1);border:1.5px solid rgba(255,255,255,0.2);
+  color:#fff;width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:15px;
+  display:flex;align-items:center;justify-content:center;
+}
 
-/* NAVBAR */
-nav{position:fixed;top:0;left:0;right:0;z-index:1000;padding:18px 40px;display:flex;align-items:center;justify-content:space-between;background:rgba(7,24,41,0.92);backdrop-filter:blur(20px);border-bottom:1px solid rgba(232,115,10,0.15);}
-.nav-logo{display:flex;align-items:center;gap:12px;text-decoration:none;}
-.nav-symbol{width:42px;height:42px;background:var(--navy);border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid var(--orange);font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--white);}
-.nav-name{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:3px;color:var(--white);}
-.nav-links{display:flex;gap:28px;list-style:none;}
-.nav-links a{color:var(--gray);text-decoration:none;font-size:13px;font-weight:500;transition:color 0.3s;}
-.nav-links a:hover{color:var(--orange);}
-.nav-cta{background:var(--orange);color:var(--white);padding:10px 22px;border-radius:6px;font-weight:700;font-size:13px;text-decoration:none;transition:all 0.3s;}
-.nav-cta:hover{background:var(--orange-light);transform:translateY(-1px);}
+/* ===== HERO ===== */
+.hero{
+  background:linear-gradient(135deg,var(--navy3) 0%,var(--navy) 60%,#1a3a5c 100%);
+  padding:40px 24px 50px;text-align:center;position:relative;overflow:hidden;
+}
+.hero::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 30% 50%,rgba(232,115,10,0.12) 0%,transparent 60%),
+             radial-gradient(ellipse at 70% 20%,rgba(26,90,120,0.3) 0%,transparent 50%);
+}
+.hero-content{position:relative;z-index:1;max-width:680px;margin:0 auto;}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:8px;background:rgba(232,115,10,0.15);
+  border:1px solid rgba(232,115,10,0.3);border-radius:20px;
+  padding:6px 16px;font-size:12px;color:var(--orange2);font-weight:600;margin-bottom:18px;
+}
+.hero h1{font-size:38px;font-weight:800;color:#fff;letter-spacing:2px;margin-bottom:8px;}
+.hero h1 em{color:var(--orange);font-style:normal;}
+.hero-sub{font-size:15px;color:rgba(255,255,255,0.6);margin-bottom:8px;}
+.hero-bn{font-size:16px;color:rgba(255,255,255,0.85);margin-bottom:28px;}
 
-/* BILINGUAL TEXT */
-[data-en],[data-bn]{display:block;}
-body.lang-bn [data-en]{display:none;}
-body.lang-bn [data-bn]{display:block;}
-body.lang-en [data-bn]{display:none;}
-body.lang-en [data-en]{display:block;}
+/* SEARCH BOX BIG */
+.hero-search{
+  display:flex;max-width:560px;margin:0 auto 20px;
+  background:#fff;border-radius:14px;overflow:hidden;
+  box-shadow:0 8px 30px rgba(0,0,0,0.25);
+}
+.hero-search input{
+  flex:1;padding:14px 18px;border:none;outline:none;
+  font-family:'Outfit',sans-serif;font-size:14px;color:var(--text);
+}
+.hero-search button{
+  background:var(--orange);color:#fff;border:none;padding:0 22px;
+  font-size:18px;cursor:pointer;transition:background 0.2s;
+}
+.hero-search button:hover{background:var(--orange2);}
+.hero-tags{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+.hero-tag{
+  background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.75);
+  border:1px solid rgba(255,255,255,0.15);border-radius:20px;
+  padding:5px 14px;font-size:12px;cursor:pointer;transition:all 0.2s;
+}
+.hero-tag:hover{background:rgba(232,115,10,0.25);border-color:var(--orange);color:#fff;}
 
-/* Default show both, JS switches */
-.txt-en{display:block;}
-.txt-bn{display:none;}
-body.show-bn .txt-en{display:none;}
-body.show-bn .txt-bn{display:block;}
-body.show-en .txt-bn{display:none;}
-body.show-en .txt-en{display:block;}
+/* ===== CATEGORIES ===== */
+.section{padding:24px;}
+.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.sec-title{font-size:16px;font-weight:700;color:var(--navy);}
+.sec-title small{font-size:12px;font-weight:400;color:var(--gray);margin-left:6px;}
+.see-all{font-size:12px;color:var(--orange);font-weight:600;cursor:pointer;background:none;border:none;}
 
-/* HERO */
-.hero{min-height:100vh;display:flex;align-items:center;position:relative;overflow:hidden;padding:120px 40px 80px;}
-.hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse at 20% 50%,rgba(15,45,74,0.8) 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(232,115,10,0.06) 0%,transparent 50%),linear-gradient(135deg,var(--navy-dark) 0%,#0a1f35 100%);}
-.hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(232,115,10,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(232,115,10,0.04) 1px,transparent 1px);background-size:60px 60px;}
-.hero-tri{position:absolute;right:-80px;top:50%;transform:translateY(-50%);width:540px;height:540px;opacity:0.04;}
-.hero-content{position:relative;z-index:2;max-width:680px;}
-.hero-tag{display:inline-flex;align-items:center;gap:8px;background:rgba(232,115,10,0.12);border:1px solid rgba(232,115,10,0.3);border-radius:30px;padding:7px 16px;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--orange);margin-bottom:20px;animation:fadeUp 0.6s ease both;}
-.dot-pulse{width:6px;height:6px;background:var(--orange);border-radius:50%;animation:pulse 2s infinite;flex-shrink:0;}
-@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.5;transform:scale(1.5);}}
-.hero-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(64px,10vw,112px);line-height:0.95;letter-spacing:2px;margin-bottom:8px;animation:fadeUp 0.7s ease 0.1s both;}
-.orange{color:var(--orange);}
-.hero-title-bn{font-family:'Tiro Bangla',serif;font-size:clamp(20px,3vw,32px);color:rgba(255,255,255,0.85);font-weight:400;margin-bottom:6px;animation:fadeUp 0.7s ease 0.15s both;}
-.hero-title-en{font-family:'Bebas Neue',sans-serif;font-size:clamp(18px,2.5vw,28px);color:var(--gray);letter-spacing:2px;margin-bottom:24px;animation:fadeUp 0.7s ease 0.15s both;}
-.hero-line{display:flex;align-items:center;gap:14px;margin-bottom:28px;animation:fadeUp 0.7s ease 0.25s both;}
-.line-bar{width:52px;height:3px;background:var(--orange);border-radius:2px;flex-shrink:0;}
-.slogan-bn{font-family:'Tiro Bangla',serif;font-size:17px;color:rgba(255,255,255,0.7);}
-.slogan-en{font-size:16px;font-weight:300;color:rgba(255,255,255,0.65);letter-spacing:1px;}
-.hero-desc{font-size:15px;line-height:1.8;color:var(--gray);margin-bottom:40px;max-width:520px;animation:fadeUp 0.7s ease 0.35s both;}
-.hero-desc-bn{font-family:'Tiro Bangla',serif;font-size:15px;}
-.hero-btns{display:flex;gap:12px;flex-wrap:wrap;animation:fadeUp 0.7s ease 0.45s both;}
-.btn-p{background:var(--orange);color:var(--white);padding:14px 28px;border-radius:8px;font-weight:700;font-size:13px;text-decoration:none;transition:all 0.3s;}
-.btn-p:hover{background:var(--orange-light);transform:translateY(-2px);box-shadow:0 12px 28px rgba(232,115,10,0.35);}
-.btn-s{background:transparent;color:var(--white);padding:14px 28px;border-radius:8px;font-weight:600;font-size:13px;text-decoration:none;border:1.5px solid rgba(255,255,255,0.18);transition:all 0.3s;}
-.btn-s:hover{border-color:var(--orange);color:var(--orange);}
-.hero-stats{display:flex;gap:40px;margin-top:52px;padding-top:32px;border-top:1px solid rgba(255,255,255,0.07);animation:fadeUp 0.7s ease 0.55s both;flex-wrap:wrap;}
-.stat-n{font-family:'Bebas Neue',sans-serif;font-size:38px;color:var(--orange);line-height:1;display:block;}
-.stat-l-en{font-size:11px;color:var(--gray);letter-spacing:0.5px;display:block;margin-top:2px;}
-.stat-l-bn{font-family:'Tiro Bangla',serif;font-size:11px;color:var(--gray);display:block;margin-top:2px;}
-@keyframes fadeUp{from{opacity:0;transform:translateY(26px);}to{opacity:1;transform:translateY(0);}}
-@keyframes fadeRight{from{opacity:0;transform:translate(26px,-50%);}to{opacity:1;transform:translate(0,-50%);}}
+.cat-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;}
+.cat-card{
+  background:#fff;border-radius:14px;padding:16px 8px;text-align:center;
+  cursor:pointer;transition:all 0.2s;border:2px solid transparent;
+  box-shadow:0 2px 8px rgba(0,0,0,0.05);
+}
+.cat-card:hover,.cat-card.active{
+  border-color:var(--orange);transform:translateY(-2px);
+  box-shadow:0 6px 20px rgba(232,115,10,0.15);
+}
+.cat-icon{font-size:28px;margin-bottom:8px;}
+.cat-name{font-size:11px;font-weight:700;color:var(--navy);}
+.cat-name-bn{font-size:10px;color:var(--gray);margin-top:2px;}
 
-/* PHONE */
-.hero-right{position:absolute;right:40px;top:50%;transform:translateY(-50%);z-index:2;animation:fadeRight 0.8s ease 0.4s both;}
-.phone{width:252px;height:505px;background:linear-gradient(145deg,#1a3d5c,#0F2D4A);border-radius:34px;border:2px solid rgba(232,115,10,0.3);overflow:hidden;box-shadow:0 40px 80px rgba(0,0,0,0.5),0 0 50px rgba(232,115,10,0.08);}
-.p-notch{width:70px;height:17px;background:var(--navy-dark);border-radius:0 0 13px 13px;margin:0 auto;}
-.p-screen{padding:10px 13px;}
-.p-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;}
-.p-logo{font-family:'Bebas Neue',sans-serif;font-size:17px;color:var(--white);letter-spacing:2px;}
-.p-logo span{color:var(--orange);}
-.p-search{background:rgba(255,255,255,0.06);border-radius:8px;padding:7px 10px;font-size:9px;color:var(--gray);margin-bottom:11px;border:1px solid rgba(255,255,255,0.06);}
-.p-cats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:11px;}
-.p-cat{background:rgba(255,255,255,0.05);border-radius:8px;padding:8px 4px;text-align:center;border:1px solid rgba(255,255,255,0.06);}
-.p-i{font-size:15px;display:block;margin-bottom:3px;}
-.p-n{font-size:7px;color:var(--gray);display:block;}
-.p-n-bn{font-family:'Tiro Bangla',serif;font-size:7px;color:var(--gray);display:block;}
-.p-order{background:rgba(255,255,255,0.04);border-radius:8px;padding:8px 10px;display:flex;align-items:center;gap:8px;border:1px solid rgba(255,255,255,0.06);margin-bottom:6px;}
-.p-oi{width:28px;height:28px;background:rgba(232,115,10,0.15);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
-.p-on{font-size:9px;color:var(--white);font-weight:600;display:block;}
-.p-os{font-size:7px;color:var(--gray);display:block;margin-top:1px;}
-.p-op{margin-left:auto;font-size:9px;color:var(--orange);font-weight:700;flex-shrink:0;}
+/* ===== SHOP CARDS ===== */
+.shops-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;}
+.shop-card{
+  background:#fff;border-radius:16px;overflow:hidden;cursor:pointer;
+  transition:all 0.25s;border:1px solid var(--border);
+  box-shadow:0 2px 8px rgba(0,0,0,0.04);
+}
+.shop-card:hover{transform:translateY(-4px);box-shadow:0 10px 30px rgba(0,0,0,0.1);}
+.shop-banner{
+  height:110px;background:linear-gradient(135deg,var(--navy),var(--navy2));
+  display:flex;align-items:center;justify-content:center;font-size:40px;
+  position:relative;overflow:hidden;
+}
+.shop-banner img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;}
+.shop-open-badge{
+  position:absolute;top:8px;right:8px;
+  background:#1a8a4a;color:#fff;font-size:10px;font-weight:700;
+  padding:3px 9px;border-radius:20px;
+}
+.shop-open-badge.closed{background:var(--red);}
+.shop-body{padding:14px;}
+.shop-name{font-size:14px;font-weight:700;color:var(--navy);margin-bottom:3px;}
+.shop-cat{font-size:11px;color:var(--gray);margin-bottom:8px;}
+.shop-meta{display:flex;align-items:center;gap:10px;font-size:11px;color:var(--gray);}
+.shop-rating{color:var(--orange);font-weight:700;}
+.shop-dot{width:3px;height:3px;background:var(--border);border-radius:50%;}
 
-/* BAND */
-.band{background:var(--orange);padding:13px 40px;display:flex;align-items:center;justify-content:center;gap:40px;flex-wrap:wrap;}
-.band-item{font-size:11px;font-weight:700;color:var(--white);letter-spacing:1px;text-transform:uppercase;display:flex;align-items:center;gap:7px;}
-.band-item .bn{font-size:11px;letter-spacing:0;font-weight:700;text-transform:none;}
-.bdot{width:4px;height:4px;background:rgba(255,255,255,0.5);border-radius:50%;}
+/* ===== PRODUCT CARDS ===== */
+.products-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;}
+.prod-card{
+  background:#fff;border-radius:14px;overflow:hidden;cursor:pointer;
+  transition:all 0.2s;border:1px solid var(--border);
+  box-shadow:0 2px 6px rgba(0,0,0,0.04);
+}
+.prod-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,0.1);}
+.prod-img{
+  height:140px;background:var(--light);display:flex;
+  align-items:center;justify-content:center;font-size:38px;
+  position:relative;overflow:hidden;
+}
+.prod-img img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;}
+.prod-disc{
+  position:absolute;top:7px;right:7px;background:var(--red);color:#fff;
+  font-size:10px;font-weight:700;padding:2px 7px;border-radius:12px;
+}
+.prod-body{padding:12px;}
+.prod-shop{font-size:10px;color:var(--gray);margin-bottom:3px;}
+.prod-name{font-size:13px;font-weight:700;color:var(--navy);margin-bottom:6px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.prod-price-row{display:flex;align-items:center;justify-content:space-between;}
+.prod-price{font-size:15px;font-weight:800;color:var(--orange);}
+.prod-mrp{font-size:11px;color:var(--gray);text-decoration:line-through;}
+.add-btn{
+  background:var(--orange);color:#fff;border:none;border-radius:8px;
+  width:28px;height:28px;font-size:16px;cursor:pointer;display:flex;
+  align-items:center;justify-content:center;transition:all 0.2s;flex-shrink:0;
+}
+.add-btn:hover{background:var(--orange2);transform:scale(1.1);}
 
-/* GENERAL SECTION */
-.sec-wrap{padding:88px 40px;}
-.sec-wrap.dark{background:linear-gradient(180deg,var(--navy-dark) 0%,#0a1f35 100%);}
-.sec-wrap.navy{background:linear-gradient(135deg,var(--navy) 0%,var(--navy-dark) 100%);}
-.sec-wrap.darker{background:var(--navy-dark);}
-.sec-wrap.darkest{background:linear-gradient(135deg,#071829 0%,#0F2D4A 100%);}
-.sec-wrap.pricing-bg{background:linear-gradient(180deg,#0a1f35 0%,var(--navy-dark) 100%);}
-.sec-inner{max-width:1200px;margin:0 auto;}
-.sec-tag{display:inline-block;background:rgba(232,115,10,0.1);color:var(--orange);font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;padding:5px 14px;border-radius:4px;margin-bottom:16px;}
-.sec-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(36px,5.5vw,60px);line-height:1;letter-spacing:1px;margin-bottom:4px;}
-.sec-title-bn{font-family:'Tiro Bangla',serif;font-size:clamp(24px,4vw,40px);line-height:1.3;margin-bottom:14px;color:var(--white);}
-.sec-sub-en{font-size:14px;color:var(--gray);line-height:1.75;max-width:480px;margin-bottom:8px;}
-.sec-sub-bn{font-family:'Tiro Bangla',serif;font-size:14px;color:var(--gray);line-height:1.85;max-width:480px;margin-bottom:48px;}
+/* ===== EMPTY STATE ===== */
+.empty-state{
+  text-align:center;padding:50px 20px;
+  background:#fff;border-radius:16px;border:2px dashed var(--border);
+}
+.empty-state .eico{font-size:48px;margin-bottom:12px;}
+.empty-state p{color:var(--gray);font-size:14px;}
 
-/* CATEGORIES */
-.cats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:13px;margin-top:48px;}
-.cat-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:20px 16px;text-align:center;transition:all 0.3s;cursor:pointer;position:relative;overflow:hidden;}
-.cat-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:var(--orange);transform:scaleX(0);transition:transform 0.3s;}
-.cat-card:hover{background:rgba(232,115,10,0.06);border-color:rgba(232,115,10,0.25);transform:translateY(-3px);}
-.cat-card:hover::after{transform:scaleX(1);}
-.cat-emoji{font-size:32px;display:block;margin-bottom:9px;}
-.cat-name-bn{font-family:'Tiro Bangla',serif;font-size:12px;font-weight:600;color:var(--white);display:block;margin-bottom:1px;}
-.cat-name-en{font-size:11px;color:var(--gray);display:block;margin-bottom:2px;}
-.cat-count{font-size:10px;color:rgba(232,115,10,0.7);}
+/* ===== LOADING ===== */
+.skeleton{background:linear-gradient(90deg,#f0f4f8 25%,#e4ecf4 50%,#f0f4f8 75%);
+  background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:8px;}
+@keyframes shimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+.skel-shop{height:200px;border-radius:16px;margin-bottom:0;}
+.skel-prod{height:220px;border-radius:14px;}
 
-/* HOW IT WORKS */
-.steps-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(225px,1fr));gap:26px;margin-top:48px;}
-.step-card{padding:28px;background:rgba(255,255,255,0.03);border-radius:13px;border:1px solid rgba(255,255,255,0.06);transition:transform 0.3s;}
-.step-card:hover{transform:translateY(-3px);}
-.step-num{width:44px;height:44px;background:var(--orange);border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--white);margin-bottom:16px;}
-.step-title-en{font-size:16px;font-weight:700;color:var(--white);margin-bottom:3px;}
-.step-title-bn{font-family:'Tiro Bangla',serif;font-size:14px;color:rgba(255,255,255,0.8);margin-bottom:8px;}
-.step-desc-en{font-size:13px;color:var(--gray);line-height:1.7;}
-.step-desc-bn{font-family:'Tiro Bangla',serif;font-size:12px;color:var(--gray);line-height:1.85;}
+/* ===== CART SIDEBAR ===== */
+.cart-overlay{
+  position:fixed;inset:0;background:rgba(7,24,41,0.5);backdrop-filter:blur(3px);
+  z-index:200;display:none;
+}
+.cart-overlay.open{display:block;}
+.cart-panel{
+  position:fixed;top:0;right:0;width:360px;height:100vh;
+  background:#fff;z-index:201;display:flex;flex-direction:column;
+  box-shadow:-4px 0 30px rgba(0,0,0,0.15);transform:translateX(100%);
+  transition:transform 0.3s ease;
+}
+.cart-panel.open{transform:translateX(0);}
+.cart-head{
+  padding:18px 20px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.cart-head h3{font-size:16px;font-weight:700;color:var(--navy);}
+.cart-close{
+  width:32px;height:32px;border-radius:8px;border:none;
+  background:var(--light);cursor:pointer;font-size:16px;color:var(--gray);
+}
+.cart-items{flex:1;overflow-y:auto;padding:16px 20px;}
+.cart-item{
+  display:flex;gap:12px;padding:12px 0;
+  border-bottom:1px solid var(--border);
+}
+.ci-img{
+  width:52px;height:52px;border-radius:10px;background:var(--light);
+  display:flex;align-items:center;justify-content:center;font-size:22px;
+  flex-shrink:0;overflow:hidden;
+}
+.ci-img img{width:100%;height:100%;object-fit:cover;}
+.ci-info{flex:1;}
+.ci-name{font-size:13px;font-weight:600;color:var(--navy);margin-bottom:3px;}
+.ci-shop{font-size:11px;color:var(--gray);}
+.ci-price{font-size:13px;font-weight:700;color:var(--orange);margin-top:4px;}
+.ci-qty{display:flex;align-items:center;gap:8px;margin-top:6px;}
+.qty-btn{
+  width:26px;height:26px;border-radius:6px;border:1.5px solid var(--border);
+  background:#fff;cursor:pointer;font-size:14px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;color:var(--navy);
+}
+.qty-btn:hover{border-color:var(--orange);color:var(--orange);}
+.qty-num{font-size:13px;font-weight:700;min-width:20px;text-align:center;}
+.ci-del{background:none;border:none;color:var(--gray);cursor:pointer;font-size:14px;margin-left:auto;}
+.cart-empty{text-align:center;padding:40px 20px;color:var(--gray);}
+.cart-empty .icon{font-size:40px;margin-bottom:10px;}
+.cart-footer{padding:16px 20px;border-top:1px solid var(--border);}
+.cart-total-row{display:flex;justify-content:space-between;margin-bottom:6px;font-size:13px;}
+.cart-total-row.big{font-size:16px;font-weight:800;color:var(--navy);margin-top:8px;padding-top:8px;border-top:1px solid var(--border);}
+.checkout-btn{
+  width:100%;padding:14px;background:var(--orange);color:#fff;border:none;
+  border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;margin-top:14px;
+  font-family:'Outfit',sans-serif;transition:all 0.2s;
+}
+.checkout-btn:hover{background:var(--orange2);}
 
-/* IMPACT */
-.impact-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(205px,1fr));gap:20px;margin-top:48px;}
-.impact-card{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:13px;padding:28px 24px;transition:all 0.3s;}
-.impact-card:hover{background:rgba(232,115,10,0.05);border-color:rgba(232,115,10,0.2);}
-.impact-num{font-family:'Bebas Neue',sans-serif;font-size:48px;color:var(--orange);line-height:1;display:block;margin-bottom:6px;}
-.impact-label-en{font-size:13px;font-weight:700;color:var(--white);display:block;margin-bottom:2px;}
-.impact-label-bn{font-family:'Tiro Bangla',serif;font-size:13px;color:rgba(255,255,255,0.8);display:block;margin-bottom:5px;}
-.impact-desc-en{font-size:12px;color:var(--gray);line-height:1.6;}
-.impact-desc-bn{font-family:'Tiro Bangla',serif;font-size:12px;color:var(--gray);line-height:1.8;}
+/* ===== AUTH MODAL ===== */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(7,24,41,0.6);backdrop-filter:blur(4px);
+  z-index:300;display:none;align-items:center;justify-content:center;padding:20px;
+}
+.modal-overlay.open{display:flex;}
+.auth-modal{
+  background:#fff;border-radius:20px;width:100%;max-width:400px;
+  box-shadow:0 20px 60px rgba(0,0,0,0.25);overflow:hidden;
+}
+.auth-modal-head{
+  background:linear-gradient(135deg,var(--navy),var(--navy2));
+  padding:24px;text-align:center;
+}
+.auth-modal-head h2{color:#fff;font-size:20px;font-weight:800;letter-spacing:1px;}
+.auth-modal-head p{color:rgba(255,255,255,0.6);font-size:12px;margin-top:4px;}
+.auth-modal-body{padding:24px;}
+.auth-tabs-small{display:flex;background:var(--light);border-radius:10px;padding:3px;margin-bottom:20px;}
+.auth-tab-s{flex:1;padding:8px;text-align:center;border:none;background:transparent;
+  cursor:pointer;border-radius:8px;font-size:13px;font-weight:600;color:var(--gray);
+  font-family:'Outfit',sans-serif;}
+.auth-tab-s.on{background:#fff;color:var(--navy);box-shadow:0 2px 8px rgba(0,0,0,0.1);}
+.fgrp{margin-bottom:14px;}
+.fgrp label{display:block;font-size:11px;font-weight:600;color:var(--text2);
+  margin-bottom:5px;text-transform:uppercase;letter-spacing:0.5px;}
+.fctrl{
+  width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:9px;
+  font-family:'Outfit',sans-serif;font-size:13px;color:var(--text);outline:none;
+  background:var(--light);
+}
+.fctrl:focus{border-color:var(--orange);background:#fff;}
+.auth-submit{
+  width:100%;padding:13px;background:var(--orange);color:#fff;border:none;
+  border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;
+  font-family:'Outfit',sans-serif;
+}
+.auth-err{background:var(--red2);color:var(--red);padding:8px 12px;border-radius:8px;
+  font-size:12px;margin-bottom:12px;display:none;}
+.modal-close-btn{
+  position:absolute;top:12px;right:12px;width:32px;height:32px;
+  border-radius:50%;border:none;background:rgba(255,255,255,0.1);
+  color:#fff;cursor:pointer;font-size:16px;
+}
 
-/* SELLERS */
-.sellers-grid{display:grid;grid-template-columns:1fr 1fr;gap:68px;align-items:center;}
-.seller-features{display:flex;flex-direction:column;gap:16px;margin-top:32px;}
-.seller-feat{display:flex;gap:13px;align-items:flex-start;padding:16px;background:rgba(255,255,255,0.03);border-radius:10px;border:1px solid rgba(255,255,255,0.05);transition:all 0.3s;}
-.seller-feat:hover{background:rgba(232,115,10,0.06);border-color:rgba(232,115,10,0.2);}
-.feat-icon{width:40px;height:40px;background:rgba(232,115,10,0.12);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
-.feat-title-en{font-size:13px;font-weight:700;color:var(--white);margin-bottom:2px;}
-.feat-title-bn{font-family:'Tiro Bangla',serif;font-size:13px;color:rgba(255,255,255,0.8);margin-bottom:3px;}
-.feat-desc-en{font-size:12px;color:var(--gray);line-height:1.6;}
-.feat-desc-bn{font-family:'Tiro Bangla',serif;font-size:12px;color:var(--gray);line-height:1.75;}
-.dash-box{background:var(--navy);border-radius:17px;border:1px solid rgba(232,115,10,0.2);overflow:hidden;box-shadow:0 32px 64px rgba(0,0,0,0.4);}
-.dash-head{background:rgba(232,115,10,0.1);padding:13px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(232,115,10,0.1);}
-.dash-title-en{font-size:11px;font-weight:700;color:var(--white);}
-.dash-title-bn{font-family:'Tiro Bangla',serif;font-size:11px;font-weight:600;color:var(--white);}
-.dash-badge{background:var(--orange);color:var(--white);font-size:9px;font-weight:700;padding:3px 8px;border-radius:20px;}
-.dash-body{padding:16px;}
-.dash-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:13px;}
-.d-stat{background:rgba(255,255,255,0.04);border-radius:8px;padding:9px;text-align:center;}
-.d-stat-n{font-family:'Bebas Neue',sans-serif;font-size:21px;color:var(--orange);display:block;}
-.d-stat-l-en{font-size:8px;color:var(--gray);display:block;margin-top:1px;}
-.d-stat-l-bn{font-family:'Tiro Bangla',serif;font-size:8px;color:var(--gray);display:block;margin-top:1px;}
-.d-ot{font-size:9px;font-weight:700;color:var(--gray);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;}
-.d-order{background:rgba(255,255,255,0.03);border-radius:7px;padding:8px 10px;display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;border:1px solid rgba(255,255,255,0.05);}
-.d-oi-en{font-size:10px;color:var(--white);font-weight:600;}
-.d-oi-bn{font-family:'Tiro Bangla',serif;font-size:9px;color:rgba(255,255,255,0.85);font-weight:600;}
-.d-os{font-size:8px;color:var(--gray);margin-top:1px;}
-.d-status{font-size:8px;font-weight:700;padding:3px 7px;border-radius:20px;flex-shrink:0;}
-.s-new{background:rgba(232,115,10,0.2);color:var(--orange);}
-.s-prep{background:rgba(59,130,246,0.2);color:#60a5fa;}
-.s-done{background:rgba(34,197,94,0.2);color:#4ade80;}
+/* ===== CHECKOUT MODAL ===== */
+.checkout-modal{background:#fff;border-radius:20px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;}
+.checkout-head{padding:20px 24px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;}
+.checkout-head h3{font-size:16px;font-weight:700;color:var(--navy);}
+.checkout-body{padding:20px 24px;}
+.pay-options{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+.pay-opt{
+  border:2px solid var(--border);border-radius:12px;padding:14px;text-align:center;
+  cursor:pointer;transition:all 0.2s;
+}
+.pay-opt.on{border-color:var(--orange);background:#fff8f3;}
+.pay-opt .icon{font-size:24px;margin-bottom:6px;}
+.pay-opt .label{font-size:13px;font-weight:600;color:var(--navy);}
+.pay-opt .desc{font-size:11px;color:var(--gray);margin-top:2px;}
+.place-order-btn{
+  width:100%;padding:14px;background:var(--orange);color:#fff;border:none;
+  border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;margin-top:16px;
+  font-family:'Outfit',sans-serif;
+}
 
-/* PRICING */
-.pricing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(238px,1fr));gap:22px;margin-top:48px;}
-.price-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:18px;padding:32px 26px;position:relative;transition:all 0.3s;display:flex;flex-direction:column;}
-.price-card:hover{transform:translateY(-5px);}
-.price-card.featured{background:linear-gradient(145deg,rgba(232,115,10,0.12),rgba(232,115,10,0.05));border-color:var(--orange);box-shadow:0 18px 56px rgba(232,115,10,0.14);}
-.price-popular-en{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--orange);color:var(--white);font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;padding:5px 14px;border-radius:20px;white-space:nowrap;}
-.price-popular-bn{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--orange);color:var(--white);font-size:10px;font-weight:700;padding:5px 14px;border-radius:20px;white-space:nowrap;font-family:'Tiro Bangla',serif;}
-.price-tier-en{font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--gray);margin-bottom:4px;}
-.price-tier-bn{font-family:'Tiro Bangla',serif;font-size:12px;color:var(--gray);margin-bottom:12px;}
-.price-tier-en.ft{color:var(--orange);}
-.price-tier-bn.ft{color:var(--orange);}
-.price-num{font-family:'Bebas Neue',sans-serif;font-size:56px;line-height:1;color:var(--white);}
-.price-num.free{color:var(--orange);}
-.price-period-en{font-size:12px;color:var(--gray);margin-bottom:4px;}
-.price-period-bn{font-family:'Tiro Bangla',serif;font-size:12px;color:var(--gray);margin-bottom:8px;}
-.price-note{font-size:12px;color:var(--orange);font-weight:600;margin-bottom:16px;min-height:16px;}
-.price-note-bn{font-family:'Tiro Bangla',serif;font-size:12px;color:var(--orange);font-weight:600;margin-bottom:16px;min-height:16px;}
-.price-divider{height:1px;background:rgba(255,255,255,0.07);margin-bottom:18px;}
-.price-features{list-style:none;display:flex;flex-direction:column;gap:10px;flex:1;}
-.price-features li{display:flex;align-items:flex-start;gap:9px;font-size:12px;color:rgba(255,255,255,0.75);line-height:1.5;}
-.price-features li::before{content:'✓';color:var(--orange);font-weight:800;flex-shrink:0;margin-top:1px;}
-.price-features li.no{color:var(--gray);}
-.price-features li.no::before{content:'✕';color:rgba(255,255,255,0.18);}
-.price-features li .bn{font-family:'Tiro Bangla',serif;font-size:11px;}
-.price-cta{display:block;text-align:center;margin-top:24px;padding:12px;border-radius:9px;font-weight:700;font-size:13px;text-decoration:none;transition:all 0.3s;}
-.price-cta.outline{border:1.5px solid rgba(255,255,255,0.15);color:var(--white);}
-.price-cta.outline:hover{border-color:var(--orange);color:var(--orange);}
-.price-cta.filled{background:var(--orange);color:var(--white);}
-.price-cta.filled:hover{background:var(--orange-light);transform:translateY(-1px);}
-.pricing-note{text-align:center;margin-top:32px;padding:18px 22px;background:rgba(232,115,10,0.06);border:1px solid rgba(232,115,10,0.15);border-radius:11px;max-width:580px;margin-left:auto;margin-right:auto;}
-.pricing-note p{font-size:13px;color:var(--gray);line-height:1.7;}
-.pricing-note .bn{font-family:'Tiro Bangla',serif;font-size:13px;}
-.pricing-note strong{color:var(--orange);}
+/* ===== ORDER SUCCESS ===== */
+.order-success{text-align:center;padding:40px 20px;}
+.success-icon{font-size:60px;margin-bottom:16px;}
+.success-title{font-size:22px;font-weight:800;color:var(--navy);margin-bottom:8px;}
+.success-sub{font-size:13px;color:var(--gray);}
+.order-id-box{background:var(--light);border-radius:10px;padding:12px 20px;
+  margin:16px 0;font-size:13px;color:var(--text2);}
+.order-id-box strong{color:var(--orange);font-size:16px;}
 
-/* REGISTER */
-.reg-sec{padding:88px 40px;text-align:center;position:relative;overflow:hidden;}
-.reg-bg{position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(232,115,10,0.08) 0%,transparent 70%);}
-.reg-inner{position:relative;z-index:2;max-width:600px;margin:0 auto;}
-.reg-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(40px,7vw,72px);line-height:1;margin-bottom:6px;}
-.reg-title-bn{font-family:'Tiro Bangla',serif;font-size:clamp(22px,4vw,36px);line-height:1.3;margin-bottom:16px;color:var(--white);}
-.reg-sub-en{font-size:14px;color:var(--gray);line-height:1.75;margin-bottom:8px;}
-.reg-sub-bn{font-family:'Tiro Bangla',serif;font-size:14px;color:var(--gray);line-height:1.85;margin-bottom:40px;}
-.reg-form{display:flex;flex-direction:column;gap:13px;max-width:440px;margin:0 auto;}
-.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-.fi{background:rgba(255,255,255,0.05);border:1.5px solid rgba(255,255,255,0.1);border-radius:9px;padding:13px 15px;color:var(--white);font-family:'Outfit',sans-serif;font-size:13px;transition:border-color 0.3s;outline:none;width:100%;}
-.fi::placeholder{color:var(--gray);}
-.fi:focus{border-color:var(--orange);}
-.fs{background:rgba(255,255,255,0.05);border:1.5px solid rgba(255,255,255,0.1);border-radius:9px;padding:13px 15px;color:var(--white);font-family:'Outfit',sans-serif;font-size:13px;outline:none;width:100%;cursor:pointer;}
-.fs option{background:var(--navy-dark);color:var(--white);}
-.f-submit{background:var(--orange);color:var(--white);border:none;border-radius:9px;padding:14px;font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all 0.3s;}
-.f-submit:hover{background:var(--orange-light);transform:translateY(-2px);box-shadow:0 10px 26px rgba(232,115,10,0.35);}
-.f-note{font-size:11px;color:var(--gray);margin-top:5px;}
-.f-note-bn{font-family:'Tiro Bangla',serif;font-size:11px;color:var(--gray);margin-top:3px;}
+/* ===== TOAST ===== */
+.toast{
+  position:fixed;bottom:24px;right:24px;background:var(--navy);color:#fff;
+  padding:12px 18px;border-radius:12px;font-size:13px;font-weight:500;
+  box-shadow:0 6px 20px rgba(0,0,0,0.2);z-index:500;display:none;
+  align-items:center;gap:10px;border-left:3px solid var(--orange);max-width:300px;
+}
+.toast.show{display:flex;animation:slideIn 0.3s ease;}
+.toast.green{border-left-color:var(--green);}
+@keyframes slideIn{from{transform:translateX(80px);opacity:0}to{transform:translateX(0);opacity:1}}
 
-/* FOOTER */
-footer{background:var(--navy-dark);border-top:1px solid rgba(255,255,255,0.06);padding:52px 40px 32px;}
-.f-inner{max-width:1200px;margin:0 auto;}
-.f-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:40px;flex-wrap:wrap;gap:32px;}
-.f-logo{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:4px;color:var(--white);display:flex;align-items:center;gap:9px;margin-bottom:9px;text-decoration:none;}
-.f-logo-tri{color:var(--orange);}
-.f-tag-en{font-size:12px;color:var(--gray);margin-bottom:3px;}
-.f-tag-bn{font-family:'Tiro Bangla',serif;font-size:12px;color:var(--gray);}
-.f-links{display:flex;gap:48px;flex-wrap:wrap;}
-.f-col h4{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--orange);margin-bottom:13px;}
-.f-col ul{list-style:none;display:flex;flex-direction:column;gap:9px;}
-.f-col a{color:var(--gray);text-decoration:none;font-size:13px;transition:color 0.3s;display:block;}
-.f-col a .bn{font-family:'Tiro Bangla',serif;font-size:12px;}
-.f-col a:hover{color:var(--white);}
-.f-bottom{padding-top:26px;border-top:1px solid rgba(255,255,255,0.06);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
-.f-copy{font-size:11px;color:var(--gray);}
-.f-motto-en{font-size:11px;color:var(--orange);font-weight:700;letter-spacing:1px;}
-.f-motto-bn{font-family:'Tiro Bangla',serif;font-size:11px;color:var(--orange);font-weight:700;}
+/* ===== FOOTER ===== */
+.footer{background:var(--navy3);color:rgba(255,255,255,0.5);
+  padding:24px;text-align:center;font-size:12px;margin-top:32px;}
+.footer a{color:var(--orange);text-decoration:none;}
 
-/* REVEAL */
-.reveal{opacity:0;transform:translateY(26px);transition:opacity 0.6s ease,transform 0.6s ease;}
-.reveal.visible{opacity:1;transform:translateY(0);}
-
-/* RESPONSIVE */
-@media(max-width:1024px){.hero-right{display:none;}.sellers-grid{grid-template-columns:1fr;}}
-@media(max-width:768px){nav{padding:14px 16px;}.nav-links{display:none;}.hero{padding:94px 16px 52px;}.hero-stats{gap:18px;}.sec-wrap{padding:56px 16px;}.reg-sec{padding:56px 16px;}.band{gap:14px;padding:11px 16px;}.form-row{grid-template-columns:1fr;}footer{padding:36px 16px;}.f-top{flex-direction:column;}.f-links{gap:28px;}.lang-toggle{right:auto;left:16px;top:16px;}}
+/* ===== RESPONSIVE ===== */
+@media(max-width:900px){.cat-grid{grid-template-columns:repeat(4,1fr);}}
+@media(max-width:768px){
+  .t-center{display:none;}
+  .topbar{padding:0 16px;}
+  .hero{padding:28px 16px 36px;}
+  .hero h1{font-size:28px;}
+  .section{padding:16px;}
+  .cat-grid{grid-template-columns:repeat(3,1fr);gap:10px;}
+  .shops-grid{grid-template-columns:1fr 1fr;}
+  .products-grid{grid-template-columns:repeat(2,1fr);}
+  .cart-panel{width:100%;}
+}
+@media(max-width:480px){
+  .hero h1{font-size:24px;}
+  .cat-grid{grid-template-columns:repeat(3,1fr);}
+  .shops-grid{grid-template-columns:1fr;}
+  .t-btn-outline{display:none;}
+}
 </style>
 </head>
-<body class="show-bn">
+<body>
 
-<!-- LANGUAGE TOGGLE - moved to navbar -->
+<!-- TOAST -->
+<div class="toast" id="toastEl"></div>
 
-<!-- NAVBAR -->
-<nav>
-  <a href="#" class="nav-logo">
-    <div class="nav-symbol">&#9651;</div>
-    <span class="nav-name">DELTA</span>
-  </a>
-  <ul class="nav-links">
-    <li><a href="#categories"><span class="txt-bn bn">ক্যাটাগরি</span><span class="txt-en">Categories</span></a></li>
-    <li><a href="#how"><span class="txt-bn bn">কীভাবে কাজ করে</span><span class="txt-en">How It Works</span></a></li>
-    <li><a href="#pricing"><span class="txt-bn bn">মূল্য তালিকা</span><span class="txt-en">Pricing</span></a></li>
-    <li><a href="#sellers"><span class="txt-bn bn">দোকানদারদের জন্য</span><span class="txt-en">For Sellers</span></a></li>
-  </ul>
-  <div style="display:flex;align-items:center;gap:10px;">
-    <div class="lang-toggle-nav">
-      <button class="lang-btn active" onclick="setLang('bn')" id="btn-bn">বাংলা</button>
-      <button class="lang-btn" onclick="setLang('en')" id="btn-en">EN</button>
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="tlogo" onclick="location.reload()">△ DELT<em>A</em></div>
+  <div class="t-center">
+    <div class="search-bar">
+      <span class="sico">🔍</span>
+      <input type="text" id="topSearch" placeholder="দোকান বা পণ্য খুঁজুন... Search shops or products" oninput="handleSearch(this.value)">
     </div>
-    <a href="#register" class="nav-cta">
-      <span class="txt-bn bn">যোগ করুন →</span>
-      <span class="txt-en">Join →</span>
-    </a>
   </div>
-</nav>
+  <div class="t-right">
+    <button class="cart-btn" onclick="openCart()">
+      🛒 কার্ট
+      <span class="cart-badge" id="cartBadge">0</span>
+    </button>
+    <div class="user-btn" id="userBtn" onclick="handleUserBtn()">👤</div>
+
+  </div>
+</header>
 
 <!-- HERO -->
 <section class="hero">
-  <div class="hero-bg"></div>
-  <div class="hero-grid"></div>
-  <div class="hero-tri">
-    <svg viewBox="0 0 400 400" fill="none"><path d="M200 20 L380 360 L20 360 Z" stroke="white" stroke-width="2" fill="none"/></svg>
-  </div>
   <div class="hero-content">
-    <div class="hero-tag">
-      <span class="dot-pulse"></span>
-      <span class="txt-bn bn">পশ্চিমবঙ্গের প্রথম লোকাল সুপার অ্যাপ</span>
-      <span class="txt-en">West Bengal's First Local Super App</span>
+    <div class="hero-badge">🌟 West Bengal's First Local Super App</div>
+    <h1>△ DELT<em>A</em></h1>
+    <div class="hero-bn bn">পরিবর্তনের ব-দ্বীপ</div>
+    <div class="hero-sub">আপনার শহরের প্রতিটি দোকান, কৃষক ও শিল্পী — এক প্ল্যাটফর্মে</div>
+    <div class="hero-search">
+      <input type="text" id="heroSearch" placeholder="আজ কী দরকার? যেমন: ইলিশ মাছ, ইলেকট্রিশিয়ান, মিষ্টি..." oninput="handleSearch(this.value)" onkeydown="if(event.key==='Enter')doSearch()">
+      <button onclick="doSearch()">🔍</button>
     </div>
-    <h1 class="hero-title"><span class="orange">&#9651;</span> DELTA</h1>
-    <p class="hero-title-bn txt-bn">পরিবর্তনের ব-দ্বীপ</p>
-    <p class="hero-title-en txt-en">Where Change Begins</p>
-    <div class="hero-line">
-      <div class="line-bar"></div>
-      <span class="slogan-bn txt-bn">স্থানীয় শিকড়। বৈশ্বিক ডানা।</span>
-      <span class="slogan-en txt-en">Local Roots. Global Wings.</span>
-    </div>
-    <p class="hero-desc hero-desc-bn txt-bn">একটি প্ল্যাটফর্মে আপনার শহরের প্রতিটি দোকান, কৃষক, শিল্পী এবং সেবা প্রদানকারী সংযুক্ত। স্থানীয়ভাবে কিনুন। স্থানীয়দের সহযোগিতা করুন। একসাথে বড় হোন।</p>
-    <p class="hero-desc txt-en">One platform connecting every shop, farmer, artist, and service provider in your town. Buy local. Support local. Grow together.</p>
-    <div class="hero-btns">
-      <a href="#register" class="btn-p">
-        <span class="txt-bn bn">৩ মাস বিনামূল্যে দোকান যোগ করুন →</span>
-        <span class="txt-en">Register Your Shop — Free for 3 Months →</span>
-      </a>
-      <a href="#how" class="btn-s">
-        <span class="txt-bn bn">কীভাবে কাজ করে</span>
-        <span class="txt-en">How It Works</span>
-      </a>
-    </div>
-    <div class="hero-stats">
-      <div><span class="stat-n">18+</span><span class="stat-l-bn txt-bn bn">ক্যাটাগরি</span><span class="stat-l-en txt-en">Categories</span></div>
-      <div><span class="stat-n">৩ মাস</span><span class="stat-l-bn txt-bn bn">বিনামূল্যে ট্রায়াল</span><span class="stat-l-en txt-en">Free Trial</span></div>
-      <div><span class="stat-n">10 min</span><span class="stat-l-bn txt-bn bn">সেটআপ সময়</span><span class="stat-l-en txt-en">Setup Time</span></div>
-      <div><span class="stat-n">3×</span><span class="stat-l-bn txt-bn bn">বেশি অর্ডার</span><span class="stat-l-en txt-en">More Orders</span></div>
-    </div>
-  </div>
-  <div class="hero-right">
-    <div class="phone">
-      <div class="p-notch"></div>
-      <div class="p-screen">
-        <div class="p-header"><div class="p-logo"><span>&#9651;</span> DELTA</div></div>
-        <div class="p-search txt-bn">🔍 আজ কী দরকার?</div>
-        <div class="p-search txt-en">🔍 What do you need today?</div>
-        <div class="p-cats">
-          <div class="p-cat"><span class="p-i">🛒</span><span class="p-n-bn txt-bn">খাবার</span><span class="p-n txt-en">Food</span></div>
-          <div class="p-cat"><span class="p-i">🌾</span><span class="p-n-bn txt-bn">কৃষি</span><span class="p-n txt-en">Farm</span></div>
-          <div class="p-cat"><span class="p-i">🔧</span><span class="p-n-bn txt-bn">সেবা</span><span class="p-n txt-en">Services</span></div>
-          <div class="p-cat"><span class="p-i">🎨</span><span class="p-n-bn txt-bn">শিল্পী</span><span class="p-n txt-en">Arts</span></div>
-          <div class="p-cat"><span class="p-i">📚</span><span class="p-n-bn txt-bn">শিক্ষা</span><span class="p-n txt-en">Education</span></div>
-          <div class="p-cat"><span class="p-i">🏥</span><span class="p-n-bn txt-bn">স্বাস্থ্য</span><span class="p-n txt-en">Health</span></div>
-        </div>
-        <div class="p-order"><div class="p-oi">🍬</div><div><span class="p-on">রহমান মিষ্টি ঘর</span><span class="p-os txt-bn">রসগোল্লা ১ কেজি</span><span class="p-os txt-en">Rasgolla 1kg</span></div><span class="p-op">₹120</span></div>
-        <div class="p-order"><div class="p-oi">🐟</div><div><span class="p-on">সিং ফিশ কর্নার</span><span class="p-os txt-bn">তাজা ইলিশ ১ কেজি</span><span class="p-os txt-en">Fresh Hilsa 1kg</span></div><span class="p-op">₹320</span></div>
-        <div class="p-order"><div class="p-oi">🌿</div><div><span class="p-on">শাহ ভেজিটেবল মার্ট</span><span class="p-os txt-bn">টমেটো ২ কেজি</span><span class="p-os txt-en">Tomatoes 2kg</span></div><span class="p-op">₹40</span></div>
-      </div>
+    <div class="hero-tags">
+      <span class="hero-tag" onclick="filterCat('food')">🍛 খাবার</span>
+      <span class="hero-tag" onclick="filterCat('farm')">🌾 কৃষি</span>
+      <span class="hero-tag" onclick="filterCat('sweet')">🍬 মিষ্টি</span>
+      <span class="hero-tag" onclick="filterCat('medicine')">💊 ওষুধ</span>
+      <span class="hero-tag" onclick="filterCat('services')">🔧 সেবা</span>
+      <span class="hero-tag" onclick="filterCat('clothing')">👗 পোশাক</span>
     </div>
   </div>
 </section>
-
-<!-- BAND -->
-<div class="band">
-  <div class="band-item"><span class="txt-bn bn">🛒 খাদ্য ও মুদিখানা</span><span class="txt-en">🛒 Food & Grocery</span><span class="bdot"></span></div>
-  <div class="band-item"><span class="txt-bn bn">🌾 সরাসরি কৃষি</span><span class="txt-en">🌾 Farm Direct</span><span class="bdot"></span></div>
-  <div class="band-item"><span class="txt-bn bn">🔧 গৃহসেবা</span><span class="txt-en">🔧 Home Services</span><span class="bdot"></span></div>
-  <div class="band-item"><span class="txt-bn bn">🎨 শিল্প ও সংস্কৃতি</span><span class="txt-en">🎨 Arts & Culture</span><span class="bdot"></span></div>
-  <div class="band-item"><span class="txt-bn bn">📚 শিক্ষা</span><span class="txt-en">📚 Education</span><span class="bdot"></span></div>
-  <div class="band-item"><span class="txt-bn bn">🏥 স্বাস্থ্যসেবা</span><span class="txt-en">🏥 Healthcare</span></div>
-</div>
 
 <!-- CATEGORIES -->
-<div id="categories" class="sec-wrap dark">
-<div class="sec-inner reveal">
-  <div class="sec-tag"><span class="txt-bn bn">প্ল্যাটফর্মে কী আছে</span><span class="txt-en">What's on DELTA</span></div>
-  <h2 class="sec-title orange txt-en">Every Local Need — One Platform</h2>
-  <h2 class="sec-title-bn txt-bn">প্রতিটি প্রয়োজন — <span class="orange">একটি প্ল্যাটফর্মে</span></h2>
-  <p class="sec-sub-bn txt-bn">তাজা কৃষি পণ্য থেকে শুরু করে দক্ষ শিল্পী পর্যন্ত — DELTA আপনার শহরের সম্পূর্ণ অর্থনীতি আপনার হাতের মুঠোয় নিয়ে আসে।</p>
-  <p class="sec-sub-en txt-en">From fresh farm produce to skilled artists — DELTA brings your entire town's economy to your fingertips.</p>
-  <div class="cats-grid">
-    <div class="cat-card"><span class="cat-emoji">🛒</span><span class="cat-name-bn txt-bn">খাদ্য ও পানীয়</span><span class="cat-name-en txt-en">Food & Beverage</span><span class="cat-count">12 types</span></div>
-    <div class="cat-card"><span class="cat-emoji">🛍️</span><span class="cat-name-bn txt-bn">মুদিখানা</span><span class="cat-name-en txt-en">Grocery</span><span class="cat-count">Daily essentials</span></div>
-    <div class="cat-card"><span class="cat-emoji">🌾</span><span class="cat-name-bn txt-bn">কৃষি পণ্য</span><span class="cat-name-en txt-en">Farm Produce</span><span class="cat-count">Direct from farm</span></div>
-    <div class="cat-card"><span class="cat-emoji">🔧</span><span class="cat-name-bn txt-bn">গৃহসেবা</span><span class="cat-name-en txt-en">Home Services</span><span class="cat-count">13 services</span></div>
-    <div class="cat-card"><span class="cat-emoji">🎨</span><span class="cat-name-bn txt-bn">শিল্পী</span><span class="cat-name-en txt-en">Artists</span><span class="cat-count">Book locally</span></div>
-    <div class="cat-card"><span class="cat-emoji">📚</span><span class="cat-name-bn txt-bn">শিক্ষা</span><span class="cat-name-en txt-en">Education</span><span class="cat-count">Tutors & coaching</span></div>
-    <div class="cat-card"><span class="cat-emoji">🏥</span><span class="cat-name-bn txt-bn">স্বাস্থ্যসেবা</span><span class="cat-name-en txt-en">Healthcare</span><span class="cat-count">Doctors & labs</span></div>
-    <div class="cat-card"><span class="cat-emoji">👕</span><span class="cat-name-bn txt-bn">পোশাক</span><span class="cat-name-en txt-en">Clothing</span><span class="cat-count">Local fashion</span></div>
-    <div class="cat-card"><span class="cat-emoji">🚗</span><span class="cat-name-bn txt-bn">পরিবহন</span><span class="cat-name-en txt-en">Transport</span><span class="cat-count">Rentals & rides</span></div>
-    <div class="cat-card"><span class="cat-emoji">🏠</span><span class="cat-name-bn txt-bn">রিয়েল এস্টেট</span><span class="cat-name-en txt-en">Real Estate</span><span class="cat-count">Rooms & shops</span></div>
-    <div class="cat-card"><span class="cat-emoji">🤝</span><span class="cat-name-bn txt-bn">দক্ষতা বিনিময়</span><span class="cat-name-en txt-en">Skill Exchange</span><span class="cat-count">Trade talents</span></div>
-    <div class="cat-card"><span class="cat-emoji">🎉</span><span class="cat-name-bn txt-bn">ইভেন্ট</span><span class="cat-name-en txt-en">Events</span><span class="cat-count">Plan anything</span></div>
+<section class="section">
+  <div class="sec-head">
+    <div class="sec-title">সব ক্যাটাগরি <small>All Categories</small></div>
   </div>
-</div>
-</div>
-
-<!-- HOW IT WORKS -->
-<section id="how" class="sec-wrap navy">
-  <div class="sec-inner reveal">
-    <div class="sec-tag"><span class="txt-bn bn">সহজ প্রক্রিয়া</span><span class="txt-en">Simple Process</span></div>
-    <h2 class="sec-title orange txt-en">How DELTA Works</h2>
-    <h2 class="sec-title-bn txt-bn">DELTA কীভাবে <span class="orange">কাজ করে</span></h2>
-    <p class="sec-sub-bn txt-bn">ক্রেতা বা বিক্রেতা — যাই হোন না কেন, DELTA স্থানীয় বাণিজ্যকে সহজ করে তোলে।</p>
-    <p class="sec-sub-en txt-en">Whether you are a buyer or a seller — DELTA makes local commerce effortless.</p>
-    <div class="steps-grid">
-      <div class="step-card">
-        <div class="step-num">১</div>
-        <div class="step-title-en txt-en">Browse Your Town</div>
-        <div class="step-title-bn txt-bn">আপনার শহর ব্রাউজ করুন</div>
-        <p class="step-desc-bn txt-bn">দোকানের নাম অনুসন্ধান করুন বা বাংলায় বলুন কী দরকার। আমাদের AI সহকারী সেরা বিকল্প খুঁজে দেবে।</p>
-        <p class="step-desc-en txt-en">Search by shop name or describe what you need. Our AI assistant understands Bengali and finds the best option near you.</p>
-      </div>
-      <div class="step-card">
-        <div class="step-num">২</div>
-        <div class="step-title-en txt-en">Choose and Order</div>
-        <div class="step-title-bn txt-bn">বেছে নিন ও অর্ডার করুন</div>
-        <p class="step-desc-bn txt-bn">স্থানীয় দোকান থেকে বেছে নিন বা সিস্টেমকে সেরাটি বাছতে দিন। UPI বা COD — আপনার পছন্দে পেমেন্ট করুন।</p>
-        <p class="step-desc-en txt-en">Select from local shops or let our system find the best match. Pay via UPI or Cash on Delivery — your choice.</p>
-      </div>
-      <div class="step-card">
-        <div class="step-num">৩</div>
-        <div class="step-title-en txt-en">Fast Local Delivery</div>
-        <div class="step-title-bn txt-bn">দ্রুত স্থানীয় ডেলিভারি</div>
-        <p class="step-desc-bn txt-bn">স্থানীয় পণ্য ২ ঘণ্টায় পৌঁছাবে। রিয়েল-টাইমে ট্র্যাক করুন। আপনার টাকা আপনার সম্প্রদায়েই থাকে।</p>
-        <p class="step-desc-en txt-en">Local items delivered in 2 hours. Track your order in real time. Your money stays in your community.</p>
-      </div>
-      <div class="step-card">
-        <div class="step-num">৪</div>
-        <div class="step-title-en txt-en">Grow Together</div>
-        <div class="step-title-bn txt-bn">একসাথে বড় হোন</div>
-        <p class="step-desc-bn txt-bn">আপনার রিভিউ প্রতিবেশীর দোকানকে বড় করতে সাহায্য করে। প্রতিটি কেনাকাটা সবার জন্য শক্তিশালী অর্থনীতি তৈরি করে।</p>
-        <p class="step-desc-en txt-en">Your review helps your neighbour's shop grow. Every purchase builds a stronger local economy for everyone.</p>
-      </div>
+  <div class="cat-grid">
+    <div class="cat-card" onclick="filterCat('all')">
+      <div class="cat-icon">🏪</div>
+      <div class="cat-name">সব</div>
+      <div class="cat-name-bn">All</div>
     </div>
-  </div>
-</section>
-
-<!-- IMPACT -->
-<section id="impact" class="sec-wrap darker">
-<div class="sec-inner reveal">
-  <div class="sec-tag"><span class="txt-bn bn">বাস্তব প্রভাব</span><span class="txt-en">Real Impact</span></div>
-  <h2 class="sec-title orange txt-en">What Changes When You Join</h2>
-  <h2 class="sec-title-bn txt-bn">যোগ দিলে কী <span class="orange">পরিবর্তন হয়</span></h2>
-  <p class="sec-sub-bn txt-bn">DELTA শুধু একটি অ্যাপ নয়। এটি আপনার সম্প্রদায়ের প্রতিটি মানুষের জন্য অর্থনৈতিক রূপান্তর।</p>
-  <p class="sec-sub-en txt-en">DELTA is not just an app. It is an economic transformation for every person in your community.</p>
-  <div class="impact-grid">
-    <div class="impact-card">
-      <span class="impact-num">40-70%</span>
-      <span class="impact-label-bn txt-bn">দোকানের আয় বৃদ্ধি</span>
-      <span class="impact-label-en txt-en">Shop Income Increase</span>
-      <p class="impact-desc-bn txt-bn">DELTA র ডিজিটাল টুলস ব্যবহার করে দোকানদাররা আয় বাড়াতে পারেন।</p>
-      <p class="impact-desc-en txt-en">Shop owners see their revenue grow by going digital with DELTA's tools.</p>
+    <div class="cat-card" onclick="filterCat('food')">
+      <div class="cat-icon">🍛</div>
+      <div class="cat-name">খাবার</div>
+      <div class="cat-name-bn">Food</div>
     </div>
-    <div class="impact-card">
-      <span class="impact-num">₹2,100</span>
-      <span class="impact-label-bn txt-bn">মাসিক পারিবারিক সঞ্চয়</span>
-      <span class="impact-label-en txt-en">Monthly Family Savings</span>
-      <p class="impact-desc-bn txt-bn">স্থানীয় কৃষক ও দোকান থেকে সরাসরি কিনলে প্রতি পরিবার উল্লেখযোগ্য অর্থ বাঁচায়।</p>
-      <p class="impact-desc-en txt-en">Buying direct from local farmers and shops saves every family significantly.</p>
+    <div class="cat-card" onclick="filterCat('grocery')">
+      <div class="cat-icon">🛒</div>
+      <div class="cat-name">মুদিখানা</div>
+      <div class="cat-name-bn">Grocery</div>
     </div>
-    <div class="impact-card">
-      <span class="impact-num">60-120%</span>
-      <span class="impact-label-bn txt-bn">কৃষকের আয় বৃদ্ধি</span>
-      <span class="impact-label-en txt-en">Farmer Income Growth</span>
-      <p class="impact-desc-bn txt-bn">কৃষকরা সরাসরি গ্রাহকের কাছে বিক্রি করেন — মধ্যস্বত্বভোগী শূন্য।</p>
-      <p class="impact-desc-en txt-en">Farmers sell directly to customers — no middlemen taking their fair share.</p>
+    <div class="cat-card" onclick="filterCat('farm')">
+      <div class="cat-icon">🌾</div>
+      <div class="cat-name">কৃষি</div>
+      <div class="cat-name-bn">Farm</div>
     </div>
-    <div class="impact-card">
-      <span class="impact-num">100+</span>
-      <span class="impact-label-bn txt-bn">নতুন কর্মসংস্থান</span>
-      <span class="impact-label-en txt-en">New Jobs Created</span>
-      <p class="impact-desc-bn txt-bn">ডেলিভারি রাইডার, দোকানের সহকারী, সিটি ম্যানেজার — স্থানীয় কর্মসংস্থান বাড়ে।</p>
-      <p class="impact-desc-en txt-en">Delivery riders, shop assistants, city managers — local employment grows.</p>
+    <div class="cat-card" onclick="filterCat('medicine')">
+      <div class="cat-icon">💊</div>
+      <div class="cat-name">ওষুধ</div>
+      <div class="cat-name-bn">Medicine</div>
     </div>
-  </div>
-</div>
-</section>
-
-<!-- FOR SELLERS -->
-<section id="sellers" class="sec-wrap darkest">
-  <div class="sec-inner reveal">
-    <div class="sellers-grid">
-      <div>
-        <div class="sec-tag"><span class="txt-bn bn">দোকানদারদের জন্য</span><span class="txt-en">For Shop Owners</span></div>
-        <h2 class="sec-title orange txt-en">Your Shop. Now Digital.</h2>
-        <h2 class="sec-title-bn txt-bn">আপনার দোকান। <span class="orange">এখন ডিজিটাল।</span></h2>
-        <p class="sec-sub-bn txt-bn">DELTA তে যোগ দিন এবং আপনার দোকানকে সেই ডিজিটাল সুবিধা দিন যা এতদিন শুধু বড় কোম্পানিগুলোর ছিল।</p>
-        <p class="sec-sub-en txt-en">Join DELTA and give your shop the digital tools that only big companies had before.</p>
-        <div class="seller-features">
-          <div class="seller-feat">
-            <div class="feat-icon">📊</div>
-            <div>
-              <div class="feat-title-bn txt-bn">সম্পূর্ণ ব্যবসায়িক বিশ্লেষণ</div>
-              <div class="feat-title-en txt-en">Complete Business Analytics</div>
-              <p class="feat-desc-bn txt-bn">সেরা পণ্য, পিক আওয়ার, বিশ্বস্ত গ্রাহক — সব এক ড্যাশবোর্ডে।</p>
-              <p class="feat-desc-en txt-en">See your best products, peak hours, loyal customers — all in one dashboard.</p>
-            </div>
-          </div>
-          <div class="seller-feat">
-            <div class="feat-icon">🔔</div>
-            <div>
-              <div class="feat-title-bn txt-bn">সরাসরি গ্রাহক নোটিফিকেশন</div>
-              <div class="feat-title-en txt-en">Direct Customer Notifications</div>
-              <p class="feat-desc-bn txt-bn">অফার ও নতুন পণ্যের বার্তা সরাসরি গ্রাহকের ফোনে পাঠান।</p>
-              <p class="feat-desc-en txt-en">Send offers and announcements straight to your customers' phones.</p>
-            </div>
-          </div>
-          <div class="seller-feat">
-            <div class="feat-icon">🤖</div>
-            <div>
-              <div class="feat-title-bn txt-bn">বাংলায় AI ব্যবসায়িক উপদেষ্টা</div>
-              <div class="feat-title-en txt-en">AI Business Advisor in Bengali</div>
-              <p class="feat-desc-bn txt-bn">কখন স্টক করবেন, কখন ছাড় দেবেন — বাংলায় AI পরামর্শ।</p>
-              <p class="feat-desc-en txt-en">When to restock, when to offer discounts — AI advice in Bengali.</p>
-            </div>
-          </div>
-          <div class="seller-feat">
-            <div class="feat-icon">🎁</div>
-            <div>
-              <div class="feat-title-bn txt-bn">লয়্যালটি ও পুরস্কার সিস্টেম</div>
-              <div class="feat-title-en txt-en">Loyalty and Rewards System</div>
-              <p class="feat-desc-bn txt-bn">পয়েন্ট ও ব্যক্তিগত অফার দিয়ে গ্রাহকদের বারবার ফিরিয়ে আনুন।</p>
-              <p class="feat-desc-en txt-en">Keep customers coming back with points, discounts, and personalized offers.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div>
-        <div class="dash-box">
-          <div class="dash-head">
-            <div>
-              <div class="dash-title-bn txt-bn">DELTA বিক্রেতা ড্যাশবোর্ড</div>
-              <div class="dash-title-en txt-en">DELTA Seller Dashboard</div>
-            </div>
-            <span class="dash-badge txt-bn">৩ নতুন অর্ডার</span>
-            <span class="dash-badge txt-en">3 New Orders</span>
-          </div>
-          <div class="dash-body">
-            <div class="dash-stats">
-              <div class="d-stat"><span class="d-stat-n">₹3,450</span><span class="d-stat-l-bn txt-bn">আজকের আয়</span><span class="d-stat-l-en txt-en">Today's Revenue</span></div>
-              <div class="d-stat"><span class="d-stat-n">12</span><span class="d-stat-l-bn txt-bn">অর্ডার</span><span class="d-stat-l-en txt-en">Orders</span></div>
-              <div class="d-stat"><span class="d-stat-n">4.8⭐</span><span class="d-stat-l-bn txt-bn">রেটিং</span><span class="d-stat-l-en txt-en">Rating</span></div>
-            </div>
-            <div class="d-ot txt-bn">সাম্প্রতিক অর্ডার</div>
-            <div class="d-ot txt-en">Recent Orders</div>
-            <div class="d-order"><div><div class="d-oi-bn txt-bn">শেখ মিষ্টান্ন — রসগোল্লা ১কেজি</div><div class="d-oi-en txt-en">Sheikh Sweets — Rasgolla 1kg</div><div class="d-os">উত্তরপাড়া · ₹210</div></div><span class="d-status s-new txt-bn">নতুন</span><span class="d-status s-new txt-en">New</span></div>
-            <div class="d-order"><div><div class="d-oi-bn txt-bn">চক্রবর্তী মিষ্টি মহল — সন্দেশ</div><div class="d-oi-en txt-en">Chakraborty Sweets — Sandesh 1kg</div><div class="d-os">দক্ষিণপাড়া · ₹300</div></div><span class="d-status s-prep txt-bn">তৈরি হচ্ছে</span><span class="d-status s-prep txt-en">Preparing</span></div>
-            <div class="d-order"><div><div class="d-oi-bn txt-bn">সিং কিরানা স্টোর — দই</div><div class="d-oi-en txt-en">Singh Kirana — Mishti Doi</div><div class="d-os">বাজারপাড়া · ₹80</div></div><span class="d-status s-done txt-bn">ডেলিভারি</span><span class="d-status s-done txt-en">Delivered</span></div>
-          </div>
-        </div>
-      </div>
+    <div class="cat-card" onclick="filterCat('clothing')">
+      <div class="cat-icon">👗</div>
+      <div class="cat-name">পোশাক</div>
+      <div class="cat-name-bn">Clothing</div>
+    </div>
+    <div class="cat-card" onclick="filterCat('electronics')">
+      <div class="cat-icon">📱</div>
+      <div class="cat-name">ইলেকট্রনিক্স</div>
+      <div class="cat-name-bn">Electronics</div>
+    </div>
+    <div class="cat-card" onclick="filterCat('services')">
+      <div class="cat-icon">🔧</div>
+      <div class="cat-name">সেবা</div>
+      <div class="cat-name-bn">Services</div>
+    </div>
+    <div class="cat-card" onclick="filterCat('arts')">
+      <div class="cat-icon">🎨</div>
+      <div class="cat-name">শিল্প</div>
+      <div class="cat-name-bn">Arts</div>
+    </div>
+    <div class="cat-card" onclick="filterCat('education')">
+      <div class="cat-icon">📚</div>
+      <div class="cat-name">শিক্ষা</div>
+      <div class="cat-name-bn">Education</div>
+    </div>
+    <div class="cat-card" onclick="filterCat('health')">
+      <div class="cat-icon">🏥</div>
+      <div class="cat-name">স্বাস্থ্য</div>
+      <div class="cat-name-bn">Health</div>
+    </div>
+    <div class="cat-card" onclick="filterCat('events')">
+      <div class="cat-icon">🎉</div>
+      <div class="cat-name">ইভেন্ট</div>
+      <div class="cat-name-bn">Events</div>
     </div>
   </div>
 </section>
 
-<!-- PRICING -->
-<section id="pricing" class="sec-wrap pricing-bg">
-  <div class="sec-inner reveal">
-    <div class="sec-tag"><span class="txt-bn bn">স্বচ্ছ মূল্য তালিকা</span><span class="txt-en">Transparent Pricing</span></div>
-    <h2 class="sec-title orange txt-en">Simple Plans. Real Value.</h2>
-    <h2 class="sec-title-bn txt-bn">সহজ প্ল্যান। <span class="orange">বাস্তব মূল্য।</span></h2>
-    <p class="sec-sub-bn txt-bn">৩ মাস বিনামূল্যে শুরু করুন। তারপর আপনার দোকানের জন্য সঠিক প্ল্যান বেছে নিন। কোনো লুকানো চার্জ নেই।</p>
-    <p class="sec-sub-en txt-en">Start free for 3 months. Then choose the plan that fits your shop. No hidden charges. Cancel anytime.</p>
-    <div class="pricing-grid">
-
-      <!-- FREE -->
-      <div class="price-card">
-        <div class="price-tier-en txt-en">Starter</div>
-        <div class="price-tier-bn txt-bn">স্টার্টার</div>
-        <div class="price-num free">FREE</div>
-        <div class="price-period-en txt-en">First 3 months for all new shops</div>
-        <div class="price-period-bn txt-bn">সব নতুন দোকানের জন্য প্রথম ৩ মাস</div>
-        <div class="price-note txt-en">🎉 Early Bird — Limited Slots</div>
-        <div class="price-note-bn txt-bn">🎉 আর্লি বার্ড — সীমিত স্লট</div>
-        <div class="price-divider"></div>
-        <ul class="price-features">
-          <li><span class="txt-bn bn">DELTA তে দোকানের প্রোফাইল</span><span class="txt-en">Shop profile on DELTA</span></li>
-          <li><span class="txt-bn bn">সর্বোচ্চ ১০টি পণ্য লিস্টিং</span><span class="txt-en">Up to 10 product listings</span></li>
-          <li><span class="txt-bn bn">অর্ডার গ্রহণ ও পরিচালনা</span><span class="txt-en">Receive and manage orders</span></li>
-          <li><span class="txt-bn bn">মৌলিক নোটিফিকেশন</span><span class="txt-en">Basic order notifications</span></li>
-          <li><span class="txt-bn bn">গ্রাহক রেটিং ও রিভিউ</span><span class="txt-en">Customer ratings and reviews</span></li>
-          <li class="no"><span class="txt-bn bn">বিশ্লেষণ ড্যাশবোর্ড</span><span class="txt-en">Analytics dashboard</span></li>
-          <li class="no"><span class="txt-bn bn">CRM ও লয়্যালটি টুলস</span><span class="txt-en">CRM and loyalty tools</span></li>
-          <li class="no"><span class="txt-bn bn">AI ব্যবসায়িক উপদেষ্টা</span><span class="txt-en">AI business advisor</span></li>
-        </ul>
-        <a href="#register" class="price-cta outline"><span class="txt-bn bn">বিনামূল্যে শুরু করুন →</span><span class="txt-en">Start Free →</span></a>
-      </div>
-
-      <!-- BASIC -->
-      <div class="price-card">
-        <div class="price-tier-en txt-en">Basic</div>
-        <div class="price-tier-bn txt-bn">বেসিক</div>
-        <div class="price-num">₹199</div>
-        <div class="price-period-en txt-en">per month after free trial</div>
-        <div class="price-period-bn txt-bn">ফ্রি ট্রায়ালের পর প্রতি মাসে</div>
-        <div class="price-note txt-en">Just ₹7 per day</div>
-        <div class="price-note-bn txt-bn">মাত্র ₹৭ প্রতিদিন</div>
-        <div class="price-divider"></div>
-        <ul class="price-features">
-          <li><span class="txt-bn bn">স্টার্টারের সব সুবিধা</span><span class="txt-en">Everything in Starter</span></li>
-          <li><span class="txt-bn bn">সর্বোচ্চ ৫০টি পণ্য লিস্টিং</span><span class="txt-en">Up to 50 product listings</span></li>
-          <li><span class="txt-bn bn">মৌলিক বিশ্লেষণ — অর্ডার ও আয়</span><span class="txt-en">Basic analytics — orders and revenue</span></li>
-          <li><span class="txt-bn bn">WhatsApp অর্ডার কনফার্মেশন</span><span class="txt-en">WhatsApp order confirmations</span></li>
-          <li><span class="txt-bn bn">অফার ও ছাড় বিল্ডার</span><span class="txt-en">Offer and discount builder</span></li>
-          <li class="no"><span class="txt-bn bn">CRM ও লয়্যালটি সিস্টেম</span><span class="txt-en">CRM and loyalty system</span></li>
-          <li class="no"><span class="txt-bn bn">AI ব্যবসায়িক উপদেষ্টা</span><span class="txt-en">AI business advisor</span></li>
-          <li class="no"><span class="txt-bn bn">অগ্রাধিকার লিস্টিং</span><span class="txt-en">Priority listing</span></li>
-        </ul>
-        <a href="#register" class="price-cta outline"><span class="txt-bn bn">শুরু করুন →</span><span class="txt-en">Get Started →</span></a>
-      </div>
-
-      <!-- STANDARD FEATURED -->
-      <div class="price-card featured">
-        <div class="price-popular-en txt-en">Most Popular</div>
-        <div class="price-popular-bn txt-bn">সবচেয়ে জনপ্রিয়</div>
-        <div class="price-tier-en ft txt-en">Standard</div>
-        <div class="price-tier-bn ft txt-bn">স্ট্যান্ডার্ড</div>
-        <div class="price-num">₹499</div>
-        <div class="price-period-en txt-en">per month</div>
-        <div class="price-period-bn txt-bn">প্রতি মাসে</div>
-        <div class="price-note txt-en">Best value for growing shops</div>
-        <div class="price-note-bn txt-bn">বেড়ে ওঠা দোকানের জন্য সেরা</div>
-        <div class="price-divider"></div>
-        <ul class="price-features">
-          <li><span class="txt-bn bn">বেসিকের সব সুবিধা</span><span class="txt-en">Everything in Basic</span></li>
-          <li><span class="txt-bn bn">সীমাহীন পণ্য লিস্টিং</span><span class="txt-en">Unlimited product listings</span></li>
-          <li><span class="txt-bn bn">সম্পূর্ণ CRM — গ্রাহক প্রোফাইল</span><span class="txt-en">Full CRM — customer profiles</span></li>
-          <li><span class="txt-bn bn">লয়্যালটি পয়েন্ট সিস্টেম</span><span class="txt-en">Loyalty points system</span></li>
-          <li><span class="txt-bn bn">গ্রাহকদের পুশ নোটিফিকেশন</span><span class="txt-en">Push notifications to customers</span></li>
-          <li><span class="txt-bn bn">উৎসব ক্যাম্পেইন টেমপ্লেট</span><span class="txt-en">Festival campaign templates</span></li>
-          <li><span class="txt-bn bn">সাপ্তাহিক পারফরম্যান্স রিপোর্ট</span><span class="txt-en">Weekly performance reports</span></li>
-          <li class="no"><span class="txt-bn bn">AI ব্যবসায়িক উপদেষ্টা</span><span class="txt-en">AI business advisor</span></li>
-        </ul>
-        <a href="#register" class="price-cta filled"><span class="txt-bn bn">স্ট্যান্ডার্ড বেছে নিন →</span><span class="txt-en">Choose Standard →</span></a>
-      </div>
-
-      <!-- PREMIUM -->
-      <div class="price-card">
-        <div class="price-tier-en txt-en">Premium</div>
-        <div class="price-tier-bn txt-bn">প্রিমিয়াম</div>
-        <div class="price-num">₹999</div>
-        <div class="price-period-en txt-en">per month</div>
-        <div class="price-period-bn txt-bn">প্রতি মাসে</div>
-        <div class="price-note txt-en">For serious sellers</div>
-        <div class="price-note-bn txt-bn">গুরুতর বিক্রেতাদের জন্য</div>
-        <div class="price-divider"></div>
-        <ul class="price-features">
-          <li><span class="txt-bn bn">স্ট্যান্ডার্ডের সব সুবিধা</span><span class="txt-en">Everything in Standard</span></li>
-          <li><span class="txt-bn bn">বাংলায় AI ব্যবসায়িক উপদেষ্টা</span><span class="txt-en">AI business advisor in Bengali</span></li>
-          <li><span class="txt-bn bn">চাহিদা পূর্বাভাস ও স্টক অ্যালার্ট</span><span class="txt-en">Demand prediction and restock alerts</span></li>
-          <li><span class="txt-bn bn">সার্চে অগ্রাধিকার প্রদর্শন</span><span class="txt-en">Priority placement in search</span></li>
-          <li><span class="txt-bn bn">হোমপেজে ফিচার্ড লিস্টিং</span><span class="txt-en">Homepage featured listing</span></li>
-          <li><span class="txt-bn bn">সম্পূর্ণ উন্নত বিশ্লেষণ</span><span class="txt-en">Advanced analytics — all 15 metrics</span></li>
-          <li><span class="txt-bn bn">DELTA টিমের ডেডিকেটেড সাপোর্ট</span><span class="txt-en">Dedicated support from DELTA team</span></li>
-          <li><span class="txt-bn bn">রাজস্ব পূর্বাভাস ও অন্তর্দৃষ্টি</span><span class="txt-en">Revenue forecast and insights</span></li>
-        </ul>
-        <a href="#register" class="price-cta outline"><span class="txt-bn bn">প্রিমিয়ামে যান →</span><span class="txt-en">Go Premium →</span></a>
-      </div>
-    </div>
-    <div class="pricing-note">
-      <p class="txt-bn bn">সব প্ল্যানে <strong>প্রতি অর্ডারে কমিশন (৮-১৫%)</strong> প্রযোজ্য — শুধুমাত্র বিক্রি হলেই দিতে হবে। সাবস্ক্রিপশন প্ল্যাটফর্ম টুলস ও ভিজিবিলিটির জন্য। <strong>প্রথম ৫০টি দোকান যেকোনো প্ল্যানে ৩ মাস বিনামূল্যে পাবে।</strong></p>
-      <p class="txt-en">All plans include <strong>commission on orders (8-15% per order)</strong> — paid only when you earn. <strong>First 50 shops get 3 months free</strong> on any plan. No credit card required to start.</p>
-    </div>
+<!-- NEARBY SHOPS -->
+<section class="section" id="shopsSection">
+  <div class="sec-head">
+    <div class="sec-title" id="shopsTitle">কাছের দোকান <small>Nearby Shops</small></div>
+  </div>
+  <div id="shopsGrid" class="shops-grid">
+    <div class="skeleton skel-shop"></div>
+    <div class="skeleton skel-shop"></div>
+    <div class="skeleton skel-shop"></div>
+    <div class="skeleton skel-shop"></div>
   </div>
 </section>
 
-<!-- REGISTER -->
-<section id="register" class="reg-sec">
-  <div class="reg-bg"></div>
-  <div class="reg-inner reveal">
-    <h2 class="reg-title orange txt-en">Join DELTA.<br>Free for 3 Months.</h2>
-    <h2 class="reg-title-bn txt-bn">DELTA তে যোগ দিন।<br><span class="orange">৩ মাস বিনামূল্যে।</span></h2>
-    <p class="reg-sub-bn txt-bn">এখনই আপনার দোকান নিবন্ধন করুন। মন্তেশ্বরের প্রথম বিক্রেতাদের মধ্যে থাকুন। প্রথম ৫০টি দোকান যেকোনো প্ল্যানে ৩ মাস বিনামূল্যে পাবে।</p>
-    <p class="reg-sub-en txt-en">Register your shop now. Be among the first sellers in Manteswar. First 50 shops get 3 months free on any plan — no credit card needed.</p>
-    <form class="reg-form" id="delta-reg-form" onsubmit="handleSubmit(event)">
-      <div class="form-row">
-        <input type="text" class="fi" placeholder="আপনার নাম / Your Name" name="name" required>
-        <input type="tel" class="fi" placeholder="মোবাইল নম্বর / Mobile Number" name="mobile" required>
-      </div>
-      <input type="text" class="fi" placeholder="দোকানের নাম / Shop Name" name="shop_name" required>
-      <div class="form-row">
-        <select class="fs" required>
-          <option value="" disabled selected>ক্যাটাগরি / Category</option>
-          <option>খাদ্য ও পানীয় / Food & Beverage</option>
-          <option>মুদিখানা / Grocery</option>
-          <option>কৃষি পণ্য / Farm Produce</option>
-          <option>গৃহসেবা / Home Services</option>
-          <option>পোশাক / Clothing</option>
-          <option>স্বাস্থ্যসেবা / Healthcare</option>
-          <option>শিক্ষা / Education</option>
-          <option>শিল্পী / Arts & Culture</option>
-          <option>ইভেন্ট / Events</option>
-          <option>পরিবহন / Transport</option>
-          <option>প্রযুক্তি সেবা / Tech Services</option>
-          <option>অন্যান্য / Other</option>
-        </select>
-        <input type="text" class="fi" placeholder="এলাকা / পিনকোড / Pincode" name="area" required>
-      </div>
-      <select class="fs" required>
-        <option value="" disabled selected>পছন্দের প্ল্যান / Preferred Plan</option>
-        <option>বেসিক — ₹199/মাস / Basic — ₹199/month</option>
-        <option>স্ট্যান্ডার্ড — ₹499/মাস / Standard — ₹499/month ⭐</option>
-        <option>প্রিমিয়াম — ₹999/মাস / Premium — ₹999/month</option>
-        <option>এখনো নিশ্চিত নই / Not sure yet</option>
-      </select>
-      <button type="submit" class="f-submit">
-        <span class="txt-bn bn">৩ মাস বিনামূল্যে দোকান নিবন্ধন করুন →</span>
-        <span class="txt-en">Register My Shop — Free for 3 Months →</span>
-      </button>
-      <p class="f-note txt-en">✅ No credit card &nbsp;|&nbsp; ✅ Our team contacts you in 24 hours &nbsp;|&nbsp; ✅ Free setup help</p>
-      <p class="f-note-bn txt-bn">✅ ক্রেডিট কার্ড লাগবে না &nbsp;|&nbsp; ✅ ২৪ ঘণ্টার মধ্যে আমাদের টিম যোগাযোগ করবে &nbsp;|&nbsp; ✅ বিনামূল্যে সেটআপ সহায়তা</p>
-    </form>
+<!-- PRODUCTS -->
+<section class="section" id="productsSection">
+  <div class="sec-head">
+    <div class="sec-title" id="productsTitle">সব পণ্য <small>All Products</small></div>
+  </div>
+  <div id="productsGrid" class="products-grid">
+    <div class="skeleton skel-prod"></div>
+    <div class="skeleton skel-prod"></div>
+    <div class="skeleton skel-prod"></div>
+    <div class="skeleton skel-prod"></div>
+    <div class="skeleton skel-prod"></div>
+    <div class="skeleton skel-prod"></div>
   </div>
 </section>
 
 <!-- FOOTER -->
-<footer>
-  <div class="f-inner">
-    <div class="f-top">
-      <div>
-        <a href="#" class="f-logo"><span class="f-logo-tri">&#9651;</span> DELTA</a>
-        <p class="f-tag-en txt-en">Local Roots. Global Wings.</p>
-        <p class="f-tag-bn txt-bn bn">পরিবর্তনের ব-দ্বীপ</p>
-        <p class="f-tag-en" style="margin-top:4px;font-size:11px;color:var(--gray);" id="motto-sub-en">Where Change Begins.</p>
-        <p class="f-tag-bn txt-bn bn" style="margin-top:4px;font-size:11px;color:var(--gray);">স্থানীয় শিকড়। বৈশ্বিক ডানা।</p>
-      </div>
-      <div class="f-links">
-        <div class="f-col">
-          <h4>Platform</h4>
-          <ul>
-            <li><a href="#categories"><span class="txt-bn bn">ক্যাটাগরি</span><span class="txt-en">Categories</span></a></li>
-            <li><a href="#how"><span class="txt-bn bn">কীভাবে কাজ করে</span><span class="txt-en">How It Works</span></a></li>
-            <li><a href="#pricing"><span class="txt-bn bn">মূল্য তালিকা</span><span class="txt-en">Pricing</span></a></li>
-            <li><a href="#impact"><span class="txt-bn bn">আমাদের প্রভাব</span><span class="txt-en">Our Impact</span></a></li>
-          </ul>
-        </div>
-        <div class="f-col">
-          <h4><span class="txt-bn bn">যোগ দিন</span><span class="txt-en">Join</span></h4>
-          <ul>
-            <li><a href="#register"><span class="txt-bn bn">দোকান নিবন্ধন</span><span class="txt-en">Register Shop</span></a></li>
-            <li><a href="#register"><span class="txt-bn bn">কৃষক হিসেবে যোগ দিন</span><span class="txt-en">Register as Farmer</span></a></li>
-            <li><a href="#register"><span class="txt-bn bn">শিল্পী হিসেবে যোগ দিন</span><span class="txt-en">Register as Artist</span></a></li>
-            <li><a href="#register"><span class="txt-bn bn">রাইডার হোন</span><span class="txt-en">Become a Rider</span></a></li>
-          </ul>
-        </div>
-        <div class="f-col">
-          <h4><span class="txt-bn bn">যোগাযোগ</span><span class="txt-en">Contact</span></h4>
-          <ul>
-            <li><a href="#"><span class="txt-bn bn">মন্তেশ্বর, পূর্ব বর্ধমান</span><span class="txt-en">Manteswar, Purba Bardhaman</span></a></li>
-            <li><a href="#"><span class="txt-bn bn">পশ্চিমবঙ্গ, ভারত</span><span class="txt-en">West Bengal, India</span></a></li>
-            <li><a href="mailto:hello@deltaapp.in">hello@deltaapp.in</a></li>
-            <li><a href="#"><span class="txt-bn bn">হোয়াটসঅ্যাপ করুন</span><span class="txt-en">WhatsApp Us</span></a></li>
-          </ul>
-        </div>
-      </div>
+<footer class="footer">
+  <p>△ DELTA — পরিবর্তনের ব-দ্বীপ | Local Roots. Global Wings.</p>
+  <p style="margin-top:6px;">Manteswar, Purba Bardhaman, West Bengal | <a href="seller-dashboard.html">Seller Dashboard</a></p>
+  <p style="margin-top:10px;font-size:12px;">
+    <a href="seller.html" style="color:rgba(255,255,255,0.4);text-decoration:none;">
+      <span class="bn">আপনি কি একজন দোকানদার? DELTA তে যোগ দিন →</span>
+    </a>
+  </p>
+</footer>
+
+<!-- CART SIDEBAR -->
+<div class="cart-overlay" id="cartOverlay" onclick="closeCart()"></div>
+<div class="cart-panel" id="cartPanel">
+  <div class="cart-head">
+    <h3>🛒 আমার কার্ট</h3>
+    <button class="cart-close" onclick="closeCart()">✕</button>
+  </div>
+  <div class="cart-items" id="cartItems">
+    <div class="cart-empty"><div class="icon">🛒</div><p class="bn">কার্ট খালি আছে</p></div>
+  </div>
+  <div class="cart-footer" id="cartFooter" style="display:none;">
+    <div class="cart-total-row"><span>উপমোট / Subtotal</span><span id="cartSubtotal">₹0</span></div>
+    <div class="cart-total-row"><span>ডেলিভারি / Delivery</span><span style="color:var(--green)">বিনামূল্যে</span></div>
+    <div class="cart-total-row big"><span>মোট / Total</span><span id="cartTotal">₹0</span></div>
+    <button class="checkout-btn" onclick="openCheckout()">অর্ডার করুন →</button>
+  </div>
+</div>
+
+<!-- AUTH MODAL -->
+<div class="modal-overlay" id="authModal">
+  <div class="auth-modal" style="position:relative;">
+    <div class="auth-modal-head">
+      <h2>△ DELTA</h2>
+      <p class="bn">লগইন বা নিবন্ধন করুন</p>
+      <button class="modal-close-btn" onclick="closeAuth()">✕</button>
     </div>
-    <div class="f-bottom">
-      <span class="f-copy">© 2026 DELTA. All rights reserved. deltaapp.in</span>
-      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;">
-        <span class="f-motto-en txt-en">Where Change Begins. &#9651;</span>
-        <span class="f-motto-bn txt-bn bn">পরিবর্তনের ব-দ্বীপ। &#9651;</span>
+    <div class="auth-modal-body">
+      <div class="auth-tabs-small">
+        <button class="auth-tab-s on" onclick="authTab('login',this)">লগইন</button>
+        <button class="auth-tab-s" onclick="authTab('register',this)">নিবন্ধন</button>
+      </div>
+      <div class="auth-err" id="authErr"></div>
+      <div id="loginPane">
+        <div class="fgrp"><label>Email</label><input type="email" class="fctrl" id="cEmail" placeholder="your@email.com"></div>
+        <div class="fgrp"><label>Password</label><input type="password" class="fctrl" id="cPass" placeholder="••••••••"></div>
+        <button class="auth-submit" onclick="doCustomerLogin()">🔐 লগইন করুন</button>
+      </div>
+      <div id="regPane" style="display:none">
+        <div class="fgrp"><label class="bn">নাম / Name</label><input type="text" class="fctrl" id="cName" placeholder="আপনার নাম"></div>
+        <div class="fgrp"><label class="bn">মোবাইল / Mobile</label><input type="tel" class="fctrl" id="cMobile" placeholder="9XXXXXXXXX"></div>
+        <div class="fgrp"><label>Email</label><input type="email" class="fctrl" id="cRegEmail" placeholder="your@email.com"></div>
+        <div class="fgrp"><label>Password</label><input type="password" class="fctrl" id="cRegPass" placeholder="••••••••"></div>
+        <button class="auth-submit" onclick="doCustomerRegister()">✅ নিবন্ধন করুন</button>
       </div>
     </div>
   </div>
-</footer>
+</div>
+
+<!-- CHECKOUT MODAL -->
+<div class="modal-overlay" id="checkoutModal">
+  <div class="checkout-modal">
+    <div class="checkout-head">
+      <h3>📦 অর্ডার নিশ্চিত করুন</h3>
+      <button onclick="closeCheckout()" style="border:none;background:none;cursor:pointer;font-size:18px;color:var(--gray);">✕</button>
+    </div>
+    <div class="checkout-body" id="checkoutBody">
+      <div class="fgrp">
+        <label class="bn">ডেলিভারি ঠিকানা / Delivery Address *</label>
+        <input type="text" class="fctrl" id="deliveryAddr" placeholder="গ্রাম, পোস্ট অফিস, এলাকা...">
+      </div>
+      <div class="fgrp">
+        <label class="bn">মোবাইল নম্বর / Mobile *</label>
+        <input type="tel" class="fctrl" id="deliveryMobile" placeholder="9XXXXXXXXX">
+      </div>
+      <div class="fgrp">
+        <label class="bn">পেমেন্ট পদ্ধতি / Payment Method</label>
+        <div class="pay-options">
+          <div class="pay-opt on" id="codOpt" onclick="selectPay('cod')">
+            <div class="icon">💵</div>
+            <div class="label">ক্যাশ অন ডেলিভারি</div>
+            <div class="desc">Cash on Delivery</div>
+          </div>
+          <div class="pay-opt" id="upiOpt" onclick="selectPay('upi')">
+            <div class="icon">📲</div>
+            <div class="label">UPI পেমেন্ট</div>
+            <div class="desc">Coming soon</div>
+          </div>
+        </div>
+      </div>
+      <div style="background:var(--light);border-radius:10px;padding:14px;font-size:13px;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+          <span class="bn">মোট পণ্য মূল্য</span><span id="co-subtotal">₹0</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+          <span class="bn">ডেলিভারি চার্জ</span><span style="color:var(--green)">বিনামূল্যে</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-weight:800;font-size:16px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">
+          <span>মোট পরিমাণ</span><span style="color:var(--orange)" id="co-total">₹0</span>
+        </div>
+      </div>
+      <button class="place-order-btn" onclick="placeOrder()" id="placeOrderBtn">✅ অর্ডার দিন</button>
+    </div>
+  </div>
+</div>
 
 <script>
-// Language toggle
-function setLang(lang) {
-  document.body.classList.remove('show-bn','show-en');
-  document.body.classList.add('show-' + lang);
-  document.getElementById('btn-bn').classList.toggle('active', lang === 'bn');
-  document.getElementById('btn-en').classList.toggle('active', lang === 'en');
-  localStorage.setItem('delta-lang', lang);
+// ===== FIREBASE CONFIG =====
+var fbcfg={
+  apiKey:"AIzaSyA6TrrnCMwv1aa1WPqGvTVWlnieB2pVOEU",
+  authDomain:"delta-platform-82fc0.firebaseapp.com",
+  projectId:"delta-platform-82fc0",
+  storageBucket:"delta-platform-82fc0.firebasestorage.app",
+  messagingSenderId:"444904180433",
+  appId:"1:444904180433:web:6706eba4d73a30cd67d3f0"
+};
+var auth, db;
+var currentUser=null, cart=[], allShops=[], allProducts=[], selectedPay='cod';
+
+function initFirebase(){
+  try{
+    firebase.initializeApp(fbcfg);
+    auth=firebase.auth();
+    db=firebase.firestore();
+    auth.onAuthStateChanged(function(u){
+      currentUser=u;
+      document.getElementById('userBtn').textContent=u?'😊':'👤';
+    });
+    loadData();
+  }catch(e){
+    document.getElementById('shopsGrid').innerHTML='<div class="empty-state" style="grid-column:1/-1"><div class="eico">⚠️</div><p>Firebase লোড হয়নি। Internet চেক করুন।</p></div>';
+    document.getElementById('productsGrid').innerHTML='';
+  }
 }
 
-// Load saved language
-const saved = localStorage.getItem('delta-lang') || 'bn';
-setLang(saved);
-
-// Scroll reveal
-const observer = new IntersectionObserver(entries => {
-  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
-}, { threshold: 0.1 });
-document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
-
-// Form submit
-function handleSubmit(e) {
-  e.preventDefault();
-  const form = e.target;
-  const btn = form.querySelector('.f-submit');
-  const isBn = document.body.classList.contains('show-bn');
-  
-  btn.innerHTML = isBn ? '<span>⏳ পাঠানো হচ্ছে...</span>' : '<span>⏳ Submitting...</span>';
-  btn.disabled = true;
-
-  const data = new FormData(form);
-  
-  fetch('https://formspree.io/f/xykvqvdo', {
-    method: 'POST',
-    body: data,
-    headers: { 'Accept': 'application/json' }
-  })
-  .then(res => {
-    btn.innerHTML = isBn
-      ? '<span>✅ নিবন্ধন সম্পন্ন! আমরা ২৪ ঘণ্টার মধ্যে যোগাযোগ করব।</span>'
-      : '<span>✅ Registered! We will contact you within 24 hours.</span>';
-    btn.style.background = '#1a5c38';
-    form.reset();
-  })
-  .catch(err => {
-    btn.innerHTML = isBn ? '<span>❌ সমস্যা হয়েছে। আবার চেষ্টা করুন।</span>' : '<span>❌ Error. Please try again.</span>';
-    btn.style.background = '#c0392b';
-    btn.disabled = false;
+// Load Firebase scripts dynamically then init
+(function(){
+  var scripts=[
+    'https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js',
+    'https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js',
+    'https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js'
+  ];
+  var loaded=0;
+  scripts.forEach(function(src){
+    var s=document.createElement('script');
+    s.src=src;
+    s.onload=function(){
+      loaded++;
+      if(loaded===scripts.length) initFirebase();
+    };
+    s.onerror=function(){
+      document.getElementById('shopsGrid').innerHTML='<div class="empty-state" style="grid-column:1/-1"><div class="eico">⚠️</div><p>Internet সংযোগ নেই। Reload করুন।</p></div>';
+    };
+    document.head.appendChild(s);
   });
+})();
+
+async function loadData(){
+  try{
+    // Load all sellers (shops)
+    var snap=await db.collection('sellers').get();
+    allShops=[];allProducts=[];
+    var proms=[];
+    snap.forEach(function(d){
+      var shop=Object.assign({id:d.id},d.data());
+      allShops.push(shop);
+      proms.push(
+        db.collection('sellers').doc(d.id).collection('products').get()
+          .then(function(ps){
+            ps.forEach(function(pd){
+              allProducts.push(Object.assign({id:pd.id,shopId:d.id,shopName:shop.shopName,shopCat:shop.category},pd.data()));
+            });
+          })
+      );
+    });
+    await Promise.all(proms);
+    renderShops(allShops);
+    renderProducts(allProducts);
+  }catch(e){
+    renderShops([]);renderProducts([]);
+    showToast('ডেটা লোড সমস্যা। Internet চেক করুন।');
+  }
 }
 
-// Smooth scroll
-document.querySelectorAll('a[href^="#"]').forEach(a => {
-  a.addEventListener('click', function(e) {
-    const href = this.getAttribute('href');
-    if(href === '#') return;
-    e.preventDefault();
-    const t = document.querySelector(href);
-    if(t) t.scrollIntoView({ behavior: 'smooth' });
+// ===== RENDER SHOPS =====
+function renderShops(shops){
+  var g=document.getElementById('shopsGrid');
+  if(!shops.length){
+    g.innerHTML='<div class="empty-state" style="grid-column:1/-1"><div class="eico">🏪</div><p class="bn">এখনো কোনো দোকান যোগ হয়নি</p><p style="margin-top:8px;font-size:12px;"><a href="seller.html" style="color:var(--orange)">প্রথম দোকান যোগ করুন →</a></p></div>';
+    return;
+  }
+  g.innerHTML=shops.map(function(s){
+    var isOpen=s.isOpen!==false;
+    var emoji=shopEmoji(s.category);
+    return '<div class="shop-card" onclick="openShop(\''+s.id+'\')">'+
+      '<div class="shop-banner">'+emoji+
+      '<span class="shop-open-badge '+(isOpen?'':'closed')+'">'+(isOpen?'খোলা ✅':'বন্ধ')+'</span></div>'+
+      '<div class="shop-body">'+
+      '<div class="shop-name">'+(s.shopName||'দোকান')+'</div>'+
+      '<div class="shop-cat">'+(s.category||'')+(s.area?' · '+s.area:'')+'</div>'+
+      '<div class="shop-meta">'+
+      '<span class="shop-rating">⭐ '+(s.rating||'4.8')+'</span>'+
+      '<span class="shop-dot"></span>'+
+      '<span>'+s.area+'</span>'+
+      '<span class="shop-dot"></span>'+
+      '<span>🕐 '+(s.openTime||'9:00')+'-'+(s.closeTime||'21:00')+'</span>'+
+      '</div></div></div>';
+  }).join('');
+}
+
+// ===== RENDER PRODUCTS =====
+function renderProducts(prods){
+  var g=document.getElementById('productsGrid');
+  if(!prods.length){
+    g.innerHTML='<div class="empty-state" style="grid-column:1/-1"><div class="eico">📦</div><p class="bn">এখনো কোনো পণ্য যোগ হয়নি</p></div>';
+    return;
+  }
+  g.innerHTML=prods.map(function(p){
+    var img=p.imageUrl||(p.images&&p.images[0])||'';
+    var disc=p.discount||0;
+    var name=p.nameBn||p.nameEn||p.name||'পণ্য';
+    return '<div class="prod-card">'+
+      '<div class="prod-img">'+
+        (img?'<img src="'+img+'" alt="'+name+'" loading="lazy">':prodEmoji(p.category))+
+        (disc?'<span class="prod-disc">'+disc+'% OFF</span>':'')+
+      '</div>'+
+      '<div class="prod-body">'+
+        '<div class="prod-shop">🏪 '+(p.shopName||'')+'</div>'+
+        '<div class="prod-name">'+name+'</div>'+
+        '<div class="prod-price-row">'+
+          '<div>'+
+            '<div class="prod-price">₹'+(p.price||p.sellPrice||0)+'</div>'+
+            (p.mrp&&p.mrp!==p.price?'<div class="prod-mrp">₹'+p.mrp+'</div>':'')+
+          '</div>'+
+          '<button class="add-btn" onclick="addToCart(event,\''+p.id+'\',\''+p.shopId+'\')">+</button>'+
+        '</div>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+// ===== EMOJI HELPERS =====
+function shopEmoji(c){
+  if(!c)return'🏪';
+  if(c.includes('খাদ্য')||c.includes('Food'))return'🍛';
+  if(c.includes('মুদি')||c.includes('Grocery'))return'🛒';
+  if(c.includes('কৃষি')||c.includes('Farm'))return'🌾';
+  if(c.includes('ওষুধ')||c.includes('Pharmacy'))return'💊';
+  if(c.includes('পোশাক')||c.includes('Clothing'))return'👗';
+  if(c.includes('ইলেকট্রনিক্স')||c.includes('Electronics'))return'📱';
+  if(c.includes('সেবা')||c.includes('Services'))return'🔧';
+  if(c.includes('শিল্প')||c.includes('Arts'))return'🎨';
+  return'🏪';
+}
+function prodEmoji(c){
+  if(!c)return'📦';
+  if(c.includes('মিষ্টি'))return'🍬';
+  if(c.includes('মাছ'))return'🐟';
+  if(c.includes('সবজি'))return'🥬';
+  if(c.includes('চাল'))return'🌾';
+  if(c.includes('ওষুধ'))return'💊';
+  return'📦';
+}
+
+// ===== SEARCH & FILTER =====
+var searchTimer;
+function handleSearch(val){
+  clearTimeout(searchTimer);
+  searchTimer=setTimeout(function(){ doSearchWith(val); },400);
+}
+function doSearch(){doSearchWith(document.getElementById('heroSearch').value);}
+function doSearchWith(q){
+  q=(q||'').toLowerCase().trim();
+  if(!q){renderShops(allShops);renderProducts(allProducts);return;}
+  var fs=allShops.filter(function(s){
+    return (s.shopName||'').toLowerCase().includes(q)||(s.category||'').toLowerCase().includes(q)||(s.area||'').toLowerCase().includes(q);
   });
-});
+  var fp=allProducts.filter(function(p){
+    return (p.nameBn||'').toLowerCase().includes(q)||(p.nameEn||'').toLowerCase().includes(q)||(p.name||'').toLowerCase().includes(q)||(p.category||'').toLowerCase().includes(q)||(p.shopName||'').toLowerCase().includes(q);
+  });
+  renderShops(fs);renderProducts(fp);
+  document.getElementById('shopsTitle').innerHTML='খোঁজার ফলাফল <small>'+fs.length+' দোকান</small>';
+  document.getElementById('productsTitle').innerHTML='পণ্যের ফলাফল <small>'+fp.length+' পণ্য</small>';
+}
+
+function filterCat(cat){
+  document.querySelectorAll('.cat-card').forEach(function(c){c.classList.remove('active');});
+  if(cat==='all'){
+    renderShops(allShops);renderProducts(allProducts);
+    document.getElementById('shopsTitle').innerHTML='কাছের দোকান <small>Nearby Shops</small>';
+    document.getElementById('productsTitle').innerHTML='সব পণ্য <small>All Products</small>';
+    return;
+  }
+  var catMap={food:['খাদ্য','food','মিষ্টি','রান্না'],grocery:['মুদি','grocery'],farm:['কৃষি','farm'],medicine:['ওষুধ','pharma','medicine'],clothing:['পোশাক','clothing'],electronics:['ইলেকট্রনিক্স','electronics'],services:['সেবা','service'],arts:['শিল্প','arts'],education:['শিক্ষা','education'],health:['স্বাস্থ্য','health'],events:['ইভেন্ট','event'],sweet:['মিষ্টি','sweet']};
+  var kws=catMap[cat]||[cat];
+  var fs=allShops.filter(function(s){return kws.some(function(k){return(s.category||'').toLowerCase().includes(k);});});
+  var fp=allProducts.filter(function(p){return kws.some(function(k){return(p.category||'').toLowerCase().includes(k)||(p.shopCat||'').toLowerCase().includes(k);});});
+  renderShops(fs);renderProducts(fp);
+  document.getElementById('shopsTitle').innerHTML='ক্যাটাগরি ফলাফল <small>'+fs.length+' দোকান</small>';
+  document.getElementById('productsTitle').innerHTML='পণ্যের ফলাফল <small>'+fp.length+' পণ্য</small>';
+}
+
+// ===== SHOP PAGE =====
+function openShop(shopId){
+  var shop=allShops.find(function(s){return s.id===shopId;});
+  if(!shop)return;
+  var products=allProducts.filter(function(p){return p.shopId===shopId;});
+  // Simple shop view overlay
+  var overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;background:var(--light);z-index:150;overflow-y:auto;';
+  var html='<div style="background:linear-gradient(135deg,var(--navy),var(--navy2));padding:20px 24px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:1;">'+
+    '<button onclick="this.closest(\'[style*=fixed]\').remove()" style="background:rgba(255,255,255,0.1);border:none;color:#fff;width:36px;height:36px;border-radius:10px;cursor:pointer;font-size:18px;">←</button>'+
+    '<div><div style="font-size:18px;font-weight:800;color:#fff;">'+(shop.shopName||'দোকান')+'</div>'+
+    '<div style="font-size:12px;color:rgba(255,255,255,0.6);">'+(shop.category||'')+(shop.area?' · '+shop.area:'')+(shop.isOpen!==false?' · <span style="color:#4cd137">খোলা ✅</span>':' · <span style="color:#ff4757">বন্ধ</span>')+'</div></div></div>'+
+    '<div style="padding:20px;">';
+  if(!products.length){
+    html+='<div class="empty-state"><div class="eico">📦</div><p class="bn">এই দোকানে এখনো পণ্য যোগ হয়নি</p></div>';
+  } else {
+    html+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;">';
+    html+=products.map(function(p){
+      var img=p.imageUrl||(p.images&&p.images[0])||'';
+      var name=p.nameBn||p.nameEn||p.name||'পণ্য';
+      return '<div class="prod-card" style="cursor:default;">'+
+        '<div class="prod-img">'+(img?'<img src="'+img+'" alt="'+name+'" loading="lazy">':prodEmoji(p.category))+(p.discount?'<span class="prod-disc">'+p.discount+'% OFF</span>':'')+
+        '</div><div class="prod-body">'+
+        '<div class="prod-name">'+name+'</div>'+
+        '<div class="prod-price-row"><div><div class="prod-price">₹'+(p.price||p.sellPrice||0)+'</div>'+
+        (p.mrp&&p.mrp!==p.price?'<div class="prod-mrp">₹'+p.mrp+'</div>':'')+
+        '</div><button class="add-btn" onclick="addToCartFromShop(\''+p.id+'\',\''+shopId+'\')">+</button></div></div></div>';
+    }).join('');
+    html+='</div>';
+  }
+  html+='</div>';
+  overlay.innerHTML=html;
+  document.body.appendChild(overlay);
+}
+
+function addToCartFromShop(pid,shopId){
+  addToCartById(pid,shopId);
+  showToast('কার্টে যোগ হয়েছে ✅','green');
+}
+
+// ===== CART =====
+function addToCart(e,pid,shopId){
+  e.stopPropagation();
+  addToCartById(pid,shopId);
+  showToast('কার্টে যোগ হয়েছে ✅','green');
+}
+
+function addToCartById(pid,shopId){
+  var prod=allProducts.find(function(p){return p.id===pid&&p.shopId===shopId;});
+  if(!prod)return;
+  var ex=cart.find(function(c){return c.id===pid&&c.shopId===shopId;});
+  if(ex){ex.qty++;} else {cart.push(Object.assign({qty:1},prod));}
+  updateCartBadge();
+}
+
+function updateCartBadge(){
+  var total=cart.reduce(function(s,c){return s+c.qty;},0);
+  var badge=document.getElementById('cartBadge');
+  if(total>0){badge.style.display='flex';badge.textContent=total;}
+  else badge.style.display='none';
+}
+
+function openCart(){
+  document.getElementById('cartOverlay').classList.add('open');
+  document.getElementById('cartPanel').classList.add('open');
+  renderCart();
+}
+function closeCart(){
+  document.getElementById('cartOverlay').classList.remove('open');
+  document.getElementById('cartPanel').classList.remove('open');
+}
+
+function renderCart(){
+  var el=document.getElementById('cartItems');
+  var footer=document.getElementById('cartFooter');
+  if(!cart.length){
+    el.innerHTML='<div class="cart-empty"><div class="icon">🛒</div><p class="bn">কার্ট খালি আছে</p></div>';
+    footer.style.display='none';return;
+  }
+  footer.style.display='block';
+  el.innerHTML=cart.map(function(c,i){
+    var img=c.imageUrl||(c.images&&c.images[0])||'';
+    var name=c.nameBn||c.nameEn||c.name||'পণ্য';
+    return '<div class="cart-item">'+
+      '<div class="ci-img">'+(img?'<img src="'+img+'">':prodEmoji(c.category))+'</div>'+
+      '<div class="ci-info">'+
+        '<div class="ci-name">'+name+'</div>'+
+        '<div class="ci-shop">🏪 '+(c.shopName||'')+'</div>'+
+        '<div class="ci-price">₹'+((c.price||c.sellPrice||0)*c.qty)+'</div>'+
+        '<div class="ci-qty">'+
+          '<button class="qty-btn" onclick="changeQty('+i+',-1)">−</button>'+
+          '<span class="qty-num">'+c.qty+'</span>'+
+          '<button class="qty-btn" onclick="changeQty('+i+',1)">+</button>'+
+          '<button class="ci-del" onclick="removeFromCart('+i+')">🗑️</button>'+
+        '</div>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+  var sub=cart.reduce(function(s,c){return s+(c.price||c.sellPrice||0)*c.qty;},0);
+  document.getElementById('cartSubtotal').textContent='₹'+sub;
+  document.getElementById('cartTotal').textContent='₹'+sub;
+}
+
+function changeQty(i,d){
+  cart[i].qty+=d;
+  if(cart[i].qty<=0)cart.splice(i,1);
+  updateCartBadge();renderCart();
+}
+function removeFromCart(i){cart.splice(i,1);updateCartBadge();renderCart();}
+
+// ===== CHECKOUT =====
+function openCheckout(){
+  if(!cart.length){showToast('কার্ট খালি আছে ⚠️');return;}
+  if(!currentUser){closeCart();openAuth();showToast('অর্ডার করতে আগে লগইন করুন');return;}
+  var sub=cart.reduce(function(s,c){return s+(c.price||c.sellPrice||0)*c.qty;},0);
+  document.getElementById('co-subtotal').textContent='₹'+sub;
+  document.getElementById('co-total').textContent='₹'+sub;
+  document.getElementById('checkoutModal').classList.add('open');
+  closeCart();
+}
+function closeCheckout(){document.getElementById('checkoutModal').classList.remove('open');}
+function selectPay(m){
+  selectedPay=m;
+  document.getElementById('codOpt').classList.toggle('on',m==='cod');
+  document.getElementById('upiOpt').classList.toggle('on',m==='upi');
+  if(m==='upi')showToast('UPI শীঘ্রই আসছে। COD ব্যবহার করুন।');
+}
+
+async function placeOrder(){
+  var addr=document.getElementById('deliveryAddr').value.trim();
+  var mobile=document.getElementById('deliveryMobile').value.trim();
+  if(!addr||!mobile){showToast('ঠিকানা ও মোবাইল নম্বর দিন ⚠️');return;}
+  var btn=document.getElementById('placeOrderBtn');
+  btn.disabled=true;btn.textContent='অর্ডার হচ্ছে...';
+  var total=cart.reduce(function(s,c){return s+(c.price||c.sellPrice||0)*c.qty;},0);
+  // Group by shop
+  var byShop={};
+  cart.forEach(function(c){
+    if(!byShop[c.shopId])byShop[c.shopId]={shopId:c.shopId,shopName:c.shopName,items:[],total:0};
+    byShop[c.shopId].items.push({id:c.id,name:c.nameBn||c.nameEn||c.name,price:c.price||c.sellPrice||0,qty:c.qty});
+    byShop[c.shopId].total+=(c.price||c.sellPrice||0)*c.qty;
+  });
+  try{
+    var orderIds=[];
+    for(var sid in byShop){
+      var od=byShop[sid];
+      var ref=await db.collection('sellers').doc(sid).collection('orders').add({
+        customerId:currentUser.uid,
+        customerName:currentUser.displayName||'Customer',
+        customerEmail:currentUser.email,
+        customerMobile:mobile,
+        deliveryAddress:addr,
+        items:od.items.map(function(i){return i.name+' ×'+i.qty;}).join(', '),
+        itemsDetail:od.items,
+        total:od.total,
+        paymentMethod:selectedPay,
+        status:'pending',
+        createdAt:new Date().toISOString()
+      });
+      orderIds.push(ref.id);
+    }
+    // Show success
+    document.getElementById('checkoutBody').innerHTML=
+      '<div class="order-success">'+
+        '<div class="success-icon">✅</div>'+
+        '<div class="success-title bn">অর্ডার সফল হয়েছে!</div>'+
+        '<div class="success-sub">Order placed successfully</div>'+
+        '<div class="order-id-box">অর্ডার ID: <strong>#'+orderIds[0].slice(-6).toUpperCase()+'</strong></div>'+
+        '<div class="success-sub">দোকান শীঘ্রই আপনার অর্ডার confirm করবে।<br>The shop will confirm your order shortly.</div>'+
+        '<button onclick="closeCheckout();location.reload();" style="margin-top:20px;padding:12px 28px;background:var(--orange);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;">ঠিক আছে / OK</button>'+
+      '</div>';
+    cart=[];updateCartBadge();
+    showToast('অর্ডার সফল! ✅','green');
+  }catch(e){
+    showToast('অর্ডার ব্যর্থ: '+e.message);
+    btn.disabled=false;btn.textContent='✅ অর্ডার দিন';
+  }
+}
+
+// ===== AUTH =====
+function handleUserBtn(){
+  if(currentUser){
+    if(confirm('লগআউট করবেন?'))auth.signOut();
+  } else {
+    openAuth();
+  }
+}
+function openAuth(){document.getElementById('authModal').classList.add('open');}
+function closeAuth(){document.getElementById('authModal').classList.remove('open');}
+function authTab(t,el){
+  document.querySelectorAll('.auth-tab-s').forEach(function(b){b.classList.remove('on');});
+  el.classList.add('on');
+  document.getElementById('loginPane').style.display=t==='login'?'block':'none';
+  document.getElementById('regPane').style.display=t==='register'?'block':'none';
+  document.getElementById('authErr').style.display='none';
+}
+function showAuthErr(msg){var el=document.getElementById('authErr');el.textContent=msg;el.style.display='block';}
+
+async function doCustomerLogin(){
+  var e=document.getElementById('cEmail').value,p=document.getElementById('cPass').value;
+  if(!e||!p){showAuthErr('Email ও Password দিন');return;}
+  try{
+    await auth.signInWithEmailAndPassword(e,p);
+    closeAuth();showToast('লগইন সফল! স্বাগতম 🎉','green');
+  }catch(er){showAuthErr('ইমেইল বা পাসওয়ার্ড ভুল');}
+}
+
+async function doCustomerRegister(){
+  var name=document.getElementById('cName').value.trim();
+  var mobile=document.getElementById('cMobile').value.trim();
+  var e=document.getElementById('cRegEmail').value.trim();
+  var p=document.getElementById('cRegPass').value;
+  if(!name||!e||!p){showAuthErr('সব তথ্য পূরণ করুন');return;}
+  if(p.length<6){showAuthErr('পাসওয়ার্ড কমপক্ষে ৬ অক্ষর');return;}
+  try{
+    var cred=await auth.createUserWithEmailAndPassword(e,p);
+    await cred.user.updateProfile({displayName:name});
+    await db.collection('customers').doc(cred.user.uid).set({name,mobile,email:e,createdAt:new Date().toISOString()});
+    closeAuth();showToast('নিবন্ধন সফল! স্বাগতম '+name+' 🎉','green');
+  }catch(er){showAuthErr(er.code==='auth/email-already-in-use'?'এই ইমেইল আগেই ব্যবহৃত':er.message);}
+}
+
+// ===== TOAST =====
+function showToast(msg,type){
+  var el=document.getElementById('toastEl');
+  el.textContent=msg;el.className='toast show '+(type||'');
+  clearTimeout(el._t);
+  el._t=setTimeout(function(){el.className='toast';},3000);
+}
 </script>
 </body>
-</html> 
-  
+</html>
