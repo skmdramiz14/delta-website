@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DELTA — দোকান যোগ করুন | Join as Seller</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Tiro+Bangla&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#0F2D4A;--navy-dark:#071829;--orange:#E8730A;--white:#FFFFFF;--gray:#8a9ab0;--light:#f0f4f8;--green:#1a8a4a;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Outfit',sans-serif;background:var(--light);color:var(--navy);}
+.bn{font-family:'Tiro Bangla',serif;}
+
+/* TOPBAR */
+.topbar{background:var(--navy);height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:100;}
+.tlogo{font-size:20px;font-weight:800;color:#fff;letter-spacing:2px;cursor:pointer;text-decoration:none;}
+.tlogo span{color:var(--orange);}
+.tback{background:rgba(255,255,255,0.1);color:#fff;border:1px solid rgba(255,255,255,0.2);padding:7px 16px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;text-decoration:none;}
+
+/* HERO */
+.hero{background:linear-gradient(135deg,var(--navy-dark),var(--navy));padding:60px 24px;text-align:center;color:#fff;}
+.hero h1{font-size:36px;font-weight:800;margin-bottom:12px;}
+.hero h1 span{color:var(--orange);}
+.hero p{font-size:16px;color:rgba(255,255,255,0.7);max-width:500px;margin:0 auto 32px;}
+
+/* BENEFITS */
+.benefits{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:800px;margin:0 auto 40px;padding:0 16px;}
+.benefit{background:rgba(255,255,255,0.08);border-radius:12px;padding:20px;text-align:center;}
+.benefit .ico{font-size:32px;margin-bottom:10px;}
+.benefit h3{font-size:15px;font-weight:700;margin-bottom:6px;}
+.benefit p{font-size:12px;color:rgba(255,255,255,0.65);}
+
+/* FORM SECTION */
+.form-section{max-width:600px;margin:0 auto;padding:40px 24px;}
+.form-card{background:#fff;border-radius:20px;padding:36px;box-shadow:0 4px 24px rgba(0,0,0,0.08);}
+.form-card h2{font-size:22px;font-weight:700;color:var(--navy);margin-bottom:6px;}
+.form-card p{font-size:13px;color:var(--gray);margin-bottom:28px;}
+.fg{margin-bottom:16px;}
+.fg label{display:block;font-size:12px;font-weight:600;color:var(--navy);margin-bottom:5px;}
+.fi{width:100%;padding:12px 14px;border:1.5px solid #ddd;border-radius:10px;font-size:14px;font-family:'Outfit',sans-serif;outline:none;transition:border-color 0.3s;}
+.fi:focus{border-color:var(--orange);}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.sbtn{width:100%;padding:14px;background:var(--orange);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;margin-top:8px;transition:all 0.3s;}
+.sbtn:hover{background:#ff8c2a;transform:translateY(-1px);}
+.sbtn:disabled{background:#ccc;cursor:not-allowed;transform:none;}
+.errmsg{background:#ffe8e8;color:#c0392b;padding:10px 14px;border-radius:8px;font-size:13px;margin-top:12px;display:none;}
+.sucmsg{background:#e8f5ee;color:var(--green);padding:10px 14px;border-radius:8px;font-size:13px;margin-top:12px;display:none;}
+.note{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--gray);margin-top:16px;justify-content:center;}
+.dash-link{text-align:center;margin-top:16px;font-size:13px;color:var(--gray);}
+.dash-link a{color:var(--orange);font-weight:600;text-decoration:none;}
+
+/* PLANS */
+.plans-section{background:#fff;padding:40px 24px;}
+.plans-section h2{text-align:center;font-size:24px;font-weight:700;color:var(--navy);margin-bottom:8px;}
+.plans-section p{text-align:center;font-size:14px;color:var(--gray);margin-bottom:32px;}
+.plans-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;max-width:900px;margin:0 auto;}
+.plan{border:2px solid #ddd;border-radius:14px;padding:24px;text-align:center;transition:all 0.3s;}
+.plan.popular{border-color:var(--orange);position:relative;}
+.plan.popular::before{content:'Most Popular';position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--orange);color:#fff;font-size:11px;font-weight:700;padding:3px 14px;border-radius:20px;}
+.plan h3{font-size:16px;font-weight:700;color:var(--navy);margin-bottom:8px;}
+.plan .price{font-size:28px;font-weight:800;color:var(--orange);margin-bottom:4px;}
+.plan .price span{font-size:13px;color:var(--gray);font-weight:400;}
+.plan ul{list-style:none;margin-top:16px;text-align:left;}
+.plan ul li{font-size:12px;color:var(--gray);padding:4px 0;border-bottom:1px solid #f0f4f8;}
+.plan ul li::before{content:'✅ ';font-size:10px;}
+
+/* FOOTER */
+footer{background:var(--navy);color:rgba(255,255,255,0.6);text-align:center;padding:24px;font-size:13px;}
+footer a{color:var(--orange);text-decoration:none;}
+
+@media(max-width:600px){.benefits{grid-template-columns:1fr;}.frow{grid-template-columns:1fr;}.hero h1{font-size:26px;}.form-card{padding:24px;}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="/" class="tlogo">&#9651; <span>DELTA</span></a>
+  <a href="/" class="tback">← <span class="bn">ফিরে যান</span> / Back</a>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <h1 class="bn">আপনার দোকান <span>DELTA</span> তে যোগ করুন</h1>
+  <p class="bn">মন্তেশ্বরের প্রতিটি দোকান, কৃষক, শিল্পী এবং সেবাদানকারী এখন online এ।</p>
+
+  <div class="benefits">
+    <div class="benefit">
+      <div class="ico">🆓</div>
+      <h3 class="bn">৩ মাস বিনামূল্যে</h3>
+      <p class="bn">প্রথম ৫০টি দোকান যেকোনো plan এ ৩ মাস free</p>
+    </div>
+    <div class="benefit">
+      <div class="ico">📱</div>
+      <h3 class="bn">সহজ Dashboard</h3>
+      <p class="bn">Mobile থেকে পণ্য manage করুন</p>
+    </div>
+    <div class="benefit">
+      <div class="ico">🛒</div>
+      <h3 class="bn">সরাসরি Order</h3>
+      <p class="bn">গ্রাহক সরাসরি আপনার দোকান থেকে order করবে</p>
+    </div>
+  </div>
+</div>
+
+<!-- REGISTRATION FORM -->
+<div class="form-section">
+  <div class="form-card">
+    <h2 class="bn">নিবন্ধন ফর্ম</h2>
+    <p class="bn">নিচের তথ্য দিয়ে আপনার দোকান register করুন। আমরা ২৪ ঘণ্টার মধ্যে যোগাযোগ করব।</p>
+
+    <form id="regForm" action="https://formspree.io/f/xykvqvdo" method="POST" onsubmit="handleSubmit(event)">
+      <div class="frow">
+        <div class="fg">
+          <label><span class="bn">আপনার নাম</span> / Your Name *</label>
+          <input type="text" class="fi" name="name" placeholder="SK Nisar Ahamed" required>
+        </div>
+        <div class="fg">
+          <label><span class="bn">মোবাইল নম্বর</span> / Mobile *</label>
+          <input type="tel" class="fi" name="mobile" placeholder="9XXXXXXXXX" required>
+        </div>
+      </div>
+      <div class="fg">
+        <label><span class="bn">দোকানের নাম</span> / Shop Name *</label>
+        <input type="text" class="fi" name="shop_name" placeholder="আপনার দোকানের নাম" required>
+      </div>
+      <div class="frow">
+        <div class="fg">
+          <label><span class="bn">ক্যাটাগরি</span> / Category *</label>
+          <select class="fi" name="category" required>
+            <option value="" disabled selected>বেছে নিন / Select</option>
+            <option>খাদ্য ও পানীয় / Food</option>
+            <option>মুদিখানা / Grocery</option>
+            <option>কৃষি পণ্য / Farm</option>
+            <option>মিষ্টান্ন / Sweets</option>
+            <option>মাছ-মাংস / Fish & Meat</option>
+            <option>গৃহসেবা / Home Services</option>
+            <option>পোশাক / Clothing</option>
+            <option>স্বাস্থ্যসেবা / Healthcare</option>
+            <option>শিক্ষা / Education</option>
+            <option>অন্যান্য / Other</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label><span class="bn">এলাকা / পিনকোড</span> / Area *</label>
+          <input type="text" class="fi" name="area" placeholder="Manteswar / 713422" required>
+        </div>
+      </div>
+      <div class="fg">
+        <label><span class="bn">পছন্দের প্ল্যান</span> / Preferred Plan</label>
+        <select class="fi" name="plan">
+          <option value="" disabled selected>বেছে নিন / Select</option>
+          <option>Starter — বিনামূল্যে / Free (3 months)</option>
+          <option>Basic — ₹199/month</option>
+          <option>Standard — ₹499/month</option>
+          <option>Premium — ₹999/month</option>
+        </select>
+      </div>
+
+      <button type="submit" class="sbtn" id="submitBtn">
+        <span class="bn">নিবন্ধন করুন</span> / Register Now →
+      </button>
+      <div class="errmsg" id="errMsg"></div>
+      <div class="sucmsg" id="sucMsg"></div>
+    </form>
+
+    <div class="note">
+      <span>💳 ক্রেডিট কার্ড দরকার নেই</span>
+      <span>|</span>
+      <span>📞 ২৪ ঘণ্টায় যোগাযোগ</span>
+      <span>|</span>
+      <span>🆓 বিনামূল্যে setup</span>
+    </div>
+    <div class="dash-link">
+      <span class="bn">আগেই register করেছেন?</span>
+      <a href="/seller-dashboard.html"><span class="bn">Dashboard এ যান →</span></a>
+    </div>
+  </div>
+</div>
+
+<!-- PLANS -->
+<div class="plans-section">
+  <h2 class="bn">আমাদের প্ল্যান</h2>
+  <p class="bn">প্রথম ৫০টি দোকান যেকোনো plan এ ৩ মাস বিনামূল্যে পাবে</p>
+  <div class="plans-grid">
+    <div class="plan">
+      <h3>Starter</h3>
+      <div class="price">FREE <span>/ 3 months</span></div>
+      <ul>
+        <li>10টি পণ্য list</li>
+        <li>Basic dashboard</li>
+        <li>Order management</li>
+        <li>Email support</li>
+      </ul>
+    </div>
+    <div class="plan">
+      <h3>Basic</h3>
+      <div class="price">₹199 <span>/ month</span></div>
+      <ul>
+        <li>50টি পণ্য list</li>
+        <li>Analytics</li>
+        <li>Priority support</li>
+        <li>WhatsApp alert</li>
+      </ul>
+    </div>
+    <div class="plan popular">
+      <h3>Standard</h3>
+      <div class="price">₹499 <span>/ month</span></div>
+      <ul>
+        <li>Unlimited পণ্য</li>
+        <li>Advanced analytics</li>
+        <li>QR code generator</li>
+        <li>24/7 support</li>
+      </ul>
+    </div>
+    <div class="plan">
+      <h3>Premium</h3>
+      <div class="price">₹999 <span>/ month</span></div>
+      <ul>
+        <li>সব Standard features</li>
+        <li>Featured listing</li>
+        <li>AI assistant</li>
+        <li>Dedicated manager</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <p>© 2026 DELTA Platform | <a href="/">deltaapp.in</a> | <span class="bn">মন্তেশ্বর, পূর্ব বর্ধমান</span></p>
+</footer>
+
+<script>
+function handleSubmit(e) {
+  e.preventDefault();
+  var btn = document.getElementById('submitBtn');
+  var err = document.getElementById('errMsg');
+  var suc = document.getElementById('sucMsg');
+  err.style.display = 'none';
+  btn.disabled = true;
+  btn.innerHTML = '<span class="bn">পাঠানো হচ্ছে...</span>';
+  var data = new FormData(e.target);
+  fetch('https://formspree.io/f/xykvqvdo', {
+    method: 'POST',
+    body: data,
+    headers: { 'Accept': 'application/json' }
+  }).then(function(res) {
+    if (res.ok) {
+      suc.textContent = '✅ নিবন্ধন সম্পন্ন! আমরা ২৪ ঘণ্টার মধ্যে যোগাযোগ করব।';
+      suc.style.display = 'block';
+      btn.innerHTML = '✅ <span class="bn">নিবন্ধন সম্পন্ন!</span>';
+      btn.style.background = '#1a8a4a';
+      e.target.reset();
+    } else {
+      throw new Error('Failed');
+    }
+  }).catch(function() {
+    err.textContent = '❌ সমস্যা হয়েছে। আবার চেষ্টা করুন।';
+    err.style.display = 'block';
+    btn.disabled = false;
+    btn.innerHTML = '<span class="bn">নিবন্ধন করুন</span> / Register Now →';
+  });
+}
+</script>
+</body>
+</html>
