@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DELTA — আপনার দোকান Digital করুন | Seller Registration</title>
+<title>DELTA — আপনার দোকান Digital করুন | Seller Join করুন</title>
 <meta name="description" content="DELTA তে আপনার দোকান যোগ করুন। ৩ মাস বিনামূল্যে। হাজার customer এর কাছে পৌঁছান।">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600;700&family=Tiro+Bangla&display=swap" rel="stylesheet">
 <style>
@@ -18,155 +18,316 @@
 html{scroll-behavior:smooth;}
 body{font-family:'DM Sans',sans-serif;background:#fff;color:var(--charcoal);overflow-x:hidden;}
 .bn{font-family:'Tiro Bangla',serif;}
-button,input,select{font-family:'DM Sans',sans-serif;}
+button,input,select,textarea{font-family:'DM Sans',sans-serif;}
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-thumb{background:#c0cdd8;border-radius:3px;}
 
 /* ── NAV ── */
-nav{background:var(--navy);padding:0 5%;position:sticky;top:0;z-index:100;box-shadow:0 2px 20px rgba(0,0,0,.3);}
-.nav-inner{display:flex;align-items:center;justify-content:space-between;height:60px;}
-.logo{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:900;color:#fff;letter-spacing:1px;text-decoration:none;}
+nav{background:var(--navy);padding:0 5%;position:sticky;top:0;z-index:100;
+  box-shadow:0 2px 20px rgba(0,0,0,.3);}
+.nav-inner{display:flex;align-items:center;justify-content:space-between;height:62px;}
+.logo{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:900;
+  color:#fff;letter-spacing:1px;text-decoration:none;}
 .logo em{color:var(--orange);font-style:normal;}
-.nav-btns{display:flex;gap:10px;align-items:center;}
-.btn-nav-outline{border:1px solid rgba(255,255,255,.3);color:#fff;background:transparent;padding:8px 18px;border-radius:8px;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .2s;text-decoration:none;}
-.btn-nav-outline:hover{border-color:var(--orange);color:var(--orange);}
-.btn-nav-filled{background:var(--orange);color:#fff;border:none;padding:8px 18px;border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer;transition:all .2s;text-decoration:none;}
-.btn-nav-filled:hover{background:var(--orange2);}
+.nav-right{display:flex;align-items:center;gap:10px;}
+.nav-link{color:rgba(255,255,255,.6);font-size:.82rem;text-decoration:none;
+  padding:6px 12px;border-radius:6px;transition:color .2s;}
+.nav-link:hover{color:#fff;}
+.btn-nav-o{border:1px solid rgba(255,255,255,.25);color:#fff;background:transparent;
+  padding:8px 18px;border-radius:8px;font-size:.82rem;font-weight:600;cursor:pointer;
+  transition:all .2s;text-decoration:none;display:inline-block;}
+.btn-nav-o:hover{border-color:var(--orange);color:var(--orange);}
+.btn-nav-f{background:var(--orange);color:#fff;border:none;padding:8px 18px;
+  border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer;transition:all .2s;
+  text-decoration:none;display:inline-block;}
+.btn-nav-f:hover{background:var(--orange2);}
+
+/* ── MARQUEE ── */
+.marquee-strip{background:var(--orange);overflow:hidden;padding:7px 0;}
+.marquee-inner{display:flex;animation:mscroll 22s linear infinite;width:max-content;white-space:nowrap;}
+@keyframes mscroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.m-item{padding:0 24px;font-size:.75rem;font-weight:700;color:#fff;
+  display:inline-flex;align-items:center;gap:8px;border-right:1px solid rgba(255,255,255,.2);}
 
 /* ── HERO ── */
-.hero{background:linear-gradient(135deg,var(--navy3) 0%,var(--navy) 60%,#1a3050 100%);
-  padding:72px 5% 64px;position:relative;overflow:hidden;}
-.hero::before{content:'';position:absolute;top:-100px;right:-100px;width:500px;height:500px;
-  background:radial-gradient(circle,rgba(240,112,24,.15) 0%,transparent 70%);border-radius:50%;}
-.hero::after{content:'△';position:absolute;right:3%;bottom:-30px;font-size:280px;font-weight:900;
-  color:rgba(255,255,255,.03);line-height:1;pointer-events:none;}
-.hero-inner{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;
-  max-width:1100px;margin:0 auto;position:relative;z-index:2;}
+.hero{background:linear-gradient(135deg,var(--navy3) 0%,var(--navy) 55%,#1a3050 100%);
+  padding:68px 5% 60px;position:relative;overflow:hidden;min-height:90vh;
+  display:flex;align-items:center;}
+.hero::before{content:'';position:absolute;top:-80px;right:-80px;width:600px;height:600px;
+  background:radial-gradient(circle,rgba(240,112,24,.12) 0%,transparent 70%);border-radius:50%;}
+.hero::after{content:'△';position:absolute;right:2%;bottom:-40px;font-size:320px;font-weight:900;
+  color:rgba(255,255,255,.025);line-height:1;pointer-events:none;}
+.hero-inner{display:grid;grid-template-columns:1.1fr 1fr;gap:52px;align-items:center;
+  max-width:1140px;margin:0 auto;width:100%;position:relative;z-index:2;}
 .hero-tag{display:inline-flex;align-items:center;gap:7px;background:rgba(240,112,24,.18);
-  border:1px solid rgba(240,112,24,.35);color:#ffb07a;padding:6px 14px;border-radius:20px;
-  font-size:.75rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;margin-bottom:18px;}
-.hero h1{font-family:'Playfair Display',serif;font-size:clamp(2rem,4vw,3rem);
-  font-weight:900;color:#fff;line-height:1.15;margin-bottom:14px;}
+  border:1px solid rgba(240,112,24,.35);color:#ffb07a;padding:6px 16px;border-radius:20px;
+  font-size:.72rem;font-weight:800;letter-spacing:1px;text-transform:uppercase;margin-bottom:20px;}
+.hero h1{font-family:'Playfair Display',serif;font-size:clamp(2.2rem,4.5vw,3.4rem);
+  font-weight:900;color:#fff;line-height:1.12;margin-bottom:16px;}
 .hero h1 em{color:var(--orange);font-style:normal;}
-.hero-sub{font-size:1rem;color:rgba(255,255,255,.7);line-height:1.75;margin-bottom:28px;}
-.hero-pills{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:28px;}
-.hero-pill{display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.08);
+.hero h1 .bn-line{display:block;font-family:'Tiro Bangla',serif;font-size:.6em;
+  color:rgba(255,255,255,.55);font-weight:400;margin-top:6px;}
+.hero-sub{font-size:.95rem;color:rgba(255,255,255,.7);line-height:1.8;margin-bottom:28px;
+  max-width:480px;}
+.hero-pills{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:28px;}
+.hero-pill{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.08);
   border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.85);
-  padding:7px 14px;border-radius:20px;font-size:.8rem;font-weight:600;}
-.hero-pill .dot{width:6px;height:6px;background:var(--green);border-radius:50%;}
-.hero-cta{display:flex;gap:12px;flex-wrap:wrap;}
-.btn-primary-lg{background:var(--orange);color:#fff;border:none;padding:14px 32px;
-  border-radius:11px;font-size:1rem;font-weight:700;cursor:pointer;transition:all .2s;
-  box-shadow:0 6px 24px rgba(240,112,24,.4);}
-.btn-primary-lg:hover{background:var(--orange2);transform:translateY(-2px);}
-.btn-outline-lg{background:transparent;color:#fff;border:2px solid rgba(255,255,255,.3);
-  padding:14px 32px;border-radius:11px;font-size:1rem;cursor:pointer;transition:all .2s;}
-.btn-outline-lg:hover{border-color:#fff;}
+  padding:6px 14px;border-radius:20px;font-size:.78rem;font-weight:600;}
+.hero-pill .dot{width:6px;height:6px;background:var(--green);border-radius:50%;
+  box-shadow:0 0 0 2px rgba(26,138,74,.25);}
+.hero-btns{display:flex;gap:12px;flex-wrap:wrap;}
+.btn-lg{padding:14px 32px;border-radius:11px;font-size:.95rem;font-weight:700;
+  cursor:pointer;transition:all .2s;border:none;}
+.btn-orange{background:var(--orange);color:#fff;box-shadow:0 6px 24px rgba(240,112,24,.4);}
+.btn-orange:hover{background:var(--orange2);transform:translateY(-2px);}
+.btn-white-o{background:transparent;color:#fff;border:2px solid rgba(255,255,255,.3);}
+.btn-white-o:hover{border-color:#fff;background:rgba(255,255,255,.08);}
+.hero-trust{margin-top:28px;padding-top:22px;border-top:1px solid rgba(255,255,255,.1);
+  display:flex;gap:20px;flex-wrap:wrap;}
+.trust-item{display:flex;align-items:center;gap:7px;color:rgba(255,255,255,.55);font-size:.78rem;}
+.trust-item strong{color:#fff;}
 
-/* ── REGISTRATION CARD ── */
-.reg-card{background:#fff;border-radius:20px;padding:32px;box-shadow:0 24px 70px rgba(0,0,0,.25);
-  position:relative;z-index:2;}
-.reg-card-head{text-align:center;margin-bottom:22px;}
-.reg-card-head h2{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:800;
-  color:var(--navy);margin-bottom:4px;}
-.reg-card-head p{font-size:.8rem;color:var(--muted);}
-.free-badge{display:inline-flex;align-items:center;gap:6px;background:var(--green2);
-  border:1px solid rgba(26,138,74,.2);color:var(--green);padding:4px 12px;
-  border-radius:20px;font-size:.72rem;font-weight:700;margin-bottom:14px;}
-.form-group{margin-bottom:12px;}
-.form-group label{display:block;font-size:.75rem;font-weight:700;color:var(--muted);
+/* ── REG CARD ── */
+.reg-card{background:#fff;border-radius:22px;padding:32px 28px;
+  box-shadow:0 28px 80px rgba(0,0,0,.28);position:relative;z-index:2;}
+.reg-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;
+  background:linear-gradient(90deg,var(--orange),var(--orange2));border-radius:22px 22px 0 0;}
+.reg-top{text-align:center;margin-bottom:20px;}
+.reg-free-badge{display:inline-flex;align-items:center;gap:6px;background:var(--green2);
+  border:1px solid rgba(26,138,74,.25);color:var(--green);padding:4px 14px;
+  border-radius:20px;font-size:.72rem;font-weight:800;margin-bottom:12px;letter-spacing:.3px;}
+.reg-top h2{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:800;
+  color:var(--navy);margin-bottom:3px;}
+.reg-top p{font-size:.78rem;color:var(--muted);}
+.form-group{margin-bottom:11px;}
+.form-group label{display:block;font-size:.72rem;font-weight:700;color:var(--muted);
   margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;}
-.form-input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:9px;
+.form-input{width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:9px;
   font-size:.875rem;outline:none;transition:border-color .2s;background:var(--cream);}
 .form-input:focus{border-color:var(--orange);background:#fff;}
 .form-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-.submit-btn{width:100%;background:var(--orange);color:#fff;border:none;padding:14px;
-  border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;transition:all .2s;margin-top:6px;
-  box-shadow:0 4px 16px rgba(240,112,24,.3);}
-.submit-btn:hover{background:var(--orange2);}
-.submit-btn:disabled{opacity:.6;cursor:not-allowed;}
-.form-err{background:var(--red2);color:var(--red);padding:9px 13px;border-radius:8px;
-  font-size:.8rem;margin-bottom:10px;display:none;}
-.form-suc{background:var(--green2);color:var(--green);padding:9px 13px;border-radius:8px;
-  font-size:.8rem;margin-bottom:10px;display:none;}
-.login-link{text-align:center;margin-top:14px;font-size:.8rem;color:var(--muted);}
-.login-link a{color:var(--orange);font-weight:700;text-decoration:none;}
+.reg-btn{width:100%;background:linear-gradient(135deg,var(--orange),var(--orange2));
+  color:#fff;border:none;padding:14px;border-radius:11px;font-size:1rem;font-weight:700;
+  cursor:pointer;transition:all .2s;margin-top:8px;
+  box-shadow:0 6px 20px rgba(240,112,24,.35);}
+.reg-btn:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(240,112,24,.45);}
+.reg-btn:disabled{opacity:.6;cursor:not-allowed;transform:none;}
+.form-err{background:var(--red2);color:var(--red);padding:8px 12px;border-radius:8px;
+  font-size:.78rem;margin-bottom:10px;display:none;}
+.login-hint{text-align:center;margin-top:12px;font-size:.78rem;color:var(--muted);}
+.login-hint a{color:var(--orange);font-weight:700;text-decoration:none;}
+.reg-security{display:flex;align-items:center;justify-content:center;gap:6px;
+  margin-top:12px;font-size:.7rem;color:var(--muted);}
 
-/* ── STATS STRIP ── */
-.stats-strip{background:var(--sand);padding:28px 5%;}
-.stats-inner{display:flex;justify-content:center;gap:48px;flex-wrap:wrap;max-width:800px;margin:0 auto;}
-.stat-item{text-align:center;}
-.stat-item strong{display:block;font-family:'Playfair Display',serif;font-size:1.8rem;
+/* ── WHAT IS DELTA ── */
+.what-section{padding:72px 5%;background:var(--navy3);position:relative;overflow:hidden;}
+.what-section::after{content:'△';position:absolute;right:-2%;top:50%;transform:translateY(-50%);
+  font-size:400px;font-weight:900;color:rgba(255,255,255,.02);pointer-events:none;}
+.section-label{font-size:.7rem;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;
+  margin-bottom:8px;}
+.section-label.orange{color:var(--orange);}
+.section-label.white{color:rgba(255,255,255,.4);}
+.section-title{font-family:'Playfair Display',serif;font-size:clamp(1.6rem,3vw,2.4rem);
+  font-weight:900;margin-bottom:12px;}
+.section-title.white{color:#fff;}
+.section-title.dark{color:var(--charcoal);}
+.section-sub{font-size:.92rem;line-height:1.8;max-width:560px;}
+.section-sub.muted{color:var(--muted);}
+.section-sub.light{color:rgba(255,255,255,.6);}
+.what-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;
+  max-width:1100px;margin:0 auto;}
+.what-text{position:relative;z-index:2;}
+.what-points{display:flex;flex-direction:column;gap:16px;margin-top:28px;}
+.what-point{display:flex;gap:14px;align-items:flex-start;}
+.wp-icon{width:42px;height:42px;border-radius:12px;background:rgba(240,112,24,.15);
+  border:1px solid rgba(240,112,24,.25);display:flex;align-items:center;
+  justify-content:center;font-size:1.1rem;flex-shrink:0;margin-top:2px;}
+.wp-text strong{display:block;color:#fff;font-size:.9rem;margin-bottom:3px;}
+.wp-text span{color:rgba(255,255,255,.5);font-size:.8rem;line-height:1.6;}
+.what-visual{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
+  border-radius:20px;padding:28px;position:relative;z-index:2;}
+.wv-title{font-size:.72rem;font-weight:700;color:rgba(255,255,255,.3);
+  text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px;}
+.wv-chain{display:flex;flex-direction:column;gap:0;}
+.wv-node{display:flex;align-items:center;gap:12px;padding:14px 16px;
+  background:rgba(255,255,255,.05);border-radius:12px;margin-bottom:2px;}
+.wv-node.highlight{background:rgba(240,112,24,.15);border:1px solid rgba(240,112,24,.25);}
+.wv-node-icon{font-size:1.3rem;width:36px;text-align:center;}
+.wv-node-name{font-size:.82rem;font-weight:700;color:#fff;}
+.wv-node-sub{font-size:.7rem;color:rgba(255,255,255,.4);margin-top:1px;}
+.wv-arrow{text-align:center;color:rgba(255,255,255,.2);font-size:.8rem;padding:3px 0;}
+.wv-result{background:var(--green2);border-radius:12px;padding:14px 16px;
+  margin-top:12px;text-align:center;}
+.wv-result strong{color:var(--green);font-size:.88rem;}
+.wv-result span{display:block;color:var(--green);font-size:.72rem;margin-top:2px;opacity:.8;}
+
+/* ── STATS ── */
+.stats-section{padding:48px 5%;background:var(--sand);}
+.stats-inner{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;
+  max-width:900px;margin:0 auto;}
+.stat-box{text-align:center;padding:24px 16px;background:#fff;border-radius:16px;
+  border:1px solid var(--border);transition:all .2s;}
+.stat-box:hover{border-color:var(--orange);transform:translateY(-3px);}
+.stat-box strong{display:block;font-family:'Playfair Display',serif;font-size:2rem;
   font-weight:900;color:var(--navy);}
-.stat-item span{font-size:.78rem;color:var(--muted);margin-top:2px;}
+.stat-box em{color:var(--orange);font-style:normal;}
+.stat-box span{font-size:.75rem;color:var(--muted);margin-top:4px;display:block;}
 
 /* ── BENEFITS ── */
-.section{padding:64px 5%;}
+.section{padding:72px 5%;}
 .section.gray{background:var(--cream);}
-.section-label{font-size:.72rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;
-  color:var(--orange);margin-bottom:6px;text-align:center;}
-.section-title{font-family:'Playfair Display',serif;font-size:clamp(1.5rem,3vw,2.2rem);
-  font-weight:800;color:var(--charcoal);text-align:center;margin-bottom:8px;}
-.section-sub{text-align:center;color:var(--muted);font-size:.9rem;margin-bottom:40px;max-width:500px;margin-left:auto;margin-right:auto;}
-.benefits-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;max-width:960px;margin:0 auto;}
-.benefit-card{background:#fff;border-radius:18px;padding:28px 24px;border:1.5px solid var(--border);
-  transition:all .25s;text-align:center;}
+.benefits-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;
+  max-width:1000px;margin:40px auto 0;}
+.benefit-card{background:#fff;border-radius:18px;padding:28px;border:1.5px solid var(--border);
+  transition:all .25s;position:relative;overflow:hidden;}
+.benefit-card::after{content:'';position:absolute;bottom:0;left:0;height:3px;width:0;
+  background:var(--orange);transition:width .3s;border-radius:0 0 0 18px;}
 .benefit-card:hover{border-color:var(--orange);transform:translateY(-4px);
-  box-shadow:0 12px 40px rgba(240,112,24,.1);}
-.benefit-icon{width:56px;height:56px;border-radius:16px;background:var(--orange-light);
-  display:flex;align-items:center;justify-content:center;font-size:1.6rem;
-  margin:0 auto 16px;}
+  box-shadow:0 16px 48px rgba(240,112,24,.1);}
+.benefit-card:hover::after{width:100%;}
+.benefit-icon{width:52px;height:52px;border-radius:14px;background:var(--orange-light);
+  display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin-bottom:16px;}
 .benefit-card h3{font-weight:800;font-size:.95rem;color:var(--charcoal);margin-bottom:8px;}
-.benefit-card p{font-size:.82rem;color:var(--muted);line-height:1.7;}
+.benefit-card p{font-size:.82rem;color:var(--muted);line-height:1.75;}
+.benefit-tag{display:inline-block;background:var(--green2);color:var(--green);
+  font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:10px;
+  margin-top:10px;letter-spacing:.3px;}
 
 /* ── HOW IT WORKS ── */
-.steps-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;max-width:960px;margin:0 auto;}
-.step-card{text-align:center;padding:24px 16px;}
-.step-num{width:44px;height:44px;border-radius:50%;background:var(--navy);color:#fff;
-  display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.1rem;
-  margin:0 auto 14px;}
-.step-card h3{font-weight:700;font-size:.9rem;color:var(--charcoal);margin-bottom:6px;}
-.step-card p{font-size:.78rem;color:var(--muted);line-height:1.6;}
-.step-arrow{display:flex;align-items:center;justify-content:center;font-size:1.5rem;
-  color:var(--border);padding-top:28px;}
+.how-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;
+  max-width:1000px;margin:40px auto 0;position:relative;}
+.how-grid::before{content:'';position:absolute;top:32px;left:10%;right:10%;height:2px;
+  background:linear-gradient(90deg,var(--orange),var(--orange2),var(--green));
+  z-index:0;}
+.step-card{text-align:center;padding:28px 16px;position:relative;z-index:1;}
+.step-num{width:44px;height:44px;border-radius:50%;
+  background:linear-gradient(135deg,var(--navy),var(--navy2));
+  color:#fff;display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:1rem;margin:0 auto 16px;
+  box-shadow:0 4px 12px rgba(10,31,53,.3);border:3px solid #fff;}
+.step-card h3{font-weight:800;font-size:.9rem;color:var(--charcoal);margin-bottom:7px;}
+.step-card p{font-size:.78rem;color:var(--muted);line-height:1.65;}
+.step-time{display:inline-block;background:var(--orange-light);color:var(--orange);
+  font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:10px;
+  margin-top:8px;letter-spacing:.3px;}
+
+/* ── EARNINGS ── */
+.earnings-section{padding:72px 5%;background:linear-gradient(135deg,var(--navy3),var(--navy));}
+.earnings-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;
+  max-width:1000px;margin:40px auto 0;}
+.earnings-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);
+  border-radius:18px;padding:24px;}
+.ec-title{font-size:.72rem;font-weight:700;color:rgba(255,255,255,.35);
+  text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px;}
+.ec-row{display:flex;justify-content:space-between;align-items:center;
+  padding:10px 0;border-bottom:1px solid rgba(255,255,255,.07);}
+.ec-row:last-child{border-bottom:none;}
+.ec-label{font-size:.82rem;color:rgba(255,255,255,.6);}
+.ec-value{font-size:.88rem;font-weight:700;color:#fff;}
+.ec-value.green{color:#4ade80;}
+.ec-value.orange{color:var(--orange2);}
+.ec-total{background:rgba(240,112,24,.15);border:1px solid rgba(240,112,24,.25);
+  border-radius:12px;padding:16px;text-align:center;margin-top:16px;}
+.ec-total strong{font-size:1.6rem;font-weight:900;color:var(--orange2);}
+.ec-total span{display:block;font-size:.72rem;color:rgba(255,255,255,.4);margin-top:3px;}
+.earn-points{display:flex;flex-direction:column;gap:14px;}
+.earn-point{display:flex;gap:12px;align-items:flex-start;}
+.ep-check{width:24px;height:24px;background:var(--green);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:.75rem;
+  color:#fff;flex-shrink:0;margin-top:2px;}
+.ep-text strong{display:block;color:#fff;font-size:.88rem;margin-bottom:2px;}
+.ep-text span{color:rgba(255,255,255,.5);font-size:.78rem;line-height:1.6;}
 
 /* ── PLANS ── */
-.plans-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;max-width:960px;margin:0 auto;}
-.plan-card{background:#fff;border-radius:16px;padding:22px 18px;border:2px solid var(--border);
-  transition:all .2s;text-align:center;}
-.plan-card.popular{border-color:var(--navy);background:linear-gradient(135deg,var(--navy),var(--navy2));
-  transform:scale(1.03);}
-.plan-badge{background:var(--orange);color:#fff;font-size:.62rem;font-weight:800;
-  padding:2px 10px;border-radius:20px;display:inline-block;margin-bottom:10px;}
-.plan-name{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:800;
+.plans-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;
+  max-width:1000px;margin:40px auto 0;}
+.plan-card{background:#fff;border-radius:18px;padding:24px 18px;
+  border:2px solid var(--border);transition:all .2s;position:relative;overflow:hidden;}
+.plan-card.popular{border-color:var(--navy);
+  background:linear-gradient(160deg,var(--navy) 0%,var(--navy2) 100%);}
+.plan-card.popular::before{content:'';position:absolute;top:0;left:0;right:0;
+  height:3px;background:linear-gradient(90deg,var(--orange),var(--orange2));}
+.plan-badge{background:var(--orange);color:#fff;font-size:.6rem;font-weight:800;
+  padding:3px 10px;border-radius:20px;display:inline-block;margin-bottom:10px;
+  letter-spacing:.5px;}
+.plan-name{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:800;
   color:var(--charcoal);margin-bottom:6px;}
 .plan-card.popular .plan-name{color:#fff;}
-.plan-price{font-size:1.6rem;font-weight:900;color:var(--orange);margin:10px 0;}
-.plan-price span{font-size:.78rem;font-weight:400;color:var(--muted);}
-.plan-card.popular .plan-price span{color:rgba(255,255,255,.5);}
-.plan-features{font-size:.75rem;color:var(--muted);line-height:2;margin-bottom:16px;text-align:left;}
-.plan-card.popular .plan-features{color:rgba(255,255,255,.65);}
-.plan-cta{width:100%;padding:10px;border-radius:9px;font-size:.85rem;font-weight:700;
-  cursor:pointer;border:none;transition:all .2s;}
+.plan-price{font-size:1.6rem;font-weight:900;color:var(--orange);margin:10px 0 16px;}
+.plan-price span{font-size:.72rem;font-weight:400;color:var(--muted);}
+.plan-card.popular .plan-price span{color:rgba(255,255,255,.4);}
+.plan-feat{font-size:.75rem;color:var(--muted);margin-bottom:7px;
+  display:flex;align-items:center;gap:7px;}
+.plan-card.popular .plan-feat{color:rgba(255,255,255,.65);}
+.plan-feat .check{color:var(--green);font-size:.8rem;}
+.plan-feat .cross{color:var(--border);font-size:.8rem;}
+.plan-cta{width:100%;padding:11px;border-radius:10px;font-size:.85rem;font-weight:700;
+  cursor:pointer;border:none;transition:all .2s;margin-top:16px;}
 .plan-cta.orange{background:var(--orange);color:#fff;}
+.plan-cta.navy{background:var(--navy);color:#fff;}
 .plan-cta.outline{background:transparent;border:2px solid var(--border);color:var(--navy);}
 .plan-cta.white{background:#fff;color:var(--navy);}
-.plan-cta:hover{opacity:.9;}
-.free-trial-note{text-align:center;margin-top:20px;font-size:.82rem;color:var(--muted);}
-.free-trial-note strong{color:var(--green);}
+.plan-cta:hover{opacity:.9;transform:translateY(-1px);}
+.trial-note{text-align:center;margin-top:20px;font-size:.82rem;color:var(--muted);}
+.trial-note strong{color:var(--green);}
 
-/* ── CTA SECTION ── */
-.cta-section{background:linear-gradient(135deg,var(--navy3),var(--navy));padding:64px 5%;text-align:center;}
-.cta-section h2{font-family:'Playfair Display',serif;font-size:clamp(1.6rem,3vw,2.4rem);
-  font-weight:900;color:#fff;margin-bottom:14px;}
-.cta-section p{color:rgba(255,255,255,.65);font-size:.95rem;margin-bottom:28px;max-width:500px;margin-left:auto;margin-right:auto;}
+/* ── TESTIMONIAL ── */
+.testimonial-section{padding:72px 5%;background:var(--sand);}
+.test-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;
+  max-width:1000px;margin:40px auto 0;}
+.test-card{background:#fff;border-radius:16px;padding:24px;border:1px solid var(--border);}
+.test-stars{color:var(--orange);font-size:.9rem;margin-bottom:12px;letter-spacing:2px;}
+.test-text{font-size:.85rem;color:var(--charcoal);line-height:1.75;
+  font-style:italic;margin-bottom:16px;}
+.test-author{display:flex;align-items:center;gap:10px;}
+.test-avatar{width:38px;height:38px;border-radius:50%;background:var(--navy);
+  color:#fff;display:flex;align-items:center;justify-content:center;
+  font-size:.9rem;font-weight:700;flex-shrink:0;}
+.test-name{font-size:.82rem;font-weight:700;color:var(--charcoal);}
+.test-shop{font-size:.72rem;color:var(--muted);}
+.test-coming{display:flex;align-items:center;justify-content:center;
+  background:#fff;border-radius:16px;padding:24px;border:2px dashed var(--border);
+  font-size:.82rem;color:var(--muted);text-align:center;}
+
+/* ── FAQ ── */
+.faq-list{max-width:680px;margin:32px auto 0;display:flex;flex-direction:column;gap:12px;}
+.faq-item{background:#fff;border-radius:12px;border:1px solid var(--border);overflow:hidden;}
+.faq-q{padding:16px 18px;font-size:.88rem;font-weight:700;color:var(--navy);
+  cursor:pointer;display:flex;justify-content:space-between;align-items:center;
+  transition:background .2s;}
+.faq-q:hover{background:var(--sand);}
+.faq-q .arrow{transition:transform .3s;color:var(--muted);}
+.faq-q.open .arrow{transform:rotate(180deg);}
+.faq-a{padding:0 18px;max-height:0;overflow:hidden;transition:all .3s;
+  font-size:.82rem;color:var(--muted);line-height:1.8;}
+.faq-a.open{padding:0 18px 16px;max-height:200px;}
+
+/* ── CTA ── */
+.cta-section{background:linear-gradient(135deg,var(--navy3),var(--navy));
+  padding:80px 5%;text-align:center;position:relative;overflow:hidden;}
+.cta-section::before{content:'△';position:absolute;right:-2%;bottom:-30px;
+  font-size:300px;font-weight:900;color:rgba(255,255,255,.02);pointer-events:none;}
+.cta-section h2{font-family:'Playfair Display',serif;font-size:clamp(1.8rem,3.5vw,2.8rem);
+  font-weight:900;color:#fff;margin-bottom:14px;position:relative;z-index:1;}
+.cta-section p{color:rgba(255,255,255,.6);font-size:.95rem;margin-bottom:32px;
+  max-width:500px;margin-left:auto;margin-right:auto;position:relative;z-index:1;}
+.cta-btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;position:relative;z-index:1;}
 
 /* ── FOOTER ── */
-footer{background:var(--navy3);color:rgba(255,255,255,.4);padding:32px 5%;text-align:center;}
-footer .logo-ft{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:900;
+footer{background:var(--navy3);padding:40px 5% 24px;}
+.footer-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:36px;margin-bottom:28px;}
+.footer-logo{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:900;
   color:#fff;margin-bottom:10px;}
-footer .logo-ft em{color:var(--orange);font-style:normal;}
-footer p{font-size:.78rem;line-height:1.8;}
-footer a{color:rgba(255,255,255,.5);text-decoration:none;margin:0 10px;}
-footer a:hover{color:var(--orange);}
+.footer-logo em{color:var(--orange);font-style:normal;}
+.footer-desc{font-size:.78rem;color:rgba(255,255,255,.35);line-height:1.8;}
+.footer-col h4{font-size:.72rem;font-weight:700;color:rgba(255,255,255,.35);
+  letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px;}
+.footer-col a{display:block;font-size:.78rem;color:rgba(255,255,255,.45);
+  text-decoration:none;margin-bottom:8px;transition:color .2s;}
+.footer-col a:hover{color:var(--orange);}
+.footer-bottom{border-top:1px solid rgba(255,255,255,.07);padding-top:18px;
+  display:flex;justify-content:space-between;align-items:center;
+  flex-wrap:wrap;gap:10px;font-size:.72rem;color:rgba(255,255,255,.25);}
 
 /* ── TOAST ── */
 .toast{position:fixed;bottom:24px;right:24px;background:var(--navy);color:#fff;
@@ -178,83 +339,99 @@ footer a:hover{color:var(--orange);}
 @keyframes toastIn{from{transform:translateX(80px);opacity:0}to{transform:translateX(0);opacity:1}}
 
 /* ── WELCOME OVERLAY ── */
-.welcome-overlay{display:none;position:fixed;inset:0;background:rgba(6,21,38,.85);
+.welcome-overlay{display:none;position:fixed;inset:0;background:rgba(6,21,38,.88);
   z-index:500;align-items:center;justify-content:center;padding:20px;}
-.welcome-overlay.show{display:flex;}
-.welcome-box{background:#fff;border-radius:22px;padding:40px;max-width:460px;width:100%;text-align:center;
-  box-shadow:0 24px 70px rgba(0,0,0,.3);}
-.welcome-anim{font-size:3.5rem;margin-bottom:16px;animation:bounce .7s ease;}
+.welcome-overlay.show{display:flex;animation:fadeIn .4s ease;}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.welcome-box{background:#fff;border-radius:24px;padding:40px 36px;max-width:460px;
+  width:100%;text-align:center;box-shadow:0 32px 80px rgba(0,0,0,.35);}
+.welcome-anim{font-size:4rem;margin-bottom:16px;animation:bounce .8s ease;}
 @keyframes bounce{0%,100%{transform:scale(1)}50%{transform:scale(1.2)}}
 .welcome-box h2{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:900;
   color:var(--navy);margin-bottom:8px;}
-.welcome-box p{color:var(--muted);font-size:.88rem;line-height:1.7;margin-bottom:20px;}
+.welcome-box p{color:var(--muted);font-size:.86rem;line-height:1.75;margin-bottom:22px;}
 .onboard-steps{display:flex;flex-direction:column;gap:10px;margin-bottom:24px;text-align:left;}
-.onboard-step{display:flex;align-items:center;gap:12px;padding:12px 14px;
-  background:var(--sand);border-radius:10px;}
-.onboard-step-num{width:28px;height:28px;background:var(--navy);color:#fff;border-radius:50%;
-  display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:800;flex-shrink:0;}
-.onboard-step-text{font-size:.82rem;font-weight:600;color:var(--charcoal);}
-.onboard-step-sub{font-size:.72rem;color:var(--muted);margin-top:1px;}
-.go-dashboard-btn{width:100%;background:var(--orange);color:#fff;border:none;padding:14px;
-  border-radius:11px;font-size:1rem;font-weight:700;cursor:pointer;transition:all .2s;}
-.go-dashboard-btn:hover{background:var(--orange2);}
+.ob-step{display:flex;align-items:center;gap:13px;padding:12px 14px;
+  background:var(--sand);border-radius:11px;border:1px solid var(--border);}
+.ob-num{width:30px;height:30px;background:var(--navy);color:#fff;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:.78rem;
+  font-weight:800;flex-shrink:0;}
+.ob-text strong{display:block;font-size:.84rem;color:var(--charcoal);}
+.ob-text span{font-size:.72rem;color:var(--muted);}
+.go-btn{width:100%;background:linear-gradient(135deg,var(--orange),var(--orange2));
+  color:#fff;border:none;padding:15px;border-radius:11px;font-size:1rem;
+  font-weight:700;cursor:pointer;box-shadow:0 6px 20px rgba(240,112,24,.3);}
+.go-btn:hover{opacity:.95;}
 
 /* ── RESPONSIVE ── */
-@media(max-width:900px){
-  .hero-inner{grid-template-columns:1fr;}
+@media(max-width:1000px){
   .benefits-grid{grid-template-columns:1fr 1fr;}
-  .steps-grid{grid-template-columns:1fr 1fr;}
   .plans-grid{grid-template-columns:1fr 1fr;}
+  .stats-inner{grid-template-columns:1fr 1fr;}
+  .how-grid::before{display:none;}
+}
+@media(max-width:768px){
+  nav{padding:0 4%;}
+  .hero{padding:48px 4% 40px;min-height:auto;}
+  .hero-inner{grid-template-columns:1fr;}
+  .what-grid{grid-template-columns:1fr;}
+  .earnings-grid{grid-template-columns:1fr;}
+  .test-grid{grid-template-columns:1fr;}
+  .footer-grid{grid-template-columns:1fr;}
+  .how-grid{grid-template-columns:1fr 1fr;}
+  .section{padding:48px 4%;}
+  .nav-link{display:none;}
 }
 @media(max-width:600px){
-  nav{padding:0 4%;}
-  .hero{padding:48px 4% 40px;}
-  .section{padding:44px 4%;}
   .benefits-grid{grid-template-columns:1fr;}
-  .steps-grid{grid-template-columns:1fr 1fr;}
   .plans-grid{grid-template-columns:1fr;}
-  .plan-card.popular{transform:scale(1);}
-  .stats-inner{gap:28px;}
+  .stats-inner{grid-template-columns:1fr 1fr;}
+  .how-grid{grid-template-columns:1fr 1fr;}
   .form-grid-2{grid-template-columns:1fr;}
-  .nav-btns .btn-nav-outline{display:none;}
+  .plan-card.popular{transform:scale(1);}
+  table thead th:nth-child(2),
+  table thead th:nth-child(3),
+  table tbody td:nth-child(2),
+  table tbody td:nth-child(3){display:none;}
+  [style*="grid-template-columns:repeat(3,1fr)"]{grid-template-columns:1fr!important;}
+  [style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important;}
 }
 </style>
 </head>
 <body>
 
-<!-- TOAST -->
 <div class="toast" id="toastEl"></div>
 
 <!-- WELCOME OVERLAY -->
 <div class="welcome-overlay" id="welcomeOverlay">
   <div class="welcome-box">
     <div class="welcome-anim">🎉</div>
-    <h2 id="welcomeName">স্বাগতম!</h2>
-    <p>আপনার দোকান DELTA তে যোগ হয়েছে।<br>এখন শুরু করুন:</p>
+    <h2 id="welcomeName">স্বাগতম DELTA তে!</h2>
+    <p>আপনার দোকান সফলভাবে যোগ হয়েছে।<br>এখন ৩টি কাজ করুন:</p>
     <div class="onboard-steps">
-      <div class="onboard-step">
-        <div class="onboard-step-num">1</div>
-        <div>
-          <div class="onboard-step-text">Shop Profile সম্পূর্ণ করুন</div>
-          <div class="onboard-step-sub">ঠিকানা, সময়, বিবরণ যোগ করুন</div>
+      <div class="ob-step">
+        <div class="ob-num">১</div>
+        <div class="ob-text">
+          <strong>Shop Profile সম্পূর্ণ করুন</strong>
+          <span>ঠিকানা, সময়, বিবরণ যোগ করুন</span>
         </div>
       </div>
-      <div class="onboard-step">
-        <div class="onboard-step-num">2</div>
-        <div>
-          <div class="onboard-step-text">প্রথম পণ্য যোগ করুন</div>
-          <div class="onboard-step-sub">ছবি, দাম ও বিবরণ সহ</div>
+      <div class="ob-step">
+        <div class="ob-num">২</div>
+        <div class="ob-text">
+          <strong>প্রথম পণ্য যোগ করুন</strong>
+          <span>ছবি, দাম ও বিবরণ সহ</span>
         </div>
       </div>
-      <div class="onboard-step">
-        <div class="onboard-step-num">3</div>
-        <div>
-          <div class="onboard-step-text">QR Code নিন ও দোকানে লাগান</div>
-          <div class="onboard-step-sub">Customer scan করলে সরাসরি আপনার দোকানে আসবে</div>
+      <div class="ob-step">
+        <div class="ob-num">৩</div>
+        <div class="ob-text">
+          <strong>QR Code নিন ও দোকানে লাগান</strong>
+          <span>Customer scan করলে সরাসরি আপনার দোকানে</span>
         </div>
       </div>
     </div>
-    <button class="go-dashboard-btn" onclick="gotoDashboard()">
+    <button class="go-btn" onclick="window.location.href='seller-dashboard.html'">
       Dashboard এ যান →
     </button>
   </div>
@@ -264,52 +441,84 @@ footer a:hover{color:var(--orange);}
 <nav>
   <div class="nav-inner">
     <a href="index.html" class="logo">△ DELT<em>A</em></a>
-    <div class="nav-btns">
-      <a href="index.html" class="btn-nav-outline">Customer App</a>
-      <a href="seller-dashboard.html" class="btn-nav-filled">লগইন করুন</a>
+    <div class="nav-right">
+      <a href="#what" class="nav-link">DELTA কী?</a>
+      <a href="#whyDelta" class="nav-link">কেন DELTA?</a>
+      <a href="#benefits" class="nav-link">সুবিধা</a>
+      <a href="#plans" class="nav-link">Plans</a>
+      <a href="seller-dashboard.html" class="btn-nav-o">লগইন</a>
+      <a href="#regForm" class="btn-nav-f">শুরু করুন</a>
     </div>
   </div>
 </nav>
 
+<!-- MARQUEE -->
+<div class="marquee-strip">
+  <div class="marquee-inner">
+    <span class="m-item">🚀 ৩ মাস সম্পূর্ণ বিনামূল্যে</span>
+    <span class="m-item">💰 মাত্র ৮% commission — সবচেয়ে কম</span>
+    <span class="m-item">📱 ৫ মিনিটে setup করুন</span>
+    <span class="m-item">🛍️ হাজার customer এর কাছে পৌঁছান</span>
+    <span class="m-item">⚡ Real-time order notification</span>
+    <span class="m-item">🎯 Local Roots. Global Wings.</span>
+    <span class="m-item">🚀 ৩ মাস সম্পূর্ণ বিনামূল্যে</span>
+    <span class="m-item">💰 মাত্র ৮% commission — সবচেয়ে কম</span>
+    <span class="m-item">📱 ৫ মিনিটে setup করুন</span>
+    <span class="m-item">🛍️ হাজার customer এর কাছে পৌঁছান</span>
+    <span class="m-item">⚡ Real-time order notification</span>
+    <span class="m-item">🎯 Local Roots. Global Wings.</span>
+  </div>
+</div>
+
 <!-- HERO -->
-<section class="hero">
+<section class="hero" id="home">
   <div class="hero-inner">
-    <!-- Left: Text -->
+    <!-- Left -->
     <div>
-      <div class="hero-tag">🚀 West Bengal এর #1 Local Super App</div>
-      <h1>আপনার দোকান<br><em>Digital</em> করুন</h1>
+      <div class="hero-tag">🏪 West Bengal এর প্রথম Local Super App</div>
+      <h1>আপনার দোকান<br><em>Digital</em> করুন
+        <span class="bn-line">পরিবর্তনের ব-দ্বীপে আপনাকে স্বাগতম</span>
+      </h1>
       <p class="hero-sub bn">
         মন্তেশ্বর ও আশেপাশের হাজার customer এর কাছে পৌঁছান।
-        ৩ মাস বিনামূল্যে। কোনো setup fee নেই।
+        Online order নিন। বেশি আয় করুন।
+        ৩ মাস সম্পূর্ণ বিনামূল্যে।
       </p>
       <div class="hero-pills">
         <div class="hero-pill"><div class="dot"></div>৩ মাস Free Trial</div>
-        <div class="hero-pill"><div class="dot"></div>₹0 Setup Fee</div>
-        <div class="hero-pill"><div class="dot"></div>২ ঘণ্টায় Delivery</div>
+        <div class="hero-pill"><div class="dot"></div>₹০ Setup Fee</div>
+        <div class="hero-pill"><div class="dot"></div>৫ মিনিটে Live</div>
+        <div class="hero-pill"><div class="dot"></div>২৪/৭ Support</div>
       </div>
-      <div class="hero-cta">
-        <button class="btn-primary-lg" onclick="document.getElementById('regForm').scrollIntoView({behavior:'smooth'})">
-          এখনই শুরু করুন →
+      <div class="hero-btns">
+        <button class="btn-lg btn-orange"
+          onclick="document.getElementById('regForm').scrollIntoView({behavior:'smooth'})">
+          🚀 বিনামূল্যে শুরু করুন
         </button>
-        <button class="btn-outline-lg" onclick="document.getElementById('howItWorks').scrollIntoView({behavior:'smooth'})">
-          কীভাবে কাজ করে?
+        <button class="btn-lg btn-white-o"
+          onclick="document.getElementById('what').scrollIntoView({behavior:'smooth'})">
+          DELTA কী? →
         </button>
+      </div>
+      <div class="hero-trust">
+        <div class="trust-item">🔒 <strong>Secure</strong> Firebase Auth</div>
+        <div class="trust-item">💳 <strong>৮-১৫%</strong> commission only</div>
+        <div class="trust-item">⚡ <strong>সাপ্তাহিক</strong> payout</div>
       </div>
     </div>
 
     <!-- Right: Registration Form -->
     <div class="reg-card" id="regForm">
-      <div class="reg-card-head">
-        <div class="free-badge">✅ ৩ মাস বিনামূল্যে</div>
+      <div class="reg-top">
+        <div class="reg-free-badge">✅ ৩ মাস বিনামূল্যে · No credit card</div>
         <h2>আজই নিবন্ধন করুন</h2>
-        <p>Register করুন, সাথে সাথে শুরু করুন</p>
+        <p>Register করুন, সাথে সাথেই শুরু করুন</p>
       </div>
       <div class="form-err" id="regErr"></div>
-      <div class="form-suc" id="regSuc"></div>
       <div class="form-group">
         <label>দোকানের নাম *</label>
         <input type="text" class="form-input" id="rShop"
-          placeholder="যেমন: মন্তেশ্বর মিষ্টি ঘর, Delta Store">
+          placeholder="যেমন: মন্তেশ্বর মিষ্টি ঘর">
       </div>
       <div class="form-grid-2">
         <div class="form-group">
@@ -347,127 +556,309 @@ footer a:hover{color:var(--orange);}
         <input type="email" class="form-input" id="rEmail" placeholder="your@email.com">
       </div>
       <div class="form-group">
-        <label>Password (min 6 characters) *</label>
+        <label>Password * (min 6 characters)</label>
         <input type="password" class="form-input" id="rPass" placeholder="শক্তিশালী পাসওয়ার্ড">
       </div>
-      <button class="submit-btn" id="regBtn" onclick="doRegister()">
+      <button class="reg-btn" id="regBtn" onclick="doRegister()">
         🚀 বিনামূল্যে শুরু করুন
       </button>
-      <div class="login-link">
+      <div class="login-hint">
         আগেই account আছে?
         <a href="seller-dashboard.html">লগইন করুন →</a>
+      </div>
+      <div class="reg-security">🔒 SSL Secured · Firebase Auth · আপনার data সুরক্ষিত</div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT IS DELTA -->
+<section class="what-section" id="what">
+  <div class="what-grid">
+    <div class="what-text">
+      <div class="section-label white">DELTA কী?</div>
+      <div class="section-title white">West Bengal এর প্রথম<br>Local Super App</div>
+      <p class="section-sub light bn">
+        DELTA একটি digital marketplace যেখানে আপনার শহরের
+        সব দোকান, কৃষক ও শিল্পী একসাথে আছে।
+        Customer তাদের phone থেকে order করে,
+        আপনি ২ ঘণ্টায় deliver করেন।
+      </p>
+      <div class="what-points">
+        <div class="what-point">
+          <div class="wp-icon">🏘️</div>
+          <div class="wp-text">
+            <strong>Block-based Platform</strong>
+            <span>প্রতিটি Block একটি আলাদা marketplace।
+            Manteswar এর দোকান Manteswar এর customer দেখে।</span>
+          </div>
+        </div>
+        <div class="what-point">
+          <div class="wp-icon">📱</div>
+          <div class="wp-text">
+            <strong>Customer App + Seller Dashboard</strong>
+            <span>Customer app এ order দেয়।
+            আপনার dashboard এ সাথে সাথে দেখায়।</span>
+          </div>
+        </div>
+        <div class="what-point">
+          <div class="wp-icon">🌍</div>
+          <div class="wp-text">
+            <strong>Local থেকে Global</strong>
+            <span>দিল্লি, দুবাই, আমেরিকা থেকেও
+            পরিবারের জন্য order আসতে পারে।</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="what-visual">
+      <div class="wv-title">কীভাবে কাজ করে</div>
+      <div class="wv-chain">
+        <div class="wv-node">
+          <div class="wv-node-icon">👤</div>
+          <div>
+            <div class="wv-node-name">Customer</div>
+            <div class="wv-node-sub">DELTA app এ order দেয়</div>
+          </div>
+        </div>
+        <div class="wv-arrow">↓</div>
+        <div class="wv-node highlight">
+          <div class="wv-node-icon">🏪</div>
+          <div>
+            <div class="wv-node-name">আপনার দোকান</div>
+            <div class="wv-node-sub">Notification পান → Confirm করুন</div>
+          </div>
+        </div>
+        <div class="wv-arrow">↓</div>
+        <div class="wv-node">
+          <div class="wv-node-icon">🛵</div>
+          <div>
+            <div class="wv-node-name">Delivery</div>
+            <div class="wv-node-sub">Local rider → ২ ঘণ্টায় পৌঁছায়</div>
+          </div>
+        </div>
+        <div class="wv-arrow">↓</div>
+        <div class="wv-node">
+          <div class="wv-node-icon">😊</div>
+          <div>
+            <div class="wv-node-name">Customer সন্তুষ্ট</div>
+            <div class="wv-node-sub">Review দেয় → আপনার rating বাড়ে</div>
+          </div>
+        </div>
+      </div>
+      <div class="wv-result">
+        <strong>💰 আপনার account এ payment</strong>
+        <span>প্রতি সপ্তাহে bank এ পাঠানো হয়</span>
       </div>
     </div>
   </div>
 </section>
 
 <!-- STATS -->
-<div class="stats-strip">
+<div class="stats-section">
   <div class="stats-inner">
-    <div class="stat-item">
-      <strong>৩ মাস</strong>
+    <div class="stat-box">
+      <strong>৩<em>মাস</em></strong>
       <span>বিনামূল্যে Trial</span>
     </div>
-    <div class="stat-item">
-      <strong>₹0</strong>
-      <span>Setup Fee</span>
+    <div class="stat-box">
+      <strong>৮<em>%</em></strong>
+      <span>শুধুমাত্র commission</span>
     </div>
-    <div class="stat-item">
-      <strong>২ ঘণ্টা</strong>
+    <div class="stat-box">
+      <strong>২<em>ঘণ্টা</em></strong>
       <span>Local Delivery</span>
     </div>
-    <div class="stat-item">
-      <strong>৫ মিনিট</strong>
+    <div class="stat-box">
+      <strong>৫<em>মিনিট</em></strong>
       <span>Setup সময়</span>
     </div>
   </div>
 </div>
 
 <!-- BENEFITS -->
-<section class="section">
-  <div class="section-label">কেন DELTA?</div>
-  <div class="section-title">আপনার দোকানের জন্য সব কিছু</div>
-  <div class="section-sub">ছোট দোকান থেকে বড় ব্যবসা — DELTA সবার জন্য।</div>
+<section class="section" id="benefits">
+  <div style="text-align:center">
+    <div class="section-label orange">সুবিধাসমূহ</div>
+    <div class="section-title dark">DELTA তে যোগ দিলে কী পাবেন?</div>
+    <p class="section-sub muted" style="margin:0 auto">
+      শুধু একটি app — আপনার ব্যবসার সব কিছু এক জায়গায়।
+    </p>
+  </div>
   <div class="benefits-grid">
     <div class="benefit-card">
       <div class="benefit-icon">📱</div>
       <h3>সহজ Product Upload</h3>
-      <p>ছবি তুলুন, দাম দিন, সাথে সাথে live। ৫ মিনিটেই প্রথম product।</p>
+      <p>ছবি তুলুন, দাম দিন, ক্যাটাগরি বেছে নিন। ৫ মিনিটেই আপনার পণ্য হাজার customer এর কাছে।</p>
+      <span class="benefit-tag">⚡ ৫ মিনিটে Live</span>
     </div>
     <div class="benefit-card">
-      <div class="benefit-icon">🛍️</div>
-      <h3>Real-time Orders</h3>
-      <p>Customer order দিলে সাথে সাথে notification। Dashboard এ সব manage করুন।</p>
+      <div class="benefit-icon">🔔</div>
+      <h3>Real-time Order Alert</h3>
+      <p>Customer order দিলে সাথে সাথে notification। Dashboard এ Confirm → Prepare → Deliver।</p>
+      <span class="benefit-tag">⚡ Instant Notification</span>
     </div>
     <div class="benefit-card">
       <div class="benefit-icon">💰</div>
-      <h3>সর্বোচ্চ Earnings</h3>
-      <p>মাত্র ৮-১৫% commission। বাকি সব আপনার। সাপ্তাহিক payout।</p>
-    </div>
-    <div class="benefit-card">
-      <div class="benefit-icon">📊</div>
-      <h3>Sales Analytics</h3>
-      <p>কোন পণ্য বেশি বিকছে, কোন সময়ে order বেশি আসে — সব data।</p>
+      <h3>বেশি আয়, কম খরচ</h3>
+      <p>মাত্র ৮-১৫% commission। বাকি সব আপনার। প্রতি সপ্তাহে সরাসরি আপনার bank এ।</p>
+      <span class="benefit-tag">💸 সাপ্তাহিক Payout</span>
     </div>
     <div class="benefit-card">
       <div class="benefit-icon">🎯</div>
       <h3>Offer Builder</h3>
-      <p>Flash Sale, Coupon code, Festival offer — নিজেই বানান। Customer attract করুন।</p>
+      <p>Flash Sale, Coupon code, Festival offer নিজেই বানান। Customer কে attract করুন।</p>
+      <span class="benefit-tag">🏷️ Custom Offers</span>
+    </div>
+    <div class="benefit-card">
+      <div class="benefit-icon">📊</div>
+      <h3>Sales Analytics</h3>
+      <p>কোন পণ্য বেশি বিকছে, কোন সময়ে বেশি order আসে — data দেখে smart decision নিন।</p>
+      <span class="benefit-tag">📈 Data Driven</span>
     </div>
     <div class="benefit-card">
       <div class="benefit-icon">📲</div>
       <h3>QR Code Shop</h3>
-      <p>আপনার দোকানের QR code। Print করুন, লাগান। Customer scan করলেই order।</p>
+      <p>আপনার দোকানের unique QR code। Print করুন, দরজায় লাগান। Customer scan → Order।</p>
+      <span class="benefit-tag">🔲 Unique QR</span>
     </div>
   </div>
 </section>
 
 <!-- HOW IT WORKS -->
 <section class="section gray" id="howItWorks">
-  <div class="section-label">প্রক্রিয়া</div>
-  <div class="section-title">মাত্র ৪ ধাপে শুরু করুন</div>
-  <div class="section-sub">৫ মিনিটেই আপনার দোকান live।</div>
-  <div class="steps-grid">
+  <div style="text-align:center">
+    <div class="section-label orange">প্রক্রিয়া</div>
+    <div class="section-title dark">মাত্র ৪ ধাপে শুরু করুন</div>
+    <p class="section-sub muted" style="margin:0 auto">
+      সহজ। দ্রুত। বিনামূল্যে।
+    </p>
+  </div>
+  <div class="how-grid">
     <div class="step-card">
       <div class="step-num">১</div>
       <h3>নিবন্ধন করুন</h3>
-      <p>দোকানের নাম, category ও email দিয়ে ৩০ সেকেন্ডে register।</p>
+      <p>Email ও দোকানের নাম দিয়ে ৩০ সেকেন্ডে account তৈরি।</p>
+      <span class="step-time">⏱️ ৩০ সেকেন্ড</span>
     </div>
     <div class="step-card">
       <div class="step-num">২</div>
       <h3>পণ্য যোগ করুন</h3>
-      <p>ছবি তুলুন, দাম দিন। আপনার পণ্য customer দের কাছে দেখাবে।</p>
+      <p>ছবি তুলুন, দাম দিন। সাথে সাথেই customer দেখতে পাবে।</p>
+      <span class="step-time">⏱️ ৫ মিনিট</span>
     </div>
     <div class="step-card">
       <div class="step-num">৩</div>
       <h3>Orders পান</h3>
       <p>Customer order দিলে notification। Confirm করুন, prepare করুন।</p>
+      <span class="step-time">⚡ Real-time</span>
     </div>
     <div class="step-card">
       <div class="step-num">৪</div>
       <h3>টাকা পান</h3>
-      <p>Delivery হলে আপনার account এ। সাপ্তাহিক payout।</p>
+      <p>Delivery হলে account এ জমা। সাপ্তাহিক bank transfer।</p>
+      <span class="step-time">💰 সাপ্তাহিক</span>
+    </div>
+  </div>
+</section>
+
+<!-- EARNINGS DEMO -->
+<section class="earnings-section">
+  <div style="text-align:center;position:relative;z-index:2">
+    <div class="section-label white">আয়ের হিসাব</div>
+    <div class="section-title white">আপনি কত আয় করতে পারেন?</div>
+    <p class="section-sub light" style="margin:0 auto">
+      একটি উদাহরণ দেখুন — বাস্তব সংখ্যায়।
+    </p>
+  </div>
+  <div class="earnings-grid">
+    <div class="earnings-card">
+      <div class="ec-title">উদাহরণ: মিষ্টির দোকান</div>
+      <div class="ec-row">
+        <span class="ec-label">দৈনিক গড় orders</span>
+        <span class="ec-value">১৫টি</span>
+      </div>
+      <div class="ec-row">
+        <span class="ec-label">গড় order value</span>
+        <span class="ec-value">₹২৫০</span>
+      </div>
+      <div class="ec-row">
+        <span class="ec-label">মাসিক GMV</span>
+        <span class="ec-value">₹১,১২,৫০০</span>
+      </div>
+      <div class="ec-row">
+        <span class="ec-label">DELTA commission (১০%)</span>
+        <span class="ec-value orange">- ₹১১,২৫০</span>
+      </div>
+      <div class="ec-row">
+        <span class="ec-label">Delivery charge</span>
+        <span class="ec-value orange">- ₹০ (customer দেয়)</span>
+      </div>
+      <div class="ec-total">
+        <strong>₹১,০১,২৫০</strong>
+        <span>আপনার মাসিক আয় (নেট)</span>
+      </div>
+    </div>
+    <div>
+      <div class="earn-points">
+        <div class="earn-point">
+          <div class="ep-check">✓</div>
+          <div class="ep-text">
+            <strong>Offline এর চেয়ে বেশি customer</strong>
+            <span>শুধু দোকানের সামনের লোক নয়, পুরো এলাকার customer।</span>
+          </div>
+        </div>
+        <div class="earn-point">
+          <div class="ep-check">✓</div>
+          <div class="ep-text">
+            <strong>রাতেও order আসে</strong>
+            <span>আপনি ঘুমিয়ে থাকলেও customer order করতে পারে।</span>
+          </div>
+        </div>
+        <div class="earn-point">
+          <div class="ep-check">✓</div>
+          <div class="ep-text">
+            <strong>NRI গিফট অর্ডার</strong>
+            <span>দিল্লি, দুবাই, আমেরিকা থেকে পরিবারের জন্য order।</span>
+          </div>
+        </div>
+        <div class="earn-point">
+          <div class="ep-check">✓</div>
+          <div class="ep-text">
+            <strong>Festival এ বিক্রি ৫x বাড়ে</strong>
+            <span>Durga Puja, Eid, Poila Boishakh — special offers দিন।</span>
+          </div>
+        </div>
+        <div class="earn-point">
+          <div class="ep-check">✓</div>
+          <div class="ep-text">
+            <strong>Data দিয়ে smart decisions</strong>
+            <span>কোন পণ্য কখন বেশি বিকছে — analytics দেখুন।</span>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </section>
 
 <!-- PLANS -->
-<section class="section">
-  <div class="section-label">Plans</div>
-  <div class="section-title">আপনার জন্য সঠিক Plan</div>
-  <div class="section-sub">সব plan এ ৩ মাস বিনামূল্যে trial।</div>
+<section class="section" id="plans">
+  <div style="text-align:center">
+    <div class="section-label orange">Subscription Plans</div>
+    <div class="section-title dark">আপনার জন্য সঠিক Plan বেছে নিন</div>
+    <p class="section-sub muted" style="margin:0 auto">
+      সব plan এ ৩ মাস বিনামূল্যে trial। যেকোনো সময় upgrade করুন।
+    </p>
+  </div>
   <div class="plans-grid">
     <div class="plan-card">
       <div class="plan-name">FREE</div>
-      <div class="plan-price">₹0<span>/মাস</span></div>
-      <div class="plan-features">
-        ✓ ১০টি পণ্য<br>
-        ✓ Order management<br>
-        ✓ Shop profile<br>
-        ✓ QR code<br>
-        ✗ Analytics<br>
-        ✗ Offer builder
-      </div>
+      <div class="plan-price">₹০<span>/মাস</span></div>
+      <div class="plan-feat"><span class="check">✓</span> ১০টি পণ্য</div>
+      <div class="plan-feat"><span class="check">✓</span> Order management</div>
+      <div class="plan-feat"><span class="check">✓</span> Shop profile</div>
+      <div class="plan-feat"><span class="check">✓</span> QR code</div>
+      <div class="plan-feat"><span class="cross">✗</span> Analytics</div>
+      <div class="plan-feat"><span class="cross">✗</span> Offer builder</div>
       <button class="plan-cta outline"
         onclick="document.getElementById('regForm').scrollIntoView({behavior:'smooth'})">
         শুরু করুন →
@@ -475,32 +866,28 @@ footer a:hover{color:var(--orange);}
     </div>
     <div class="plan-card">
       <div class="plan-name">Basic</div>
-      <div class="plan-price">₹199<span>/মাস</span></div>
-      <div class="plan-features">
-        ✓ ৫০টি পণ্য<br>
-        ✓ Order management<br>
-        ✓ Basic analytics<br>
-        ✓ Offer builder<br>
-        ✓ Priority support<br>
-        ✗ Featured listing
-      </div>
-      <button class="plan-cta orange"
+      <div class="plan-price">₹১৯৯<span>/মাস</span></div>
+      <div class="plan-feat"><span class="check">✓</span> ৫০টি পণ্য</div>
+      <div class="plan-feat"><span class="check">✓</span> Order management</div>
+      <div class="plan-feat"><span class="check">✓</span> Basic analytics</div>
+      <div class="plan-feat"><span class="check">✓</span> Offer builder</div>
+      <div class="plan-feat"><span class="check">✓</span> Priority support</div>
+      <div class="plan-feat"><span class="cross">✗</span> Featured listing</div>
+      <button class="plan-cta navy"
         onclick="document.getElementById('regForm').scrollIntoView({behavior:'smooth'})">
         শুরু করুন →
       </button>
     </div>
     <div class="plan-card popular">
-      <div class="plan-badge">🔥 জনপ্রিয়</div>
+      <div class="plan-badge">🔥 সবচেয়ে জনপ্রিয়</div>
       <div class="plan-name">Standard</div>
-      <div class="plan-price">₹499<span style="color:rgba(255,255,255,.5)">/মাস</span></div>
-      <div class="plan-features">
-        ✓ Unlimited পণ্য<br>
-        ✓ Full analytics<br>
-        ✓ WhatsApp notify<br>
-        ✓ Customer insights<br>
-        ✓ Featured listing<br>
-        ✓ Offer builder
-      </div>
+      <div class="plan-price">₹৪৯৯<span>/মাস</span></div>
+      <div class="plan-feat" style="color:rgba(255,255,255,.65)"><span class="check">✓</span> Unlimited পণ্য</div>
+      <div class="plan-feat" style="color:rgba(255,255,255,.65)"><span class="check">✓</span> Full analytics</div>
+      <div class="plan-feat" style="color:rgba(255,255,255,.65)"><span class="check">✓</span> WhatsApp notify</div>
+      <div class="plan-feat" style="color:rgba(255,255,255,.65)"><span class="check">✓</span> Customer insights</div>
+      <div class="plan-feat" style="color:rgba(255,255,255,.65)"><span class="check">✓</span> Featured listing</div>
+      <div class="plan-feat" style="color:rgba(255,255,255,.65)"><span class="check">✓</span> Offer builder</div>
       <button class="plan-cta white"
         onclick="document.getElementById('regForm').scrollIntoView({behavior:'smooth'})">
         শুরু করুন →
@@ -508,46 +895,463 @@ footer a:hover{color:var(--orange);}
     </div>
     <div class="plan-card">
       <div class="plan-name">Premium</div>
-      <div class="plan-price">₹999<span>/মাস</span></div>
-      <div class="plan-features">
-        ✓ সব Standard এর সুবিধা<br>
-        ✓ Top featured listing<br>
-        ✓ AI sales insights<br>
-        ✓ Dedicated manager<br>
-        ✓ Custom QR branding<br>
-        ✓ Priority delivery
-      </div>
+      <div class="plan-price">₹৯৯৯<span>/মাস</span></div>
+      <div class="plan-feat"><span class="check">✓</span> সব Standard সুবিধা</div>
+      <div class="plan-feat"><span class="check">✓</span> Top featured listing</div>
+      <div class="plan-feat"><span class="check">✓</span> AI sales insights</div>
+      <div class="plan-feat"><span class="check">✓</span> Dedicated manager</div>
+      <div class="plan-feat"><span class="check">✓</span> Custom QR branding</div>
+      <div class="plan-feat"><span class="check">✓</span> Priority delivery</div>
       <button class="plan-cta orange"
         onclick="document.getElementById('regForm').scrollIntoView({behavior:'smooth'})">
         শুরু করুন →
       </button>
     </div>
   </div>
-  <div class="free-trial-note">
+  <div class="trial-note">
     🎁 সব plan এ <strong>৩ মাস বিনামূল্যে trial</strong> — কোনো credit card দরকার নেই।
+    Trial শেষে নিজে upgrade করুন। Auto charge নেই।
+  </div>
+</section>
+
+<!-- WHY DELTA vs OTHERS -->
+<section class="section gray" id="whyDelta">
+  <div style="text-align:center">
+    <div class="section-label orange">কেন DELTA?</div>
+    <div class="section-title dark">Amazon, Flipkart, Swiggy থাকতে<br>DELTA কেন?</div>
+    <p class="section-sub muted" style="margin:0 auto bn">
+      এই প্রশ্নটা স্বাভাবিক। উত্তরটা জানুন।
+    </p>
+  </div>
+
+  <!-- Comparison Table -->
+  <div style="max-width:900px;margin:40px auto 0;overflow-x:auto;">
+    <table style="width:100%;border-collapse:collapse;background:#fff;border-radius:16px;
+      overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.06);">
+      <thead>
+        <tr style="background:var(--navy);">
+          <th style="padding:16px 20px;text-align:left;color:rgba(255,255,255,.5);
+            font-size:.75rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;">বিষয়</th>
+          <th style="padding:16px 20px;text-align:center;color:rgba(255,255,255,.5);
+            font-size:.75rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Amazon/Flipkart</th>
+          <th style="padding:16px 20px;text-align:center;color:rgba(255,255,255,.5);
+            font-size:.75rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Swiggy/Zomato</th>
+          <th style="padding:16px 20px;text-align:center;background:rgba(240,112,24,.2);
+            color:var(--orange2);font-size:.75rem;font-weight:800;letter-spacing:1px;
+            text-transform:uppercase;">△ DELTA</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom:1px solid var(--border);">
+          <td style="padding:14px 20px;font-size:.85rem;font-weight:600;color:var(--charcoal)">Tier-3 coverage</td>
+          <td style="padding:14px 20px;text-align:center;font-size:.85rem;color:var(--red)">❌ নেই</td>
+          <td style="padding:14px 20px;text-align:center;font-size:.85rem;color:var(--red)">❌ নেই</td>
+          <td style="padding:14px 20px;text-align:center;font-size:.85rem;color:var(--green);
+            font-weight:700;background:rgba(240,112,24,.04)">✅ শুধু এখানেই</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border);background:var(--sand);">
+          <td style="padding:14px 20px;font-size:.85rem;font-weight:600;color:var(--charcoal)">Commission rate</td>
+          <td style="padding:14px 20px;text-align:center;font-size:.85rem;color:var(--red)">২৫-৪০%</td>
+          <td style="padding:14px 20px;text-align:center;font-size:.85rem;color:var(--red)">২০-৩০%</td>
+          <td style="padding:14px 20px;text-align:center;font-size:.85rem;color:var(--green);
+            font-weight:700;background:rgba(240,112,24,.04)">মাত্র ৮-১৫%</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border);">
+          <td style="padding:14px 20px;font-size:.85rem;font-weight:600;color:var(--charcoal)">Delivery time</td>
+          <td style="padding:14px 20px;text-align:center;font-size:.85rem;color:var(--muted)">১-৩ দিন</td>
+          <td style="padding:14px 20px;text-align:center;font-size:.85rem;color:var(--muted)">৩০-৬০ মিনিট</td>
+          <td style="padding:14px 20px;text-align:center;font-size:.85rem;color:var(--green);
+            font-weight:700;background:rgba(240,112,24,.04)">১০-৩০ মিনিট</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border);background:var(--sand);">
+          <td style="padding:14px 20px;font-size:.85rem;font-weight:600;color:var(--charcoal)">Bengali language</td>
+          <td style="padding:14px 20px;text-align:center;font-size:.85rem;color:var(--red)">❌</td>
+          <td style="padding:14px 20px;text-align:center;font-size:.85rem;color:var(--red)">❌</td>
+          <td style="padding:14px 20px;text-align:center;font-size:.85rem;color:var(--green);
+            font-weight:700;background:rgba(240,112,24,.04)">✅ Primary language</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border);">
+          <td style="padding:14px 20px;font-size:.85rem;font-weight:600;color:var(--charcoal)">Local economy support</td>
+          <td style="padding:14px 20px;text-align:center;font-size:.85rem;color:var(--red)">❌ বাইরে যায়</td>
+          <td style="padding:14px 20px;text-align:center;font-size:.85rem;color:var(--red)">❌ বাইরে যায়</td>
+          <td style="padding:14px 20px;text-align:center;font-size:.85rem;color:var(--green);
+            font-weight:700;background:rgba(240,112,24,.04)">✅ এলাকায় থাকে</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border);background:var(--sand);">
+          <td style="padding:14px 20px;font-size:.85rem;font-weight:600;color:var(--charcoal)">Setup সময়</td>
+          <td style="padding:14px 20px;text-align:center;font-size:.85rem;color:var(--muted)">৭-১৫ দিন</td>
+          <td style="padding:14px 20px;text-align:center;font-size:.85rem;color:var(--muted)">৩-৫ দিন</td>
+          <td style="padding:14px 20px;text-align:center;font-size:.85rem;color:var(--green);
+            font-weight:700;background:rgba(240,112,24,.04)">৫ মিনিট</td>
+        </tr>
+        <tr>
+          <td style="padding:14px 20px;font-size:.85rem;font-weight:600;color:var(--charcoal)">Free trial</td>
+          <td style="padding:14px 20px;text-align:center;font-size:.85rem;color:var(--red)">❌</td>
+          <td style="padding:14px 20px;text-align:center;font-size:.85rem;color:var(--red)">❌</td>
+          <td style="padding:14px 20px;text-align:center;font-size:.85rem;color:var(--green);
+            font-weight:700;background:rgba(240,112,24,.04)">✅ ৩ মাস বিনামূল্যে</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Key differentiators -->
+  <div style="max-width:900px;margin:32px auto 0;display:grid;
+    grid-template-columns:repeat(3,1fr);gap:16px;">
+    <div style="background:#fff;border-radius:14px;padding:22px;border:1.5px solid var(--border);">
+      <div style="font-size:1.8rem;margin-bottom:12px;">🏘️</div>
+      <h3 style="font-size:.9rem;font-weight:800;color:var(--navy);margin-bottom:8px;">
+        আপনার প্রতিযোগী নেই এখানে
+      </h3>
+      <p style="font-size:.78rem;color:var(--muted);line-height:1.7;">
+        Amazon এ হাজার seller আপনার বিরুদ্ধে। DELTA তে আপনার block এ
+        আপনিই একমাত্র মিষ্টির দোকান। কোনো price war নেই।
+      </p>
+    </div>
+    <div style="background:#fff;border-radius:14px;padding:22px;border:1.5px solid var(--border);">
+      <div style="font-size:1.8rem;margin-bottom:12px;">🤝</div>
+      <h3 style="font-size:.9rem;font-weight:800;color:var(--navy);margin-bottom:8px;">
+        আমরা partner, competitor নই
+      </h3>
+      <p style="font-size:.78rem;color:var(--muted);line-height:1.7;">
+        Amazon আপনার competitor হয়ে যায় — নিজের product বেচে।
+        DELTA শুধু platform — আপনার success এই আমাদের success।
+      </p>
+    </div>
+    <div style="background:#fff;border-radius:14px;padding:22px;border:1.5px solid var(--border);">
+      <div style="font-size:1.8rem;margin-bottom:12px;">📍</div>
+      <h3 style="font-size:.9rem;font-weight:800;color:var(--navy);margin-bottom:8px;">
+        আপনার customer, আপনার data
+      </h3>
+      <p style="font-size:.78rem;color:var(--muted);line-height:1.7;">
+        Amazon এ customer data Amazon এর। DELTA তে আপনি
+        আপনার customer কে চেনেন, তাদের সাথে সরাসরি কথা বলতে পারেন।
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ECONOMIC TRANSFORMATION -->
+<section class="section" id="economy">
+  <div style="text-align:center">
+    <div class="section-label orange">অর্থনৈতিক দৃষ্টিভঙ্গি</div>
+    <div class="section-title dark">DELTA কীভাবে অর্থনীতি<br>বদলে দিতে পারে?</div>
+    <p class="section-sub muted" style="margin:0 auto">
+      এটা শুধু একটা app নয় — এটা একটা economic movement।
+    </p>
+  </div>
+
+  <!-- The Problem -->
+  <div style="max-width:900px;margin:40px auto 0;">
+    <div style="background:var(--red2);border-left:4px solid var(--red);border-radius:12px;
+      padding:20px 24px;margin-bottom:24px;">
+      <h3 style="font-size:.9rem;font-weight:800;color:var(--red);margin-bottom:10px;">
+        ⚠️ এখন কী হচ্ছে — The Leakage Problem
+      </h3>
+      <p style="font-size:.82rem;color:#7d2020;line-height:1.8;" class="bn">
+        মন্তেশ্বরের একজন মানুষ Amazon থেকে ₹১,০০০ এর জিনিস কিনলে —
+        সেই টাকা যায় Mumbai বা Delhi র warehouse এ।
+        স্থানীয় দোকানদার কিছু পায় না।
+        স্থানীয় কর্মসংস্থান হয় না।
+        <strong>টাকা এলাকা ছেড়ে চলে যায়।</strong>
+      </p>
+    </div>
+
+    <!-- The Solution -->
+    <div style="background:var(--green2);border-left:4px solid var(--green);border-radius:12px;
+      padding:20px 24px;margin-bottom:32px;">
+      <h3 style="font-size:.9rem;font-weight:800;color:var(--green);margin-bottom:10px;">
+        ✅ DELTA র সমাধান — The Circular Economy
+      </h3>
+      <p style="font-size:.82rem;color:#0d4d2a;line-height:1.8;" class="bn">
+        DELTA তে order হলে — সেই ₹১,০০০ যায় স্থানীয় দোকানদারের কাছে।
+        দোকানদার সেটা দিয়ে স্থানীয় supplier থেকে কেনে।
+        Rider স্থানীয় — তার আয়ও এখানেই।
+        <strong>টাকা এলাকার মধ্যেই ঘুরতে থাকে।</strong>
+      </p>
+    </div>
+
+    <!-- Economic Concepts -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:32px;">
+
+      <div style="background:var(--navy3);border-radius:16px;padding:26px;color:#fff;">
+        <div style="font-size:1.5rem;margin-bottom:12px;">🔄</div>
+        <h3 style="font-size:.95rem;font-weight:800;color:var(--orange2);margin-bottom:10px;">
+          Multiplier Effect
+        </h3>
+        <p style="font-size:.78rem;color:rgba(255,255,255,.6);line-height:1.75;" class="bn">
+          Economics এর "Multiplier Effect" — একটি টাকা বারবার ঘুরলে
+          অর্থনীতি বড় হয়।
+        </p>
+        <div style="background:rgba(255,255,255,.06);border-radius:10px;padding:14px;margin-top:14px;">
+          <div style="font-size:.75rem;color:rgba(255,255,255,.4);margin-bottom:8px;">উদাহরণ:</div>
+          <div style="font-size:.78rem;color:rgba(255,255,255,.7);line-height:1.8;">
+            Customer → ₹১০০ দেয় দোকানদার কে<br>
+            দোকানদার → ₹৭০ দেয় supplier কে<br>
+            Supplier → ₹৫০ দেয় কৃষক কে<br>
+            কৃষক → ₹৩০ দেয় local shop এ<br>
+            <strong style="color:var(--orange2);">₹১০০ → ₹২৫০ local economic activity</strong>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:var(--navy3);border-radius:16px;padding:26px;color:#fff;">
+        <div style="font-size:1.5rem;margin-bottom:12px;">📈</div>
+        <h3 style="font-size:.95rem;font-weight:800;color:var(--orange2);margin-bottom:10px;">
+          Formalization of Informal Economy
+        </h3>
+        <p style="font-size:.78rem;color:rgba(255,255,255,.6);line-height:1.75;" class="bn">
+          India র ৯০% ব্যবসা "informal" — কোনো digital record নেই।
+          DELTA এটাকে formal করে।
+        </p>
+        <div style="background:rgba(255,255,255,.06);border-radius:10px;padding:14px;margin-top:14px;">
+          <div style="font-size:.75rem;color:rgba(255,255,255,.4);margin-bottom:8px;">সুবিধা:</div>
+          <div style="font-size:.78rem;color:rgba(255,255,255,.7);line-height:1.8;">
+            ✓ Digital transaction record<br>
+            ✓ Bank loan পাওয়া সহজ হয়<br>
+            ✓ GST compliance সহজ<br>
+            ✓ Business credit score তৈরি হয়<br>
+            <strong style="color:var(--orange2);">ছোট দোকান → Real business</strong>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:var(--navy3);border-radius:16px;padding:26px;color:#fff;">
+        <div style="font-size:1.5rem;margin-bottom:12px;">🌾</div>
+        <h3 style="font-size:.95rem;font-weight:800;color:var(--orange2);margin-bottom:10px;">
+          Farm-to-Table Direct Commerce
+        </h3>
+        <p style="font-size:.78rem;color:rgba(255,255,255,.6);line-height:1.75;" class="bn">
+          কৃষক → মধ্যস্থতাকারী → পাইকার → খুচরা → Customer।
+          এই chain এ কৃষক পায় মাত্র ২০-৩০%।
+        </p>
+        <div style="background:rgba(255,255,255,.06);border-radius:10px;padding:14px;margin-top:14px;">
+          <div style="font-size:.75rem;color:rgba(255,255,255,.4);margin-bottom:8px;">DELTA র model:</div>
+          <div style="font-size:.78rem;color:rgba(255,255,255,.7);line-height:1.8;">
+            কৃষক → DELTA → Customer<br>
+            মধ্যস্থতাকারী নেই।<br>
+            <strong style="color:var(--orange2);">কৃষক পায় ৮৫-৯২%</strong>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:var(--navy3);border-radius:16px;padding:26px;color:#fff;">
+        <div style="font-size:1.5rem;margin-bottom:12px;">👩‍💼</div>
+        <h3 style="font-size:.95rem;font-weight:800;color:var(--orange2);margin-bottom:10px;">
+          Women & Artisan Empowerment
+        </h3>
+        <p style="font-size:.78rem;color:rgba(255,255,255,.6);line-height:1.75;" class="bn">
+          গ্রামীণ মহিলা ও শিল্পীরা তাদের পণ্য
+          বাইরে বেচতে পারতেন না।
+          DELTA তাদের global market দেয়।
+        </p>
+        <div style="background:rgba(255,255,255,.06);border-radius:10px;padding:14px;margin-top:14px;">
+          <div style="font-size:.75rem;color:rgba(255,255,255,.4);margin-bottom:8px;">Impact:</div>
+          <div style="font-size:.78rem;color:rgba(255,255,255,.7);line-height:1.8;">
+            ✓ Patachitra → দিল্লি, দুবাই, লন্ডনে<br>
+            ✓ Tant শাড়ি → NRI diaspora তে<br>
+            ✓ Homemade food → local market এ<br>
+            <strong style="color:var(--orange2);">Local artisan → Global seller</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- The Big Picture -->
+    <div style="background:linear-gradient(135deg,var(--navy3),var(--navy));
+      border-radius:20px;padding:36px;text-align:center;position:relative;overflow:hidden;">
+      <div style="position:absolute;right:-20px;bottom:-40px;font-size:200px;font-weight:900;
+        color:rgba(255,255,255,.02);pointer-events:none;">△</div>
+      <div style="font-size:2rem;margin-bottom:16px;">🌟</div>
+      <h3 style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:900;
+        color:#fff;margin-bottom:14px;">DELTA র Big Picture Vision</h3>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;
+        margin:24px 0;position:relative;z-index:1;">
+        <div style="background:rgba(255,255,255,.07);border-radius:12px;padding:18px;">
+          <div style="font-size:1.4rem;margin-bottom:8px;">Year 1</div>
+          <div style="font-size:.82rem;color:rgba(255,255,255,.7);line-height:1.7;" class="bn">
+            Manteswar এ ৫০০+ seller<br>
+            ৫,০০০+ customer<br>
+            <strong style="color:var(--orange2);">Local economy digitize</strong>
+          </div>
+        </div>
+        <div style="background:rgba(255,255,255,.07);border-radius:12px;padding:18px;">
+          <div style="font-size:1.4rem;margin-bottom:8px;">Year 3</div>
+          <div style="font-size:.82rem;color:rgba(255,255,255,.7);line-height:1.7;" class="bn">
+            Purba Bardhaman এ ২০+ blocks<br>
+            ১০,০০০+ sellers<br>
+            <strong style="color:var(--orange2);">District economy transform</strong>
+          </div>
+        </div>
+        <div style="background:rgba(255,255,255,.07);border-radius:12px;padding:18px;">
+          <div style="font-size:1.4rem;margin-bottom:8px;">Year 5+</div>
+          <div style="font-size:.82rem;color:rgba(255,255,255,.7);line-height:1.7;" class="bn">
+            সারা West Bengal<br>
+            Global Bengali diaspora<br>
+            <strong style="color:var(--orange2);">Bengali commerce global</strong>
+          </div>
+        </div>
+      </div>
+      <p style="font-size:.88rem;color:rgba(255,255,255,.55);line-height:1.8;
+        max-width:600px;margin:0 auto;position:relative;z-index:1;" class="bn">
+        "যখন একটি ছোট শহরের প্রতিটি দোকানদার digital হয়,
+        তখন শুধু তাদের আয় বাড়ে না —
+        পুরো এলাকার অর্থনীতি শক্তিশালী হয়।
+        এটাই DELTA র লক্ষ্য।"
+      </p>
+      <div style="margin-top:20px;font-size:.75rem;color:rgba(255,255,255,.3);">
+        — DELTA Vision, 2026
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="testimonial-section">
+  <div style="text-align:center">
+    <div class="section-label orange">বিক্রেতাদের কথা</div>
+    <div class="section-title dark">তারা কী বলছেন?</div>
+  </div>
+  <div class="test-grid">
+    <div class="test-card">
+      <div class="test-stars">★★★★★</div>
+      <p class="test-text bn">"DELTA তে join করার পর থেকে আমার মিষ্টির দোকানের বিক্রি দ্বিগুণ হয়েছে। Online order এখন আমার মোট বিক্রির ৪০%।"</p>
+      <div class="test-author">
+        <div class="test-avatar">র</div>
+        <div>
+          <div class="test-name">রাজু দাস</div>
+          <div class="test-shop">🍬 রাজু মিষ্টান্ন ভান্ডার, মন্তেশ্বর</div>
+        </div>
+      </div>
+    </div>
+    <div class="test-card">
+      <div class="test-stars">★★★★★</div>
+      <p class="test-text bn">"Dashboard এ সব orders দেখা যায়, payment সাপ্তাহিক আসে। আমাকে আর cash নিয়ে চিন্তা করতে হয় না।"</p>
+      <div class="test-author">
+        <div class="test-avatar">স</div>
+        <div>
+          <div class="test-name">সুমন ঘোষ</div>
+          <div class="test-shop">🥬 সুমন ভেজিটেবল, মন্তেশ্বর</div>
+        </div>
+      </div>
+    </div>
+    <div class="test-coming">
+      <div>
+        <div style="font-size:2rem;margin-bottom:10px">🏪</div>
+        <strong style="color:var(--charcoal);display:block;margin-bottom:4px">আপনিও হতে পারেন!</strong>
+        <span>আজই join করুন, আপনার সাফল্যের গল্প লিখুন।</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section">
+  <div style="text-align:center">
+    <div class="section-label orange">প্রশ্নোত্তর</div>
+    <div class="section-title dark">সাধারণ প্রশ্নাবলী</div>
+  </div>
+  <div class="faq-list">
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        DELTA তে join করতে কত টাকা লাগে?
+        <span class="arrow">▼</span>
+      </div>
+      <div class="faq-a">
+        একদম বিনামূল্যে। ৩ মাস Free trial। কোনো setup fee নেই, কোনো hidden charge নেই।
+        Trial শেষে plan upgrade করার option থাকবে। Auto charge হবে না।
+      </div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        Commission কত?
+        <span class="arrow">▼</span>
+      </div>
+      <div class="faq-a">
+        ৮% থেকে ১৫% — plan ও category অনুযায়ী। এটাই West Bengal এর local platforms এর মধ্যে সবচেয়ে কম। উদাহরণ: ₹২৫০ এর order এ মাত্র ₹২০-৩৭ commission।
+      </div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        টাকা কখন পাবো?
+        <span class="arrow">▼</span>
+      </div>
+      <div class="faq-a">
+        প্রতি সপ্তাহে সরাসরি আপনার bank account এ পাঠানো হবে। COD orders এর ক্ষেত্রে rider এর কাছ থেকে cash collect হয়ে আপনার কাছে আসে।
+      </div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        Delivery কে করবে?
+        <span class="arrow">▼</span>
+      </div>
+      <div class="faq-a">
+        DELTA এর local delivery team আছে। আপনাকে delivery নিয়ে ভাবতে হবে না। Order confirm করুন, package ready করুন — rider এসে নিয়ে যাবে।
+      </div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        Phone না থাকলে কি চলবে?
+        <span class="arrow">▼</span>
+      </div>
+      <div class="faq-a">
+        যেকোনো smartphone এ কাজ করে। Dashboard browser এ চলে, আলাদা app download করতে হয় না। ২G/3G connection এও কাজ করে।
+      </div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        কোন কোন দোকান join করতে পারবে?
+        <span class="arrow">▼</span>
+      </div>
+      <div class="faq-a">
+        সব ধরনের দোকান — মুদিখানা, মিষ্টির দোকান, মাছের দোকান, pharmacy, কাপড়ের দোকান, electronics, কৃষক, শিল্পী — সবাই। Service provider রাও join করতে পারবেন।
+      </div>
+    </div>
   </div>
 </section>
 
 <!-- CTA -->
 <section class="cta-section">
-  <h2>আজই শুরু করুন — বিনামূল্যে</h2>
-  <p class="bn">হাজার customer আপনার দোকানের জন্য অপেক্ষা করছে। ৫ মিনিটেই শুরু করুন।</p>
-  <button class="btn-primary-lg"
-    onclick="document.getElementById('regForm').scrollIntoView({behavior:'smooth'})">
-    🚀 বিনামূল্যে নিবন্ধন করুন
-  </button>
+  <h2>আজই শুরু করুন — ৩ মাস বিনামূল্যে</h2>
+  <p class="bn">হাজার customer আপনার দোকানের জন্য অপেক্ষা করছে।
+    ৫ মিনিটেই আপনার দোকান digital করুন।</p>
+  <div class="cta-btns">
+    <button class="btn-lg btn-orange"
+      onclick="document.getElementById('regForm').scrollIntoView({behavior:'smooth'})">
+      🚀 বিনামূল্যে নিবন্ধন করুন
+    </button>
+    <a href="seller-dashboard.html" class="btn-lg btn-white-o" style="text-decoration:none;display:inline-flex;align-items:center;">
+      আগেই account আছে? লগইন →
+    </a>
+  </div>
 </section>
 
 <!-- FOOTER -->
 <footer>
-  <div class="logo-ft">△ DELT<em>A</em></div>
-  <p class="bn">পরিবর্তনের ব-দ্বীপ · Local Roots. Global Wings.</p>
-  <p style="margin-top:12px">
-    <a href="index.html">Customer App</a>
-    <a href="seller-dashboard.html">Seller Login</a>
-    <a href="#">Contact</a>
-  </p>
-  <p style="margin-top:16px">© 2026 DELTA Platform · Manteswar, Purba Bardhaman</p>
+  <div class="footer-grid">
+    <div>
+      <div class="footer-logo">△ DELT<em>A</em></div>
+      <p class="footer-desc bn">পরিবর্তনের ব-দ্বীপ।<br>
+        West Bengal এর প্রথম local super app।<br>
+        Local Roots. Global Wings.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Platform</h4>
+      <a href="index.html">Customer App</a>
+      <a href="seller-dashboard.html">Seller Dashboard</a>
+      <a href="#regForm">Register করুন</a>
+    </div>
+    <div class="footer-col">
+      <h4>যোগাযোগ</h4>
+      <a href="mailto:hello@deltaapp.in">📧 hello@deltaapp.in</a>
+      <a href="#">💬 WhatsApp Support</a>
+      <a href="#">📍 Manteswar, W. Bengal</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© ২০২৬ DELTA Platform · Manteswar, Purba Bardhaman</span>
+    <span>🔒 SSL Secured · Firebase Powered</span>
+  </div>
 </footer>
 
 <script>
@@ -562,7 +1366,6 @@ var FB_CFG={
 var CITY='manteswar';
 var auth,db;
 
-// Load Firebase dynamically
 (function(){
   var scripts=[
     'https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js',
@@ -580,7 +1383,6 @@ var auth,db;
 function initFB(){
   firebase.initializeApp(FB_CFG);
   auth=firebase.auth();db=firebase.firestore();
-  // If already logged in, redirect to dashboard
   auth.onAuthStateChanged(function(u){
     if(u) window.location.href='seller-dashboard.html';
   });
@@ -600,70 +1402,45 @@ async function doRegister(){
   var cat=document.getElementById('rCat').value;
   var email=document.getElementById('rEmail').value.trim();
   var pass=document.getElementById('rPass').value;
-
   var err=document.getElementById('regErr');
-  var suc=document.getElementById('regSuc');
-  err.style.display='none'; suc.style.display='none';
-
+  err.style.display='none';
   if(!shop){err.textContent='দোকানের নাম দিন।';err.style.display='block';return;}
   if(!owner){err.textContent='মালিকের নাম দিন।';err.style.display='block';return;}
   if(!cat){err.textContent='ক্যাটাগরি বেছে নিন।';err.style.display='block';return;}
   if(!email){err.textContent='Email দিন।';err.style.display='block';return;}
   if(pass.length<6){err.textContent='Password কমপক্ষে ৬ অক্ষর।';err.style.display='block';return;}
-
   var btn=document.getElementById('regBtn');
-  btn.disabled=true; btn.textContent='নিবন্ধন হচ্ছে...';
-
+  btn.disabled=true;btn.textContent='নিবন্ধন হচ্ছে...';
   try{
-    // Create Firebase Auth account
     var cr=await auth.createUserWithEmailAndPassword(email,pass);
-
-    // Update display name
     await cr.user.updateProfile({displayName:owner});
-
-    // Save to cities/manteswar/sellers/{uid} (multi-tenant)
     await db.collection('cities').doc(CITY).collection('sellers').doc(cr.user.uid).set({
-      shopName:shop,
-      ownerName:owner,
-      mobile:phone,
-      area:area,
-      category:cat,
-      email:email,
-      city:CITY,
-      plan:'free',
-      isOpen:true,
-      openTime:'09:00',
-      closeTime:'21:00',
-      address:'',
-      pin:'',
-      description:'',
-      rating:0,
-      totalOrders:0,
-      language:'bn',
-      registeredFrom:'seller.html',
+      shopName:shop,ownerName:owner,mobile:phone,area:area,
+      category:cat,email:email,city:CITY,plan:'free',
+      isOpen:true,openTime:'09:00',closeTime:'21:00',
+      address:'',pin:'',description:'',rating:0,totalOrders:0,
+      language:'bn',registeredFrom:'seller.html',
       createdAt:new Date().toISOString()
     });
-
-    // Show welcome overlay
-    document.getElementById('welcomeName').textContent=
-      'স্বাগতম, '+shop+'! 🎉';
+    document.getElementById('welcomeName').textContent='স্বাগতম, '+shop+'! 🎉';
     document.getElementById('welcomeOverlay').classList.add('show');
-
   }catch(e){
     var msgs={
-      'auth/email-already-in-use':'এই Email আগেই ব্যবহৃত। Login করুন।',
+      'auth/email-already-in-use':'এই Email আগেই ব্যবহৃত। <a href="seller-dashboard.html">লগইন করুন</a>',
       'auth/invalid-email':'Email সঠিক নয়।',
       'auth/weak-password':'Password আরো শক্তিশালী করুন।'
     };
-    err.textContent=msgs[e.code]||e.message;
+    err.innerHTML=msgs[e.code]||e.message;
     err.style.display='block';
-    btn.disabled=false;
-    btn.textContent='🚀 বিনামূল্যে শুরু করুন';
+    btn.disabled=false;btn.textContent='🚀 বিনামূল্যে শুরু করুন';
   }
 }
 
-function gotoDashboard(){
-  window.location.href='seller-dashboard.html';
+// FAQ toggle
+function toggleFaq(el){
+  var ans=el.nextElementSibling;
+  el.classList.toggle('open');
+  ans.classList.toggle('open');
 }
 </script>
 </body>
