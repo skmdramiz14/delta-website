@@ -1126,9 +1126,10 @@ function doRegister(){
       createdAt:new Date().toISOString()
     });
   }).then(function(){
-    suc.textContent='নিবন্ধন সফল! এখন লগইন করুন।'; suc.style.display='block';
-    btn.disabled=false; btn.textContent='✅ নিবন্ধন করুন';
-    switchAuthTab('login',document.querySelector('.auth-tab'));
+    // Auto login after register — no need to manually login
+    showToast('নিবন্ধন সফল! Dashboard লোড হচ্ছে...','green');
+    // Firebase already logged in after createUserWithEmailAndPassword
+    // onAuthStateChanged will fire and load dashboard automatically
   }).catch(function(er){
     var msgs={'auth/email-already-in-use':'এই Email আগেই ব্যবহৃত।'};
     err.textContent=msgs[er.code]||er.message; err.style.display='block';
