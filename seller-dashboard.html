@@ -762,6 +762,91 @@ select.form-input{cursor:pointer;}
       <!-- Description -->
       <div class="form-group"><label class="bn">বিবরণ</label>
         <input type="text" class="form-input" id="fDesc" placeholder="সংক্ষিপ্ত বিবরণ..."></div>
+      <!-- Offer Section -->
+      <div style="background:linear-gradient(135deg,#fff8f0,#fff4e8);border:1.5px solid rgba(240,112,24,.25);border-radius:12px;padding:16px;margin:14px 0">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div style="font-size:.82rem;font-weight:700;color:var(--navy)">🏷️ অফার সেটিংস / Offer Settings</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:.75rem;color:var(--muted)">অফার চালু?</span>
+            <input type="checkbox" id="fOfferActive" onchange="toggleOfferFields()" style="width:16px;height:16px;cursor:pointer;accent-color:var(--orange)">
+          </div>
+        </div>
+        <div id="offerFields" style="display:none">
+          <div class="form-grid-2" style="margin-bottom:12px">
+            <div class="form-group">
+              <label class="bn">অফারের ধরন</label>
+              <select class="form-input" id="fOfferType" onchange="updateOfferPreview()">
+                <option value="discount">% ছাড় (MRP থেকে auto)</option>
+                <option value="flat">সরাসরি ছাড় ₹</option>
+                <option value="bogo">Buy 1 Get 1</option>
+                <option value="min_order">Minimum Order এ ছাড়</option>
+              </select>
+            </div>
+            <div class="form-group" id="flatDiscGroup" style="display:none">
+              <label class="bn">ছাড়ের পরিমাণ ₹</label>
+              <input type="number" class="form-input" id="fFlatDisc" placeholder="20" oninput="updateOfferPreview()">
+            </div>
+            <div class="form-group" id="minOrderGroup" style="display:none">
+              <label class="bn">Minimum Order ₹</label>
+              <input type="number" class="form-input" id="fMinOrder" placeholder="200" oninput="updateOfferPreview()">
+            </div>
+          </div>
+          <div class="form-grid-2" style="margin-bottom:12px">
+            <div class="form-group">
+              <label class="bn">অফার কতক্ষণ?</label>
+              <select class="form-input" id="fOfferDuration" onchange="updateOfferEndTime()">
+                <option value="1h">১ ঘণ্টা</option>
+                <option value="6h">৬ ঘণ্টা</option>
+                <option value="12h">১২ ঘণ্টা</option>
+                <option value="1d" selected>১ দিন</option>
+                <option value="3d">৩ দিন</option>
+                <option value="7d">৭ দিন</option>
+                <option value="custom">Custom তারিখ/সময়</option>
+              </select>
+            </div>
+            <div class="form-group" id="customEndGroup" style="display:none">
+              <label class="bn">শেষ হবে কখন?</label>
+              <input type="datetime-local" class="form-input" id="fOfferEnd">
+            </div>
+          </div>
+          <div class="form-grid-2" style="margin-bottom:12px">
+            <div class="form-group">
+              <label class="bn">Offer Label (optional)</label>
+              <select class="form-input" id="fOfferLabel">
+                <option value="Flash Sale">⚡ Flash Sale</option>
+                <option value="Today Only">🔥 Today Only</option>
+                <option value="Limited Time">⏰ Limited Time</option>
+                <option value="Special Offer">🎁 Special Offer</option>
+                <option value="Festival Offer">🎉 Festival Offer</option>
+                <option value="">Custom লিখুন</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Coupon Code (optional)</label>
+              <input type="text" class="form-input" id="fCouponCode"
+                placeholder="যেমন: RAHIM20" style="text-transform:uppercase"
+                oninput="this.value=this.value.toUpperCase()">
+            </div>
+          </div>
+          <!-- Offer Preview -->
+          <div id="offerPreview" style="background:#fff;border-radius:10px;padding:12px;
+            border:1px solid rgba(240,112,24,.2);display:none">
+            <div style="font-size:.72rem;font-weight:700;color:var(--muted);margin-bottom:6px;
+              text-transform:uppercase;letter-spacing:.5px">Preview — Customer দেখবে:</div>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <span id="prevLabel" style="background:var(--orange);color:#fff;font-size:.68rem;
+                font-weight:800;padding:2px 8px;border-radius:4px">⚡ Flash Sale</span>
+              <span id="prevDisc" style="background:var(--red);color:#fff;font-size:.68rem;
+                font-weight:800;padding:2px 8px;border-radius:4px">20% OFF</span>
+              <span id="prevTimer" style="background:var(--yellow2);color:var(--yellow);
+                font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:4px">
+                ⏰ Ends in 24:00:00</span>
+              <span id="prevCoupon" style="display:none;background:var(--green2);color:var(--green);
+                font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:4px"></span>
+            </div>
+          </div>
+        </div>
+      </div>
       <!-- Images -->
       <div class="form-group">
         <label class="bn">পণ্যের ছবি (সর্বোচ্চ ৫টি)</label>
@@ -1010,6 +1095,7 @@ function renderProducts(){
       '<div class="prod-info">'+
         '<div class="prod-name">'+name+
           (disc?'<span class="disc-pill">'+disc+'% OFF</span>':'')+
+          (p.offerActive&&p.offerLabel?'<span class="disc-pill" style="background:var(--orange);margin-left:4px">'+p.offerLabel+'</span>':'')+
         '</div>'+
         '<div class="prod-meta">'+(p.category||'')+(p.unit?' · '+p.unit:'')+(p.prepTime?' · '+p.prepTime+' মিনিট':'')+'</div>'+
         '<div><span class="prod-price">₹'+(p.price||0)+'</span>'+
@@ -1050,12 +1136,14 @@ function openProductModal(editIdParam){
       if(u&&i<5){imgUrls[i]=u;var img=document.getElementById('img'+i);img.src=u;img.style.display='block';document.getElementById('slot'+i).classList.add('has-img');}
     });
     calcDiscount();
+    loadOfferFields(p);
   } else {
     document.getElementById('modalTitle').textContent='নতুন পণ্য যোগ করুন';
     ['fNameBn','fNameEn','fCat','fStock','fMrp','fPrice','fDesc','fPrep'].forEach(function(id){
       var el=document.getElementById(id); if(el)el.value='';
     });
     document.getElementById('fUnit').value='piece';
+    clearOfferFields();
   }
   document.getElementById('productModal').style.display='flex';
 }
@@ -1115,6 +1203,14 @@ async function saveProduct(){
     category:cat, stock:stock, unit:unit, prepTime:prep,
     mrp:mrp, price:price, discount:disc, description:desc,
     images:validImgs, imageUrl:validImgs[0]||'',
+    // Offer fields
+    offerActive:document.getElementById('fOfferActive').checked,
+    offerType:document.getElementById('fOfferType').value,
+    offerLabel:document.getElementById('fOfferLabel').value,
+    couponCode:document.getElementById('fCouponCode').value,
+    flatDiscount:parseFloat(document.getElementById('fFlatDisc').value)||0,
+    minOrderAmount:parseFloat(document.getElementById('fMinOrder').value)||0,
+    offerEndTime:document.getElementById('fOfferActive').checked?getOfferEndTimestamp():null,
     updatedAt:new Date().toISOString()
   };
   try{
@@ -1134,7 +1230,99 @@ async function saveProduct(){
   btn.disabled=false; btn.textContent='✅ সেভ করুন';
 }
 
-// ═══ IMAGE UPLOAD ═══
+// ═══ OFFER FUNCTIONS ═══
+function toggleOfferFields(){
+  var active=document.getElementById('fOfferActive').checked;
+  document.getElementById('offerFields').style.display=active?'block':'none';
+  if(active){updateOfferPreview();updateOfferEndTime();}
+  else{document.getElementById('offerPreview').style.display='none';}
+}
+
+function updateOfferEndTime(){
+  var dur=document.getElementById('fOfferDuration').value;
+  var customGrp=document.getElementById('customEndGroup');
+  customGrp.style.display=dur==='custom'?'block':'none';
+  if(dur!=='custom'){
+    var now=new Date();
+    var mins={'1h':60,'6h':360,'12h':720,'1d':1440,'3d':4320,'7d':10080};
+    now.setMinutes(now.getMinutes()+(mins[dur]||1440));
+    document.getElementById('fOfferEnd').value=now.toISOString().slice(0,16);
+  }
+  updateOfferPreview();
+}
+
+function updateOfferPreview(){
+  var active=document.getElementById('fOfferActive').checked;
+  if(!active)return;
+  var type=document.getElementById('fOfferType').value;
+  var label=document.getElementById('fOfferLabel').value||'Flash Sale';
+  var coupon=document.getElementById('fCouponCode').value;
+  var mrp=parseFloat(document.getElementById('fMrp').value)||0;
+  var price=parseFloat(document.getElementById('fPrice').value)||0;
+  var flat=parseFloat(document.getElementById('fFlatDisc').value)||0;
+  // Show/hide type-specific fields
+  document.getElementById('flatDiscGroup').style.display=type==='flat'?'block':'none';
+  document.getElementById('minOrderGroup').style.display=type==='min_order'?'block':'none';
+  // Calc discount text
+  var discText='';
+  if(type==='discount'&&mrp>0&&price>0&&price<mrp)discText=Math.round((mrp-price)/mrp*100)+'% OFF';
+  else if(type==='flat'&&flat>0)discText='₹'+flat+' OFF';
+  else if(type==='bogo')discText='Buy 1 Get 1';
+  else if(type==='min_order')discText='Extra Discount';
+  // Timer text
+  var dur=document.getElementById('fOfferDuration').value;
+  var timerMap={'1h':'01:00:00','6h':'06:00:00','12h':'12:00:00','1d':'24:00:00','3d':'72:00:00','7d':'168:00:00','custom':'--:--:--'};
+  // Update preview
+  document.getElementById('prevLabel').textContent=label;
+  document.getElementById('prevDisc').textContent=discText||'Offer';
+  document.getElementById('prevDisc').style.display=discText?'inline':'none';
+  document.getElementById('prevTimer').textContent='⏰ Ends in '+(timerMap[dur]||'--:--:--');
+  var cpEl=document.getElementById('prevCoupon');
+  if(coupon){cpEl.textContent='🎫 Code: '+coupon;cpEl.style.display='inline';}
+  else cpEl.style.display='none';
+  document.getElementById('offerPreview').style.display='block';
+}
+
+function getOfferEndTimestamp(){
+  var dur=document.getElementById('fOfferDuration').value;
+  if(dur==='custom'){
+    var val=document.getElementById('fOfferEnd').value;
+    return val?new Date(val).toISOString():null;
+  }
+  var now=new Date();
+  var mins={'1h':60,'6h':360,'12h':720,'1d':1440,'3d':4320,'7d':10080};
+  now.setMinutes(now.getMinutes()+(mins[dur]||1440));
+  return now.toISOString();
+}
+
+function clearOfferFields(){
+  document.getElementById('fOfferActive').checked=false;
+  document.getElementById('offerFields').style.display='none';
+  document.getElementById('offerPreview').style.display='none';
+  document.getElementById('fOfferType').value='discount';
+  document.getElementById('fOfferDuration').value='1d';
+  document.getElementById('fOfferLabel').value='Flash Sale';
+  document.getElementById('fCouponCode').value='';
+  document.getElementById('fFlatDisc').value='';
+  document.getElementById('fMinOrder').value='';
+}
+
+function loadOfferFields(p){
+  if(!p.offerActive)return;
+  document.getElementById('fOfferActive').checked=true;
+  document.getElementById('offerFields').style.display='block';
+  document.getElementById('fOfferType').value=p.offerType||'discount';
+  document.getElementById('fOfferLabel').value=p.offerLabel||'Flash Sale';
+  document.getElementById('fCouponCode').value=p.couponCode||'';
+  document.getElementById('fFlatDisc').value=p.flatDiscount||'';
+  document.getElementById('fMinOrder').value=p.minOrderAmount||'';
+  if(p.offerEndTime){
+    document.getElementById('fOfferDuration').value='custom';
+    document.getElementById('customEndGroup').style.display='block';
+    document.getElementById('fOfferEnd').value=new Date(p.offerEndTime).toISOString().slice(0,16);
+  }
+  updateOfferPreview();
+}
 function triggerImg(slot){activeImgSlot=slot;document.getElementById('imgFileInput').click();}
 async function handleImgUpload(input){
   var file=input.files[0]; if(!file)return;
