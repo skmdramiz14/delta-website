@@ -55,7 +55,7 @@ select.form-input{cursor:pointer;}
   font-size:.8rem;margin-bottom:12px;display:none;}
 
 /* ── APP LAYOUT ── */
-#appScreen{display:none;min-height:100vh;flex-direction:row;}
+#appScreen{display:block;min-height:100vh;}
 .sidebar{position:fixed;top:0;left:0;width:248px;height:100vh;
   background:linear-gradient(180deg,var(--navy3),var(--navy));
   display:flex;flex-direction:column;z-index:100;box-shadow:4px 0 20px rgba(0,0,0,.2);}
@@ -94,7 +94,7 @@ select.form-input{cursor:pointer;}
 .logout-btn:hover{background:rgba(192,57,43,.3);}
 
 /* ── MAIN ── */
-.main-content{margin-left:248px;min-height:100vh;display:flex;flex-direction:column;}
+.main-content{margin-left:248px;min-height:100vh;display:flex;flex-direction:column;width:calc(100% - 248px);}
 .topbar{background:#fff;border-bottom:1px solid var(--border);padding:0 28px;height:60px;
   display:flex;align-items:center;justify-content:space-between;
   position:sticky;top:0;z-index:50;box-shadow:0 2px 8px rgba(0,0,0,.04);}
@@ -302,7 +302,13 @@ select.form-input{cursor:pointer;}
 .toast.red{border-left-color:var(--red);}
 @keyframes toastIn{from{transform:translateX(80px);opacity:0}to{transform:translateX(0);opacity:1}}
 
-/* ── LOADING ── */
+/* ── LANGUAGE TOGGLE ── */
+.lang-toggle{display:flex;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);
+  border-radius:20px;padding:2px;gap:0;margin:10px 20px 0;}
+.lang-btn{flex:1;border:none;background:transparent;padding:5px 12px;border-radius:18px;
+  font-size:.72rem;font-weight:800;cursor:pointer;color:rgba(255,255,255,.5);
+  transition:all .18s;letter-spacing:.3px;font-family:'DM Sans',sans-serif;}
+.lang-btn.active{background:var(--orange);color:#fff;}
 .loading-screen{position:fixed;inset:0;background:var(--navy3);display:flex;
   align-items:center;justify-content:center;z-index:1000;}
 .loading-spinner{width:44px;height:44px;border:3px solid rgba(255,255,255,.15);
@@ -322,7 +328,7 @@ select.form-input{cursor:pointer;}
   .sidebar{transform:translateX(-100%);transition:transform .3s;}
   .sidebar.open{transform:translateX(0);}
   .sb-overlay.open{display:block;}
-  .main-content{margin-left:0;}
+  .main-content{margin-left:0;width:100%;}
   .mob-menu-btn{display:flex;}
   .topbar{padding:0 16px 0 66px;}
   .content{padding:16px;}
@@ -381,7 +387,7 @@ select.form-input{cursor:pointer;}
       <div class="auth-err" id="regErr"></div>
       <div class="auth-suc" id="regSuc"></div>
       <div class="form-group"><label class="bn">দোকানের নাম</label>
-        <input type="text" class="form-input" id="rShop" placeholder="যেমন: রহমান মিষ্টি ঘর"></div>
+        <input type="text" class="form-input" id="rShop" placeholder="যেমন: মন্তেশ্বর মিষ্টি ঘর, Delta Store"></div>
       <div class="form-grid-2">
         <div class="form-group"><label class="bn">মালিকের নাম</label>
           <input type="text" class="form-input" id="rOwner" placeholder="নাম"></div>
@@ -424,7 +430,7 @@ select.form-input{cursor:pointer;}
         <div class="sb-logo-mark">D</div>
         <div class="sb-logo-text">
           <h2>DELT<em>A</em></h2>
-          <p class="bn">সেলার প্যানেল</p>
+          <p data-lang-bn="সেলার প্যানেল" data-lang-en="Seller Panel">সেলার প্যানেল</p>
         </div>
       </div>
     </div>
@@ -433,27 +439,32 @@ select.form-input{cursor:pointer;}
       <div class="sb-shop-area" id="sbShopArea"></div>
       <div class="sb-plan-badge" id="sbPlanBadge">⭐ FREE</div>
     </div>
+    <!-- Language Toggle -->
+    <div class="lang-toggle">
+      <button class="lang-btn active" id="langBnBtn" onclick="setLang('bn')">বাং</button>
+      <button class="lang-btn" id="langEnBtn" onclick="setLang('en')">ENG</button>
+    </div>
     <nav class="sb-nav">
-      <div class="sb-nav-section">মেনু</div>
+      <div class="sb-nav-section" data-lang-bn="মেনু" data-lang-en="MENU">মেনু</div>
       <button class="nav-btn active" id="nb-dashboard" onclick="goPage('dashboard',this)">
-        <span class="nicon">📊</span>ড্যাশবোর্ড</button>
+        <span class="nicon">📊</span><span data-lang-bn="ড্যাশবোর্ড" data-lang-en="Dashboard">ড্যাশবোর্ড</span></button>
       <button class="nav-btn" id="nb-products" onclick="goPage('products',this)">
-        <span class="nicon">📦</span>পণ্য তালিকা</button>
+        <span class="nicon">📦</span><span data-lang-bn="পণ্য তালিকা" data-lang-en="Products">পণ্য তালিকা</span></button>
       <button class="nav-btn" id="nb-orders" onclick="goPage('orders',this)">
-        <span class="nicon">🛍️</span>অর্ডার
+        <span class="nicon">🛍️</span><span data-lang-bn="অর্ডার" data-lang-en="Orders">অর্ডার</span>
         <span class="nav-badge" id="pendingBadge" style="display:none">0</span></button>
-      <div class="sb-nav-section">সেটিংস</div>
+      <div class="sb-nav-section" data-lang-bn="সেটিংস" data-lang-en="SETTINGS">সেটিংস</div>
       <button class="nav-btn" id="nb-profile" onclick="goPage('profile',this)">
-        <span class="nicon">🏪</span>শপ প্রোফাইল</button>
+        <span class="nicon">🏪</span><span data-lang-bn="শপ প্রোফাইল" data-lang-en="Shop Profile">শপ প্রোফাইল</span></button>
       <button class="nav-btn" id="nb-subscription" onclick="goPage('subscription',this)">
-        <span class="nicon">💎</span>সাবস্ক্রিপশন</button>
+        <span class="nicon">💎</span><span data-lang-bn="সাবস্ক্রিপশন" data-lang-en="Subscription">সাবস্ক্রিপশন</span></button>
       <button class="nav-btn" id="nb-performance" onclick="goPage('performance',this)">
-        <span class="nicon">📈</span>পারফরম্যান্স</button>
+        <span class="nicon">📈</span><span data-lang-bn="পারফরম্যান্স" data-lang-en="Performance">পারফরম্যান্স</span></button>
       <button class="nav-btn" id="nb-qr" onclick="goPage('qr',this)">
-        <span class="nicon">📲</span>QR কোড</button>
+        <span class="nicon">📲</span><span data-lang-bn="QR কোড" data-lang-en="QR Code">QR কোড</span></button>
     </nav>
     <div class="sb-bottom">
-      <button class="logout-btn" onclick="doLogout()">🚪 লগআউট / Logout</button>
+      <button class="logout-btn" onclick="doLogout()">🚪 <span data-lang-bn="লগআউট" data-lang-en="Logout">লগআউট</span></button>
     </div>
   </aside>
 
@@ -475,42 +486,53 @@ select.form-input{cursor:pointer;}
           <div class="stat-card orange">
             <div class="stat-icon">📦</div>
             <div class="stat-val" id="statProds">0</div>
-            <div class="stat-lbl bn">মোট পণ্য</div>
+            <div class="stat-lbl" data-lang-bn="মোট পণ্য" data-lang-en="Total Products">মোট পণ্য</div>
           </div>
           <div class="stat-card navy">
             <div class="stat-icon">🛍️</div>
             <div class="stat-val" id="statOrders">0</div>
-            <div class="stat-lbl bn">মোট অর্ডার</div>
+            <div class="stat-lbl" data-lang-bn="মোট অর্ডার" data-lang-en="Total Orders">মোট অর্ডার</div>
           </div>
           <div class="stat-card">
             <div class="stat-icon">💰</div>
             <div class="stat-val" id="statIncome">₹0</div>
-            <div class="stat-lbl bn">মোট আয়</div>
-            <div class="stat-sub up">Delivered থেকে</div>
+            <div class="stat-lbl" data-lang-bn="মোট আয়" data-lang-en="Total Income">মোট আয়</div>
+            <div class="stat-sub up" data-lang-bn="Delivered থেকে" data-lang-en="From Delivered">Delivered থেকে</div>
           </div>
           <div class="stat-card">
             <div class="stat-icon">⚠️</div>
             <div class="stat-val" id="statLowStock">0</div>
-            <div class="stat-lbl bn">কম স্টক</div>
-            <div class="stat-sub warn">≤5 পিস বাকি</div>
+            <div class="stat-lbl" data-lang-bn="কম স্টক" data-lang-en="Low Stock">কম স্টক</div>
+            <div class="stat-sub warn" data-lang-bn="≤5 পিস বাকি" data-lang-en="≤5 pieces left">≤5 পিস বাকি</div>
           </div>
         </div>
         <!-- Recent Orders -->
         <div class="sec-head">
-          <div class="sec-title">সাম্প্রতিক অর্ডার <small>Recent Orders</small></div>
-          <button class="btn-sm btn-outline" onclick="goPage('orders',document.getElementById('nb-orders'))">সব দেখুন →</button>
+          <div class="sec-title">
+            <span data-lang-bn="সাম্প্রতিক অর্ডার" data-lang-en="Recent Orders">সাম্প্রতিক অর্ডার</span>
+          </div>
+          <button class="btn-sm btn-outline" onclick="goPage('orders',document.getElementById('nb-orders'))">
+            <span data-lang-bn="সব দেখুন →" data-lang-en="View All →">সব দেখুন →</span>
+          </button>
         </div>
         <div id="recentOrdersWrap"></div>
         <!-- Plan Info -->
         <div style="margin-top:20px">
           <div class="sub-card">
-            <h3>বর্তমান প্ল্যান / Current Plan</h3>
+            <h3 data-lang-bn="বর্তমান প্ল্যান" data-lang-en="CURRENT PLAN">বর্তমান প্ল্যান</h3>
             <div class="sub-plan-name" id="dashPlanName">FREE PLAN</div>
-            <div class="sub-note" id="dashPlanNote">3 মাস বিনামূল্যে ট্রায়াল চলছে</div>
+            <div class="sub-note" id="dashPlanNote"
+              data-lang-bn="3 মাস বিনামূল্যে ট্রায়াল চলছে"
+              data-lang-en="3 months free trial active">
+              3 মাস বিনামূল্যে ট্রায়াল চলছে</div>
             <div class="sub-features-grid">
-              <div class="sub-feat"><div class="sub-feat-icon">📦</div><div class="sub-feat-text">Product Listing</div></div>
-              <div class="sub-feat"><div class="sub-feat-icon">🛍️</div><div class="sub-feat-text">Order Management</div></div>
-              <div class="sub-feat" id="analyticsFeat" style="opacity:.35"><div class="sub-feat-icon">🔒</div><div class="sub-feat-text">Analytics (Basic+)</div></div>
+              <div class="sub-feat"><div class="sub-feat-icon">📦</div>
+                <div class="sub-feat-text" data-lang-bn="পণ্য তালিকা" data-lang-en="Product Listing">পণ্য তালিকা</div></div>
+              <div class="sub-feat"><div class="sub-feat-icon">🛍️</div>
+                <div class="sub-feat-text" data-lang-bn="অর্ডার ম্যানেজমেন্ট" data-lang-en="Order Management">অর্ডার ম্যানেজমেন্ট</div></div>
+              <div class="sub-feat" id="analyticsFeat" style="opacity:.35">
+                <div class="sub-feat-icon">🔒</div>
+                <div class="sub-feat-text" data-lang-bn="Analytics (Basic+)" data-lang-en="Analytics (Basic+)">Analytics (Basic+)</div></div>
             </div>
           </div>
         </div>
@@ -519,15 +541,22 @@ select.form-input{cursor:pointer;}
       <!-- ═══ PRODUCTS PAGE ═══ -->
       <div class="page" id="page-products">
         <div class="sec-head">
-          <div class="sec-title">পণ্য তালিকা <small id="prodCount">0 পণ্য</small></div>
-          <button class="btn-sm btn-orange" onclick="openProductModal()">➕ নতুন পণ্য</button>
+          <div class="sec-title">
+            <span data-lang-bn="পণ্য তালিকা" data-lang-en="Product List">পণ্য তালিকা</span>
+            <small id="prodCount">0 পণ্য</small>
+          </div>
+          <button class="btn-sm btn-orange" onclick="openProductModal()">
+            ➕ <span data-lang-bn="নতুন পণ্য" data-lang-en="Add Product">নতুন পণ্য</span>
+          </button>
         </div>
         <!-- Plan limit warning -->
         <div id="planLimitWarn" style="display:none;background:var(--yellow2);border:1px solid var(--yellow);
           border-radius:10px;padding:10px 14px;font-size:.82rem;color:#7d5a00;margin-bottom:16px;">
-          ⚠️ আপনার Free plan এ সর্বোচ্চ ১০টি পণ্য যোগ করা যাবে।
-          <a href="#" onclick="goPage('subscription',document.getElementById('nb-subscription'))" 
-             style="color:var(--orange);font-weight:700;">Upgrade করুন →</a>
+          ⚠️ <span data-lang-bn="আপনার Free plan এ সর্বোচ্চ ১০টি পণ্য যোগ করা যাবে।" data-lang-en="Your Free plan allows max 10 products.">
+            আপনার Free plan এ সর্বোচ্চ ১০টি পণ্য যোগ করা যাবে।</span>
+          <a href="#" onclick="goPage('subscription',document.getElementById('nb-subscription'))"
+             style="color:var(--orange);font-weight:700;">
+            <span data-lang-bn="Upgrade করুন →" data-lang-en="Upgrade →">Upgrade করুন →</span></a>
         </div>
         <div id="productListWrap" class="product-list"></div>
       </div>
@@ -535,10 +564,14 @@ select.form-input{cursor:pointer;}
       <!-- ═══ ORDERS PAGE ═══ -->
       <div class="page" id="page-orders">
         <div class="sec-head">
-          <div class="sec-title">অর্ডার ম্যানেজমেন্ট <small id="orderCount">0 অর্ডার</small></div>
+          <div class="sec-title">
+            <span data-lang-bn="অর্ডার ম্যানেজমেন্ট" data-lang-en="Order Management">অর্ডার ম্যানেজমেন্ট</span>
+            <small id="orderCount">0 অর্ডার</small>
+          </div>
         </div>
         <div class="order-filters">
-          <button class="filter-pill active" onclick="filterOrders('all',this)">সব</button>
+          <button class="filter-pill active" onclick="filterOrders('all',this)"
+            data-lang-bn="সব" data-lang-en="All">সব</button>
           <button class="filter-pill" onclick="filterOrders('pending',this)">⏳ Pending</button>
           <button class="filter-pill" onclick="filterOrders('confirmed',this)">✅ Confirmed</button>
           <button class="filter-pill" onclick="filterOrders('preparing',this)">🔄 Preparing</button>
@@ -552,8 +585,12 @@ select.form-input{cursor:pointer;}
       <!-- ═══ PROFILE PAGE ═══ -->
       <div class="page" id="page-profile">
         <div class="sec-head">
-          <div class="sec-title">শপ প্রোফাইল <small>Shop Profile</small></div>
-          <button class="btn-sm btn-orange" onclick="saveProfile()" id="saveProfileBtn">💾 সেভ করুন</button>
+          <div class="sec-title">
+            <span data-lang-bn="শপ প্রোফাইল" data-lang-en="Shop Profile">শপ প্রোফাইল</span>
+          </div>
+          <button class="btn-sm btn-orange" onclick="saveProfile()" id="saveProfileBtn">
+            💾 <span data-lang-bn="সেভ করুন" data-lang-en="Save">সেভ করুন</span>
+          </button>
         </div>
         <div class="profile-card">
           <div class="profile-header">
@@ -564,13 +601,16 @@ select.form-input{cursor:pointer;}
             </div>
           </div>
           <div class="form-grid">
-            <div class="form-group"><label class="bn">দোকানের নাম</label>
+            <div class="form-group">
+              <label><span data-lang-bn="দোকানের নাম" data-lang-en="Shop Name">দোকানের নাম</span></label>
               <input type="text" class="form-input" id="pShopName"></div>
-            <div class="form-group"><label class="bn">মালিকের নাম</label>
+            <div class="form-group">
+              <label><span data-lang-bn="মালিকের নাম" data-lang-en="Owner Name">মালিকের নাম</span></label>
               <input type="text" class="form-input" id="pOwnerName"></div>
             <div class="form-group"><label>Mobile</label>
               <input type="tel" class="form-input" id="pPhone"></div>
-            <div class="form-group"><label class="bn">এলাকা</label>
+            <div class="form-group">
+              <label><span data-lang-bn="এলাকা" data-lang-en="Area">এলাকা</span></label>
               <input type="text" class="form-input" id="pArea"></div>
             <div class="form-group"><label class="bn">ক্যাটাগরি</label>
               <select class="form-input" id="pCategory">
@@ -711,133 +751,216 @@ select.form-input{cursor:pointer;}
 
 <!-- ═══ PRODUCT MODAL ═══ -->
 <div id="productModal" style="display:none;position:fixed;inset:0;background:rgba(6,21,38,.6);
-  z-index:200;align-items:center;justify-content:center;padding:20px;overflow-y:auto;">
-  <div style="background:#fff;border-radius:20px;width:100%;max-width:580px;max-height:90vh;
-    overflow-y:auto;box-shadow:0 24px 70px rgba(0,0,0,.25);">
+  z-index:200;align-items:center;justify-content:center;padding:16px;overflow-y:auto;">
+  <div style="background:#fff;border-radius:20px;width:100%;max-width:600px;
+    box-shadow:0 24px 70px rgba(0,0,0,.25);position:relative;">
+    <!-- Header -->
     <div style="padding:18px 22px 14px;border-bottom:1px solid var(--border);
-      display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#fff;z-index:1;">
-      <div style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--navy)" id="modalTitle">নতুন পণ্য যোগ করুন</div>
-      <button onclick="closeProductModal()" style="width:30px;height:30px;border-radius:8px;border:none;
-        background:var(--sand);cursor:pointer;font-size:.9rem;color:var(--muted);">✕</button>
+      display:flex;align-items:center;justify-content:space-between;
+      border-radius:20px 20px 0 0;background:#fff;">
+      <div style="font-family:'Playfair Display',serif;font-size:1.1rem;
+        font-weight:700;color:var(--navy)" id="modalTitle">নতুন পণ্য যোগ করুন / Add Product</div>
+      <button onclick="closeProductModal()" style="width:30px;height:30px;border-radius:8px;
+        border:none;background:var(--sand);cursor:pointer;font-size:.9rem;color:var(--muted);">✕</button>
     </div>
-    <div style="padding:20px 22px">
-      <div class="form-grid">
-        <div class="form-group full"><label class="bn">পণ্যের নাম (বাংলা) *</label>
-          <input type="text" class="form-input" id="fNameBn" placeholder="যেমন: রসগোল্লা, চাল, শার্ট"></div>
-        <div class="form-group"><label>Name (English)</label>
-          <input type="text" class="form-input" id="fNameEn" placeholder="Rasgolla"></div>
-        <div class="form-group"><label class="bn">ক্যাটাগরি *</label>
-          <select class="form-input" id="fCat">
-            <option value="">বেছে নিন</option>
-            <option>🍬 মিষ্টি</option><option>🐟 মাছ</option>
-            <option>🥬 সবজি</option><option>🌾 চাল-ডাল</option>
-            <option>💊 ওষুধ</option><option>📱 ইলেকট্রনিক্স</option>
-            <option>👕 পোশাক</option><option>🍛 রান্না করা খাবার</option>
-            <option>📦 অন্যান্য</option>
-          </select></div>
-        <div class="form-group"><label class="bn">স্টক পরিমাণ *</label>
-          <input type="number" class="form-input" id="fStock" placeholder="50" min="0"></div>
-        <div class="form-group"><label class="bn">একক / Unit</label>
-          <select class="form-input" id="fUnit">
-            <option>piece</option><option>kg</option><option>gram</option>
-            <option>litre</option><option>ml</option><option>dozen</option><option>set</option>
-          </select></div>
-        <div class="form-group"><label class="bn">প্রস্তুতি সময় (মিনিট)</label>
-          <input type="number" class="form-input" id="fPrep" placeholder="15" min="0"></div>
+    <!-- Scrollable body -->
+    <div style="max-height:75vh;overflow-y:auto;padding:20px 22px">
+
+      <!-- Section 1: Basic Info -->
+      <div style="background:var(--sand);border-radius:10px;padding:14px;margin-bottom:14px">
+        <div style="font-size:.78rem;font-weight:700;color:var(--navy);margin-bottom:12px">
+          📦 পণ্যের তথ্য / Basic Info</div>
+        <div class="form-group">
+          <label>পণ্যের নাম (বাংলা) / Name (Bengali) *</label>
+          <input type="text" class="form-input" id="fNameBn" placeholder="যেমন: রসগোল্লা, ইলিশ মাছ, শার্ট">
+        </div>
+        <div class="form-group">
+          <label>Name (English)</label>
+          <input type="text" class="form-input" id="fNameEn" placeholder="e.g. Rasgolla, Hilsa Fish, Shirt">
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>ক্যাটাগরি / Category *</label>
+            <select class="form-input" id="fCat">
+              <option value="">— বেছে নিন / Select —</option>
+              <optgroup label="🍽️ খাবার / Food">
+                <option>🍬 মিষ্টি / Sweets</option>
+                <option>🍛 রান্না করা খাবার / Cooked Food</option>
+                <option>🎂 কেক ও বেকারি / Cake & Bakery</option>
+                <option>🥤 পানীয় / Beverages</option>
+                <option>🥗 স্ন্যাক্স / Snacks</option>
+              </optgroup>
+              <optgroup label="🛒 মুদিখানা / Grocery">
+                <option>🌾 চাল-ডাল / Rice & Lentils</option>
+                <option>🌶️ মশলা / Spices</option>
+                <option>🫙 তেল-ঘি / Oil & Ghee</option>
+                <option>🧴 নিত্যপ্রয়োজনীয় / Daily Essentials</option>
+                <option>🧹 পরিষ্কার সামগ্রী / Cleaning</option>
+              </optgroup>
+              <optgroup label="🌾 কৃষি / Agriculture">
+                <option>🥬 সবজি / Vegetables</option>
+                <option>🍎 ফল / Fruits</option>
+                <option>🐟 মাছ / Fish</option>
+                <option>🐓 মাংস-পোল্ট্রি / Meat & Poultry</option>
+                <option>🥛 দুগ্ধজাত / Dairy</option>
+                <option>🌿 জৈব পণ্য / Organic</option>
+                <option>🌺 ফুল / Flowers</option>
+              </optgroup>
+              <optgroup label="💊 স্বাস্থ্য / Health">
+                <option>💊 ওষুধ / Medicine</option>
+                <option>🌿 আয়ুর্বেদিক / Ayurvedic</option>
+                <option>🏥 চিকিৎসা সামগ্রী / Medical Supplies</option>
+              </optgroup>
+              <optgroup label="👗 পোশাক / Clothing">
+                <option>👔 পুরুষ পোশাক / Men's Wear</option>
+                <option>👗 মহিলা পোশাক / Women's Wear</option>
+                <option>👶 শিশু পোশাক / Kids' Wear</option>
+                <option>🥻 শাড়ি-কাপড় / Saree & Fabric</option>
+              </optgroup>
+              <optgroup label="📱 ইলেকট্রনিক্স / Electronics">
+                <option>📱 মোবাইল / Mobile</option>
+                <option>💻 কম্পিউটার / Computer</option>
+                <option>⚡ ইলেকট্রিক সামগ্রী / Electrical</option>
+                <option>📷 ক্যামেরা / Camera</option>
+              </optgroup>
+              <optgroup label="🏠 বাড়ি / Home">
+                <option>🪑 আসবাবপত্র / Furniture</option>
+                <option>🍳 কিচেন সামগ্রী / Kitchen</option>
+                <option>🎨 গৃহসজ্জা / Home Decor</option>
+                <option>🔧 হার্ডওয়্যার / Hardware</option>
+              </optgroup>
+              <optgroup label="🎨 শিল্প ও শিক্ষা / Arts & Education">
+                <option>🎨 শিল্পকর্ম / Handicrafts</option>
+                <option>📚 বই-শিক্ষা / Books & Education</option>
+                <option>🎵 সংগীত / Music</option>
+                <option>🎁 উপহার / Gifts</option>
+              </optgroup>
+              <optgroup label="💈 সেবা / Services">
+                <option>💈 সৌন্দর্য সেবা / Beauty</option>
+                <option>🔧 মেরামত সেবা / Repair</option>
+                <option>📦 অন্যান্য / Other</option>
+              </optgroup>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>একক / Unit</label>
+            <select class="form-input" id="fUnit">
+              <option value="piece">piece (টি)</option>
+              <option value="kg">kg (কেজি)</option>
+              <option value="gram">gram (গ্রাম)</option>
+              <option value="litre">litre (লিটার)</option>
+              <option value="ml">ml (মিলি)</option>
+              <option value="dozen">dozen (ডজন)</option>
+              <option value="set">set (সেট)</option>
+              <option value="pack">pack (প্যাক)</option>
+              <option value="box">box (বক্স)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>স্টক পরিমাণ / Stock *</label>
+            <input type="number" class="form-input" id="fStock" placeholder="50" min="0">
+          </div>
+          <div class="form-group">
+            <label>প্রস্তুতি সময় (মিনিট) / Prep Time</label>
+            <input type="number" class="form-input" id="fPrep" placeholder="15" min="0">
+          </div>
+          <div class="form-group full">
+            <label>বিবরণ / Description</label>
+            <input type="text" class="form-input" id="fDesc" placeholder="সংক্ষিপ্ত বিবরণ / Brief description...">
+          </div>
+        </div>
       </div>
-      <!-- Pricing -->
-      <div style="background:var(--sand);border-radius:12px;padding:16px;margin:14px 0">
-        <div style="font-size:.8rem;font-weight:700;color:var(--navy);margin-bottom:12px">💰 মূল্য নির্ধারণ</div>
-        <div class="form-grid-2">
-          <div class="form-group"><label>MRP (সর্বোচ্চ মূল্য) ₹</label>
-            <input type="number" class="form-input" id="fMrp" placeholder="150" oninput="calcDiscount()"></div>
-          <div class="form-group"><label class="bn">বিক্রয় মূল্য ₹ *</label>
-            <input type="number" class="form-input" id="fPrice" placeholder="120" oninput="calcDiscount()"></div>
+
+      <!-- Section 2: Pricing -->
+      <div style="background:var(--orange-light);border:1px solid rgba(240,112,24,.2);
+        border-radius:10px;padding:14px;margin-bottom:14px">
+        <div style="font-size:.78rem;font-weight:700;color:var(--navy);margin-bottom:12px">
+          💰 মূল্য নির্ধারণ / Pricing</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>MRP — সর্বোচ্চ খুচরা মূল্য ₹</label>
+            <input type="number" class="form-input" id="fMrp" placeholder="150" min="0" oninput="calcDiscount()">
+          </div>
+          <div class="form-group">
+            <label>বিক্রয় মূল্য / Selling Price ₹ *</label>
+            <input type="number" class="form-input" id="fPrice" placeholder="120" min="0" oninput="calcDiscount()">
+          </div>
         </div>
         <div class="discount-display" id="discDisplay">
           <div class="disc-pct" id="discPct">0% OFF</div>
-          <div class="disc-note" id="discNote">MRP ₹0 → ₹0 এ বিক্রয়</div>
+          <div class="disc-note" id="discNote"></div>
+        </div>
+        <div style="font-size:.72rem;color:var(--muted);margin-top:8px">
+          💡 MRP ও Selling Price দিলে discount % auto calculate হবে।
+          Customer এ discount badge দেখাবে।
         </div>
       </div>
-      <!-- Description -->
-      <div class="form-group"><label class="bn">বিবরণ</label>
-        <input type="text" class="form-input" id="fDesc" placeholder="সংক্ষিপ্ত বিবরণ..."></div>
-      <!-- Offer Section -->
-      <div style="background:linear-gradient(135deg,#fff8f0,#fff4e8);border:1.5px solid rgba(240,112,24,.25);border-radius:12px;padding:16px;margin:14px 0">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-          <div style="font-size:.82rem;font-weight:700;color:var(--navy)">🏷️ অফার সেটিংস / Offer Settings</div>
-          <div style="display:flex;align-items:center;gap:8px">
-            <span style="font-size:.75rem;color:var(--muted)">অফার চালু?</span>
-            <input type="checkbox" id="fOfferActive" onchange="toggleOfferFields()" style="width:16px;height:16px;cursor:pointer;accent-color:var(--orange)">
+
+      <!-- Section 3: Offer Settings -->
+      <div style="background:#f0fff4;border:1.5px solid rgba(26,138,74,.2);
+        border-radius:10px;padding:14px;margin-bottom:14px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div style="font-size:.78rem;font-weight:700;color:var(--navy)">
+            🏷️ বিশেষ অফার / Special Offer
+            <span style="font-size:.68rem;font-weight:400;color:var(--muted);margin-left:6px">
+              (optional)</span>
           </div>
+          <label style="display:flex;align-items:center;gap:7px;cursor:pointer">
+            <span style="font-size:.75rem;color:var(--muted)">অফার চালু করুন</span>
+            <input type="checkbox" id="fOfferActive" onchange="toggleOfferFields()"
+              style="width:16px;height:16px;accent-color:var(--green);cursor:pointer">
+          </label>
+        </div>
+        <!-- Offer note when discount already set -->
+        <div id="offerNote" style="font-size:.72rem;color:var(--muted);margin-bottom:8px">
+          💡 MRP থেকে discount ইতিমধ্যে calculate হচ্ছে।
+          এখানে অতিরিক্ত offer settings দিন যেমন:
+          কতক্ষণের জন্য, coupon code, offer label।
         </div>
         <div id="offerFields" style="display:none">
-          <div class="form-grid-2" style="margin-bottom:12px">
+          <div class="form-grid">
             <div class="form-group">
-              <label class="bn">অফারের ধরন</label>
-              <select class="form-input" id="fOfferType" onchange="updateOfferPreview()">
-                <option value="discount">% ছাড় (MRP থেকে auto)</option>
-                <option value="flat">সরাসরি ছাড় ₹</option>
-                <option value="bogo">Buy 1 Get 1</option>
-                <option value="min_order">Minimum Order এ ছাড়</option>
-              </select>
-            </div>
-            <div class="form-group" id="flatDiscGroup" style="display:none">
-              <label class="bn">ছাড়ের পরিমাণ ₹</label>
-              <input type="number" class="form-input" id="fFlatDisc" placeholder="20" oninput="updateOfferPreview()">
-            </div>
-            <div class="form-group" id="minOrderGroup" style="display:none">
-              <label class="bn">Minimum Order ₹</label>
-              <input type="number" class="form-input" id="fMinOrder" placeholder="200" oninput="updateOfferPreview()">
-            </div>
-          </div>
-          <div class="form-grid-2" style="margin-bottom:12px">
-            <div class="form-group">
-              <label class="bn">অফার কতক্ষণ?</label>
-              <select class="form-input" id="fOfferDuration" onchange="updateOfferEndTime()">
-                <option value="1h">১ ঘণ্টা</option>
-                <option value="6h">৬ ঘণ্টা</option>
-                <option value="12h">১২ ঘণ্টা</option>
-                <option value="1d" selected>১ দিন</option>
-                <option value="3d">৩ দিন</option>
-                <option value="7d">৭ দিন</option>
-                <option value="custom">Custom তারিখ/সময়</option>
-              </select>
-            </div>
-            <div class="form-group" id="customEndGroup" style="display:none">
-              <label class="bn">শেষ হবে কখন?</label>
-              <input type="datetime-local" class="form-input" id="fOfferEnd">
-            </div>
-          </div>
-          <div class="form-grid-2" style="margin-bottom:12px">
-            <div class="form-group">
-              <label class="bn">Offer Label (optional)</label>
-              <select class="form-input" id="fOfferLabel">
+              <label>অফারের label</label>
+              <select class="form-input" id="fOfferLabel" onchange="updateOfferPreview()">
                 <option value="Flash Sale">⚡ Flash Sale</option>
                 <option value="Today Only">🔥 Today Only</option>
                 <option value="Limited Time">⏰ Limited Time</option>
                 <option value="Special Offer">🎁 Special Offer</option>
                 <option value="Festival Offer">🎉 Festival Offer</option>
-                <option value="">Custom লিখুন</option>
+                <option value="Clearance">🏷️ Clearance</option>
               </select>
             </div>
             <div class="form-group">
-              <label>Coupon Code (optional)</label>
-              <input type="text" class="form-input" id="fCouponCode"
-                placeholder="যেমন: RAHIM20" style="text-transform:uppercase"
-                oninput="this.value=this.value.toUpperCase()">
+              <label>অফার কতক্ষণ? / Duration</label>
+              <select class="form-input" id="fOfferDuration" onchange="updateOfferEndTime()">
+                <option value="1h">১ ঘণ্টা / 1 Hour</option>
+                <option value="6h">৬ ঘণ্টা / 6 Hours</option>
+                <option value="12h">১২ ঘণ্টা / 12 Hours</option>
+                <option value="1d" selected>১ দিন / 1 Day</option>
+                <option value="3d">৩ দিন / 3 Days</option>
+                <option value="7d">৭ দিন / 7 Days</option>
+                <option value="custom">Custom তারিখ/সময়</option>
+              </select>
             </div>
           </div>
-          <!-- Offer Preview -->
-          <div id="offerPreview" style="background:#fff;border-radius:10px;padding:12px;
-            border:1px solid rgba(240,112,24,.2);display:none">
-            <div style="font-size:.72rem;font-weight:700;color:var(--muted);margin-bottom:6px;
-              text-transform:uppercase;letter-spacing:.5px">Preview — Customer দেখবে:</div>
-            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <div id="customEndGroup" style="display:none" class="form-group">
+            <label>শেষ হবে কখন? / Offer Ends At</label>
+            <input type="datetime-local" class="form-input" id="fOfferEnd">
+          </div>
+          <div class="form-group">
+            <label>Coupon Code (optional)</label>
+            <input type="text" class="form-input" id="fCouponCode"
+              placeholder="যেমন: RAHIM20 (customer এই code দিলে offer পাবে)"
+              oninput="this.value=this.value.toUpperCase();updateOfferPreview()">
+          </div>
+          <!-- Preview -->
+          <div id="offerPreview" style="background:#fff;border-radius:8px;padding:10px;
+            border:1px solid rgba(26,138,74,.2);margin-top:10px">
+            <div style="font-size:.7rem;font-weight:700;color:var(--muted);margin-bottom:6px">
+              👁️ Customer দেখবে:</div>
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
               <span id="prevLabel" style="background:var(--orange);color:#fff;font-size:.68rem;
                 font-weight:800;padding:2px 8px;border-radius:4px">⚡ Flash Sale</span>
-              <span id="prevDisc" style="background:var(--red);color:#fff;font-size:.68rem;
-                font-weight:800;padding:2px 8px;border-radius:4px">20% OFF</span>
               <span id="prevTimer" style="background:var(--yellow2);color:var(--yellow);
                 font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:4px">
                 ⏰ Ends in 24:00:00</span>
@@ -847,35 +970,49 @@ select.form-input{cursor:pointer;}
           </div>
         </div>
       </div>
-      <!-- Images -->
-      <div class="form-group">
-        <label class="bn">পণ্যের ছবি (সর্বোচ্চ ৫টি)</label>
+
+      <!-- Section 4: Images -->
+      <div style="background:var(--sand);border-radius:10px;padding:14px">
+        <div style="font-size:.78rem;font-weight:700;color:var(--navy);margin-bottom:10px">
+          📷 পণ্যের ছবি / Photos (সর্বোচ্চ ৫টি)</div>
         <div class="img-upload-grid">
           <div class="img-slot" id="slot0" onclick="triggerImg(0)">📷
-            <img id="img0" style="display:none"><button class="del-img-btn" onclick="delImg(event,0)">✕</button></div>
+            <img id="img0" style="display:none">
+            <button class="del-img-btn" onclick="delImg(event,0)">✕</button></div>
           <div class="img-slot" id="slot1" onclick="triggerImg(1)">📷
-            <img id="img1" style="display:none"><button class="del-img-btn" onclick="delImg(event,1)">✕</button></div>
+            <img id="img1" style="display:none">
+            <button class="del-img-btn" onclick="delImg(event,1)">✕</button></div>
           <div class="img-slot" id="slot2" onclick="triggerImg(2)">📷
-            <img id="img2" style="display:none"><button class="del-img-btn" onclick="delImg(event,2)">✕</button></div>
+            <img id="img2" style="display:none">
+            <button class="del-img-btn" onclick="delImg(event,2)">✕</button></div>
           <div class="img-slot" id="slot3" onclick="triggerImg(3)">📷
-            <img id="img3" style="display:none"><button class="del-img-btn" onclick="delImg(event,3)">✕</button></div>
+            <img id="img3" style="display:none">
+            <button class="del-img-btn" onclick="delImg(event,3)">✕</button></div>
           <div class="img-slot" id="slot4" onclick="triggerImg(4)">📷
-            <img id="img4" style="display:none"><button class="del-img-btn" onclick="delImg(event,4)">✕</button></div>
+            <img id="img4" style="display:none">
+            <button class="del-img-btn" onclick="delImg(event,4)">✕</button></div>
         </div>
-        <input type="file" id="imgFileInput" accept="image/*" style="display:none" onchange="handleImgUpload(this)">
+        <input type="file" id="imgFileInput" accept="image/*" style="display:none"
+          onchange="handleImgUpload(this)">
         <div class="upload-progress" id="uploadProg">
           <span id="uploadMsg">ছবি আপলোড হচ্ছে...</span>
           <div class="progress-bar"><div class="progress-fill" id="progFill"></div></div>
         </div>
+        <div style="font-size:.72rem;color:var(--muted);margin-top:8px">
+          💡 প্রথম ছবিটি main ছবি হিসেবে দেখাবে।
+        </div>
       </div>
-    </div>
+
+    </div><!-- end scrollable body -->
+    <!-- Footer -->
     <div style="padding:14px 22px 18px;border-top:1px solid var(--border);
-      display:flex;gap:10px;justify-content:flex-end;">
-      <button class="btn-sm btn-outline" onclick="closeProductModal()">বাতিল</button>
-      <button class="btn-sm btn-orange" onclick="saveProduct()" id="saveProdBtn">✅ সেভ করুন</button>
+      display:flex;gap:10px;justify-content:flex-end;border-radius:0 0 20px 20px;background:#fff;">
+      <button class="btn-sm btn-outline" onclick="closeProductModal()">বাতিল / Cancel</button>
+      <button class="btn-sm btn-orange" onclick="saveProduct()" id="saveProdBtn">✅ সেভ করুন / Save</button>
     </div>
   </div>
 </div>
+
 
 <script>
 // ═══ CONFIG ═══
@@ -929,7 +1066,7 @@ function initFirebase(){
 // ═══ HELPERS ═══
 function hideLoading(){ document.getElementById('loadingScreen').style.display='none'; }
 function showAuth(){ document.getElementById('authScreen').style.display='flex'; document.getElementById('appScreen').style.display='none'; }
-function showApp(){ document.getElementById('authScreen').style.display='none'; document.getElementById('appScreen').style.display='flex'; }
+function showApp(){ document.getElementById('authScreen').style.display='none'; document.getElementById('appScreen').style.display='block'; }
 function showToast(msg,type){
   var e=document.getElementById('toastEl'); e.textContent=msg;
   e.className='toast show '+(type||''); clearTimeout(e._t);
@@ -1007,7 +1144,14 @@ function doLogout(){
 // ═══ LOAD DATA ═══
 function loadSellerData(){
   sellerRef().get().then(function(doc){
-    if(doc.exists){ SD=doc.data(); updateSidebar(); loadProfile(); }
+    if(doc.exists){
+      SD=doc.data();
+      // Restore saved language
+      if(SD.language && SD.language !== currentLang){
+        setLang(SD.language);
+      }
+      updateSidebar(); loadProfile();
+    }
     productsRef().orderBy('createdAt','desc').get().then(function(snap){
       products=[]; snap.forEach(function(d){products.push(Object.assign({id:d.id},d.data()));});
       updateProductStats();
@@ -1023,7 +1167,44 @@ function loadSellerData(){
   }).catch(function(){ hideLoading(); showApp(); });
 }
 
-// ═══ SIDEBAR ═══
+// ═══ LANGUAGE SYSTEM ═══
+var currentLang = 'bn';
+
+var PAGE_TITLES = {
+  dashboard: {bn:'ড্যাশবোর্ড', en:'Dashboard'},
+  products:  {bn:'পণ্য তালিকা', en:'Products'},
+  orders:    {bn:'অর্ডার', en:'Orders'},
+  profile:   {bn:'শপ প্রোফাইল', en:'Shop Profile'},
+  subscription:{bn:'সাবস্ক্রিপশন', en:'Subscription'},
+  performance: {bn:'পারফরম্যান্স', en:'Performance'},
+  qr:        {bn:'QR কোড', en:'QR Code'}
+};
+
+function setLang(lang){
+  currentLang = lang;
+  // Update toggle buttons
+  document.getElementById('langBnBtn').classList.toggle('active', lang==='bn');
+  document.getElementById('langEnBtn').classList.toggle('active', lang==='en');
+  // Update all data-lang elements
+  document.querySelectorAll('[data-lang-bn]').forEach(function(el){
+    el.textContent = lang==='bn' ? el.getAttribute('data-lang-bn') : el.getAttribute('data-lang-en');
+  });
+  // Update page title
+  var activePage = document.querySelector('.page.active');
+  if(activePage){
+    var pageId = activePage.id.replace('page-','');
+    var titles = PAGE_TITLES[pageId];
+    if(titles) document.getElementById('pageTitle').textContent = titles[lang];
+  }
+  // Update product count text
+  document.getElementById('prodCount').textContent =
+    products.length + (lang==='bn'?' পণ্য':' products');
+  document.getElementById('orderCount').textContent =
+    orders.length + (lang==='bn'?' অর্ডার':' orders');
+  // Save preference to Firebase
+  if(CU) sellerRef().update({language:lang}).catch(function(){});
+  showToast(lang==='bn'?'বাংলা ভাষা সক্রিয় ✅':'English language active ✅','green');
+}
 function updateSidebar(){
   if(!SD)return;
   document.getElementById('sbShopName').textContent = SD.shopName||'আপনার দোকান';
@@ -1043,9 +1224,8 @@ function goPage(page,btnEl){
   document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.remove('active');});
   document.getElementById('page-'+page).classList.add('active');
   if(btnEl)btnEl.classList.add('active');
-  var titles={dashboard:'ড্যাশবোর্ড',products:'পণ্য তালিকা',orders:'অর্ডার ম্যানেজমেন্ট',
-    profile:'শপ প্রোফাইল',subscription:'সাবস্ক্রিপশন',performance:'পারফরম্যান্স',qr:'QR কোড'};
-  document.getElementById('pageTitle').textContent=titles[page]||page;
+  var titles=PAGE_TITLES[page]||{bn:page,en:page};
+  document.getElementById('pageTitle').textContent=titles[currentLang]||titles.bn;
   if(page==='products')renderProducts();
   if(page==='orders')renderOrders('all');
   if(page==='performance')renderPerformance();
@@ -1058,10 +1238,9 @@ function closeSidebar(){document.getElementById('sidebar').classList.remove('ope
 // ═══ STATS ═══
 function updateProductStats(){
   document.getElementById('statProds').textContent=products.length;
-  document.getElementById('prodCount').textContent=products.length+' পণ্য';
+  document.getElementById('prodCount').textContent=products.length+(currentLang==='bn'?' পণ্য':' products');
   var low=products.filter(function(p){return(p.stock||0)<=5;});
   document.getElementById('statLowStock').textContent=low.length;
-  // Plan limit warning
   var plan=SD?SD.plan||'free':'free';
   var limit=PLAN_LIMITS[plan]||10;
   document.getElementById('planLimitWarn').style.display=products.length>=limit?'block':'none';
@@ -1076,14 +1255,15 @@ function updateOrderStats(){
   var badge=document.getElementById('pendingBadge');
   if(pending.length>0){badge.style.display='inline';badge.textContent=pending.length;}
   else badge.style.display='none';
-  document.getElementById('orderCount').textContent=orders.length+' অর্ডার';
+  document.getElementById('orderCount').textContent=orders.length+(currentLang==='bn'?' অর্ডার':' orders');
 }
 
 // ═══ PRODUCTS ═══
 function renderProducts(){
   var wrap=document.getElementById('productListWrap');
   if(!products.length){
-    wrap.innerHTML='<div class="empty-state"><div class="empty-icon">📦</div><p class="bn">এখনো কোনো পণ্য যোগ হয়নি</p></div>';
+    wrap.innerHTML='<div class="empty-state"><div class="empty-icon">📦</div>'+
+      '<p>'+(currentLang==='bn'?'এখনো কোনো পণ্য যোগ হয়নি':'No products added yet')+'</p></div>';
     return;
   }
   wrap.innerHTML=products.map(function(p){
@@ -1186,33 +1366,45 @@ async function saveProduct(){
   var mrp=parseFloat(document.getElementById('fMrp').value)||0;
   var price=parseFloat(document.getElementById('fPrice').value)||0;
   var desc=document.getElementById('fDesc').value.trim();
-  if(!nameBn||!cat||!price){showToast('নাম, ক্যাটাগরি ও দাম দিন ⚠️','red');return;}
-  // Plan limit check
+
+  // Validation
+  if(!nameBn){showToast('পণ্যের নাম (বাংলা) দিন ⚠️','red');return;}
+  if(!cat){showToast('ক্যাটাগরি বেছে নিন ⚠️','red');return;}
+  if(!price||price<=0){showToast('বিক্রয় মূল্য দিন ⚠️','red');return;}
+
+  // Plan limit check (new product only)
   if(!editId){
-    var plan=SD?SD.plan||'free':'free'; var limit=PLAN_LIMITS[plan]||10;
-    if(products.length>=limit){showToast('Free plan এ সর্বোচ্চ '+limit+'টি পণ্য। Upgrade করুন!','red');return;}
+    var plan=SD?SD.plan||'free':'free';
+    var limit=PLAN_LIMITS[plan]||10;
+    if(products.length>=limit){
+      showToast('Free plan এ সর্বোচ্চ '+limit+'টি পণ্য। Upgrade করুন!','red');
+      return;
+    }
   }
+
   var disc=mrp&&price&&price<mrp?Math.round((mrp-price)/mrp*100):0;
-  var btn=document.getElementById('saveProdBtn'); btn.disabled=true; btn.textContent='সেভ হচ্ছে...';
-  // Upload images
+  var btn=document.getElementById('saveProdBtn');
+  btn.disabled=true; btn.textContent='সেভ হচ্ছে...';
+
   var validImgs=imgUrls.filter(Boolean);
-  var hasNewImgs=false;
-  for(var i=0;i<5;i++){if(document.getElementById('imgFileInput').files&&i===activeImgSlot&&document.getElementById('imgFileInput').files[0])hasNewImgs=true;}
-  var data={
+
+  // Offer data
+  var offerActive=document.getElementById('fOfferActive').checked;
+  var offerData={
+    offerActive:offerActive,
+    offerLabel:offerActive?document.getElementById('fOfferLabel').value:'',
+    couponCode:offerActive?document.getElementById('fCouponCode').value:'',
+    offerEndTime:offerActive?getOfferEndTimestamp():null,
+  };
+
+  var data=Object.assign({
     nameBn:nameBn, nameEn:nameEn, name:nameBn,
     category:cat, stock:stock, unit:unit, prepTime:prep,
     mrp:mrp, price:price, discount:disc, description:desc,
     images:validImgs, imageUrl:validImgs[0]||'',
-    // Offer fields
-    offerActive:document.getElementById('fOfferActive').checked,
-    offerType:document.getElementById('fOfferType').value,
-    offerLabel:document.getElementById('fOfferLabel').value,
-    couponCode:document.getElementById('fCouponCode').value,
-    flatDiscount:parseFloat(document.getElementById('fFlatDisc').value)||0,
-    minOrderAmount:parseFloat(document.getElementById('fMinOrder').value)||0,
-    offerEndTime:document.getElementById('fOfferActive').checked?getOfferEndTimestamp():null,
     updatedAt:new Date().toISOString()
-  };
+  }, offerData);
+
   try{
     if(editId){
       await productsRef().doc(editId).update(data);
@@ -1225,9 +1417,15 @@ async function saveProduct(){
       products.unshift(Object.assign({id:ref.id},data));
       showToast('নতুন পণ্য যোগ হয়েছে ✅','green');
     }
-    renderProducts(); updateProductStats(); closeProductModal();
-  }catch(e){showToast('সেভ ব্যর্থ: '+e.message,'red');}
-  btn.disabled=false; btn.textContent='✅ সেভ করুন';
+    renderProducts();
+    updateProductStats();
+    closeProductModal();
+  }catch(e){
+    showToast('সেভ ব্যর্থ: '+e.message,'red');
+    console.error('Save error:',e);
+  }
+  btn.disabled=false;
+  btn.textContent='✅ সেভ করুন / Save';
 }
 
 // ═══ OFFER FUNCTIONS ═══
@@ -1235,13 +1433,12 @@ function toggleOfferFields(){
   var active=document.getElementById('fOfferActive').checked;
   document.getElementById('offerFields').style.display=active?'block':'none';
   if(active){updateOfferPreview();updateOfferEndTime();}
-  else{document.getElementById('offerPreview').style.display='none';}
+  else document.getElementById('offerPreview').style.display='none';
 }
 
 function updateOfferEndTime(){
   var dur=document.getElementById('fOfferDuration').value;
-  var customGrp=document.getElementById('customEndGroup');
-  customGrp.style.display=dur==='custom'?'block':'none';
+  document.getElementById('customEndGroup').style.display=dur==='custom'?'block':'none';
   if(dur!=='custom'){
     var now=new Date();
     var mins={'1h':60,'6h':360,'12h':720,'1d':1440,'3d':4320,'7d':10080};
@@ -1252,30 +1449,11 @@ function updateOfferEndTime(){
 }
 
 function updateOfferPreview(){
-  var active=document.getElementById('fOfferActive').checked;
-  if(!active)return;
-  var type=document.getElementById('fOfferType').value;
   var label=document.getElementById('fOfferLabel').value||'Flash Sale';
   var coupon=document.getElementById('fCouponCode').value;
-  var mrp=parseFloat(document.getElementById('fMrp').value)||0;
-  var price=parseFloat(document.getElementById('fPrice').value)||0;
-  var flat=parseFloat(document.getElementById('fFlatDisc').value)||0;
-  // Show/hide type-specific fields
-  document.getElementById('flatDiscGroup').style.display=type==='flat'?'block':'none';
-  document.getElementById('minOrderGroup').style.display=type==='min_order'?'block':'none';
-  // Calc discount text
-  var discText='';
-  if(type==='discount'&&mrp>0&&price>0&&price<mrp)discText=Math.round((mrp-price)/mrp*100)+'% OFF';
-  else if(type==='flat'&&flat>0)discText='₹'+flat+' OFF';
-  else if(type==='bogo')discText='Buy 1 Get 1';
-  else if(type==='min_order')discText='Extra Discount';
-  // Timer text
   var dur=document.getElementById('fOfferDuration').value;
   var timerMap={'1h':'01:00:00','6h':'06:00:00','12h':'12:00:00','1d':'24:00:00','3d':'72:00:00','7d':'168:00:00','custom':'--:--:--'};
-  // Update preview
   document.getElementById('prevLabel').textContent=label;
-  document.getElementById('prevDisc').textContent=discText||'Offer';
-  document.getElementById('prevDisc').style.display=discText?'inline':'none';
   document.getElementById('prevTimer').textContent='⏰ Ends in '+(timerMap[dur]||'--:--:--');
   var cpEl=document.getElementById('prevCoupon');
   if(coupon){cpEl.textContent='🎫 Code: '+coupon;cpEl.style.display='inline';}
@@ -1299,23 +1477,17 @@ function clearOfferFields(){
   document.getElementById('fOfferActive').checked=false;
   document.getElementById('offerFields').style.display='none';
   document.getElementById('offerPreview').style.display='none';
-  document.getElementById('fOfferType').value='discount';
   document.getElementById('fOfferDuration').value='1d';
   document.getElementById('fOfferLabel').value='Flash Sale';
   document.getElementById('fCouponCode').value='';
-  document.getElementById('fFlatDisc').value='';
-  document.getElementById('fMinOrder').value='';
 }
 
 function loadOfferFields(p){
   if(!p.offerActive)return;
   document.getElementById('fOfferActive').checked=true;
   document.getElementById('offerFields').style.display='block';
-  document.getElementById('fOfferType').value=p.offerType||'discount';
   document.getElementById('fOfferLabel').value=p.offerLabel||'Flash Sale';
   document.getElementById('fCouponCode').value=p.couponCode||'';
-  document.getElementById('fFlatDisc').value=p.flatDiscount||'';
-  document.getElementById('fMinOrder').value=p.minOrderAmount||'';
   if(p.offerEndTime){
     document.getElementById('fOfferDuration').value='custom';
     document.getElementById('customEndGroup').style.display='block';
