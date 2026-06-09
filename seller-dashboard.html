@@ -799,14 +799,29 @@ select.form-input{cursor:pointer;}
               <option value="home">🏠 বাড়ি / Home & Living</option>
               <option value="arts">🎨 শিল্প ও শিক্ষা / Arts & Education</option>
               <option value="services">💈 সেবা / Services</option>
+              <option value="other">📦 অন্যান্য / Other</option>
             </select>
           </div>
           <!-- Sub Category -->
           <div class="form-group">
             <label>উপ-ক্যাটাগরি / Sub-Category *</label>
-            <select class="form-input" id="fCatSub" onchange="autoGenerateTags()">
+            <select class="form-input" id="fCatSub" onchange="onSubCatChange()">
               <option value="">— আগে প্রধান ক্যাটাগরি বেছে নিন —</option>
             </select>
+          </div>
+          <!-- Custom Sub-category (shows when 'other' selected) -->
+          <div class="form-group full" id="customSubGroup" style="display:none;">
+            <label>আপনার category লিখুন / Custom Category *</label>
+            <input type="text" class="form-input" id="fCustomSub"
+              placeholder="যেমন: চকলেট, আইসক্রিম, সাইকেল মেরামত..."
+              oninput="onCustomSubInput()">
+            <div style="margin-top:8px;padding:10px 12px;background:var(--orange-light);
+              border-radius:8px;font-size:.75rem;color:var(--orange);">
+              💡 আপনার category টি আমাদের কাছে পাঠানো হবে।
+              পরবর্তী update এ সবার জন্য যোগ হবে।
+              <a href="#" onclick="requestCategory()" style="color:var(--navy);font-weight:700;
+                margin-left:6px;">এখনই request করুন →</a>
+            </div>
           </div>
           <!-- Search Tags -->
           <div class="form-group full">
@@ -1355,11 +1370,12 @@ async function saveProduct(){
   var cat=document.getElementById('fCat').value;
   var catMain=document.getElementById('fCatMain').value;
   var catSub=document.getElementById('fCatSub').value;
+  var customSub=document.getElementById('fCustomSub').value.trim();
   var catDataRaw=document.getElementById('fCatData').value;
   var catData=catDataRaw?JSON.parse(catDataRaw):{};
   var tags=currentTags.map(function(t){return t.text;});
   updateSearchIndex();
-  var searchIndex=[nameBn,nameEn,cat,catMain,catSub,tags.join(' ')].join(' ').toLowerCase();
+  var searchIndex=[nameBn,nameEn,cat,catMain,catSub,customSub,tags.join(' ')].join(' ').toLowerCase();
   var stock=parseInt(document.getElementById('fStock').value)||0;
   var unit=document.getElementById('fUnit').value;
   var prep=parseInt(document.getElementById('fPrep').value)||0;
@@ -1401,7 +1417,8 @@ async function saveProduct(){
     nameBn:nameBn, nameEn:nameEn, name:nameBn,
     category:cat,
     categoryMain:catMain,
-    categorySub:catSub,
+    categorySub:catSub==='other'&&customSub?customSub:catSub,
+    customCategory:customSub||'',
     searchTags:tags,
     searchIndex:searchIndex, stock:stock, unit:unit, prepTime:prep,
     mrp:mrp, price:price, discount:disc, description:desc,
@@ -1447,6 +1464,8 @@ var CAT_DATA = {
        tags:['juice','drink','পানীয়','tea','চা','lassi']},
       {v:'snacks',l:'🥗 স্ন্যাক্স / Snacks',
        tags:['snack','চিপস','namkeen','মুড়ি','চানাচুর']},
+      {v:'other',l:'📦 অন্যান্য / Other',
+       tags:['food','খাবার','other']},
     ]
   },
   grocery:{
@@ -1462,6 +1481,8 @@ var CAT_DATA = {
        tags:['সাবান','soap','daily','essential','শ্যাম্পু']},
       {v:'cleaning',l:'🧹 পরিষ্কার সামগ্রী',
        tags:['cleaning','ঝাঁটা','detergent','বাসন মাজা']},
+      {v:'other',l:'📦 অন্যান্য / Other',
+       tags:['grocery','মুদি','other']},
     ]
   },
   farm:{
@@ -1481,6 +1502,8 @@ var CAT_DATA = {
        tags:['organic','জৈব','natural','প্রাকৃতিক']},
       {v:'flowers',l:'🌺 ফুল / Flowers',
        tags:['ফুল','flower','গোলাপ','rose','গাঁদা','marigold']},
+      {v:'other',l:'📦 অন্যান্য / Other',
+       tags:['farm','কৃষি','other']},
     ]
   },
   health:{
@@ -1492,6 +1515,8 @@ var CAT_DATA = {
        tags:['ayurvedic','আয়ুর্বেদ','herbal','natural','ভেষজ']},
       {v:'medical',l:'🏥 চিকিৎসা সামগ্রী',
        tags:['medical','bandage','thermometer','BP machine']},
+      {v:'other',l:'📦 অন্যান্য / Other',
+       tags:['health','স্বাস্থ্য','other']},
     ]
   },
   clothing:{
@@ -1505,6 +1530,8 @@ var CAT_DATA = {
        tags:['kids','children','শিশু','baby','ছেলেমেয়ে']},
       {v:'saree',l:'🥻 শাড়ি-কাপড় / Saree & Fabric',
        tags:['শাড়ি','saree','tant','মসলিন','muslin','fabric']},
+      {v:'other',l:'📦 অন্যান্য / Other',
+       tags:['clothing','পোশাক','other']},
     ]
   },
   electronics:{
@@ -1518,6 +1545,8 @@ var CAT_DATA = {
        tags:['fan','bulb','wire','switch','electrical','বৈদ্যুতিক']},
       {v:'camera',l:'📷 ক্যামেরা / Camera',
        tags:['camera','DSLR','photo','video','lens']},
+      {v:'other',l:'📦 অন্যান্য / Other',
+       tags:['electronics','ইলেকট্রনিক্স','other']},
     ]
   },
   home:{
@@ -1531,6 +1560,8 @@ var CAT_DATA = {
        tags:['decor','curtain','pillow','mat','ঘর সাজানো']},
       {v:'hardware',l:'🔧 হার্ডওয়্যার',
        tags:['hardware','nail','screw','paint','lock','দরজা']},
+      {v:'other',l:'📦 অন্যান্য / Other',
+       tags:['home','বাড়ি','other']},
     ]
   },
   arts:{
@@ -1544,6 +1575,8 @@ var CAT_DATA = {
        tags:['music','instrument','guitar','tabla','harmonium']},
       {v:'gifts',l:'🎁 উপহার / Gifts',
        tags:['gift','present','উপহার','birthday','anniversary']},
+      {v:'other',l:'📦 অন্যান্য / Other',
+       tags:['arts','শিল্প','other']},
     ]
   },
   services:{
@@ -1556,6 +1589,13 @@ var CAT_DATA = {
       {v:'other',l:'📦 অন্যান্য / Other',
        tags:['service','other','অন্যান্য']},
     ]
+  },
+  other:{
+    label:'📦 অন্যান্য / Other',
+    subs:[
+      {v:'other',l:'📦 অন্যান্য / Other',
+       tags:['other','অন্যান্য']},
+    ]
   }
 };
 
@@ -1565,6 +1605,8 @@ function loadSubCat(){
   var main = document.getElementById('fCatMain').value;
   var subSel = document.getElementById('fCatSub');
   subSel.innerHTML = '<option value="">— উপ-ক্যাটাগরি বেছে নিন —</option>';
+  document.getElementById('customSubGroup').style.display='none';
+  document.getElementById('fCustomSub').value='';
   currentTags = [];
   renderTags();
   if(!main || !CAT_DATA[main]) return;
@@ -1573,8 +1615,60 @@ function loadSubCat(){
     opt.value = s.v; opt.textContent = s.l;
     subSel.appendChild(opt);
   });
-  // Update hidden fCat
   document.getElementById('fCat').value = CAT_DATA[main].label;
+}
+
+function onSubCatChange(){
+  var sub = document.getElementById('fCatSub').value;
+  var customGrp = document.getElementById('customSubGroup');
+  if(sub === 'other'){
+    customGrp.style.display = 'block';
+    currentTags = [];
+    renderTags();
+  } else {
+    customGrp.style.display = 'none';
+    autoGenerateTags();
+  }
+}
+
+function onCustomSubInput(){
+  var val = document.getElementById('fCustomSub').value.trim();
+  var main = document.getElementById('fCatMain').value;
+  if(!val) return;
+  // Set category display name
+  document.getElementById('fCat').value = val;
+  // Generate basic tags from custom input
+  var baseTags = [];
+  if(main && CAT_DATA[main]){
+    baseTags.push(main);
+    baseTags.push(CAT_DATA[main].label.split('/')[0].trim().replace(/[^\w\u0980-\u09FF]/g,'').trim());
+  }
+  baseTags.push(val);
+  currentTags = baseTags.filter(Boolean).map(function(t){
+    return {text:t, auto:true};
+  });
+  renderTags();
+  updateSearchIndex();
+}
+
+function requestCategory(){
+  var val = document.getElementById('fCustomSub').value.trim();
+  var main = document.getElementById('fCatMain').value;
+  if(!val){showToast('আগে category নাম লিখুন','red');return;}
+  if(!db || !CU) return;
+  db.collection('categoryRequests').add({
+    requestedBy: CU.uid,
+    shopName: SD ? SD.shopName : '',
+    mainCategory: main,
+    requestedSub: val,
+    city: CITY,
+    createdAt: new Date().toISOString(),
+    status: 'pending'
+  }).then(function(){
+    showToast('"'+val+'" request পাঠানো হয়েছে ✅ শীঘ্রই যোগ হবে!','green');
+  }).catch(function(){
+    showToast('Request পাঠাতে সমস্যা হয়েছে','red');
+  });
 }
 
 function autoGenerateTags(){
@@ -1640,6 +1734,8 @@ function clearCategoryFields(){
     '<option value="">— আগে প্রধান ক্যাটাগরি বেছে নিন —</option>';
   document.getElementById('fCat').value='';
   document.getElementById('fCatData').value='';
+  document.getElementById('fCustomSub').value='';
+  document.getElementById('customSubGroup').style.display='none';
   currentTags=[];
   renderTags();
 }
