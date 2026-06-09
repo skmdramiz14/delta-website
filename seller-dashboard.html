@@ -185,7 +185,13 @@ select.form-input{cursor:pointer;}
 .disc-pct{font-size:1.4rem;font-weight:800;}
 .disc-note{font-size:.72rem;opacity:.85;margin-top:2px;}
 
-/* ── IMAGE UPLOAD ── */
+/* ── TAGS ── */
+.tag-chip{display:inline-flex;align-items:center;gap:5px;background:var(--navy);
+  color:#fff;font-size:.72rem;font-weight:600;padding:4px 10px;border-radius:20px;}
+.tag-chip .tag-del{cursor:pointer;opacity:.6;font-size:.8rem;margin-left:2px;}
+.tag-chip .tag-del:hover{opacity:1;}
+.tag-chip.auto{background:var(--orange);}
+.tag-chip.manual{background:var(--navy2);}
 .img-upload-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:6px;}
 .img-slot{aspect-ratio:1;border-radius:10px;border:2px dashed var(--border);
   display:flex;align-items:center;justify-content:center;cursor:pointer;
@@ -779,68 +785,52 @@ select.form-input{cursor:pointer;}
           <input type="text" class="form-input" id="fNameEn" placeholder="e.g. Rasgolla, Hilsa Fish, Shirt">
         </div>
         <div class="form-grid">
+          <!-- Main Category -->
           <div class="form-group">
-            <label>ক্যাটাগরি / Category *</label>
-            <select class="form-input" id="fCat">
-              <option value="">— বেছে নিন / Select —</option>
-              <optgroup label="🍽️ খাবার / Food">
-                <option>🍬 মিষ্টি / Sweets</option>
-                <option>🍛 রান্না করা খাবার / Cooked Food</option>
-                <option>🎂 কেক ও বেকারি / Cake & Bakery</option>
-                <option>🥤 পানীয় / Beverages</option>
-                <option>🥗 স্ন্যাক্স / Snacks</option>
-              </optgroup>
-              <optgroup label="🛒 মুদিখানা / Grocery">
-                <option>🌾 চাল-ডাল / Rice & Lentils</option>
-                <option>🌶️ মশলা / Spices</option>
-                <option>🫙 তেল-ঘি / Oil & Ghee</option>
-                <option>🧴 নিত্যপ্রয়োজনীয় / Daily Essentials</option>
-                <option>🧹 পরিষ্কার সামগ্রী / Cleaning</option>
-              </optgroup>
-              <optgroup label="🌾 কৃষি / Agriculture">
-                <option>🥬 সবজি / Vegetables</option>
-                <option>🍎 ফল / Fruits</option>
-                <option>🐟 মাছ / Fish</option>
-                <option>🐓 মাংস-পোল্ট্রি / Meat & Poultry</option>
-                <option>🥛 দুগ্ধজাত / Dairy</option>
-                <option>🌿 জৈব পণ্য / Organic</option>
-                <option>🌺 ফুল / Flowers</option>
-              </optgroup>
-              <optgroup label="💊 স্বাস্থ্য / Health">
-                <option>💊 ওষুধ / Medicine</option>
-                <option>🌿 আয়ুর্বেদিক / Ayurvedic</option>
-                <option>🏥 চিকিৎসা সামগ্রী / Medical Supplies</option>
-              </optgroup>
-              <optgroup label="👗 পোশাক / Clothing">
-                <option>👔 পুরুষ পোশাক / Men's Wear</option>
-                <option>👗 মহিলা পোশাক / Women's Wear</option>
-                <option>👶 শিশু পোশাক / Kids' Wear</option>
-                <option>🥻 শাড়ি-কাপড় / Saree & Fabric</option>
-              </optgroup>
-              <optgroup label="📱 ইলেকট্রনিক্স / Electronics">
-                <option>📱 মোবাইল / Mobile</option>
-                <option>💻 কম্পিউটার / Computer</option>
-                <option>⚡ ইলেকট্রিক সামগ্রী / Electrical</option>
-                <option>📷 ক্যামেরা / Camera</option>
-              </optgroup>
-              <optgroup label="🏠 বাড়ি / Home">
-                <option>🪑 আসবাবপত্র / Furniture</option>
-                <option>🍳 কিচেন সামগ্রী / Kitchen</option>
-                <option>🎨 গৃহসজ্জা / Home Decor</option>
-                <option>🔧 হার্ডওয়্যার / Hardware</option>
-              </optgroup>
-              <optgroup label="🎨 শিল্প ও শিক্ষা / Arts & Education">
-                <option>🎨 শিল্পকর্ম / Handicrafts</option>
-                <option>📚 বই-শিক্ষা / Books & Education</option>
-                <option>🎵 সংগীত / Music</option>
-                <option>🎁 উপহার / Gifts</option>
-              </optgroup>
-              <optgroup label="💈 সেবা / Services">
-                <option>💈 সৌন্দর্য সেবা / Beauty</option>
-                <option>🔧 মেরামত সেবা / Repair</option>
-                <option>📦 অন্যান্য / Other</option>
-              </optgroup>
+            <label>প্রধান ক্যাটাগরি / Main Category *</label>
+            <select class="form-input" id="fCatMain" onchange="loadSubCat()">
+              <option value="">— বেছে নিন —</option>
+              <option value="food">🍽️ খাবার / Food</option>
+              <option value="grocery">🛒 মুদিখানা / Grocery</option>
+              <option value="farm">🌾 কৃষি / Agriculture</option>
+              <option value="health">💊 স্বাস্থ্য / Health</option>
+              <option value="clothing">👗 পোশাক / Clothing</option>
+              <option value="electronics">📱 ইলেকট্রনিক্স / Electronics</option>
+              <option value="home">🏠 বাড়ি / Home & Living</option>
+              <option value="arts">🎨 শিল্প ও শিক্ষা / Arts & Education</option>
+              <option value="services">💈 সেবা / Services</option>
             </select>
+          </div>
+          <!-- Sub Category -->
+          <div class="form-group">
+            <label>উপ-ক্যাটাগরি / Sub-Category *</label>
+            <select class="form-input" id="fCatSub" onchange="autoGenerateTags()">
+              <option value="">— আগে প্রধান ক্যাটাগরি বেছে নিন —</option>
+            </select>
+          </div>
+          <!-- Search Tags -->
+          <div class="form-group full">
+            <label>সার্চ ট্যাগ / Search Tags
+              <span style="font-size:.68rem;font-weight:400;color:var(--muted);margin-left:6px;">
+                (auto generate হবে + নিজে যোগ করতে পারবেন)
+              </span>
+            </label>
+            <div id="tagsContainer" style="display:flex;flex-wrap:wrap;gap:6px;
+              padding:10px;border:1.5px solid var(--border);border-radius:9px;
+              background:var(--cream);min-height:44px;cursor:text;"
+              onclick="document.getElementById('tagInput').focus()">
+            </div>
+            <div style="display:flex;gap:8px;margin-top:6px;">
+              <input type="text" class="form-input" id="tagInput"
+                placeholder="নতুন tag লিখুন ও Enter চাপুন..."
+                onkeydown="if(event.key==='Enter'){event.preventDefault();addTag(this.value);this.value='';}">
+              <button type="button" class="btn-sm btn-outline"
+                onclick="var i=document.getElementById('tagInput');addTag(i.value);i.value=''">
+                + যোগ করুন
+              </button>
+            </div>
+            <input type="hidden" id="fCat">
+            <input type="hidden" id="fCatData">
           </div>
           <div class="form-group">
             <label>একক / Unit</label>
@@ -1318,13 +1308,15 @@ function openProductModal(editIdParam){
     });
     calcDiscount();
     loadOfferFields(p);
+    loadCategoryFields(p);
   } else {
-    document.getElementById('modalTitle').textContent='নতুন পণ্য যোগ করুন';
-    ['fNameBn','fNameEn','fCat','fStock','fMrp','fPrice','fDesc','fPrep'].forEach(function(id){
+    document.getElementById('modalTitle').textContent='নতুন পণ্য যোগ করুন / Add Product';
+    ['fNameBn','fNameEn','fStock','fMrp','fPrice','fDesc','fPrep'].forEach(function(id){
       var el=document.getElementById(id); if(el)el.value='';
     });
     document.getElementById('fUnit').value='piece';
     clearOfferFields();
+    clearCategoryFields();
   }
   document.getElementById('productModal').style.display='flex';
 }
@@ -1361,6 +1353,13 @@ async function saveProduct(){
   var nameBn=document.getElementById('fNameBn').value.trim();
   var nameEn=document.getElementById('fNameEn').value.trim();
   var cat=document.getElementById('fCat').value;
+  var catMain=document.getElementById('fCatMain').value;
+  var catSub=document.getElementById('fCatSub').value;
+  var catDataRaw=document.getElementById('fCatData').value;
+  var catData=catDataRaw?JSON.parse(catDataRaw):{};
+  var tags=currentTags.map(function(t){return t.text;});
+  updateSearchIndex();
+  var searchIndex=[nameBn,nameEn,cat,catMain,catSub,tags.join(' ')].join(' ').toLowerCase();
   var stock=parseInt(document.getElementById('fStock').value)||0;
   var unit=document.getElementById('fUnit').value;
   var prep=parseInt(document.getElementById('fPrep').value)||0;
@@ -1400,7 +1399,11 @@ async function saveProduct(){
 
   var data=Object.assign({
     nameBn:nameBn, nameEn:nameEn, name:nameBn,
-    category:cat, stock:stock, unit:unit, prepTime:prep,
+    category:cat,
+    categoryMain:catMain,
+    categorySub:catSub,
+    searchTags:tags,
+    searchIndex:searchIndex, stock:stock, unit:unit, prepTime:prep,
     mrp:mrp, price:price, discount:disc, description:desc,
     images:validImgs, imageUrl:validImgs[0]||'',
     updatedAt:new Date().toISOString()
@@ -1429,7 +1432,237 @@ async function saveProduct(){
   btn.textContent='✅ সেভ করুন / Save';
 }
 
-// ═══ OFFER FUNCTIONS ═══
+// ═══ CATEGORY HIERARCHY ═══
+var CAT_DATA = {
+  food:{
+    label:'🍽️ খাবার / Food',
+    subs:[
+      {v:'sweets',l:'🍬 মিষ্টি / Sweets',
+       tags:['মিষ্টি','sweet','রসগোল্লা','সন্দেশ','মিষ্টান্ন','bengali sweet']},
+      {v:'cooked',l:'🍛 রান্না করা / Cooked Food',
+       tags:['রান্না','cooked','তরকারি','ভাত','curry','food']},
+      {v:'bakery',l:'🎂 কেক-বেকারি / Bakery',
+       tags:['cake','বেকারি','bread','pastry','কেক']},
+      {v:'beverages',l:'🥤 পানীয় / Beverages',
+       tags:['juice','drink','পানীয়','tea','চা','lassi']},
+      {v:'snacks',l:'🥗 স্ন্যাক্স / Snacks',
+       tags:['snack','চিপস','namkeen','মুড়ি','চানাচুর']},
+    ]
+  },
+  grocery:{
+    label:'🛒 মুদিখানা / Grocery',
+    subs:[
+      {v:'rice_lentils',l:'🌾 চাল-ডাল / Rice & Lentils',
+       tags:['চাল','ডাল','rice','lentil','আটা','flour']},
+      {v:'spices',l:'🌶️ মশলা / Spices',
+       tags:['মশলা','spice','হলুদ','turmeric','জিরা','pepper']},
+      {v:'oil_ghee',l:'🫙 তেল-ঘি / Oil & Ghee',
+       tags:['তেল','ঘি','oil','ghee','সর্ষে তেল','mustard']},
+      {v:'essentials',l:'🧴 নিত্যপ্রয়োজনীয়',
+       tags:['সাবান','soap','daily','essential','শ্যাম্পু']},
+      {v:'cleaning',l:'🧹 পরিষ্কার সামগ্রী',
+       tags:['cleaning','ঝাঁটা','detergent','বাসন মাজা']},
+    ]
+  },
+  farm:{
+    label:'🌾 কৃষি / Agriculture',
+    subs:[
+      {v:'vegetables',l:'🥬 সবজি / Vegetables',
+       tags:['সবজি','vegetable','আলু','potato','পেঁয়াজ','onion','টমেটো']},
+      {v:'fruits',l:'🍎 ফল / Fruits',
+       tags:['ফল','fruit','আম','mango','কলা','banana','পেঁপে']},
+      {v:'fish',l:'🐟 মাছ / Fish',
+       tags:['মাছ','fish','ইলিশ','hilsa','রুই','catla','চিংড়ি']},
+      {v:'meat',l:'🐓 মাংস-পোল্ট্রি / Meat',
+       tags:['মাংস','meat','chicken','মুরগি','goat','খাসি']},
+      {v:'dairy',l:'🥛 দুগ্ধজাত / Dairy',
+       tags:['দুধ','milk','দই','curd','ছানা','paneer','মাখন']},
+      {v:'organic',l:'🌿 জৈব পণ্য / Organic',
+       tags:['organic','জৈব','natural','প্রাকৃতিক']},
+      {v:'flowers',l:'🌺 ফুল / Flowers',
+       tags:['ফুল','flower','গোলাপ','rose','গাঁদা','marigold']},
+    ]
+  },
+  health:{
+    label:'💊 স্বাস্থ্য / Health',
+    subs:[
+      {v:'medicine',l:'💊 ওষুধ / Medicine',
+       tags:['ওষুধ','medicine','tablet','syrup','drug']},
+      {v:'ayurvedic',l:'🌿 আয়ুর্বেদিক',
+       tags:['ayurvedic','আয়ুর্বেদ','herbal','natural','ভেষজ']},
+      {v:'medical',l:'🏥 চিকিৎসা সামগ্রী',
+       tags:['medical','bandage','thermometer','BP machine']},
+    ]
+  },
+  clothing:{
+    label:'👗 পোশাক / Clothing',
+    subs:[
+      {v:'mens',l:'👔 পুরুষ পোশাক / Men\'s Wear',
+       tags:['shirt','pants','পাঞ্জাবি','lungi','পুরুষ','men']},
+      {v:'womens',l:'👗 মহিলা পোশাক / Women\'s Wear',
+       tags:['salwar','কামিজ','blouse','মহিলা','women','ladies']},
+      {v:'kids',l:'👶 শিশু পোশাক / Kids\' Wear',
+       tags:['kids','children','শিশু','baby','ছেলেমেয়ে']},
+      {v:'saree',l:'🥻 শাড়ি-কাপড় / Saree & Fabric',
+       tags:['শাড়ি','saree','tant','মসলিন','muslin','fabric']},
+    ]
+  },
+  electronics:{
+    label:'📱 ইলেকট্রনিক্স / Electronics',
+    subs:[
+      {v:'mobile',l:'📱 মোবাইল / Mobile',
+       tags:['mobile','phone','smartphone','android','samsung']},
+      {v:'computer',l:'💻 কম্পিউটার',
+       tags:['computer','laptop','PC','desktop','monitor']},
+      {v:'electrical',l:'⚡ ইলেকট্রিক সামগ্রী',
+       tags:['fan','bulb','wire','switch','electrical','বৈদ্যুতিক']},
+      {v:'camera',l:'📷 ক্যামেরা / Camera',
+       tags:['camera','DSLR','photo','video','lens']},
+    ]
+  },
+  home:{
+    label:'🏠 বাড়ি / Home & Living',
+    subs:[
+      {v:'furniture',l:'🪑 আসবাবপত্র / Furniture',
+       tags:['chair','table','bed','almirah','furniture','আসবাব']},
+      {v:'kitchen',l:'🍳 রান্নাঘর সামগ্রী / Kitchen',
+       tags:['cookware','pan','pressure cooker','রান্নাঘর','kitchen']},
+      {v:'decor',l:'🎨 গৃহসজ্জা / Home Decor',
+       tags:['decor','curtain','pillow','mat','ঘর সাজানো']},
+      {v:'hardware',l:'🔧 হার্ডওয়্যার',
+       tags:['hardware','nail','screw','paint','lock','দরজা']},
+    ]
+  },
+  arts:{
+    label:'🎨 শিল্প ও শিক্ষা / Arts & Education',
+    subs:[
+      {v:'handicrafts',l:'🎨 হস্তশিল্প / Handicrafts',
+       tags:['handicraft','পটচিত্র','patachitra','কারুশিল্প','artisan']},
+      {v:'books',l:'📚 বই-শিক্ষা / Books',
+       tags:['book','বই','textbook','novel','education','পড়াশোনা']},
+      {v:'music',l:'🎵 সংগীত / Music',
+       tags:['music','instrument','guitar','tabla','harmonium']},
+      {v:'gifts',l:'🎁 উপহার / Gifts',
+       tags:['gift','present','উপহার','birthday','anniversary']},
+    ]
+  },
+  services:{
+    label:'💈 সেবা / Services',
+    subs:[
+      {v:'beauty',l:'💈 সৌন্দর্য সেবা / Beauty',
+       tags:['beauty','salon','hair','makeup','spa','parlour']},
+      {v:'repair',l:'🔧 মেরামত সেবা / Repair',
+       tags:['repair','মেরামত','plumber','electrician','carpenter']},
+      {v:'other',l:'📦 অন্যান্য / Other',
+       tags:['service','other','অন্যান্য']},
+    ]
+  }
+};
+
+var currentTags = [];
+
+function loadSubCat(){
+  var main = document.getElementById('fCatMain').value;
+  var subSel = document.getElementById('fCatSub');
+  subSel.innerHTML = '<option value="">— উপ-ক্যাটাগরি বেছে নিন —</option>';
+  currentTags = [];
+  renderTags();
+  if(!main || !CAT_DATA[main]) return;
+  CAT_DATA[main].subs.forEach(function(s){
+    var opt = document.createElement('option');
+    opt.value = s.v; opt.textContent = s.l;
+    subSel.appendChild(opt);
+  });
+  // Update hidden fCat
+  document.getElementById('fCat').value = CAT_DATA[main].label;
+}
+
+function autoGenerateTags(){
+  var main = document.getElementById('fCatMain').value;
+  var sub = document.getElementById('fCatSub').value;
+  if(!main || !sub || !CAT_DATA[main]) return;
+  var subData = CAT_DATA[main].subs.find(function(s){return s.v===sub;});
+  if(!subData) return;
+  // Set hidden fields
+  document.getElementById('fCat').value = subData.l;
+  // Auto tags from category
+  currentTags = subData.tags.map(function(t){return {text:t,auto:true};});
+  renderTags();
+  // Update searchIndex
+  updateSearchIndex();
+}
+
+function addTag(text){
+  text = text.trim();
+  if(!text) return;
+  var exists = currentTags.some(function(t){return t.text.toLowerCase()===text.toLowerCase();});
+  if(exists) return;
+  currentTags.push({text:text, auto:false});
+  renderTags();
+  updateSearchIndex();
+}
+
+function removeTag(idx){
+  currentTags.splice(idx,1);
+  renderTags();
+  updateSearchIndex();
+}
+
+function renderTags(){
+  var container = document.getElementById('tagsContainer');
+  if(!container) return;
+  container.innerHTML = currentTags.map(function(t,i){
+    return '<span class="tag-chip '+(t.auto?'auto':'manual')+'">'+
+      t.text+
+      '<span class="tag-del" onclick="removeTag('+i+')">✕</span>'+
+      '</span>';
+  }).join('');
+}
+
+function updateSearchIndex(){
+  var nameBn = document.getElementById('fNameBn').value||'';
+  var nameEn = document.getElementById('fNameEn').value||'';
+  var main = document.getElementById('fCatMain').value||'';
+  var tags = currentTags.map(function(t){return t.text;}).join(' ');
+  var idx = [nameBn, nameEn, main, tags].join(' ').toLowerCase();
+  document.getElementById('fCatData').value = JSON.stringify({
+    main: main,
+    sub: document.getElementById('fCatSub').value||'',
+    label: document.getElementById('fCat').value||'',
+    tags: currentTags.map(function(t){return t.text;}),
+    searchIndex: idx
+  });
+}
+
+function clearCategoryFields(){
+  document.getElementById('fCatMain').value='';
+  document.getElementById('fCatSub').innerHTML=
+    '<option value="">— আগে প্রধান ক্যাটাগরি বেছে নিন —</option>';
+  document.getElementById('fCat').value='';
+  document.getElementById('fCatData').value='';
+  currentTags=[];
+  renderTags();
+}
+
+function loadCategoryFields(p){
+  // Load existing category data
+  if(p.categoryMain){
+    document.getElementById('fCatMain').value=p.categoryMain;
+    loadSubCat();
+    if(p.categorySub){
+      document.getElementById('fCatSub').value=p.categorySub;
+    }
+  } else if(p.category){
+    // Legacy: try to match old category string
+    document.getElementById('fCat').value=p.category;
+  }
+  if(p.searchTags&&p.searchTags.length){
+    currentTags=p.searchTags.map(function(t){
+      return{text:t,auto:false};
+    });
+    renderTags();
+  }
+}
 function toggleOfferFields(){
   var active=document.getElementById('fOfferActive').checked;
   document.getElementById('offerFields').style.display=active?'block':'none';
