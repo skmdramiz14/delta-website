@@ -793,12 +793,21 @@ select.form-input{cursor:pointer;}
               <option value="food">🍽️ খাবার / Food</option>
               <option value="grocery">🛒 মুদিখানা / Grocery</option>
               <option value="farm">🌾 কৃষি / Agriculture</option>
+              <option value="farm_tools">🌿 কৃষি সরঞ্জাম / Farm Tools</option>
+              <option value="livestock">🐄 পশুপালন / Livestock</option>
               <option value="health">💊 স্বাস্থ্য / Health</option>
               <option value="clothing">👗 পোশাক / Clothing</option>
               <option value="electronics">📱 ইলেকট্রনিক্স / Electronics</option>
               <option value="home">🏠 বাড়ি / Home & Living</option>
+              <option value="construction">🏗️ নির্মাণ / Construction</option>
+              <option value="automotive">🚗 যানবাহন / Automotive</option>
               <option value="arts">🎨 শিল্প ও শিক্ষা / Arts & Education</option>
+              <option value="education">🏫 শিক্ষা / Education</option>
               <option value="services">💈 সেবা / Services</option>
+              <option value="business">💼 ব্যবসায়িক সেবা / Business</option>
+              <option value="events">🎪 ইভেন্ট / Events</option>
+              <option value="rental">🔑 ভাড়া / Rental</option>
+              <option value="remarket">♻️ পুনর্ব্যবহার / ReMarket</option>
               <option value="other">📦 অন্যান্য / Other</option>
             </select>
           </div>
@@ -1595,6 +1604,155 @@ var CAT_DATA = {
     subs:[
       {v:'other',l:'📦 অন্যান্য / Other',
        tags:['other','অন্যান্য']},
+    ]
+  },
+  farm_tools:{
+    label:'🌿 কৃষি সরঞ্জাম / Farm Tools',
+    subs:[
+      {v:'seeds',l:'🌱 বীজ / Seeds',
+       tags:['বীজ','seed','ধান','wheat','সবজি বীজ']},
+      {v:'fertilizer',l:'🧪 সার / Fertilizer',
+       tags:['সার','fertilizer','কীটনাশক','pesticide','urea']},
+      {v:'tools',l:'🔧 হাতিয়ার / Tools',
+       tags:['কোদাল','লাঙ্গল','হাতিয়ার','tool','farm equipment']},
+      {v:'irrigation',l:'💧 সেচ সামগ্রী / Irrigation',
+       tags:['pump','পাম্প','pipe','পাইপ','irrigation','সেচ']},
+      {v:'other',l:'📦 অন্যান্য / Other',
+       tags:['farm tools','কৃষি সরঞ্জাম','other']},
+    ]
+  },
+  livestock:{
+    label:'🐄 পশুপালন / Livestock',
+    subs:[
+      {v:'cattle',l:'🐄 গরু-মহিষ / Cattle',
+       tags:['গরু','cow','মহিষ','buffalo','cattle']},
+      {v:'poultry',l:'🐓 হাঁস-মুরগি / Poultry',
+       tags:['মুরগি','chicken','হাঁস','duck','poultry']},
+      {v:'goat',l:'🐐 ছাগল-ভেড়া / Goat',
+       tags:['ছাগল','goat','ভেড়া','sheep']},
+      {v:'fish_farming',l:'🐟 মাছ চাষ / Fish Farming',
+       tags:['মাছ চাষ','fish farming','পোনা','fry','pond']},
+      {v:'animal_feed',l:'🌾 পশু খাদ্য / Animal Feed',
+       tags:['খাদ্য','feed','পশু খাবার','hay','bran']},
+      {v:'animal_medicine',l:'💊 পশু ওষুধ / Vet Medicine',
+       tags:['vet','পশু ওষুধ','vaccine','টিকা','animal medicine']},
+      {v:'other',l:'📦 অন্যান্য / Other',
+       tags:['livestock','পশুপালন','other']},
+    ]
+  },
+  construction:{
+    label:'🏗️ নির্মাণ / Construction',
+    subs:[
+      {v:'bricks',l:'🧱 ইট-পাথর / Bricks & Stone',
+       tags:['ইট','brick','পাথর','stone','বালি','sand']},
+      {v:'cement',l:'⬜ সিমেন্ট / Cement',
+       tags:['সিমেন্ট','cement','concrete','রড','rod','steel']},
+      {v:'paint',l:'🎨 রঙ / Paint',
+       tags:['রঙ','paint','primer','wall paint','রং']},
+      {v:'plumbing',l:'🔧 পাইপ-ফিটিং / Plumbing',
+       tags:['pipe','পাইপ','fitting','plumbing','valve']},
+      {v:'wood',l:'🪵 কাঠ / Wood & Timber',
+       tags:['কাঠ','wood','timber','plywood','বাঁশ','bamboo']},
+      {v:'other',l:'📦 অন্যান্য / Other',
+       tags:['construction','নির্মাণ','other']},
+    ]
+  },
+  automotive:{
+    label:'🚗 যানবাহন / Automotive',
+    subs:[
+      {v:'car_parts',l:'🚗 গাড়ির যন্ত্রাংশ / Car Parts',
+       tags:['car','গাড়ি','parts','spare','engine','oil']},
+      {v:'bike_parts',l:'🏍️ বাইকের যন্ত্রাংশ / Bike Parts',
+       tags:['bike','মোটরবাইক','tyre','chain','brake']},
+      {v:'tyres',l:'🔵 টায়ার-টিউব / Tyres',
+       tags:['tyre','টায়ার','tube','টিউব','wheel']},
+      {v:'battery',l:'🔋 ব্যাটারি / Battery',
+       tags:['battery','ব্যাটারি','charger','inverter']},
+      {v:'accessories',l:'🔧 আনুষাঙ্গিক / Accessories',
+       tags:['accessories','helmet','হেলমেট','lock','cover']},
+      {v:'other',l:'📦 অন্যান্য / Other',
+       tags:['automotive','যানবাহন','other']},
+    ]
+  },
+  education:{
+    label:'🏫 শিক্ষা / Education',
+    subs:[
+      {v:'coaching',l:'📖 কোচিং / Coaching',
+       tags:['coaching','কোচিং','tutor','টিউটর','class','ক্লাস']},
+      {v:'stationery',l:'✏️ স্টেশনারি / Stationery',
+       tags:['pen','pencil','notebook','খাতা','কলম','stationery']},
+      {v:'school_supplies',l:'🎒 স্কুল সামগ্রী / School Supplies',
+       tags:['school','bag','ব্যাগ','uniform','ইউনিফর্ম']},
+      {v:'computer_training',l:'💻 Computer Training',
+       tags:['computer','training','course','typing','internet']},
+      {v:'other',l:'📦 অন্যান্য / Other',
+       tags:['education','শিক্ষা','other']},
+    ]
+  },
+  business:{
+    label:'💼 ব্যবসায়িক সেবা / Business',
+    subs:[
+      {v:'printing',l:'🖨️ প্রিন্টিং / Printing',
+       tags:['print','প্রিন্ট','banner','poster','visiting card','ব্যানার']},
+      {v:'packaging',l:'📦 প্যাকেজিং / Packaging',
+       tags:['box','বাক্স','bag','পলিথিন','packaging','wrap']},
+      {v:'accounting',l:'📊 হিসাব-নিকাশ / Accounting',
+       tags:['accounting','tax','GST','হিসাব','CA','audit']},
+      {v:'transport',l:'🚚 পরিবহন / Transport',
+       tags:['transport','truck','van','delivery','পরিবহন','মালবাহী']},
+      {v:'other',l:'📦 অন্যান্য / Other',
+       tags:['business','ব্যবসা','service','other']},
+    ]
+  },
+  events:{
+    label:'🎪 ইভেন্ট / Events',
+    subs:[
+      {v:'tent',l:'⛺ তাঁবু-শামিয়ানা / Tent',
+       tags:['tent','তাঁবু','shamiana','শামিয়ানা','canopy']},
+      {v:'catering',l:'🍽️ ক্যাটারিং / Catering',
+       tags:['catering','ক্যাটারিং','food','খাবার','wedding food']},
+      {v:'photography',l:'📷 ফটোগ্রাফি / Photography',
+       tags:['photo','photographer','video','wedding photo','ফটো']},
+      {v:'decoration',l:'🎊 ডেকোরেশন / Decoration',
+       tags:['decoration','ডেকোরেশন','flower','ফুল','light','আলো']},
+      {v:'sound',l:'🔊 সাউন্ড-লাইট / Sound & Light',
+       tags:['sound','DJ','music','light','speaker','PA system']},
+      {v:'other',l:'📦 অন্যান্য / Other',
+       tags:['event','ইভেন্ট','other']},
+    ]
+  },
+  rental:{
+    label:'🔑 ভাড়া / Rental',
+    subs:[
+      {v:'agri_rental',l:'🚜 কৃষি যন্ত্র ভাড়া / Farm Equipment',
+       tags:['tractor','ট্র্যাক্টর','harvester','power tiller','ভাড়া']},
+      {v:'construction_rental',l:'🏗️ নির্মাণ সরঞ্জাম ভাড়া',
+       tags:['mixer','scaffolding','generator','drill','rental']},
+      {v:'property',l:'🏠 সম্পত্তি ভাড়া / Property',
+       tags:['flat','room','shop','জমি','land','ভাড়া','rent']},
+      {v:'vehicle_rental',l:'🚗 যানবাহন ভাড়া / Vehicle',
+       tags:['car','truck','van','bike','ভাড়া','rent','vehicle']},
+      {v:'event_rental',l:'🎪 ইভেন্ট সামগ্রী ভাড়া',
+       tags:['tent','sound','chair','table','event rental']},
+      {v:'other',l:'📦 অন্যান্য / Other',
+       tags:['rental','ভাড়া','rent','other']},
+    ]
+  },
+  remarket:{
+    label:'♻️ পুনর্ব্যবহার / ReMarket',
+    subs:[
+      {v:'used_electronics',l:'📱 পুরনো ইলেকট্রনিক্স',
+       tags:['used','পুরনো','second hand','mobile','laptop','TV']},
+      {v:'used_furniture',l:'🪑 পুরনো আসবাব',
+       tags:['used','পুরনো','furniture','chair','table','bed']},
+      {v:'used_clothing',l:'👗 পুরনো পোশাক',
+       tags:['used','পুরনো','clothing','dress','second hand']},
+      {v:'used_vehicle',l:'🚗 পুরনো যানবাহন',
+       tags:['used','পুরনো','bike','car','vehicle','second hand']},
+      {v:'antiques',l:'🏺 প্রাচীন জিনিস / Antiques',
+       tags:['antique','পুরনো','vintage','collectible','rare']},
+      {v:'other',l:'📦 অন্যান্য / Other',
+       tags:['remarket','second hand','পুরনো','other']},
     ]
   }
 };
