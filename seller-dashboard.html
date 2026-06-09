@@ -392,34 +392,123 @@ select.form-input{cursor:pointer;}
     <div id="registerPane" style="display:none">
       <div class="auth-err" id="regErr"></div>
       <div class="auth-suc" id="regSuc"></div>
-      <div class="form-group"><label class="bn">দোকানের নাম</label>
-        <input type="text" class="form-input" id="rShop" placeholder="যেমন: মন্তেশ্বর মিষ্টি ঘর, Delta Store"></div>
+
+      <!-- Shop Type Selection -->
+      <div class="form-group">
+        <label>আপনি কে? / Who are you? *</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:6px;">
+          <div class="type-card" id="type-shop" onclick="selectShopType('shop')" style="
+            border:2px solid var(--border);border-radius:10px;padding:12px 8px;
+            cursor:pointer;text-align:center;transition:all .2s;background:#fff;">
+            <div style="font-size:1.3rem">🏪</div>
+            <div style="font-size:.75rem;font-weight:700;color:var(--navy);margin-top:4px">দোকানদার</div>
+            <div style="font-size:.62rem;color:var(--muted)">Shop Owner</div>
+          </div>
+          <div class="type-card" id="type-farmer" onclick="selectShopType('farmer')" style="
+            border:2px solid var(--border);border-radius:10px;padding:12px 8px;
+            cursor:pointer;text-align:center;transition:all .2s;background:#fff;">
+            <div style="font-size:1.3rem">👨‍🌾</div>
+            <div style="font-size:.75rem;font-weight:700;color:var(--navy);margin-top:4px">কৃষক</div>
+            <div style="font-size:.62rem;color:var(--muted)">Farmer</div>
+          </div>
+          <div class="type-card" id="type-artist" onclick="selectShopType('artist')" style="
+            border:2px solid var(--border);border-radius:10px;padding:12px 8px;
+            cursor:pointer;text-align:center;transition:all .2s;background:#fff;">
+            <div style="font-size:1.3rem">🎨</div>
+            <div style="font-size:.75rem;font-weight:700;color:var(--navy);margin-top:4px">শিল্পী</div>
+            <div style="font-size:.62rem;color:var(--muted)">Artist</div>
+          </div>
+          <div class="type-card" id="type-service" onclick="selectShopType('service')" style="
+            border:2px solid var(--border);border-radius:10px;padding:12px 8px;
+            cursor:pointer;text-align:center;transition:all .2s;background:#fff;">
+            <div style="font-size:1.3rem">💈</div>
+            <div style="font-size:.75rem;font-weight:700;color:var(--navy);margin-top:4px">সেবাদাতা</div>
+            <div style="font-size:.62rem;color:var(--muted)">Service</div>
+          </div>
+          <div class="type-card" id="type-manufacturer" onclick="selectShopType('manufacturer')" style="
+            border:2px solid var(--border);border-radius:10px;padding:12px 8px;
+            cursor:pointer;text-align:center;transition:all .2s;background:#fff;">
+            <div style="font-size:1.3rem">🏭</div>
+            <div style="font-size:.75rem;font-weight:700;color:var(--navy);margin-top:4px">প্রস্তুতকারক</div>
+            <div style="font-size:.62rem;color:var(--muted)">Manufacturer</div>
+          </div>
+          <div class="type-card" id="type-wholesaler" onclick="selectShopType('wholesaler')" style="
+            border:2px solid var(--border);border-radius:10px;padding:12px 8px;
+            cursor:pointer;text-align:center;transition:all .2s;background:#fff;">
+            <div style="font-size:1.3rem">📦</div>
+            <div style="font-size:.75rem;font-weight:700;color:var(--navy);margin-top:4px">পাইকার</div>
+            <div style="font-size:.62rem;color:var(--muted)">Wholesaler</div>
+          </div>
+          <div class="type-card" id="type-cooperative" onclick="selectShopType('cooperative')" style="
+            border:2px solid var(--border);border-radius:10px;padding:12px 8px;
+            cursor:pointer;text-align:center;transition:all .2s;background:#fff;grid-column:1/-1;">
+            <div style="font-size:1.3rem">🤝</div>
+            <div style="font-size:.75rem;font-weight:700;color:var(--navy);margin-top:4px">সমবায় / Cooperative</div>
+            <div style="font-size:.62rem;color:var(--muted)">SHG · Farmer Group · Women's Collective</div>
+          </div>
+        </div>
+        <input type="hidden" id="rShopType" value="">
+      </div>
+
+      <div class="form-group">
+        <label id="shopNameLabel">দোকানের নাম / Name *</label>
+        <input type="text" class="form-input" id="rShop"
+          placeholder="যেমন: মন্তেশ্বর মিষ্টি ঘর, Delta Store">
+      </div>
       <div class="form-grid-2">
-        <div class="form-group"><label class="bn">মালিকের নাম</label>
+        <div class="form-group"><label>মালিকের নাম / Owner *</label>
           <input type="text" class="form-input" id="rOwner" placeholder="নাম"></div>
-        <div class="form-group"><label>Mobile</label>
+        <div class="form-group"><label>Mobile *</label>
           <input type="tel" class="form-input" id="rPhone" placeholder="9XXXXXXXXX"></div>
       </div>
-      <div class="form-grid-2">
-        <div class="form-group"><label class="bn">এলাকা</label>
-          <input type="text" class="form-input" id="rArea" placeholder="Manteswar"></div>
-        <div class="form-group"><label class="bn">ক্যাটাগরি</label>
-          <select class="form-input" id="rCat">
-            <option value="">বেছে নিন</option>
-            <option>🍛 খাদ্য / Food</option>
-            <option>🛒 মুদিখানা / Grocery</option>
-            <option>🌾 কৃষি / Farm</option>
-            <option>💊 ওষুধ / Pharmacy</option>
-            <option>👗 পোশাক / Clothing</option>
-            <option>📱 ইলেকট্রনিক্স</option>
-            <option>🎨 শিল্প / Arts</option>
-            <option>💈 সেবা / Services</option>
-            <option>🏪 অন্যান্য / Other</option>
-          </select></div>
+      <div class="form-group"><label>এলাকা / Area</label>
+        <input type="text" class="form-input" id="rArea" placeholder="Manteswar"></div>
+
+      <!-- Dynamic Multi-Category -->
+      <div class="form-group" id="regCatSection" style="display:none;">
+        <label>প্রধান ক্যাটাগরি / Primary Category *
+          <span style="font-size:.68rem;font-weight:400;color:var(--muted);margin-left:4px;">
+            (সর্বোচ্চ ৩টি বেছে নিন)
+          </span>
+        </label>
+
+        <!-- Primary Category -->
+        <select class="form-input" id="rCat" onchange="onRegCatChange(0)" style="margin-bottom:8px;">
+          <option value="">— প্রধান category বেছে নিন —</option>
+        </select>
+
+        <!-- Custom Primary -->
+        <div id="regCustomCat0" style="display:none;margin-bottom:8px;">
+          <input type="text" class="form-input" id="rCustomCat0"
+            placeholder="আপনার category লিখুন..."
+            oninput="updateRegCategories()">
+          <div style="margin-top:5px;font-size:.72rem;color:var(--orange);">
+            💡 পরবর্তী update এ যোগ হবে।
+            <a href="#" onclick="requestRegCategory(0)" style="color:var(--navy);font-weight:700;">
+              Request করুন →</a>
+          </div>
+        </div>
+
+        <!-- Secondary categories container -->
+        <div id="regExtraCats"></div>
+
+        <!-- Add another button -->
+        <button type="button" id="addCatBtn" onclick="addRegCategory()"
+          style="display:none;background:transparent;border:1.5px dashed var(--border);
+          color:var(--muted);padding:8px 14px;border-radius:8px;font-size:.78rem;
+          cursor:pointer;width:100%;margin-top:4px;transition:all .2s;"
+          onmouseover="this.style.borderColor='var(--orange)';this.style.color='var(--orange)'"
+          onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">
+          + আরো category যোগ করুন (সর্বোচ্চ ৩টি)
+        </button>
+
+        <!-- Hidden categories data -->
+        <input type="hidden" id="rCatData" value="">
       </div>
-      <div class="form-group"><label>Email</label>
+
+      <div class="form-group"><label>Email *</label>
         <input type="email" class="form-input" id="rEmail" placeholder="your@email.com"></div>
-      <div class="form-group"><label>Password (min 6)</label>
+      <div class="form-group"><label>Password * (min 6 characters)</label>
         <input type="password" class="form-input" id="rPass" placeholder="শক্তিশালী পাসওয়ার্ড"></div>
       <button class="btn-primary" id="regBtn" onclick="doRegister()">✅ নিবন্ধন করুন</button>
     </div>
@@ -610,15 +699,62 @@ select.form-input{cursor:pointer;}
             <div class="form-group">
               <label><span data-lang-bn="দোকানের নাম" data-lang-en="Shop Name">দোকানের নাম</span></label>
               <input type="text" class="form-input" id="pShopName"></div>
-            <div class="form-group">
-              <label><span data-lang-bn="মালিকের নাম" data-lang-en="Owner Name">মালিকের নাম</span></label>
+            <div class="form-group full">
+              <label>আপনি কে? / Shop Type</label>
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:6px;">
+                <div class="type-card-sm" id="ptype-shop" onclick="selectProfileType('shop')" style="
+                  border:2px solid var(--border);border-radius:10px;padding:10px 6px;
+                  cursor:pointer;text-align:center;transition:all .2s;background:#fff;">
+                  <div style="font-size:1.1rem">🏪</div>
+                  <div style="font-size:.68rem;font-weight:700;color:var(--navy);margin-top:3px">দোকানদার</div>
+                </div>
+                <div class="type-card-sm" id="ptype-farmer" onclick="selectProfileType('farmer')" style="
+                  border:2px solid var(--border);border-radius:10px;padding:10px 6px;
+                  cursor:pointer;text-align:center;transition:all .2s;background:#fff;">
+                  <div style="font-size:1.1rem">👨‍🌾</div>
+                  <div style="font-size:.68rem;font-weight:700;color:var(--navy);margin-top:3px">কৃষক</div>
+                </div>
+                <div class="type-card-sm" id="ptype-artist" onclick="selectProfileType('artist')" style="
+                  border:2px solid var(--border);border-radius:10px;padding:10px 6px;
+                  cursor:pointer;text-align:center;transition:all .2s;background:#fff;">
+                  <div style="font-size:1.1rem">🎨</div>
+                  <div style="font-size:.68rem;font-weight:700;color:var(--navy);margin-top:3px">শিল্পী</div>
+                </div>
+                <div class="type-card-sm" id="ptype-service" onclick="selectProfileType('service')" style="
+                  border:2px solid var(--border);border-radius:10px;padding:10px 6px;
+                  cursor:pointer;text-align:center;transition:all .2s;background:#fff;">
+                  <div style="font-size:1.1rem">💈</div>
+                  <div style="font-size:.68rem;font-weight:700;color:var(--navy);margin-top:3px">সেবাদাতা</div>
+                </div>
+                <div class="type-card-sm" id="ptype-manufacturer" onclick="selectProfileType('manufacturer')" style="
+                  border:2px solid var(--border);border-radius:10px;padding:10px 6px;
+                  cursor:pointer;text-align:center;transition:all .2s;background:#fff;">
+                  <div style="font-size:1.1rem">🏭</div>
+                  <div style="font-size:.68rem;font-weight:700;color:var(--navy);margin-top:3px">প্রস্তুতকারক</div>
+                </div>
+                <div class="type-card-sm" id="ptype-wholesaler" onclick="selectProfileType('wholesaler')" style="
+                  border:2px solid var(--border);border-radius:10px;padding:10px 6px;
+                  cursor:pointer;text-align:center;transition:all .2s;background:#fff;">
+                  <div style="font-size:1.1rem">📦</div>
+                  <div style="font-size:.68rem;font-weight:700;color:var(--navy);margin-top:3px">পাইকার</div>
+                </div>
+                <div class="type-card-sm" id="ptype-cooperative" onclick="selectProfileType('cooperative')" style="
+                  border:2px solid var(--border);border-radius:10px;padding:10px 6px;
+                  cursor:pointer;text-align:center;transition:all .2s;background:#fff;grid-column:1/-1;">
+                  <div style="font-size:1.1rem">🤝</div>
+                  <div style="font-size:.68rem;font-weight:700;color:var(--navy);margin-top:3px">সমবায় / Cooperative</div>
+                </div>
+              </div>
+              <input type="hidden" id="pShopType" value="shop">
+            </div>
+            <div class="form-group"><label>মালিকের নাম / Owner Name</label>
               <input type="text" class="form-input" id="pOwnerName"></div>
             <div class="form-group"><label>Mobile</label>
               <input type="tel" class="form-input" id="pPhone"></div>
             <div class="form-group">
-              <label><span data-lang-bn="এলাকা" data-lang-en="Area">এলাকা</span></label>
+              <label>এলাকা / Area</label>
               <input type="text" class="form-input" id="pArea"></div>
-            <div class="form-group"><label class="bn">ক্যাটাগরি</label>
+            <div class="form-group"><label>ক্যাটাগরি / Category</label>
               <select class="form-input" id="pCategory">
                 <option>🍛 খাদ্য / Food</option>
                 <option>🛒 মুদিখানা / Grocery</option>
@@ -629,7 +765,8 @@ select.form-input{cursor:pointer;}
                 <option>🎨 শিল্প / Arts</option>
                 <option>💈 সেবা / Services</option>
                 <option>🏪 অন্যান্য / Other</option>
-              </select></div>
+              </select>
+            </div>
             <div class="form-group"><label>PIN Code</label>
               <input type="text" class="form-input" id="pPin" placeholder="713140"></div>
             <div class="form-group"><label class="bn">খোলার সময়</label>
@@ -1119,31 +1256,39 @@ function doRegister(){
   var shop=document.getElementById('rShop').value.trim();
   var owner=document.getElementById('rOwner').value.trim();
   var phone=document.getElementById('rPhone').value.trim();
-  var area=document.getElementById('rArea').value.trim();
+  var area=document.getElementById('rArea').value.trim()||'Manteswar';
   var cat=document.getElementById('rCat').value;
+  var shopType=document.getElementById('rShopType').value||'shop';
   var email=document.getElementById('rEmail').value.trim();
   var pass=document.getElementById('rPass').value;
-  var err=document.getElementById('regErr'); var suc=document.getElementById('regSuc');
-  err.style.display='none'; suc.style.display='none';
-  if(!shop||!owner||!email||!pass||!cat){err.textContent='সব তথ্য পূরণ করুন।';err.style.display='block';return;}
+  var catDataRaw=document.getElementById('rCatData').value;
+  var categories=catDataRaw?JSON.parse(catDataRaw):[];
+  var primaryCat=categories[0]||'';
+  var err=document.getElementById('regErr');
+  err.style.display='none';
+  if(!shopType){err.textContent='আপনি কে সেটা বেছে নিন।';err.style.display='block';return;}
+  if(!shop){err.textContent='নাম দিন।';err.style.display='block';return;}
+  if(!owner){err.textContent='মালিকের নাম দিন।';err.style.display='block';return;}
+  if(!primaryCat){err.textContent='কমপক্ষে একটি category বেছে নিন।';err.style.display='block';return;}
+  if(!email){err.textContent='Email দিন।';err.style.display='block';return;}
   if(pass.length<6){err.textContent='পাসওয়ার্ড কমপক্ষে ৬ অক্ষর।';err.style.display='block';return;}
   var btn=document.getElementById('regBtn'); btn.disabled=true; btn.textContent='নিবন্ধন হচ্ছে...';
   auth.createUserWithEmailAndPassword(email,pass).then(function(cr){
-    // Multi-tenant: save to cities/manteswar/sellers/{uid}
     return sellerRef(cr.user.uid).set({
       shopName:shop, ownerName:owner, mobile:phone, area:area,
-      category:cat, email:email, city:CITY,
+      category:primaryCat,
+      categories:categories,
+      email:email, city:CITY,
+      shopType:shopType,
       plan:'free', isOpen:true,
       openTime:'09:00', closeTime:'21:00',
       address:'', pin:'', description:'',
       rating:0, totalOrders:0,
+      language:'bn',
       createdAt:new Date().toISOString()
     });
   }).then(function(){
-    // Auto login after register — no need to manually login
     showToast('নিবন্ধন সফল! Dashboard লোড হচ্ছে...','green');
-    // Firebase already logged in after createUserWithEmailAndPassword
-    // onAuthStateChanged will fire and load dashboard automatically
   }).catch(function(er){
     var msgs={'auth/email-already-in-use':'এই Email আগেই ব্যবহৃত।'};
     err.textContent=msgs[er.code]||er.message; err.style.display='block';
@@ -1223,7 +1368,9 @@ function setLang(lang){
 function updateSidebar(){
   if(!SD)return;
   document.getElementById('sbShopName').textContent = SD.shopName||'আপনার দোকান';
-  document.getElementById('sbShopArea').textContent = (SD.area||'')+(SD.category?' · '+SD.category:'');
+  var st = SHOP_TYPES[SD.shopType||'shop']||SHOP_TYPES.shop;
+  document.getElementById('sbShopArea').textContent =
+    st.icon+' '+(SD.area||'')+(SD.category?' · '+SD.category:'');
   var plan=SD.plan||'free';
   document.getElementById('sbPlanBadge').textContent = PLAN_LABELS[plan]||'⭐ FREE';
 }
@@ -1458,7 +1605,417 @@ async function saveProduct(){
   btn.textContent='✅ সেভ করুন / Save';
 }
 
-// ═══ CATEGORY HIERARCHY ═══
+// ═══ REGISTRATION CATEGORY SYSTEM ═══
+var REG_CATS = {
+  shop:[
+    '🍛 খাদ্য / Food','🛒 মুদিখানা / Grocery',
+    '💊 ওষুধ / Pharmacy','👗 পোশাক / Clothing',
+    '📱 ইলেকট্রনিক্স','🏠 বাড়ি / Home',
+    '🎨 শিল্প / Arts','🏗️ নির্মাণ / Construction',
+    '🚗 যানবাহন / Automotive','📦 অন্যান্য / Other'
+  ],
+  farmer:[
+    '🥬 সবজি / Vegetables','🍎 ফল / Fruits',
+    '🐟 মাছ / Fish','🥛 দুগ্ধজাত / Dairy',
+    '🌾 চাল-ধান / Rice','🌿 জৈব পণ্য / Organic',
+    '🌺 ফুল / Flowers','🐄 পশুপালন / Livestock',
+    '🌿 কৃষি সরঞ্জাম / Farm Tools','📦 অন্যান্য / Other'
+  ],
+  artist:[
+    '🎨 পটচিত্র / Patachitra','🧵 হস্তশিল্প / Handicrafts',
+    '🥻 হাতে বোনা / Handloom','🪆 মূর্তি / Sculpture',
+    '📸 ফটোগ্রাফি / Photography','🎵 সংগীত / Music',
+    '🎁 কাস্টম গিফট / Custom Gifts',
+    '🖼️ চিত্রকলা / Painting','📦 অন্যান্য / Other'
+  ],
+  service:[
+    '💈 সৌন্দর্য / Beauty','🔧 মেরামত / Repair',
+    '⚡ ইলেকট্রিশিয়ান','🔩 প্লাম্বার / Plumber',
+    '📖 টিউটর / Tutor','🏥 স্বাস্থ্যসেবা / Healthcare',
+    '🚗 পরিবহন / Transport','🎪 ইভেন্ট / Events',
+    '💼 ব্যবসায়িক / Business','📦 অন্যান্য / Other'
+  ],
+  manufacturer:[
+    '🍬 খাদ্য প্রস্তুত / Food Processing',
+    '🧵 বস্ত্র উৎপাদন / Textile',
+    '🪵 কাঠের পণ্য / Wood Products',
+    '🏺 মাটির পণ্য / Clay Products',
+    '🧴 প্রসাধনী / Cosmetics',
+    '🧱 নির্মাণ সামগ্রী / Construction Material',
+    '⚙️ যন্ত্রাংশ / Machine Parts',
+    '📦 অন্যান্য / Other'
+  ],
+  wholesaler:[
+    '🌾 খাদ্যশস্য / Food Grains',
+    '🌶️ মশলা / Spices',
+    '🧴 গৃহস্থালি / Household',
+    '👗 পোশাক / Clothing',
+    '📱 ইলেকট্রনিক্স / Electronics',
+    '🏗️ নির্মাণ / Construction',
+    '💊 ওষুধ / Medicine',
+    '🌿 কৃষি উপকরণ / Farm Inputs',
+    '📦 অন্যান্য / Other'
+  ],
+  cooperative:[
+    '🥬 সবজি / Vegetables',
+    '🍬 হস্তনির্মিত খাবার / Handmade Food',
+    '🧵 হাতে বোনা / Handloom',
+    '🎨 হস্তশিল্প / Handicrafts',
+    '🥛 দুগ্ধজাত / Dairy',
+    '🌿 জৈব পণ্য / Organic',
+    '🪡 সেলাই পণ্য / Stitched Items',
+    '📦 অন্যান্য / Other'
+  ]
+};
+
+var regCatCount = 1;
+
+function populateRegCats(type, selectId){
+  var sel = document.getElementById(selectId);
+  if(!sel) return;
+  var cats = REG_CATS[type]||REG_CATS.shop;
+  sel.innerHTML = '<option value="">— বেছে নিন —</option>';
+  cats.forEach(function(c){
+    var opt = document.createElement('option');
+    opt.value = c; opt.textContent = c;
+    sel.appendChild(opt);
+  });
+}
+
+function onRegCatChange(idx){
+  var val = document.getElementById('rCat').value;
+  var customDiv = document.getElementById('regCustomCat0');
+  if(val === '📦 অন্যান্য / Other' || val.includes('অন্যান্য')){
+    customDiv.style.display = 'block';
+  } else {
+    customDiv.style.display = 'none';
+    document.getElementById('rCustomCat0').value = '';
+  }
+  // Show add button if primary selected
+  var addBtn = document.getElementById('addCatBtn');
+  if(val && regCatCount < 3){
+    addBtn.style.display = 'block';
+  }
+  updateRegCategories();
+}
+
+function addRegCategory(){
+  if(regCatCount >= 3) return;
+  regCatCount++;
+  var container = document.getElementById('regExtraCats');
+  var type = document.getElementById('rShopType').value||'shop';
+  var cats = REG_CATS[type]||REG_CATS.shop;
+  var idx = regCatCount;
+
+  var div = document.createElement('div');
+  div.id = 'regCatRow'+idx;
+  div.style.cssText = 'margin-bottom:8px;position:relative;';
+
+  var opts = cats.map(function(c){
+    return '<option value="'+c+'">'+c+'</option>';
+  }).join('');
+
+  div.innerHTML =
+    '<div style="display:flex;gap:6px;align-items:center;">'+
+    '<select class="form-input" id="rCat'+idx+'" onchange="onRegExtraCatChange('+idx+')" style="flex:1;">'+
+    '<option value="">— Secondary category —</option>'+opts+'</select>'+
+    '<button type="button" onclick="removeRegCat('+idx+')" style="width:32px;height:38px;'+
+    'border:1.5px solid var(--border);border-radius:8px;background:#fff;cursor:pointer;'+
+    'color:var(--red);font-size:.9rem;flex-shrink:0;">✕</button></div>'+
+    '<div id="regCustomCat'+idx+'" style="display:none;margin-top:6px;">'+
+    '<input type="text" class="form-input" id="rCustomCat'+idx+'"'+
+    ' placeholder="আপনার category লিখুন..."'+
+    ' oninput="updateRegCategories()">'+
+    '<div style="margin-top:4px;font-size:.72rem;color:var(--orange);">'+
+    '💡 <a href="#" onclick="requestRegCategory('+idx+')" style="color:var(--navy);font-weight:700;">Request করুন →</a></div></div>';
+
+  container.appendChild(div);
+
+  // Hide add button if max reached
+  if(regCatCount >= 3){
+    document.getElementById('addCatBtn').style.display = 'none';
+  }
+  updateRegCategories();
+}
+
+function removeRegCat(idx){
+  var el = document.getElementById('regCatRow'+idx);
+  if(el) el.remove();
+  regCatCount--;
+  if(regCatCount < 3){
+    var addBtn = document.getElementById('addCatBtn');
+    if(addBtn) addBtn.style.display = 'block';
+  }
+  updateRegCategories();
+}
+
+function onRegExtraCatChange(idx){
+  var val = document.getElementById('rCat'+idx).value;
+  var customDiv = document.getElementById('regCustomCat'+idx);
+  if(val && val.includes('অন্যান্য')){
+    customDiv.style.display = 'block';
+  } else {
+    if(customDiv) customDiv.style.display = 'none';
+  }
+  updateRegCategories();
+}
+
+function updateRegCategories(){
+  var cats = [];
+  // Primary
+  var primary = document.getElementById('rCat').value;
+  if(primary && primary.includes('অন্যান্য')){
+    var custom = document.getElementById('rCustomCat0').value.trim();
+    if(custom) primary = custom;
+  }
+  if(primary) cats.push(primary);
+  // Secondary
+  for(var i=2; i<=3; i++){
+    var sel = document.getElementById('rCat'+i);
+    if(!sel) continue;
+    var val = sel.value;
+    if(val && val.includes('অন্যান্য')){
+      var c = document.getElementById('rCustomCat'+i);
+      if(c && c.value.trim()) val = c.value.trim();
+    }
+    if(val && !val.includes('অন্যান্য')) cats.push(val);
+  }
+  document.getElementById('rCatData').value = JSON.stringify(cats);
+}
+
+function requestRegCategory(idx){
+  var input = document.getElementById('rCustomCat'+idx);
+  if(!input || !input.value.trim()) return;
+  var type = document.getElementById('rShopType').value||'shop';
+  if(db){
+    db.collection('categoryRequests').add({
+      requestedSub: input.value.trim(),
+      mainType: type,
+      city: CITY,
+      source: 'registration',
+      createdAt: new Date().toISOString(),
+      status: 'pending'
+    }).then(function(){
+      showToast('"'+input.value+'" request পাঠানো হয়েছে ✅','green');
+    });
+  }
+}
+
+function resetRegCats(){
+  regCatCount = 1;
+  document.getElementById('rCat').innerHTML =
+    '<option value="">— প্রধান category বেছে নিন —</option>';
+  document.getElementById('regCustomCat0').style.display = 'none';
+  document.getElementById('rCustomCat0').value = '';
+  document.getElementById('regExtraCats').innerHTML = '';
+  document.getElementById('addCatBtn').style.display = 'none';
+  document.getElementById('rCatData').value = '';
+}
+var SHOP_TYPES = {
+  shop:{
+    icon:'🏪', label:'দোকানদার', labelEn:'Shop Owner',
+    productLabel:'পণ্যের নাম', productLabelEn:'Product Name',
+    stockLabel:'স্টক পরিমাণ', stockLabelEn:'Stock Quantity',
+    priceLabel:'বিক্রয় মূল্য', priceLabelEn:'Selling Price',
+    mrpLabel:'MRP', mrpLabelEn:'MRP',
+    namePlaceholder:'যেমন: রসগোল্লা, ইলিশ মাছ, শার্ট',
+    extraFields: []
+  },
+  farmer:{
+    icon:'👨‍🌾', label:'কৃষক', labelEn:'Farmer',
+    productLabel:'ফসলের নাম', productLabelEn:'Crop Name',
+    stockLabel:'পরিমাণ (kg/quintal)', stockLabelEn:'Quantity',
+    priceLabel:'বিক্রয় দর', priceLabelEn:'Selling Rate',
+    mrpLabel:'পাইকারি দর', mrpLabelEn:'Wholesale Rate',
+    namePlaceholder:'যেমন: আলু, ইলিশ, আম, ধান',
+    extraFields: ['harvestDate','preOrder','farmLocation']
+  },
+  artist:{
+    icon:'🎨', label:'শিল্পী', labelEn:'Artist/Creator',
+    productLabel:'শিল্পকর্মের নাম', productLabelEn:'Artwork Name',
+    stockLabel:'Available pieces', stockLabelEn:'Available pieces',
+    priceLabel:'বিক্রয় মূল্য', priceLabelEn:'Price',
+    mrpLabel:'আসল মূল্য', mrpLabelEn:'Original Value',
+    namePlaceholder:'যেমন: পটচিত্র, হাতে বোনা শাড়ি, মূর্তি',
+    extraFields: ['customOrder','deliveryDays','medium']
+  },
+  service:{
+    icon:'💈', label:'সেবাদাতা', labelEn:'Service Provider',
+    productLabel:'সেবার নাম', productLabelEn:'Service Name',
+    stockLabel:'', stockLabelEn:'',
+    priceLabel:'সেবা চার্জ', priceLabelEn:'Service Charge',
+    mrpLabel:'নিয়মিত চার্জ', mrpLabelEn:'Regular Charge',
+    namePlaceholder:'যেমন: চুল কাটা, AC মেরামত, টিউশন',
+    extraFields: ['perUnit','serviceArea','availability']
+  },
+  manufacturer:{
+    icon:'🏭', label:'প্রস্তুতকারক', labelEn:'Manufacturer',
+    productLabel:'পণ্যের নাম', productLabelEn:'Product Name',
+    stockLabel:'উৎপাদন পরিমাণ', stockLabelEn:'Production Qty',
+    priceLabel:'বিক্রয় মূল্য', priceLabelEn:'Selling Price',
+    mrpLabel:'MRP', mrpLabelEn:'MRP',
+    namePlaceholder:'যেমন: হাতে বানানো মিষ্টি, বোনা কাপড়',
+    extraFields: ['minOrder','leadTime','bulkDiscount']
+  },
+  wholesaler:{
+    icon:'📦', label:'পাইকার', labelEn:'Wholesaler',
+    productLabel:'পণ্যের নাম', productLabelEn:'Product Name',
+    stockLabel:'পাইকারি স্টক', stockLabelEn:'Wholesale Stock',
+    priceLabel:'পাইকারি মূল্য', priceLabelEn:'Wholesale Price',
+    mrpLabel:'খুচরা MRP', mrpLabelEn:'Retail MRP',
+    namePlaceholder:'যেমন: চাল (50kg bag), মশলা (bulk)',
+    extraFields: ['minOrder','bulkDiscount','creditDays']
+  },
+  cooperative:{
+    icon:'🤝', label:'সমবায়', labelEn:'Cooperative/SHG',
+    productLabel:'পণ্যের নাম', productLabelEn:'Product Name',
+    stockLabel:'স্টক পরিমাণ', stockLabelEn:'Stock Quantity',
+    priceLabel:'বিক্রয় মূল্য', priceLabelEn:'Selling Price',
+    mrpLabel:'MRP', mrpLabelEn:'MRP',
+    namePlaceholder:'যেমন: হাতে বোনা শাড়ি, নারকেল নাড়ু',
+    extraFields: ['memberCount','groupName','certification']
+  }
+};
+
+var currentShopType = 'shop';
+
+function selectShopType(type){
+  currentShopType = type;
+  ['shop','farmer','artist','service'].forEach(function(t){
+    var el = document.getElementById('type-'+t);
+    if(!el) return;
+    if(t===type){
+      el.style.borderColor='var(--orange)';
+      el.style.background='var(--orange-light)';
+    } else {
+      el.style.borderColor='var(--border)';
+      el.style.background='#fff';
+    }
+  });
+  document.getElementById('rShopType').value = type;
+  // Show category section
+  document.getElementById('regCatSection').style.display = 'block';
+  // Reset and populate categories
+  resetRegCats();
+  populateRegCats(type, 'rCat');
+  // Update name label & placeholder
+  var nameLabels = {
+    shop:'দোকানের নাম / Shop Name *',
+    farmer:'খামারের নাম / Farm Name *',
+    artist:'আপনার নাম / Your Name *',
+    service:'ব্যবসার নাম / Business Name *',
+    manufacturer:'প্রতিষ্ঠানের নাম / Company Name *',
+    wholesaler:'ব্যবসার নাম / Business Name *',
+    cooperative:'দলের নাম / Group Name *'
+  };
+  document.getElementById('shopNameLabel').textContent = nameLabels[type]||'নাম *';
+  var namePhs = {
+    shop:'যেমন: মন্তেশ্বর মিষ্টি ঘর',
+    farmer:'যেমন: রামু মণ্ডলের খামার',
+    artist:'যেমন: মায়া বিশ্বাস আর্ট',
+    service:'যেমন: রাজু ইলেকট্রিক্যাল',
+    manufacturer:'যেমন: মন্তেশ্বর ফুড প্রোডাক্টস',
+    wholesaler:'যেমন: রহিম ট্রেডার্স',
+    cooperative:'যেমন: মন্তেশ্বর মহিলা সমবায়'
+  };
+  document.getElementById('rShop').placeholder = namePhs[type]||'';
+}
+
+function selectProfileType(type){
+  currentShopType = type;
+  ['shop','farmer','artist','service','manufacturer','wholesaler','cooperative'].forEach(function(t){
+    var el = document.getElementById('ptype-'+t);
+    if(!el) return;
+    if(t===type){
+      el.style.borderColor='var(--orange)';
+      el.style.background='var(--orange-light)';
+    } else {
+      el.style.borderColor='var(--border)';
+      el.style.background='#fff';
+    }
+  });
+  document.getElementById('pShopType').value = type;
+  updateProductFormLabels(type);
+  if(CU) sellerRef().update({shopType:type}).catch(function(){});
+  var st = SHOP_TYPES[type]||SHOP_TYPES.shop;
+  showToast(st.icon+' '+st.label+' mode active ✅','green');
+}
+
+function updateProductFormLabels(type){
+  var st = SHOP_TYPES[type];
+  if(!st) return;
+  // Update product form labels
+  var nameBnEl = document.getElementById('fNameBn');
+  if(nameBnEl){
+    nameBnEl.placeholder = st.namePlaceholder;
+    nameBnEl.previousElementSibling.textContent =
+      st.productLabel+' (বাংলা) *';
+  }
+  // Stock label
+  var stockEl = document.getElementById('fStock');
+  if(stockEl){
+    stockEl.closest('.form-group').style.display =
+      type==='service'?'none':'block';
+  }
+  // MRP label
+  var mrpEl = document.getElementById('fMrp');
+  if(mrpEl && mrpEl.previousElementSibling){
+    mrpEl.previousElementSibling.textContent = st.mrpLabel+' ₹';
+  }
+  // Price label
+  var priceEl = document.getElementById('fPrice');
+  if(priceEl && priceEl.previousElementSibling){
+    priceEl.previousElementSibling.textContent = st.priceLabel+' ₹ *';
+  }
+  // Show/hide extra fields
+  updateExtraFields(type);
+}
+
+function updateExtraFields(type){
+  // Remove old extra fields
+  var old = document.getElementById('extraFieldsSection');
+  if(old) old.remove();
+  var st = SHOP_TYPES[type];
+  if(!st.extraFields.length) return;
+  var descGrp = document.getElementById('fDesc');
+  if(!descGrp) return;
+  var parent = descGrp.closest('.form-group');
+  var extra = document.createElement('div');
+  extra.id = 'extraFieldsSection';
+  extra.style.cssText = 'grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:0';
+  var html = '';
+  if(type==='farmer'){
+    html += '<div class="form-group"><label>Harvest Date (কবে পাওয়া যাবে)</label>'+
+      '<input type="date" class="form-input" id="fHarvestDate"></div>'+
+      '<div class="form-group"><label>Farm Location</label>'+
+      '<input type="text" class="form-input" id="fFarmLocation" placeholder="যেমন: গোপীনাথপুর"></div>'+
+      '<div class="form-group full"><label style="display:flex;align-items:center;gap:8px">'+
+      '<input type="checkbox" id="fPreOrder" style="width:16px;height:16px">'+
+      ' Pre-order নেওয়া যাবে? (আগে থেকে order নিন)</label></div>';
+  } else if(type==='artist'){
+    html += '<div class="form-group"><label>Delivery সময় (দিনে)</label>'+
+      '<input type="number" class="form-input" id="fDeliveryDays" placeholder="৭" min="1"></div>'+
+      '<div class="form-group"><label>Medium / মাধ্যম</label>'+
+      '<input type="text" class="form-input" id="fMedium" placeholder="যেমন: তেলরং, কাঠ, মাটি"></div>'+
+      '<div class="form-group full"><label style="display:flex;align-items:center;gap:8px">'+
+      '<input type="checkbox" id="fCustomOrder" style="width:16px;height:16px">'+
+      ' Custom order নেওয়া যাবে?</label></div>';
+  } else if(type==='service'){
+    html += '<div class="form-group"><label>Per (কিসের জন্য দাম)</label>'+
+      '<select class="form-input" id="fPerUnit">'+
+      '<option value="visit">per visit (প্রতি বার)</option>'+
+      '<option value="hour">per hour (প্রতি ঘণ্টা)</option>'+
+      '<option value="day">per day (প্রতিদিন)</option>'+
+      '<option value="project">per project</option>'+
+      '</select></div>'+
+      '<div class="form-group"><label>Service Area (km)</label>'+
+      '<input type="number" class="form-input" id="fServiceArea" placeholder="৫" min="1"></div>'+
+      '<div class="form-group full"><label>Availability (কখন পাওয়া যাবে)</label>'+
+      '<input type="text" class="form-input" id="fAvailability" placeholder="যেমন: সোম-শনি সকাল ৯টা-৬টা"></div>';
+  }
+  extra.innerHTML = html;
+  parent.after(extra);
+}
 var CAT_DATA = {
   food:{
     label:'🍽️ খাবার / Food',
@@ -2112,8 +2669,12 @@ function loadProfile(){
   document.getElementById('shopOpenToggle').checked=isOpen;
   document.getElementById('toggleText').textContent=isOpen?'খোলা আছে ✅':'বন্ধ আছে ❌';
   document.getElementById('toggleText').style.color=isOpen?'var(--green)':'var(--red)';
-  // Subscription
-  var plan=SD.plan||'free';
+  // Load shop type
+  var sType = SD.shopType||'shop';
+  currentShopType = sType;
+  document.getElementById('pShopType').value = sType;
+  selectProfileType(sType);
+  updateProductFormLabels(sType);
   document.getElementById('subPlanName').textContent=plan.toUpperCase()+' PLAN';
   document.getElementById('dashPlanName').textContent=plan.toUpperCase()+' PLAN';
 }
@@ -2121,6 +2682,7 @@ function loadProfile(){
 function saveProfile(){
   var btn=document.getElementById('saveProfileBtn'); btn.disabled=true; btn.textContent='সেভ হচ্ছে...';
   var upd={
+    shopType:document.getElementById('pShopType').value||'shop',
     shopName:document.getElementById('pShopName').value.trim(),
     ownerName:document.getElementById('pOwnerName').value.trim(),
     mobile:document.getElementById('pPhone').value.trim(),
