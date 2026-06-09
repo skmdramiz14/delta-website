@@ -515,8 +515,69 @@ footer{background:var(--navy3);padding:40px 5% 24px;}
         <p>Register করুন, সাথে সাথেই শুরু করুন</p>
       </div>
       <div class="form-err" id="regErr"></div>
+
+      <!-- Step 1: Shop Type -->
       <div class="form-group">
-        <label>দোকানের নাম *</label>
+        <label style="font-size:.72rem;font-weight:700;color:var(--muted);
+          text-transform:uppercase;letter-spacing:.5px;">
+          আপনি কে? / Who are you? *
+        </label>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:6px;">
+          <div id="type-shop" onclick="selectType('shop')" style="border:2px solid var(--border);
+            border-radius:10px;padding:12px 8px;cursor:pointer;text-align:center;
+            transition:all .2s;background:#fff;">
+            <div style="font-size:1.3rem">🏪</div>
+            <div style="font-size:.75rem;font-weight:700;color:var(--navy);margin-top:4px">দোকানদার</div>
+            <div style="font-size:.62rem;color:var(--muted)">Shop Owner</div>
+          </div>
+          <div id="type-farmer" onclick="selectType('farmer')" style="border:2px solid var(--border);
+            border-radius:10px;padding:12px 8px;cursor:pointer;text-align:center;
+            transition:all .2s;background:#fff;">
+            <div style="font-size:1.3rem">👨‍🌾</div>
+            <div style="font-size:.75rem;font-weight:700;color:var(--navy);margin-top:4px">কৃষক</div>
+            <div style="font-size:.62rem;color:var(--muted)">Farmer</div>
+          </div>
+          <div id="type-artist" onclick="selectType('artist')" style="border:2px solid var(--border);
+            border-radius:10px;padding:12px 8px;cursor:pointer;text-align:center;
+            transition:all .2s;background:#fff;">
+            <div style="font-size:1.3rem">🎨</div>
+            <div style="font-size:.75rem;font-weight:700;color:var(--navy);margin-top:4px">শিল্পী</div>
+            <div style="font-size:.62rem;color:var(--muted)">Artist / Creator</div>
+          </div>
+          <div id="type-service" onclick="selectType('service')" style="border:2px solid var(--border);
+            border-radius:10px;padding:12px 8px;cursor:pointer;text-align:center;
+            transition:all .2s;background:#fff;">
+            <div style="font-size:1.3rem">💈</div>
+            <div style="font-size:.75rem;font-weight:700;color:var(--navy);margin-top:4px">সেবাদাতা</div>
+            <div style="font-size:.62rem;color:var(--muted)">Service Provider</div>
+          </div>
+          <div id="type-manufacturer" onclick="selectType('manufacturer')" style="border:2px solid var(--border);
+            border-radius:10px;padding:12px 8px;cursor:pointer;text-align:center;
+            transition:all .2s;background:#fff;">
+            <div style="font-size:1.3rem">🏭</div>
+            <div style="font-size:.75rem;font-weight:700;color:var(--navy);margin-top:4px">প্রস্তুতকারক</div>
+            <div style="font-size:.62rem;color:var(--muted)">Manufacturer</div>
+          </div>
+          <div id="type-wholesaler" onclick="selectType('wholesaler')" style="border:2px solid var(--border);
+            border-radius:10px;padding:12px 8px;cursor:pointer;text-align:center;
+            transition:all .2s;background:#fff;">
+            <div style="font-size:1.3rem">📦</div>
+            <div style="font-size:.75rem;font-weight:700;color:var(--navy);margin-top:4px">পাইকার</div>
+            <div style="font-size:.62rem;color:var(--muted)">Wholesaler</div>
+          </div>
+          <div id="type-cooperative" onclick="selectType('cooperative')" style="border:2px solid var(--border);
+            border-radius:10px;padding:12px 8px;cursor:pointer;text-align:center;
+            transition:all .2s;background:#fff;grid-column:1/-1;">
+            <div style="font-size:1.3rem">🤝</div>
+            <div style="font-size:.75rem;font-weight:700;color:var(--navy);margin-top:4px">সমবায় / Cooperative</div>
+            <div style="font-size:.62rem;color:var(--muted)">SHG · Farmer Group · Women's Collective</div>
+          </div>
+        </div>
+        <input type="hidden" id="rShopType" value="">
+      </div>
+
+      <div class="form-group">
+        <label id="shopNameLabel">দোকানের নাম *</label>
         <input type="text" class="form-input" id="rShop"
           placeholder="যেমন: মন্তেশ্বর মিষ্টি ঘর">
       </div>
@@ -530,27 +591,41 @@ footer{background:var(--navy3);padding:40px 5% 24px;}
           <input type="tel" class="form-input" id="rPhone" placeholder="9XXXXXXXXX">
         </div>
       </div>
-      <div class="form-grid-2">
-        <div class="form-group">
-          <label>এলাকা</label>
-          <input type="text" class="form-input" id="rArea" placeholder="Manteswar">
-        </div>
-        <div class="form-group">
-          <label>ক্যাটাগরি *</label>
-          <select class="form-input" id="rCat">
-            <option value="">বেছে নিন</option>
-            <option>🍛 খাদ্য / Food</option>
-            <option>🛒 মুদিখানা / Grocery</option>
-            <option>🌾 কৃষি / Farm</option>
-            <option>💊 ওষুধ / Pharmacy</option>
-            <option>👗 পোশাক / Clothing</option>
-            <option>📱 ইলেকট্রনিক্স</option>
-            <option>🎨 শিল্প / Arts</option>
-            <option>💈 সেবা / Services</option>
-            <option>🏪 অন্যান্য / Other</option>
-          </select>
-        </div>
+      <div class="form-group">
+        <label>এলাকা / Area</label>
+        <input type="text" class="form-input" id="rArea" placeholder="Manteswar">
       </div>
+
+      <!-- Dynamic Multi-Category -->
+      <div class="form-group" id="regCatSection" style="display:none;">
+        <label style="font-size:.72rem;font-weight:700;color:var(--muted);
+          text-transform:uppercase;letter-spacing:.5px;">
+          প্রধান ক্যাটাগরি * 
+          <span style="font-size:.65rem;font-weight:400;color:var(--muted)">(সর্বোচ্চ ৩টি)</span>
+        </label>
+        <select class="form-input" id="rCat" onchange="onRegCatChange(0)"
+          style="margin-top:6px;margin-bottom:8px;">
+          <option value="">— category বেছে নিন —</option>
+        </select>
+        <div id="regCustomCat0" style="display:none;margin-bottom:8px;">
+          <input type="text" class="form-input" id="rCustomCat0"
+            placeholder="আপনার category লিখুন..."
+            oninput="updateRegCategories()">
+          <div style="margin-top:4px;font-size:.7rem;color:var(--orange);">
+            💡 <a href="#" onclick="requestRegCategory(0)"
+              style="color:var(--navy);font-weight:700;">Request করুন →</a>
+          </div>
+        </div>
+        <div id="regExtraCats"></div>
+        <button type="button" id="addCatBtn" onclick="addRegCategory()"
+          style="display:none;background:transparent;border:1.5px dashed var(--border);
+          color:var(--muted);padding:8px 14px;border-radius:8px;font-size:.75rem;
+          cursor:pointer;width:100%;margin-top:4px;">
+          + আরো category যোগ করুন (সর্বোচ্চ ৩টি)
+        </button>
+        <input type="hidden" id="rCatData" value="">
+      </div>
+
       <div class="form-group">
         <label>Email *</label>
         <input type="email" class="form-input" id="rEmail" placeholder="your@email.com">
@@ -1365,6 +1440,200 @@ var FB_CFG={
 };
 var CITY='manteswar';
 var auth,db;
+var regCatCount=1;
+
+// ── CATEGORY DATA ──
+var REG_CATS={
+  shop:['🍛 খাদ্য / Food','🛒 মুদিখানা / Grocery',
+    '💊 ওষুধ / Pharmacy','👗 পোশাক / Clothing',
+    '📱 ইলেকট্রনিক্স','🏠 বাড়ি / Home',
+    '🎨 শিল্প / Arts','🏗️ নির্মাণ / Construction',
+    '🚗 যানবাহন / Automotive','📦 অন্যান্য / Other'],
+  farmer:['🥬 সবজি / Vegetables','🍎 ফল / Fruits',
+    '🐟 মাছ / Fish','🥛 দুগ্ধজাত / Dairy',
+    '🌾 চাল-ধান / Rice','🌿 জৈব পণ্য / Organic',
+    '🌺 ফুল / Flowers','🐄 পশুপালন / Livestock',
+    '🌿 কৃষি সরঞ্জাম / Farm Tools','📦 অন্যান্য / Other'],
+  artist:['🎨 পটচিত্র / Patachitra','🧵 হস্তশিল্প / Handicrafts',
+    '🥻 হাতে বোনা / Handloom','🪆 মূর্তি / Sculpture',
+    '📸 ফটোগ্রাফি','🎵 সংগীত / Music',
+    '🎁 কাস্টম গিফট','🖼️ চিত্রকলা / Painting',
+    '📦 অন্যান্য / Other'],
+  service:['💈 সৌন্দর্য / Beauty','🔧 মেরামত / Repair',
+    '⚡ ইলেকট্রিশিয়ান','🔩 প্লাম্বার / Plumber',
+    '📖 টিউটর / Tutor','🏥 স্বাস্থ্যসেবা / Healthcare',
+    '🚗 পরিবহন / Transport','🎪 ইভেন্ট / Events',
+    '💼 ব্যবসায়িক / Business','📦 অন্যান্য / Other'],
+  manufacturer:['🍬 খাদ্য প্রস্তুত / Food Processing',
+    '🧵 বস্ত্র উৎপাদন / Textile',
+    '🪵 কাঠের পণ্য / Wood Products',
+    '🏺 মাটির পণ্য / Clay Products',
+    '🧴 প্রসাধনী / Cosmetics',
+    '🧱 নির্মাণ সামগ্রী / Construction Material',
+    '⚙️ যন্ত্রাংশ / Machine Parts','📦 অন্যান্য / Other'],
+  wholesaler:['🌾 খাদ্যশস্য / Food Grains',
+    '🌶️ মশলা / Spices','🧴 গৃহস্থালি / Household',
+    '👗 পোশাক / Clothing','📱 ইলেকট্রনিক্স',
+    '🏗️ নির্মাণ / Construction','💊 ওষুধ / Medicine',
+    '🌿 কৃষি উপকরণ / Farm Inputs','📦 অন্যান্য / Other'],
+  cooperative:['🥬 সবজি / Vegetables',
+    '🍬 হস্তনির্মিত খাবার / Handmade Food',
+    '🧵 হাতে বোনা / Handloom',
+    '🎨 হস্তশিল্প / Handicrafts',
+    '🥛 দুগ্ধজাত / Dairy','🌿 জৈব পণ্য / Organic',
+    '🪡 সেলাই পণ্য / Stitched Items',
+    '📦 অন্যান্য / Other']
+};
+
+// ── SHOP TYPE ──
+function selectType(type){
+  ['shop','farmer','artist','service','manufacturer','wholesaler','cooperative'].forEach(function(t){
+    var el=document.getElementById('type-'+t);
+    if(!el)return;
+    el.style.borderColor=t===type?'var(--orange)':'var(--border)';
+    el.style.background=t===type?'#fff8f0':'#fff';
+  });
+  document.getElementById('rShopType').value=type;
+  document.getElementById('regCatSection').style.display='block';
+  resetRegCats();
+  populateRegCats(type,'rCat');
+  var labels={shop:'দোকানের নাম *',farmer:'খামারের নাম *',
+    artist:'আপনার নাম *',service:'ব্যবসার নাম *',
+    manufacturer:'প্রতিষ্ঠানের নাম *',
+    wholesaler:'ব্যবসার নাম *',
+    cooperative:'দলের নাম *'};
+  var phs={shop:'যেমন: মন্তেশ্বর মিষ্টি ঘর',
+    farmer:'যেমন: রামু মণ্ডলের খামার',
+    artist:'যেমন: মায়া বিশ্বাস আর্ট',
+    service:'যেমন: রাজু ইলেকট্রিক্যাল',
+    manufacturer:'যেমন: মন্তেশ্বর ফুড প্রোডাক্টস',
+    wholesaler:'যেমন: রহিম ট্রেডার্স',
+    cooperative:'যেমন: মন্তেশ্বর মহিলা সমবায়'};
+  document.getElementById('shopNameLabel').textContent=labels[type]||'নাম *';
+  document.getElementById('rShop').placeholder=phs[type]||'';
+}
+
+function populateRegCats(type,selectId){
+  var sel=document.getElementById(selectId);
+  if(!sel)return;
+  var cats=REG_CATS[type]||REG_CATS.shop;
+  sel.innerHTML='<option value="">— category বেছে নিন —</option>';
+  cats.forEach(function(c){
+    var o=document.createElement('option');
+    o.value=c;o.textContent=c;sel.appendChild(o);
+  });
+}
+
+function resetRegCats(){
+  regCatCount=1;
+  var sel=document.getElementById('rCat');
+  if(sel)sel.innerHTML='<option value="">— category বেছে নিন —</option>';
+  var cc=document.getElementById('regCustomCat0');
+  if(cc)cc.style.display='none';
+  var rc=document.getElementById('rCustomCat0');
+  if(rc)rc.value='';
+  var ec=document.getElementById('regExtraCats');
+  if(ec)ec.innerHTML='';
+  var ab=document.getElementById('addCatBtn');
+  if(ab)ab.style.display='none';
+  var cd=document.getElementById('rCatData');
+  if(cd)cd.value='';
+}
+
+function onRegCatChange(idx){
+  var val=document.getElementById('rCat').value;
+  var cd=document.getElementById('regCustomCat0');
+  if(val&&val.includes('অন্যান্য')){cd.style.display='block';}
+  else{cd.style.display='none';document.getElementById('rCustomCat0').value='';}
+  var ab=document.getElementById('addCatBtn');
+  if(val&&regCatCount<3)ab.style.display='block';
+  updateRegCategories();
+}
+
+function addRegCategory(){
+  if(regCatCount>=3)return;
+  regCatCount++;
+  var type=document.getElementById('rShopType').value||'shop';
+  var cats=REG_CATS[type]||REG_CATS.shop;
+  var container=document.getElementById('regExtraCats');
+  var idx=regCatCount;
+  var opts=cats.map(function(c){
+    return '<option value="'+c+'">'+c+'</option>';
+  }).join('');
+  var div=document.createElement('div');
+  div.id='regCatRow'+idx;
+  div.style.marginBottom='8px';
+  div.innerHTML='<div style="display:flex;gap:6px;align-items:center;">'+
+    '<select class="form-input" id="rCat'+idx+'" onchange="onRegExtraCatChange('+idx+')" style="flex:1;">'+
+    '<option value="">— Secondary category —</option>'+opts+'</select>'+
+    '<button type="button" onclick="removeRegCat('+idx+')" style="width:32px;height:38px;'+
+    'border:1.5px solid var(--border);border-radius:8px;background:#fff;cursor:pointer;'+
+    'color:#c0392b;font-size:.9rem;flex-shrink:0;">✕</button></div>'+
+    '<div id="regCustomCat'+idx+'" style="display:none;margin-top:6px;">'+
+    '<input type="text" class="form-input" id="rCustomCat'+idx+'"'+
+    ' placeholder="আপনার category লিখুন..." oninput="updateRegCategories()">'+
+    '<div style="margin-top:4px;font-size:.7rem;color:var(--orange);">'+
+    '💡 <a href="#" onclick="requestRegCategory('+idx+')" style="color:var(--navy);font-weight:700;">'+
+    'Request করুন →</a></div></div>';
+  container.appendChild(div);
+  if(regCatCount>=3){
+    document.getElementById('addCatBtn').style.display='none';
+  }
+  updateRegCategories();
+}
+
+function removeRegCat(idx){
+  var el=document.getElementById('regCatRow'+idx);
+  if(el)el.remove();
+  regCatCount--;
+  if(regCatCount<3){
+    document.getElementById('addCatBtn').style.display='block';
+  }
+  updateRegCategories();
+}
+
+function onRegExtraCatChange(idx){
+  var val=document.getElementById('rCat'+idx).value;
+  var cd=document.getElementById('regCustomCat'+idx);
+  if(cd){cd.style.display=val&&val.includes('অন্যান্য')?'block':'none';}
+  updateRegCategories();
+}
+
+function updateRegCategories(){
+  var cats=[];
+  var primary=document.getElementById('rCat').value;
+  if(primary&&primary.includes('অন্যান্য')){
+    var c=document.getElementById('rCustomCat0').value.trim();
+    if(c)primary=c;
+  }
+  if(primary&&!primary.includes('অন্যান্য'))cats.push(primary);
+  for(var i=2;i<=3;i++){
+    var sel=document.getElementById('rCat'+i);
+    if(!sel)continue;
+    var val=sel.value;
+    if(val&&val.includes('অন্যান্য')){
+      var ci=document.getElementById('rCustomCat'+i);
+      if(ci&&ci.value.trim())val=ci.value.trim();
+    }
+    if(val&&!val.includes('অন্যান্য'))cats.push(val);
+  }
+  document.getElementById('rCatData').value=JSON.stringify(cats);
+}
+
+function requestRegCategory(idx){
+  var input=document.getElementById('rCustomCat'+idx);
+  if(!input||!input.value.trim())return;
+  if(db){
+    db.collection('categoryRequests').add({
+      requestedSub:input.value.trim(),
+      mainType:document.getElementById('rShopType').value||'shop',
+      city:CITY,source:'seller.html',
+      createdAt:new Date().toISOString(),status:'pending'
+    }).then(function(){
+      alert('"'+input.value+'" request পাঠানো হয়েছে ✅');
+    });
+  }
+}
 
 (function(){
   var scripts=[
@@ -1399,14 +1668,18 @@ async function doRegister(){
   var owner=document.getElementById('rOwner').value.trim();
   var phone=document.getElementById('rPhone').value.trim();
   var area=document.getElementById('rArea').value.trim()||'Manteswar';
-  var cat=document.getElementById('rCat').value;
+  var shopType=document.getElementById('rShopType').value||'shop';
+  var catDataRaw=document.getElementById('rCatData').value;
+  var categories=catDataRaw?JSON.parse(catDataRaw):[];
+  var primaryCat=categories[0]||'';
   var email=document.getElementById('rEmail').value.trim();
   var pass=document.getElementById('rPass').value;
   var err=document.getElementById('regErr');
   err.style.display='none';
-  if(!shop){err.textContent='দোকানের নাম দিন।';err.style.display='block';return;}
+  if(!shopType){err.textContent='আপনি কে সেটা বেছে নিন।';err.style.display='block';return;}
+  if(!shop){err.textContent='নাম দিন।';err.style.display='block';return;}
   if(!owner){err.textContent='মালিকের নাম দিন।';err.style.display='block';return;}
-  if(!cat){err.textContent='ক্যাটাগরি বেছে নিন।';err.style.display='block';return;}
+  if(!primaryCat){err.textContent='কমপক্ষে একটি category বেছে নিন।';err.style.display='block';return;}
   if(!email){err.textContent='Email দিন।';err.style.display='block';return;}
   if(pass.length<6){err.textContent='Password কমপক্ষে ৬ অক্ষর।';err.style.display='block';return;}
   var btn=document.getElementById('regBtn');
@@ -1416,7 +1689,10 @@ async function doRegister(){
     await cr.user.updateProfile({displayName:owner});
     await db.collection('cities').doc(CITY).collection('sellers').doc(cr.user.uid).set({
       shopName:shop,ownerName:owner,mobile:phone,area:area,
-      category:cat,email:email,city:CITY,plan:'free',
+      category:primaryCat,
+      categories:categories,
+      shopType:shopType,
+      email:email,city:CITY,plan:'free',
       isOpen:true,openTime:'09:00',closeTime:'21:00',
       address:'',pin:'',description:'',rating:0,totalOrders:0,
       language:'bn',registeredFrom:'seller.html',
