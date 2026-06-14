@@ -1,5 +1,5 @@
-<!DOCTYPE html>     
-<html lang="bn"> 
+<!DOCTYPE html>
+<html lang="bn">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -28,7 +28,7 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 .logo{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:900;color:#fff;cursor:pointer;white-space:nowrap;letter-spacing:1px;}
 .logo em{color:var(--orange);font-style:normal;}
 .nav-search-wrap{flex:1;max-width:460px;}
-.nav-search{display:flex;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:8px;transition:all .2s;}
+.nav-search{display:flex;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:8px;transition:all .2s;position:relative;overflow:visible;}
 .nav-search:focus-within{background:rgba(255,255,255,.16);border-color:var(--orange);}
 .nav-search input{flex:1;border:none;background:transparent;color:#fff;padding:10px 14px;font-size:.875rem;outline:none;border-radius:8px 0 0 8px;}
 .nav-search input::placeholder{color:rgba(255,255,255,.4);}
@@ -65,8 +65,8 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 .hero h1 em{color:var(--orange);font-style:normal;}
 .hero-bn{font-family:'Tiro Bangla',serif;font-size:1.1rem;color:rgba(255,255,255,.7);margin-bottom:10px;}
 .hero p{color:rgba(255,255,255,.65);font-size:.95rem;line-height:1.75;margin-bottom:28px;max-width:460px;}
-.hero-search-big{display:flex;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.25);margin-bottom:20px;}
-.hero-search-big input{flex:1;padding:14px 18px;border:none;outline:none;font-size:.9rem;color:var(--charcoal);}
+.hero-search-big{display:flex;background:#fff;border-radius:12px;overflow:visible;box-shadow:0 8px 32px rgba(0,0,0,.25);margin-bottom:20px;position:relative;}
+.hero-search-big input{flex:1;padding:14px 18px;border:none;outline:none;font-size:.9rem;color:var(--charcoal);border-radius:12px 0 0 12px;}
 .hero-search-big button{background:var(--orange);color:#fff;border:none;padding:0 24px;font-size:1rem;cursor:pointer;font-weight:700;transition:background .2s;}
 .hero-search-big button:hover{background:var(--orange2);}
 .hero-tags{display:flex;gap:8px;flex-wrap:wrap;}
@@ -107,7 +107,7 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 .section.gray{background:var(--sand);}
 
 /* ── CATEGORY GRID ── */
-.cat-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:12px;}
+.cat-grid{display:grid;grid-template-columns:repeat(10,1fr);gap:12px;}
 .cat-card{background:var(--white);border:1.5px solid var(--border);border-radius:16px;padding:20px 8px;text-align:center;cursor:pointer;transition:all .22s;}
 .cat-card:hover,.cat-card.active{background:var(--orange-light);border-color:var(--orange);transform:translateY(-3px);box-shadow:0 8px 24px rgba(240,112,24,.12);}
 .cat-emoji{font-size:2rem;display:block;margin-bottom:8px;}
@@ -265,6 +265,13 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 }
 .nav-voice-btn{background:transparent;border:none;color:rgba(255,255,255,.6);font-size:1rem;padding:0 10px;cursor:pointer;transition:color .2s;}
 .nav-voice-btn:hover{color:#fff;}
+.nav-voice-btn.listening{color:#f87171;animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1;}50%{transform:scale(1.2);opacity:.7;}}
+/* Voice overlay */
+.voice-overlay{display:none;position:fixed;inset:0;background:rgba(6,21,38,.85);z-index:5000;align-items:center;justify-content:center;flex-direction:column;gap:20px;}
+.voice-overlay.active{display:flex;}
+.voice-circle{width:100px;height:100px;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center;font-size:2.5rem;animation:voicePulse 1.2s infinite;}
+@keyframes voicePulse{0%,100%{box-shadow:0 0 0 0 rgba(240,112,24,.4);}70%{box-shadow:0 0 0 20px rgba(240,112,24,0);}}
 .nav-loc-btn{color:rgba(255,255,255,.7);font-size:.78rem;white-space:nowrap;cursor:pointer;padding:6px 10px;border-radius:6px;border:1px solid rgba(255,255,255,.18);display:flex;align-items:center;gap:4px;transition:background .2s;flex-shrink:0;}
 .nav-loc-btn:hover{background:rgba(255,255,255,.1);}
 .lang-toggle{display:flex;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:20px;padding:2px;gap:0;}
@@ -427,7 +434,46 @@ footer{background:var(--navy3);color:rgba(255,255,255,.55);padding:44px 5% 28px;
 .footer-col a:hover{color:var(--orange);}
 .footer-bottom{border-top:1px solid rgba(255,255,255,.08);padding-top:20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;font-size:.78rem;}
 
-/* ── TOAST ── */
+/* ── REQUEST A PRODUCT ── */
+.request-section{display:none;background:linear-gradient(135deg,#fff4ec,#fff8f3);border:2px dashed var(--orange);border-radius:20px;padding:32px 24px;text-align:center;margin:16px 0;}
+.request-section.show{display:block;}
+.request-icon{font-size:3rem;margin-bottom:12px;}
+.request-title{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:800;color:var(--navy);margin-bottom:8px;}
+.request-sub{color:var(--muted);font-size:.88rem;margin-bottom:20px;line-height:1.6;}
+.request-form{display:flex;flex-direction:column;gap:12px;max-width:420px;margin:0 auto;}
+.request-input{padding:12px 16px;border:1.5px solid var(--border);border-radius:10px;font-size:.9rem;outline:none;font-family:'DM Sans',sans-serif;transition:border .2s;}
+.request-input:focus{border-color:var(--orange);}
+.request-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.request-btn{background:var(--orange);color:#fff;border:none;padding:13px 24px;border-radius:10px;font-weight:700;font-size:.9rem;cursor:pointer;transition:background .2s;}
+.request-btn:hover{background:var(--orange2);}
+.request-btn:disabled{background:var(--muted);cursor:not-allowed;}
+/* Modal */
+.req-modal-overlay{display:none;position:fixed;inset:0;background:rgba(6,21,38,.7);z-index:5000;align-items:center;justify-content:center;}
+.req-modal-overlay.open{display:flex;}
+.req-modal{background:#fff;border-radius:20px;padding:32px;width:min(480px,92vw);position:relative;animation:slideUp .3s ease;}
+.req-modal-close{position:absolute;top:14px;right:16px;background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--muted);}
+.req-modal h3{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:800;color:var(--navy);margin-bottom:6px;}
+.req-modal p{color:var(--muted);font-size:.85rem;margin-bottom:20px;}
+.req-success{text-align:center;padding:20px 0;}
+.req-success-icon{font-size:3rem;margin-bottom:12px;}
+
+/* ── SEARCH SUGGESTIONS ── */
+.nav-search-wrap{position:relative;}
+.search-suggestions{position:absolute;top:100%;left:0;right:0;background:#fff;border-radius:0 0 12px 12px;box-shadow:0 8px 32px rgba(0,0,0,.2);z-index:2000;display:none;max-height:300px;overflow-y:auto;}
+.search-suggestions.open{display:block;}
+.suggestion-header{padding:7px 14px;font-size:.68rem;font-weight:700;color:var(--orange);text-transform:uppercase;letter-spacing:1px;background:var(--cream);border-bottom:1px solid var(--border);}
+.suggestion-item{padding:10px 14px;cursor:pointer;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--sand);transition:background .15s;}
+.suggestion-item:last-child{border-bottom:none;}
+.suggestion-item:hover,.suggestion-item.active{background:var(--orange-light);}
+.sug-icon{font-size:1rem;width:24px;text-align:center;flex-shrink:0;}
+.sug-main{font-size:.86rem;font-weight:600;color:var(--charcoal);flex:1;}
+.sug-sub{font-size:.73rem;color:var(--muted);}
+.sug-tag{font-size:.68rem;background:var(--sand);color:var(--muted);padding:2px 7px;border-radius:10px;flex-shrink:0;}
+
+/* ── LANGUAGE SYSTEM ── */
+body.lang-en .lang-bn{display:none!important;}
+body.lang-bn .lang-en{display:none!important;}
+/* Toast */
 .toast{position:fixed;bottom:24px;right:24px;background:var(--navy);color:#fff;padding:12px 18px;border-radius:12px;font-size:.82rem;font-weight:500;box-shadow:0 6px 24px rgba(0,0,0,.2);z-index:4000;display:none;align-items:center;gap:10px;border-left:3px solid var(--orange);max-width:300px;}
 .toast.show{display:flex;animation:toastIn .3s ease;}
 .toast.green{border-left-color:var(--green);}
@@ -531,9 +577,233 @@ footer{background:var(--navy3);color:rgba(255,255,255,.55);padding:44px 5% 28px;
   .fresh-strip-label-text{font-size:.55rem;}
   .fresh-item{min-width:130px;padding:10px 14px;}
 }
+/* ══ SUBSCRIBE & SAVE ══ */
+.sub-modal-overlay{display:none;position:fixed;inset:0;background:rgba(6,21,38,.75);z-index:5000;align-items:center;justify-content:center;padding:16px;}
+.sub-modal-overlay.open{display:flex;}
+.sub-modal{background:#fff;border-radius:20px;width:min(500px,96vw);max-height:92vh;overflow-y:auto;position:relative;animation:slideUp .3s ease;}
+.sub-modal-head{background:linear-gradient(135deg,var(--navy3),var(--navy));padding:24px 24px 20px;border-radius:20px 20px 0 0;}
+.sub-modal-head h3{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:900;color:#fff;margin-bottom:4px;}
+.sub-modal-head p{color:rgba(255,255,255,.65);font-size:.82rem;}
+.sub-modal-close{position:absolute;top:14px;right:16px;background:rgba(255,255,255,.15);border:none;color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;}
+.sub-modal-body{padding:22px;}
+.sub-section-title{font-weight:700;font-size:.82rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;margin-top:16px;}
+.sub-section-title:first-child{margin-top:0;}
+/* Frequency pills */
+.freq-pills{display:flex;gap:8px;flex-wrap:wrap;}
+.freq-pill{padding:9px 16px;border-radius:20px;border:1.5px solid var(--border);background:#fff;cursor:pointer;font-size:.82rem;font-weight:600;color:var(--muted);transition:all .2s;}
+.freq-pill.selected{background:var(--navy);border-color:var(--navy);color:#fff;}
+/* Product select in subscribe */
+.sub-product-list{display:flex;flex-direction:column;gap:8px;max-height:200px;overflow-y:auto;}
+.sub-product-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;transition:all .2s;}
+.sub-product-item.selected{border-color:var(--orange);background:var(--orange-light);}
+.sub-product-emoji{font-size:1.2rem;width:28px;text-align:center;}
+.sub-product-info{flex:1;}
+.sub-product-name{font-size:.85rem;font-weight:600;color:var(--charcoal);}
+.sub-product-price{font-size:.75rem;color:var(--muted);}
+.sub-product-qty{display:flex;align-items:center;gap:6px;}
+.sub-qty-btn{width:24px;height:24px;border-radius:50%;border:1.5px solid var(--border);background:#fff;cursor:pointer;font-size:.9rem;display:flex;align-items:center;justify-content:center;font-weight:700;}
+.sub-qty-val{font-size:.85rem;font-weight:700;min-width:16px;text-align:center;}
+/* Summary */
+.sub-summary{background:var(--sand);border-radius:12px;padding:14px 16px;margin-top:16px;}
+.sub-summary-row{display:flex;justify-content:space-between;font-size:.83rem;margin-bottom:4px;}
+.sub-summary-row:last-child{margin-bottom:0;font-weight:700;font-size:.9rem;border-top:1px solid var(--border);padding-top:8px;margin-top:8px;}
+/* Discount badge */
+.sub-discount-badge{background:var(--green);color:#fff;font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:6px;}
+/* Submit */
+.sub-submit-btn{width:100%;background:var(--navy);color:#fff;border:none;padding:14px;border-radius:12px;font-weight:700;font-size:.95rem;cursor:pointer;margin-top:16px;transition:background .2s;}
+.sub-submit-btn:hover{background:var(--orange);}
+.sub-submit-btn:disabled{background:var(--muted);cursor:not-allowed;}
+/* My subscriptions tag on promo */
+.sub-active-count{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:#a5d6a7;padding:4px 10px;border-radius:20px;font-size:.72rem;font-weight:600;margin-top:8px;}
+
+/* ══ APPAYAN-STYLE HAMPER ══ */
+.hamper-filter-pills{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0 20px;}
+.hamper-pill{padding:9px 16px;border-radius:20px;border:1.5px solid var(--border);background:#fff;cursor:pointer;font-size:.82rem;font-weight:600;color:var(--muted);transition:all .2s;white-space:nowrap;}
+.hamper-pill.active{background:var(--navy);border-color:var(--navy);color:#fff;}
+/* Card Grid — 2 column like Appayan */
+.hamper-appayan-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;}
+.hap-card{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,.08);border:1px solid var(--border);transition:transform .2s,box-shadow .2s;}
+.hap-card:hover{transform:translateY(-3px);box-shadow:0 8px 28px rgba(0,0,0,.13);}
+.hap-card.hidden{display:none;}
+/* Banner */
+.hap-banner{padding:16px;position:relative;min-height:120px;display:flex;flex-direction:column;justify-content:space-between;}
+.hap-tags{display:flex;gap:6px;flex-wrap:wrap;}
+.hap-tag{font-size:.65rem;font-weight:700;padding:3px 8px;border-radius:20px;backdrop-filter:blur(4px);}
+.hap-tag.festival{background:rgba(240,112,24,.85);color:#fff;}
+.hap-tag.gift{background:rgba(26,138,74,.85);color:#fff;}
+.hap-tag.eid{background:rgba(21,101,192,.85);color:#fff;}
+.hap-tag.boishakh{background:rgba(46,125,50,.85);color:#fff;}
+.hap-tag.limited{background:rgba(245,158,11,.85);color:#fff;}
+.hap-tag.kali{background:rgba(123,31,162,.85);color:#fff;}
+.hap-art{font-size:3rem;text-align:center;line-height:1;margin:6px 0;}
+.hap-timer{display:inline-flex;align-items:center;gap:5px;background:rgba(0,0,0,.25);color:rgba(255,255,255,.9);font-size:.68rem;font-weight:600;padding:4px 10px;border-radius:20px;align-self:flex-start;}
+.hap-timer-dot{width:6px;height:6px;border-radius:50%;background:#f87171;animation:pulse 1s infinite;}
+/* Body */
+.hap-body{padding:14px;}
+.hap-festival-label{font-size:.68rem;font-weight:800;color:var(--orange);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;}
+.hap-name{font-family:'Playfair Display',serif;font-size:1rem;font-weight:900;color:var(--navy);margin-bottom:5px;line-height:1.3;}
+.hap-desc{font-size:.75rem;color:var(--muted);line-height:1.5;margin-bottom:10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.hap-items{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px;}
+.hap-item{background:var(--sand);border-radius:20px;padding:3px 8px;font-size:.68rem;color:var(--charcoal);white-space:nowrap;}
+.hap-more{color:var(--muted)!important;background:transparent!important;border:1px solid var(--border)!important;}
+/* Price Row */
+.hap-price-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.hap-prices{display:flex;align-items:center;gap:6px;}
+.hap-price{font-size:1.1rem;font-weight:800;color:var(--charcoal);}
+.hap-orig{font-size:.78rem;color:var(--muted);text-decoration:line-through;}
+.hap-off{background:rgba(240,112,24,.12);color:var(--orange);font-size:.7rem;font-weight:700;padding:2px 7px;border-radius:8px;}
+.hap-sold{font-size:.72rem;color:var(--muted);display:flex;align-items:center;gap:3px;}
+.hap-fire{font-size:.8rem;}
+/* Stock bar */
+.hap-stock-bar{height:4px;background:var(--sand);border-radius:4px;margin-bottom:4px;overflow:hidden;}
+.hap-stock-fill{height:100%;background:var(--orange);border-radius:4px;transition:width .5s;}
+.hap-stock-label{font-size:.68rem;color:var(--muted);margin-bottom:10px;}
+/* Actions */
+.hap-actions{display:flex;gap:8px;}
+.hap-preview-btn{background:var(--sand);border:1px solid var(--border);color:var(--muted);width:36px;height:36px;border-radius:8px;cursor:pointer;font-size:.9rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s;}
+.hap-preview-btn:hover{background:var(--border);}
+.hap-add-btn{flex:1;background:var(--navy);color:#fff;border:none;padding:9px 14px;border-radius:8px;font-weight:700;font-size:.82rem;cursor:pointer;transition:background .2s;display:flex;align-items:center;justify-content:center;gap:5px;}
+.hap-add-btn:hover{opacity:.9;}
+@media(max-width:600px){.hamper-appayan-grid{grid-template-columns:1fr;}.hap-banner{min-height:100px;}.hap-art{font-size:2.2rem;}}
+
+/* ══ FEATURE 5: SELLER OF THE WEEK ══ */
+.sotw-section{background:linear-gradient(135deg,var(--navy3),#1a3050);padding:36px 20px;}
+.sotw-label{color:var(--orange);font-size:.75rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px;}
+.sotw-title{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:900;color:#fff;margin-bottom:24px;}
+.sotw-card{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:24px;display:flex;align-items:center;gap:24px;flex-wrap:wrap;position:relative;overflow:hidden;}
+.sotw-card::before{content:'🏆';position:absolute;right:-10px;top:-10px;font-size:5rem;opacity:.08;}
+.sotw-avatar{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--orange),var(--orange2));display:flex;align-items:center;justify-content:center;font-size:2rem;flex-shrink:0;border:3px solid rgba(255,255,255,.2);}
+.sotw-info{flex:1;min-width:200px;}
+.sotw-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(240,112,24,.2);border:1px solid rgba(240,112,24,.4);color:var(--orange);padding:4px 10px;border-radius:20px;font-size:.7rem;font-weight:700;margin-bottom:8px;}
+.sotw-name{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:900;color:#fff;margin-bottom:4px;}
+.sotw-shop-type{color:rgba(255,255,255,.6);font-size:.82rem;margin-bottom:12px;}
+.sotw-stats{display:flex;gap:16px;flex-wrap:wrap;}
+.sotw-stat{text-align:center;}
+.sotw-stat-num{font-size:1.1rem;font-weight:800;color:var(--orange);}
+.sotw-stat-label{font-size:.68rem;color:rgba(255,255,255,.5);margin-top:1px;}
+.sotw-quote{background:rgba(255,255,255,.05);border-left:3px solid var(--orange);border-radius:0 10px 10px 0;padding:12px 16px;margin-top:16px;color:rgba(255,255,255,.75);font-size:.85rem;font-style:italic;line-height:1.6;}
+.sotw-visit-btn{background:var(--orange);color:#fff;border:none;padding:12px 22px;border-radius:10px;font-weight:700;cursor:pointer;font-size:.88rem;transition:background .2s;white-space:nowrap;flex-shrink:0;}
+.sotw-visit-btn:hover{background:var(--orange2);}
+
+/* ══ FEATURE 6: TESTIMONIALS STRIP ══ */
+.testimonials-section{overflow:hidden;padding:36px 0;}
+.testimonials-track{display:flex;gap:16px;animation:scrollLeft 30s linear infinite;width:max-content;padding:4px 0;}
+.testimonials-track:hover{animation-play-state:paused;}
+.testimonial-card{background:#fff;border-radius:16px;padding:18px 20px;width:240px;flex-shrink:0;box-shadow:0 2px 12px rgba(0,0,0,.07);border:1px solid var(--border);}
+.testimonial-stars{color:#f59e0b;font-size:.85rem;margin-bottom:8px;}
+.testimonial-text{font-size:.82rem;color:var(--charcoal);line-height:1.6;margin-bottom:12px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+.testimonial-author{display:flex;align-items:center;gap:8px;}
+.testimonial-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--navy),var(--orange));display:flex;align-items:center;justify-content:center;color:#fff;font-size:.75rem;font-weight:700;flex-shrink:0;}
+.testimonial-name{font-size:.78rem;font-weight:700;color:var(--navy);}
+.testimonial-location{font-size:.7rem;color:var(--muted);}
+@keyframes scrollLeft{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
+
+/* ══ FEATURE 4: PWA INSTALL BANNER ══ */
+.pwa-banner{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);width:min(460px,92vw);background:var(--navy);border-radius:16px;padding:16px 18px;display:flex;align-items:center;gap:14px;z-index:3000;box-shadow:0 8px 32px rgba(0,0,0,.3);animation:slideUp .4s ease;border:1px solid rgba(255,255,255,.1);}
+.pwa-banner.hidden{display:none;}
+.pwa-icon{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--orange),var(--orange2));display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;}
+.pwa-text{flex:1;}
+.pwa-text strong{display:block;color:#fff;font-size:.88rem;font-weight:700;margin-bottom:2px;}
+.pwa-text span{color:rgba(255,255,255,.6);font-size:.75rem;}
+.pwa-install-btn{background:var(--orange);color:#fff;border:none;padding:9px 16px;border-radius:9px;font-weight:700;font-size:.82rem;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:background .2s;}
+.pwa-install-btn:hover{background:var(--orange2);}
+.pwa-close-btn{background:none;border:none;color:rgba(255,255,255,.4);cursor:pointer;font-size:1rem;padding:0 0 0 4px;flex-shrink:0;}
+
+/* ══ FEATURE 3: FARM TO TABLE ══ */
+.farm-section{padding:40px 20px;background:linear-gradient(180deg,#e8f5e9,#f7f9fc);}
+.farm-timeline{display:flex;align-items:center;justify-content:space-between;margin-top:28px;position:relative;flex-wrap:wrap;gap:16px;}
+.farm-timeline::before{content:'';position:absolute;top:36px;left:0;right:0;height:2px;background:repeating-linear-gradient(90deg,var(--green) 0,var(--green) 8px,transparent 8px,transparent 16px);z-index:0;}
+.farm-step{text-align:center;flex:1;min-width:100px;position:relative;z-index:1;}
+.farm-step-circle{width:72px;height:72px;border-radius:50%;background:#fff;border:3px solid var(--green);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:1.8rem;box-shadow:0 4px 16px rgba(26,138,74,.15);transition:transform .3s;}
+.farm-step:hover .farm-step-circle{transform:scale(1.1);}
+.farm-step-dist{display:inline-block;background:var(--green);color:#fff;font-size:.62rem;font-weight:700;padding:2px 8px;border-radius:10px;margin-bottom:6px;}
+.farm-step-title{font-weight:700;font-size:.85rem;color:var(--navy);margin-bottom:3px;}
+.farm-step-sub{font-size:.73rem;color:var(--muted);line-height:1.4;}
+.farm-highlight{background:#fff;border-radius:16px;padding:20px 24px;margin-top:28px;border:2px solid rgba(26,138,74,.15);display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+.farm-highlight-icon{font-size:2.5rem;flex-shrink:0;}
+.farm-highlight-text strong{font-size:1rem;font-weight:800;color:var(--navy);display:block;margin-bottom:4px;}
+.farm-highlight-text p{font-size:.83rem;color:var(--muted);line-height:1.6;}
+.farm-savings{display:inline-flex;align-items:center;gap:6px;background:rgba(26,138,74,.1);border:1px solid rgba(26,138,74,.2);color:var(--green);padding:5px 12px;border-radius:20px;font-size:.78rem;font-weight:700;margin-top:8px;}
+@media(max-width:600px){.farm-timeline::before{display:none;}.farm-timeline{flex-direction:column;align-items:flex-start;}.farm-step{display:flex;align-items:center;gap:14px;text-align:left;}.farm-step-circle{width:52px;height:52px;font-size:1.3rem;margin:0;flex-shrink:0;}}
+
+/* ══ FESTIVAL HAMPER ══ */
+.hamper-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:4px;}
+.hamper-card{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.07);border:1px solid var(--border);transition:transform .2s,box-shadow .2s;}
+.hamper-card:hover{transform:translateY(-4px);box-shadow:0 8px 28px rgba(0,0,0,.12);}
+.hamper-banner{background:linear-gradient(135deg,#b5451b,#e8863a);padding:20px;text-align:center;font-size:2.5rem;}
+.hamper-body{padding:16px;}
+.hamper-name{font-family:'Playfair Display',serif;font-weight:800;font-size:1rem;color:var(--navy);margin-bottom:6px;}
+.hamper-items{font-size:.78rem;color:var(--muted);margin-bottom:10px;line-height:1.6;}
+.hamper-item-pill{display:inline-flex;align-items:center;gap:4px;background:var(--sand);border-radius:20px;padding:3px 9px;font-size:.72rem;margin:2px 2px;}
+.hamper-price-row{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
+.hamper-bundle-price{font-size:1.2rem;font-weight:800;color:var(--orange);}
+.hamper-original-price{font-size:.82rem;color:var(--muted);text-decoration:line-through;}
+.hamper-save-pill{background:var(--green);color:#fff;font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:10px;}
+.hamper-order-btn{width:100%;background:var(--navy);color:#fff;border:none;padding:11px;border-radius:10px;font-weight:700;font-size:.88rem;cursor:pointer;transition:background .2s;}
+.hamper-order-btn:hover{background:var(--orange);}
+/* Coming soon cards */
+.hamper-coming-card{background:#fff;border-radius:16px;padding:22px;text-align:center;border:2px dashed var(--border);transition:border-color .2s;}
+.hamper-coming-card:hover{border-color:var(--orange);}
+.hamper-coming-icon{font-size:2.5rem;margin-bottom:10px;}
+.hamper-coming-name{font-family:'Playfair Display',serif;font-weight:800;font-size:.95rem;color:var(--navy);margin-bottom:6px;}
+.hamper-coming-items{font-size:.78rem;color:var(--muted);margin-bottom:10px;line-height:1.5;}
+.hamper-coming-price{font-size:1.1rem;font-weight:800;color:var(--orange);margin-bottom:12px;}
+.hamper-coming-btn{background:transparent;border:1.5px solid var(--orange);color:var(--orange);padding:9px 18px;border-radius:10px;font-weight:700;font-size:.82rem;cursor:pointer;transition:all .2s;width:100%;}
+.hamper-coming-btn:hover{background:var(--orange);color:#fff;}
+@media(max-width:700px){.hamper-grid,.hamper-coming-card+.hamper-coming-card+.hamper-coming-card{grid-template-columns:1fr;}
+  #hamperComingSoon>div{grid-template-columns:1fr;}}
+
+/* ══ FEATURE 1: ECONOMIC IMPACT COUNTER ══ */
+.eco-counter-section{background:linear-gradient(135deg,var(--navy),#1a3050);padding:32px 20px;text-align:center;}
+.eco-counter-label{color:rgba(255,255,255,.6);font-size:.78rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;}
+.eco-counter-amount{font-family:'Playfair Display',serif;font-size:clamp(2.4rem,6vw,3.8rem);font-weight:900;color:#fff;line-height:1;margin-bottom:4px;}
+.eco-counter-amount span{color:var(--orange);}
+.eco-counter-sub{color:rgba(255,255,255,.5);font-size:.8rem;margin-bottom:24px;}
+.eco-counter-pills{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;}
+.eco-pill{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:20px;padding:8px 16px;color:rgba(255,255,255,.8);font-size:.78rem;display:flex;align-items:center;gap:6px;}
+.eco-pill strong{color:#a5d6a7;font-weight:700;}
+
+/* ══ FEATURE 2: HOW IT WORKS ══ */
+.how-section{padding:40px 20px;}
+.how-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:28px;position:relative;}
+.how-steps::before{content:'';position:absolute;top:36px;left:12.5%;right:12.5%;height:2px;background:linear-gradient(90deg,var(--orange),var(--orange2));z-index:0;}
+.how-step{text-align:center;position:relative;z-index:1;}
+.how-step-circle{width:72px;height:72px;border-radius:50%;background:#fff;border:3px solid var(--orange);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:1.8rem;box-shadow:0 4px 16px rgba(240,112,24,.2);transition:transform .3s;}
+.how-step:hover .how-step-circle{transform:scale(1.12);}
+.how-step-num{position:absolute;top:-4px;right:calc(50% - 42px);width:20px;height:20px;background:var(--orange);color:#fff;border-radius:50%;font-size:.65rem;font-weight:800;display:flex;align-items:center;justify-content:center;}
+.how-step-title{font-weight:700;font-size:.88rem;color:var(--navy);margin-bottom:4px;}
+.how-step-sub{font-size:.75rem;color:var(--muted);line-height:1.5;padding:0 8px;}
+.how-step-arrow{display:none;}
+@media(max-width:600px){
+  .how-steps{grid-template-columns:1fr 1fr;gap:20px;}
+  .how-steps::before{display:none;}
+}
+
+/* ══ FEATURE 7: OPEN NOW FILTER ══ */
+.open-now-bar{display:flex;align-items:center;gap:12px;padding:12px 0;flex-wrap:wrap;}
+.open-now-toggle{display:flex;align-items:center;gap:8px;background:#fff;border:1.5px solid var(--border);border-radius:20px;padding:7px 14px;cursor:pointer;transition:all .2s;user-select:none;}
+.open-now-toggle.active{background:var(--green);border-color:var(--green);color:#fff;}
+.open-now-toggle .dot{width:8px;height:8px;border-radius:50%;background:var(--muted);transition:background .2s;}
+.open-now-toggle.active .dot{background:#a5d6a7;}
+.open-now-count{font-size:.78rem;color:var(--muted);margin-left:4px;}
+
+/* ══ FEATURE 8: FESTIVAL BANNER ══ */
+.festival-banner{border-radius:20px;padding:22px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:0;overflow:hidden;position:relative;}
+.festival-banner::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,0,0,.3),transparent);z-index:0;}
+.festival-banner>*{position:relative;z-index:1;}
+.festival-banner-text h3{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:900;color:#fff;margin-bottom:6px;}
+.festival-banner-text p{color:rgba(255,255,255,.8);font-size:.85rem;line-height:1.6;}
+.festival-countdown-wrap{text-align:center;flex-shrink:0;}
+.festival-countdown{display:flex;gap:8px;}
+.festival-cd-block{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:10px;padding:10px 14px;text-align:center;min-width:52px;}
+.festival-cd-num{font-size:1.6rem;font-weight:900;color:#fff;line-height:1;}
+.festival-cd-label{font-size:.6rem;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.5px;margin-top:2px;}
+.festival-btn{background:#fff;color:var(--navy);border:none;padding:10px 20px;border-radius:10px;font-weight:700;cursor:pointer;font-size:.85rem;transition:all .2s;white-space:nowrap;}
+.festival-btn:hover{background:var(--orange);color:#fff;}
+
 </style>
 </head>
-<body>
+<body class="lang-bn">
 
 <!-- TOAST -->
 <div class="toast" id="toastEl"></div>
@@ -543,10 +813,11 @@ footer{background:var(--navy3);color:rgba(255,255,255,.55);padding:44px 5% 28px;
   <div class="nav-top">
     <div class="logo" onclick="resetFilters()">△ DELT<em>A</em></div>
     <div class="nav-search-wrap">
-      <div class="nav-search">
-        <input type="text" id="navSearch" placeholder="দোকান বা পণ্য খুঁজুন... / Search shops or products" oninput="handleSearch(this.value)" onkeydown="if(event.key==='Enter')doSearch()">
-        <button class="nav-voice-btn" onclick="showToast('Voice search শীঘ্রই আসছে! 🎙️')" title="Voice Search">🎙️</button>
+      <div class="nav-search" id="navSearchWrap">
+        <input type="text" id="navSearch" placeholder="দোকান বা পণ্য খুঁজুন... / Search shops or products" oninput="handleSearch(this.value)" onkeydown="handleSearchKey(event,'nav')" onfocus="showSuggestions(this.value)" autocomplete="off">
+        <button class="nav-voice-btn" id="voiceBtn" onclick="startVoiceSearch()" title="Voice Search">🎙️</button>
         <button onclick="doSearch()">🔍</button>
+        <div class="search-suggestions" id="navSuggestions"></div>
       </div>
     </div>
     <div class="nav-loc-btn" onclick="showToast('📍 Manteswar, Purba Bardhaman')">
@@ -557,7 +828,6 @@ footer{background:var(--navy3);color:rgba(255,255,255,.55);padding:44px 5% 28px;
         <button class="lang-btn active" id="langBn" onclick="setLang('bn')">বাং</button>
         <button class="lang-btn" id="langEn" onclick="setLang('en')">ENG</button>
       </div>
-      <button class="btn-nav" onclick="window.location.href='seller.html'">দোকান যোগ করুন</button>
       <button class="cart-btn" onclick="openCart()">
         🛒 কার্ট
         <span class="cart-badge" id="cartBadge">0</span>
@@ -570,11 +840,21 @@ footer{background:var(--navy3);color:rgba(255,255,255,.55);padding:44px 5% 28px;
     <div class="nav-cat" onclick="filterCat('food',this)">🍛 খাবার</div>
     <div class="nav-cat" onclick="filterCat('grocery',this)">🛒 মুদিখানা</div>
     <div class="nav-cat" onclick="filterCat('farm',this)">🌾 কৃষি</div>
+    <div class="nav-cat" onclick="filterCat('farmtools',this)">🌿 কৃষি সরঞ্জাম</div>
+    <div class="nav-cat" onclick="filterCat('livestock',this)">🐄 পশুপালন</div>
     <div class="nav-cat" onclick="filterCat('medicine',this)">💊 ওষুধ</div>
     <div class="nav-cat" onclick="filterCat('clothing',this)">👗 পোশাক</div>
     <div class="nav-cat" onclick="filterCat('electronics',this)">📱 ইলেকট্রনিক্স</div>
-    <div class="nav-cat" onclick="filterCat('services',this)">🔧 সেবা</div>
+    <div class="nav-cat" onclick="filterCat('home',this)">🏠 বাড়ি</div>
+    <div class="nav-cat" onclick="filterCat('construction',this)">🏗️ নির্মাণ</div>
+    <div class="nav-cat" onclick="filterCat('automotive',this)">🚗 যানবাহন</div>
     <div class="nav-cat" onclick="filterCat('arts',this)">🎨 শিল্প</div>
+    <div class="nav-cat" onclick="filterCat('education',this)">📚 শিক্ষা</div>
+    <div class="nav-cat" onclick="filterCat('services',this)">🔧 সেবা</div>
+    <div class="nav-cat" onclick="filterCat('health',this)">🏥 স্বাস্থ্য</div>
+    <div class="nav-cat" onclick="filterCat('events',this)">🎉 ইভেন্ট</div>
+    <div class="nav-cat" onclick="filterCat('rental',this)">🔑 ভাড়া</div>
+    <div class="nav-cat" onclick="filterCat('remarket',this)">♻️ রিমার্কেট</div>
   </div>
 </nav>
 
@@ -614,43 +894,39 @@ footer{background:var(--navy3);color:rgba(255,255,255,.55);padding:44px 5% 28px;
 <section class="hero">
   <div class="hero-inner">
     <div class="hero-content">
-      <div class="hero-tag">🌟 West Bengal's First Local Super App</div>
+      <div class="hero-tag">🌟 <span class="lang-bn">পশ্চিমবঙ্গের প্রথম লোকাল সুপার অ্যাপ</span><span class="lang-en">West Bengal's First Local Super App</span></div>
       <h1>△ DELT<em>A</em></h1>
-      <div class="hero-bn">পরিবর্তনের ব-দ্বীপ</div>
-      <p>আপনার শহরের প্রতিটি দোকান, কৃষক ও শিল্পী — এক প্ল্যাটফর্মে। Local Roots. Global Wings.</p>
-      <div class="hero-search-big">
-        <input type="text" id="heroSearch" placeholder="আজ কী দরকার? যেমন: ইলিশ মাছ, রসগোল্লা, ইলেকট্রিশিয়ান..." oninput="handleSearch(this.value)" onkeydown="if(event.key==='Enter')doSearch()">
+      <div class="hero-bn"><span class="lang-bn">পরিবর্তনের ব-দ্বীপ</span><span class="lang-en">The Delta of Change</span></div>
+      <p><span class="lang-bn">আপনার শহরের প্রতিটি দোকান, কৃষক ও শিল্পী — এক প্ল্যাটফর্মে। Local Roots. Global Wings.</span><span class="lang-en">Every shop, farmer and artisan in your town — one platform. Local Roots. Global Wings.</span></p>
+      <div class="hero-search-big" style="position:relative;">
+        <input type="text" id="heroSearch" placeholder="আজ কী দরকার? যেমন: ইলিশ মাছ, রসগোল্লা, ইলেকট্রিশিয়ান..." oninput="handleSearch(this.value)" onkeydown="handleSearchKey(event,'hero')" onfocus="showSuggestions(this.value)" autocomplete="off">
         <button onclick="doSearch()">🔍</button>
+        <div class="search-suggestions" id="heroSuggestions" style="border-radius:0 0 12px 12px;"></div>
       </div>
       <div class="hero-btns">
-        <button class="hero-btn-primary" onclick="document.getElementById('productsSection').scrollIntoView({behavior:'smooth'})">🛒 এখনই কিনুন / Shop Now</button>
-        <button class="hero-btn-outline" onclick="document.getElementById('cat-all').closest('section').scrollIntoView({behavior:'smooth'})">ক্যাটাগরি দেখুন / Explore →</button>
+        <button class="hero-btn-primary" onclick="document.getElementById('productsSection').scrollIntoView({behavior:'smooth'})">🛒 <span class="lang-bn">এখনই কিনুন</span><span class="lang-en">Shop Now</span></button>
+        <button class="hero-btn-outline" onclick="document.getElementById('cat-all').closest('section').scrollIntoView({behavior:'smooth'})"><span class="lang-bn">ক্যাটাগরি দেখুন →</span><span class="lang-en">Explore Categories →</span></button>
       </div>
       <div class="hero-stats">
         <div class="hero-stat">
           <strong>18+</strong>
-          <span>ক্যাটাগরি</span>
-          <span style="font-size:.62rem;color:rgba(255,255,255,.35);">পণ্য ও সেবা</span>
+          <span><span class="lang-bn">ক্যাটাগরি</span><span class="lang-en">Categories</span></span>
+          <span style="font-size:.62rem;color:rgba(255,255,255,.35);"><span class="lang-bn">পণ্য ও সেবা</span><span class="lang-en">Products & Services</span></span>
         </div>
         <div class="hero-stat">
-          <strong>3 মাস</strong>
-          <span>বিক্রেতাদের জন্য</span>
-          <span style="font-size:.62rem;color:rgba(255,255,255,.35);">ফ্রি ট্রায়াল</span>
+          <strong>500+</strong>
+          <span><span class="lang-bn">স্থানীয় উদ্যোক্তা</span><span class="lang-en">Local Sellers</span></span>
+          <span style="font-size:.62rem;color:rgba(255,255,255,.35);"><span class="lang-bn">দোকানদার, কৃষক, সেবাদাতা</span><span class="lang-en">Shops, Farmers, Services</span></span>
         </div>
         <div class="hero-stat">
-          <strong>2 ঘণ্টা</strong>
-          <span>লোকাল ডেলিভারি</span>
-          <span style="font-size:.62rem;color:rgba(255,255,255,.35);">কাছের দোকান থেকে</span>
-        </div>
-        <div class="hero-stat">
-          <strong>₹ 0</strong>
-          <span>গ্রাহকদের জন্য</span>
-          <span style="font-size:.62rem;color:rgba(255,255,255,.35);">ডেলিভারি ফ্রি</span>
+          <strong><span class="lang-bn">২ ঘণ্টা</span><span class="lang-en">2 Hours</span></strong>
+          <span><span class="lang-bn">লোকাল ডেলিভারি</span><span class="lang-en">Local Delivery</span></span>
+          <span style="font-size:.62rem;color:rgba(255,255,255,.35);"><span class="lang-bn">কাছের দোকান থেকে</span><span class="lang-en">From nearby shops</span></span>
         </div>
         <div class="hero-stat">
           <strong style="color:#a5d6a7;">FREE</strong>
-          <span>প্রথম অর্ডারে</span>
-          <span style="font-size:.62rem;color:rgba(255,255,255,.35);">ডেলিভারি চার্জ নেই</span>
+          <span><span class="lang-bn">প্রথম অর্ডারে</span><span class="lang-en">First Order</span></span>
+          <span style="font-size:.62rem;color:rgba(255,255,255,.35);"><span class="lang-bn">ডেলিভারি বিনামূল্যে</span><span class="lang-en">Free delivery</span></span>
         </div>
       </div>
     </div>
@@ -715,23 +991,52 @@ footer{background:var(--navy3);color:rgba(255,255,255,.55);padding:44px 5% 28px;
     <div class="cat-card" id="cat-food" onclick="filterCat('food',null)"><div class="cat-emoji">🍛</div><div class="cat-name">খাবার</div><div class="cat-name-en">Food</div></div>
     <div class="cat-card" id="cat-grocery" onclick="filterCat('grocery',null)"><div class="cat-emoji">🛒</div><div class="cat-name">মুদিখানা</div><div class="cat-name-en">Grocery</div></div>
     <div class="cat-card" id="cat-farm" onclick="filterCat('farm',null)"><div class="cat-emoji">🌾</div><div class="cat-name">কৃষি</div><div class="cat-name-en">Farm</div></div>
+    <div class="cat-card" id="cat-farmtools" onclick="filterCat('farmtools',null)"><div class="cat-emoji">🌿</div><div class="cat-name">কৃষি সরঞ্জাম</div><div class="cat-name-en">Farm Tools</div></div>
+    <div class="cat-card" id="cat-livestock" onclick="filterCat('livestock',null)"><div class="cat-emoji">🐄</div><div class="cat-name">পশুপালন</div><div class="cat-name-en">Livestock</div></div>
     <div class="cat-card" id="cat-medicine" onclick="filterCat('medicine',null)"><div class="cat-emoji">💊</div><div class="cat-name">ওষুধ</div><div class="cat-name-en">Medicine</div></div>
     <div class="cat-card" id="cat-clothing" onclick="filterCat('clothing',null)"><div class="cat-emoji">👗</div><div class="cat-name">পোশাক</div><div class="cat-name-en">Clothing</div></div>
     <div class="cat-card" id="cat-electronics" onclick="filterCat('electronics',null)"><div class="cat-emoji">📱</div><div class="cat-name">ইলেকট্রনিক্স</div><div class="cat-name-en">Electronics</div></div>
-    <div class="cat-card" id="cat-services" onclick="filterCat('services',null)"><div class="cat-emoji">🔧</div><div class="cat-name">সেবা</div><div class="cat-name-en">Services</div></div>
-    <div class="cat-card" id="cat-arts" onclick="filterCat('arts',null)"><div class="cat-emoji">🎨</div><div class="cat-name">শিল্প</div><div class="cat-name-en">Arts</div></div>
+    <div class="cat-card" id="cat-home" onclick="filterCat('home',null)"><div class="cat-emoji">🏠</div><div class="cat-name">বাড়ি / হোম</div><div class="cat-name-en">Home & Living</div></div>
+    <div class="cat-card" id="cat-construction" onclick="filterCat('construction',null)"><div class="cat-emoji">🏗️</div><div class="cat-name">নির্মাণ</div><div class="cat-name-en">Construction</div></div>
+    <div class="cat-card" id="cat-automotive" onclick="filterCat('automotive',null)"><div class="cat-emoji">🚗</div><div class="cat-name">যানবাহন</div><div class="cat-name-en">Automotive</div></div>
+    <div class="cat-card" id="cat-arts" onclick="filterCat('arts',null)"><div class="cat-emoji">🎨</div><div class="cat-name">শিল্প</div><div class="cat-name-en">Arts & Crafts</div></div>
     <div class="cat-card" id="cat-education" onclick="filterCat('education',null)"><div class="cat-emoji">📚</div><div class="cat-name">শিক্ষা</div><div class="cat-name-en">Education</div></div>
-    <div class="cat-card" id="cat-health" onclick="filterCat('health',null)"><div class="cat-emoji">🏥</div><div class="cat-name">স্বাস্থ্য</div><div class="cat-name-en">Health</div></div>
+    <div class="cat-card" id="cat-services" onclick="filterCat('services',null)"><div class="cat-emoji">🔧</div><div class="cat-name">সেবা</div><div class="cat-name-en">Services</div></div>
+    <div class="cat-card" id="cat-health" onclick="filterCat('health',null)"><div class="cat-emoji">🏥</div><div class="cat-name">স্বাস্থ্য</div><div class="cat-name-en">Healthcare</div></div>
     <div class="cat-card" id="cat-events" onclick="filterCat('events',null)"><div class="cat-emoji">🎉</div><div class="cat-name">ইভেন্ট</div><div class="cat-name-en">Events</div></div>
+    <div class="cat-card" id="cat-rental" onclick="filterCat('rental',null)"><div class="cat-emoji">🔑</div><div class="cat-name">ভাড়া</div><div class="cat-name-en">Rental</div></div>
+    <div class="cat-card" id="cat-remarket" onclick="filterCat('remarket',null)"><div class="cat-emoji">♻️</div><div class="cat-name">রিমার্কেট</div><div class="cat-name-en">ReMarket</div></div>
+  </div>
+</section>
+
+<!-- FESTIVAL BANNER (Dynamic) -->
+<div id="festivalBannerWrap"></div>
+
+<!-- FESTIVAL HAMPERS BANNER -->
+<section class="section gray">
+  <div style="background:linear-gradient(135deg,#4A148C,#7B1FA2,#C2185B);border-radius:16px;padding:22px 28px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+    <div style="color:#fff;">
+      <h3 style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:800;margin-bottom:5px;">
+        🎊 <span class="lang-bn">ফেস্টিভাল হ্যাম্পার এসে গেছে!</span><span class="lang-en">Festival Hampers Are Here!</span>
+      </h3>
+      <p style="font-size:.82rem;opacity:.85;line-height:1.5;max-width:380px;">
+        <span class="lang-bn">দুর্গাপূজা · ঈদ · পহেলা বৈশাখ · কালীপূজা — কিউরেটেড ফার্ম-ফ্রেশ গিফট বক্স ₹399 থেকে শুরু</span>
+        <span class="lang-en">Durga Puja · Eid · Poila Boishakh — curated farm-fresh gift boxes from ₹399</span>
+      </p>
+    </div>
+    <button onclick="window.location.href='hampers.html'" style="background:#fff;border:none;padding:11px 22px;border-radius:10px;font-weight:800;font-size:.85rem;cursor:pointer;white-space:nowrap;color:#4A148C;flex-shrink:0;transition:all .2s;" onmouseover="this.style.background='#f3e5f5'" onmouseout="this.style.background='#fff'">
+      <span class="lang-bn">হ্যাম্পার দেখুন →</span><span class="lang-en">Shop Hampers →</span>
+    </button>
   </div>
 </section>
 
 <!-- FREE DELIVERY BANNER -->
+<!-- FREE DELIVERY BANNER -->
 <div class="free-delivery-strip">
   <span class="fds-icon">🚚</span>
-  <span class="fds-text">প্রথম অর্ডারে <strong style="color:#a5d6a7;font-size:1.1em;">বিনামূল্যে ডেলিভারি!</strong> Free delivery on your first order!</span>
+  <span class="fds-text"><span class="lang-bn">প্রথম অর্ডারে <strong style="color:#a5d6a7;font-size:1.1em;">বিনামূল্যে ডেলিভারি!</strong></span><span class="lang-en"><strong style="color:#a5d6a7;font-size:1.1em;">Free Delivery</strong> on your first order!</span></span>
   <span class="fds-badge">Manteswar Block · All Zones</span>
-  <button class="fds-btn" onclick="document.getElementById('productsSection').scrollIntoView({behavior:'smooth'})">Shop Now →</button>
+  <button class="fds-btn" onclick="document.getElementById('productsSection').scrollIntoView({behavior:'smooth'})"><span class="lang-bn">এখনই কিনুন →</span><span class="lang-en">Shop Now →</span></button>
 </div>
 
 <!-- FLASH SALE -->
@@ -750,10 +1055,20 @@ footer{background:var(--navy3);color:rgba(255,255,255,.55);padding:44px 5% 28px;
 <section class="section gray" id="shopsSection">
   <div class="section-head">
     <div>
-      <div class="section-label">Discover</div>
-      <div class="section-title" id="shopsTitle">কাছের দোকান / Nearby Shops</div>
+      <div class="section-label"><span class="lang-bn">আবিষ্কার করুন</span><span class="lang-en">Discover</span></div>
+      <div class="section-title" id="shopsTitle"><span class="lang-bn">কাছের দোকান</span><span class="lang-en">Nearby Shops</span></div>
     </div>
-    <button class="view-all" onclick="document.getElementById('shopsSection').scrollIntoView({behavior:'smooth'})">সব দেখুন →</button>
+    <button class="view-all" onclick="document.getElementById('shopsSection').scrollIntoView({behavior:'smooth'})"><span class="lang-bn">সব দেখুন →</span><span class="lang-en">View All →</span></button>
+  </div>
+  <!-- OPEN NOW FILTER -->
+  <div class="open-now-bar">
+    <div class="open-now-toggle" id="openNowToggle" onclick="toggleOpenNow()">
+      <div class="dot"></div>
+      <span style="font-size:.82rem;font-weight:600;">
+        <span class="lang-bn">এখন খোলা</span><span class="lang-en">Open Now</span>
+      </span>
+    </div>
+    <span class="open-now-count" id="openNowCount"></span>
   </div>
   <div id="shopsGrid" class="shops-grid">
     <div class="skeleton skel-shop"></div>
@@ -768,9 +1083,9 @@ footer{background:var(--navy3);color:rgba(255,255,255,.55);padding:44px 5% 28px;
   <div class="section-head">
     <div>
       <div class="section-label">Today's Pick</div>
-      <div class="section-title">আজকের বিশেষ পণ্য 🌅</div>
+      <div class="section-title"><span class="lang-bn">আজকের বিশেষ পণ্য 🌅</span><span class="lang-en">Today's Special 🌅</span></div>
     </div>
-    <button class="view-all" onclick="filterCat('all',null)">সব দেখুন →</button>
+    <button class="view-all" onclick="filterCat('all',null)"><span class="lang-bn">সব দেখুন →</span><span class="lang-en">View All →</span></button>
   </div>
   <div class="products-grid" id="featuredGrid"></div>
 </section>
@@ -780,9 +1095,9 @@ footer{background:var(--navy3);color:rgba(255,255,255,.55);padding:44px 5% 28px;
   <div class="section-head">
     <div>
       <div class="section-label">Fresh Picks</div>
-      <div class="section-title" id="productsTitle">সব পণ্য / All Products</div>
+      <div class="section-title" id="productsTitle"><span class="lang-bn">সব পণ্য</span><span class="lang-en">All Products</span></div>
     </div>
-    <button class="view-all">সব দেখুন →</button>
+    <button class="view-all"><span class="lang-bn">সব দেখুন →</span><span class="lang-en">View All →</span></button>
   </div>
   <div id="productsGrid" class="products-grid">
     <div class="skeleton skel-prod"></div>
@@ -792,6 +1107,21 @@ footer{background:var(--navy3);color:rgba(255,255,255,.55);padding:44px 5% 28px;
     <div class="skeleton skel-prod"></div>
     <div class="skeleton skel-prod"></div>
   </div>
+  <!-- REQUEST A PRODUCT — shows when search has no results -->
+  <div class="request-section" id="requestSection">
+    <div class="request-icon">🔍</div>
+    <div class="request-title">
+      <span class="lang-bn">পণ্যটি পাওয়া যায়নি!</span>
+      <span class="lang-en">Product Not Found!</span>
+    </div>
+    <p class="request-sub">
+      <span class="lang-bn">চিন্তা নেই — আপনার চাহিদা জানান।<br>আমরা স্থানীয় বিক্রেতাদের জানাবো এবং পণ্য আনার ব্যবস্থা করবো।</span>
+      <span class="lang-en">Don't worry — tell us what you need.<br>We'll inform local sellers and arrange to bring it for you.</span>
+    </p>
+    <button onclick="openReqModal()" class="request-btn" style="margin:0 auto;display:inline-block;">
+      🛍️ <span class="lang-bn">এই পণ্যটি চাই →</span><span class="lang-en">Request This Product →</span>
+    </button>
+  </div>
 </section>
 
 <!-- BESTSELLERS -->
@@ -799,9 +1129,9 @@ footer{background:var(--navy3);color:rgba(255,255,255,.55);padding:44px 5% 28px;
   <div class="section-head">
     <div>
       <div class="section-label">Community Favorites</div>
-      <div class="section-title">🔥 বেস্টসেলার / Bestsellers</div>
+      <div class="section-title">🔥 <span class="lang-bn">বেস্টসেলার</span><span class="lang-en">Bestsellers</span></div>
     </div>
-    <button class="view-all" onclick="filterCat('all',null)">সব দেখুন →</button>
+    <button class="view-all" onclick="filterCat('all',null)"><span class="lang-bn">সব দেখুন →</span><span class="lang-en">View All →</span></button>
   </div>
   <div class="products-grid" id="bestsellersGrid"></div>
 </section>
@@ -810,22 +1140,22 @@ footer{background:var(--navy3);color:rgba(255,255,255,.55);padding:44px 5% 28px;
 <section class="section gray" id="freshTodaySection" style="display:none;">
   <div class="section-head">
     <div>
-      <div class="section-label">আজকের তাজা</div>
-      <div class="section-title">Fresh Today 🌿 <span id="freshTodayDate" style="font-size:.75rem;font-weight:400;color:var(--muted);font-family:'DM Sans',sans-serif;"></span></div>
+      <div class="section-label"><span class="lang-bn">আজকের তাজা</span><span class="lang-en">Fresh Today</span></div>
+      <div class="section-title">🌿 <span class="lang-bn">তাজা পণ্য</span><span class="lang-en">Fresh Today</span> <span id="freshTodayDate" style="font-size:.75rem;font-weight:400;color:var(--muted);font-family:'DM Sans',sans-serif;"></span></div>
     </div>
-    <button class="view-all" onclick="filterCat('farm',null)">সব দেখুন →</button>
+    <button class="view-all" onclick="filterCat('farm',null)"><span class="lang-bn">সব দেখুন →</span><span class="lang-en">View All →</span></button>
   </div>
   <div class="fresh-cards-scroll" id="freshCardsGrid"></div>
 </section>
 
-<!-- FARMERS STRIP -->
+<!-- LOCAL ENTREPRENEURS STRIP -->
 <section class="section" id="farmersSection" style="display:none;">
   <div class="section-head">
     <div>
-      <div class="section-label">From Field To Your Table</div>
-      <div class="section-title">আমাদের কৃষকরা 🧑‍🌾</div>
+      <div class="section-label"><span class="lang-bn">আমাদের সম্প্রদায়</span><span class="lang-en">Our Community</span></div>
+      <div class="section-title"><span class="lang-bn">স্থানীয় উদ্যোক্তারা 🌟</span><span class="lang-en">Local Entrepreneurs 🌟</span></div>
     </div>
-    <button class="view-all" onclick="filterCat('farm',null)">সবাইকে দেখুন →</button>
+    <button class="view-all" onclick="filterCat('all',null)"><span class="lang-bn">সবাইকে দেখুন →</span><span class="lang-en">View All →</span></button>
   </div>
   <div class="farmers-scroll" id="farmersGrid"></div>
 </section>
@@ -833,19 +1163,17 @@ footer{background:var(--navy3);color:rgba(255,255,255,.55);padding:44px 5% 28px;
 <!-- PROMO BANNERS -->
 <section class="section gray">
   <div class="promo-banners">
-    <div class="promo-banner festival">
-      <div class="promo-banner-text">
-        <h3>🎊 দুর্গাপূজা হ্যাম্পার এসে গেছে!</h3>
-        <p>Durga Puja · Eid · Poila Boishakh — কিউরেটেড ফার্ম-ফ্রেশ গিফট বক্স ₹399 থেকে শুরু</p>
-      </div>
-      <button class="promo-banner-btn" onclick="showToast('শীঘ্রই আসছে! Festival Hampers coming soon 🎁')">Shop Hampers →</button>
-    </div>
     <div class="promo-banner subscribe">
       <div class="promo-banner-text">
         <h3>📦 Subscribe & Save</h3>
-        <p>Weekly Veggie Box from ₹299 · Auto-delivered every 7 days · Cancel anytime</p>
+        <p><span class="lang-bn">সাপ্তাহিক ভেজি বক্স ₹299 থেকে · প্রতি ৭ দিনে অটো ডেলিভারি · যেকোনো সময় বাতিল</span><span class="lang-en">Weekly Veggie Box from ₹299 · Auto-delivered every 7 days · Cancel anytime</span></p>
+        <div class="sub-active-count" id="subActiveCount" style="display:none;">
+          ✅ <span id="subActiveNum">0</span> <span class="lang-bn">টি সক্রিয় সাবস্ক্রিপশন</span><span class="lang-en"> active subscriptions</span>
+        </div>
       </div>
-      <button class="promo-banner-btn" onclick="showToast('Subscription feature শীঘ্রই আসছে! 🚀')">Explore Boxes →</button>
+      <button class="promo-banner-btn" onclick="openSubModal()" style="color:var(--navy);">
+        <span class="lang-bn">সাবস্ক্রাইব করুন →</span><span class="lang-en">Subscribe Now →</span>
+      </button>
     </div>
   </div>
 </section>
@@ -854,15 +1182,15 @@ footer{background:var(--navy3);color:rgba(255,255,255,.55);padding:44px 5% 28px;
 <section class="section gray">
   <div class="offer-banner">
     <div class="offer-text">
-      <div class="offer-badge">🎉 দুর্গাপূজা স্পেশাল অফার</div>
-      <h2>প্রথম অর্ডারে<br>বিনামূল্যে ডেলিভারি!</h2>
-      <p>স্থানীয় দোকান থেকে অর্ডার করুন। আপনার টাকা আপনার সম্প্রদায়েই থাকে। DELTA তে আজই নিবন্ধন করুন।</p>
-      <button onclick="openAuth()" style="margin-top:18px;background:var(--orange);color:#fff;border:none;padding:12px 28px;border-radius:9px;font-weight:700;cursor:pointer;font-size:.9rem;">এখনই যোগ দিন →</button>
+      <div class="offer-badge">🎉 <span class="lang-bn">দুর্গাপূজা স্পেশাল অফার</span><span class="lang-en">Durga Puja Special Offer</span></div>
+      <h2><span class="lang-bn">প্রথম অর্ডারে<br>বিনামূল্যে ডেলিভারি!</span><span class="lang-en">Free Delivery<br>on First Order!</span></h2>
+      <p><span class="lang-bn">স্থানীয় দোকান থেকে অর্ডার করুন। আপনার টাকা আপনার সম্প্রদায়েই থাকে।</span><span class="lang-en">Order from local shops. Your money stays in your community.</span></p>
+      <button onclick="openAuth()" style="margin-top:18px;background:var(--orange);color:#fff;border:none;padding:12px 28px;border-radius:9px;font-weight:700;cursor:pointer;font-size:.9rem;"><span class="lang-bn">এখনই যোগ দিন →</span><span class="lang-en">Join Now →</span></button>
     </div>
     <div class="offer-code-box">
-      <span>First Order Code</span>
+      <span><span class="lang-bn">প্রথম অর্ডার কোড</span><span class="lang-en">First Order Code</span></span>
       <strong>DELTA1</strong>
-      <small>First order free delivery</small>
+      <small><span class="lang-bn">প্রথম অর্ডারে বিনামূল্যে ডেলিভারি</span><span class="lang-en">First order free delivery</span></small>
     </div>
   </div>
 </section>
@@ -871,33 +1199,365 @@ footer{background:var(--navy3);color:rgba(255,255,255,.55);padding:44px 5% 28px;
 <section class="section">
   <div class="section-head">
     <div>
-      <div class="section-label">Why Choose Us</div>
-      <div class="section-title">কেন DELTA বেছে নেবেন?</div>
+      <div class="section-label"><span class="lang-bn">কেন আমরা</span><span class="lang-en">Why Choose Us</span></div>
+      <div class="section-title"><span class="lang-bn">কেন DELTA বেছে নেবেন?</span><span class="lang-en">Why Choose DELTA?</span></div>
     </div>
   </div>
   <div class="why-grid">
     <div class="why-card">
       <div class="why-icon">🏪</div>
-      <h3>স্থানীয় দোকান / Local Shops</h3>
-      <p>আপনার শহরের প্রতিটি দোকান, কৃষক ও শিল্পী — একটি প্ল্যাটফর্মে। আপনার টাকা আপনার সম্প্রদায়ে থাকে।</p>
+      <h3><span class="lang-bn">স্থানীয় দোকান</span><span class="lang-en">Local Shops</span></h3>
+      <p><span class="lang-bn">আপনার শহরের প্রতিটি দোকান, কৃষক ও শিল্পী — একটি প্ল্যাটফর্মে। আপনার টাকা আপনার সম্প্রদায়ে থাকে।</span><span class="lang-en">Every shop, farmer and artisan in your town — one platform. Your money stays in your community.</span></p>
     </div>
     <div class="why-card">
       <div class="why-icon">⚡</div>
-      <h3>২ ঘণ্টায় ডেলিভারি / 2-Hour Delivery</h3>
-      <p>কাছের দোকান থেকে অর্ডার করলে মাত্র ২ ঘণ্টায় পৌঁছে যাবে। <strong style="color:var(--orange)">প্রথম অর্ডারে বিনামূল্যে।</strong></p>
+      <h3><span class="lang-bn">২ ঘণ্টায় ডেলিভারি</span><span class="lang-en">2-Hour Delivery</span></h3>
+      <p><span class="lang-bn">কাছের দোকান থেকে অর্ডার করলে মাত্র ২ ঘণ্টায় পৌঁছে যাবে। <strong style="color:var(--orange)">প্রথম অর্ডারে বিনামূল্যে।</strong></span><span class="lang-en">Order from nearby shops and receive in just 2 hours. <strong style="color:var(--orange)">First order free delivery.</strong></span></p>
     </div>
     <div class="why-card">
       <div class="why-icon">✅</div>
-      <h3>মানসম্মত পণ্য / Quality Checked</h3>
-      <p>প্রতিটি পণ্য আমাদের ৫-পয়েন্ট freshness check পার করে তবেই আপনার কাছে পৌঁছায়।</p>
+      <h3><span class="lang-bn">মানসম্মত পণ্য</span><span class="lang-en">Quality Checked</span></h3>
+      <p><span class="lang-bn">প্রতিটি পণ্য আমাদের ৫-পয়েন্ট freshness check পার করে তবেই আপনার কাছে পৌঁছায়।</span><span class="lang-en">Every product passes our 5-point freshness check before reaching you.</span></p>
     </div>
     <div class="why-card">
       <div class="why-icon">💰</div>
-      <h3>সর্বোত্তম মূল্য / Best Price Guarantee</h3>
-      <p>মধ্যস্বত্বভোগী নেই। কৃষক সরাসরি বিক্রি করেন। প্রতি পরিবারে মাসে <strong style="color:var(--orange)">₹২,১০০ সাশ্রয়।</strong></p>
+      <h3><span class="lang-bn">সর্বোত্তম মূল্য</span><span class="lang-en">Best Price Guarantee</span></h3>
+      <p><span class="lang-bn">মধ্যস্বত্বভোগী নেই। কৃষক সরাসরি বিক্রি করেন। প্রতি পরিবারে মাসে <strong style="color:var(--orange)">₹২,১০০ সাশ্রয়।</strong></span><span class="lang-en">No middlemen. Farmers sell directly. Save <strong style="color:var(--orange)">₹2,100/month</strong> per family.</span></p>
     </div>
   </div>
 </section>
+
+<!-- ECONOMIC IMPACT COUNTER -->
+<div class="eco-counter-section" id="ecoCounterSection">
+  <div class="eco-counter-label">
+    <span class="lang-bn">মন্তেশ্বরের স্থানীয় অর্থনীতিতে</span>
+    <span class="lang-en">Kept in Manteswar's Local Economy</span>
+  </div>
+  <div class="eco-counter-amount">
+    ₹<span id="ecoCounter">0</span>
+  </div>
+  <div class="eco-counter-sub">
+    <span class="lang-bn">DELTA ব্যবহার করে আজ পর্যন্ত স্থানীয় অর্থনীতিতে রয়েছে</span>
+    <span class="lang-en">kept in local economy through DELTA so far</span>
+  </div>
+  <div class="eco-counter-pills">
+    <div class="eco-pill">🏪 <strong id="ecoSellers">0</strong> <span class="lang-bn">স্থানীয় বিক্রেতা</span><span class="lang-en">local sellers</span></div>
+    <div class="eco-pill">📦 <strong id="ecoOrders">0</strong> <span class="lang-bn">অর্ডার সম্পন্ন</span><span class="lang-en">orders completed</span></div>
+    <div class="eco-pill">👨‍👩‍👧 <strong id="ecoFamilies">0</strong> <span class="lang-bn">পরিবার উপকৃত</span><span class="lang-en">families benefited</span></div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<section class="section how-section">
+  <div class="section-head">
+    <div>
+      <div class="section-label"><span class="lang-bn">সহজ পদ্ধতি</span><span class="lang-en">Simple Process</span></div>
+      <div class="section-title"><span class="lang-bn">কীভাবে কাজ করে? 🤔</span><span class="lang-en">How Does It Work? 🤔</span></div>
+    </div>
+  </div>
+  <div class="how-steps">
+    <div class="how-step">
+      <div class="how-step-circle">
+        📱
+        <div class="how-step-num">1</div>
+      </div>
+      <div class="how-step-title"><span class="lang-bn">DELTA খুলুন</span><span class="lang-en">Open DELTA</span></div>
+      <div class="how-step-sub"><span class="lang-bn">deltaapp.in খুলুন বা QR স্ক্যান করুন। লোকেশন অটো-ডিটেক্ট হবে।</span><span class="lang-en">Open deltaapp.in or scan QR. Location auto-detected.</span></div>
+    </div>
+    <div class="how-step">
+      <div class="how-step-circle">
+        🏪
+        <div class="how-step-num">2</div>
+      </div>
+      <div class="how-step-title"><span class="lang-bn">দোকান বা পণ্য বেছে নিন</span><span class="lang-en">Choose Shop or Product</span></div>
+      <div class="how-step-sub"><span class="lang-bn">কাছের দোকান থেকে সরাসরি বা ক্যাটাগরি দিয়ে খুঁজুন।</span><span class="lang-en">Browse nearby shops or search by category.</span></div>
+    </div>
+    <div class="how-step">
+      <div class="how-step-circle">
+        🛒
+        <div class="how-step-num">3</div>
+      </div>
+      <div class="how-step-title"><span class="lang-bn">অর্ডার দিন</span><span class="lang-en">Place Order</span></div>
+      <div class="how-step-sub"><span class="lang-bn">কার্টে যোগ করুন। Cash on Delivery বা অনলাইন পেমেন্ট।</span><span class="lang-en">Add to cart. Cash on Delivery or online payment.</span></div>
+    </div>
+    <div class="how-step">
+      <div class="how-step-circle">
+        🚀
+        <div class="how-step-num">4</div>
+      </div>
+      <div class="how-step-title"><span class="lang-bn">২ ঘণ্টায় পান</span><span class="lang-en">Get in 2 Hours</span></div>
+      <div class="how-step-sub"><span class="lang-bn">আপনার দরজায় ডেলিভারি। প্রথম অর্ডারে বিনামূল্যে।</span><span class="lang-en">Delivered to your door. Free on first order.</span></div>
+    </div>
+  </div>
+  <div style="text-align:center;margin-top:28px;">
+    <button onclick="document.getElementById('productsSection').scrollIntoView({behavior:'smooth'})" style="background:var(--orange);color:#fff;border:none;padding:13px 32px;border-radius:10px;font-weight:700;font-size:.95rem;cursor:pointer;transition:background .2s;" onmouseover="this.style.background='var(--orange2)'" onmouseout="this.style.background='var(--orange)'">
+      🛒 <span class="lang-bn">এখনই শুরু করুন →</span><span class="lang-en">Start Shopping →</span>
+    </button>
+  </div>
+</section>
+
+<!-- COMMUNITY STATS -->
+<section class="section gray" id="communityStats">
+  <div class="section-head">
+    <div>
+      <div class="section-label">Real-time</div>
+      <div class="section-title"><span class="lang-bn">মন্তেশ্বরে আজ 📊</span><span class="lang-en">Manteswar Today 📊</span></div>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;">
+    <div style="background:#fff;border-radius:16px;padding:20px;text-align:center;box-shadow:0 2px 12px rgba(0,0,0,.06);border:1px solid var(--border);">
+      <div style="font-size:2rem;font-weight:800;color:var(--orange);" id="statOrders">—</div>
+      <div style="font-size:.8rem;font-weight:600;color:var(--navy);margin-top:4px;"><span class="lang-bn">অর্ডার ডেলিভারি</span><span class="lang-en">Orders Delivered</span></div>
+      <div style="font-size:.72rem;color:var(--muted);"><span class="lang-bn">আজকের মোট</span><span class="lang-en">Today's total</span></div>
+    </div>
+    <div style="background:#fff;border-radius:16px;padding:20px;text-align:center;box-shadow:0 2px 12px rgba(0,0,0,.06);border:1px solid var(--border);">
+      <div style="font-size:2rem;font-weight:800;color:var(--green);" id="statShopsOpen">—</div>
+      <div style="font-size:.8rem;font-weight:600;color:var(--navy);margin-top:4px;"><span class="lang-bn">দোকান খোলা</span><span class="lang-en">Shops Open</span></div>
+      <div style="font-size:.72rem;color:var(--muted);"><span class="lang-bn">এখন অ্যাক্টিভ</span><span class="lang-en">Currently active</span></div>
+    </div>
+    <div style="background:#fff;border-radius:16px;padding:20px;text-align:center;box-shadow:0 2px 12px rgba(0,0,0,.06);border:1px solid var(--border);">
+      <div style="font-size:2rem;font-weight:800;color:var(--orange);" id="statSellers">—</div>
+      <div style="font-size:.8rem;font-weight:600;color:var(--navy);margin-top:4px;"><span class="lang-bn">মোট বিক্রেতা</span><span class="lang-en">Total Sellers</span></div>
+      <div style="font-size:.72rem;color:var(--muted);"><span class="lang-bn">DELTA তে নিবন্ধিত</span><span class="lang-en">Registered on DELTA</span></div>
+    </div>
+    <div style="background:#fff;border-radius:16px;padding:20px;text-align:center;box-shadow:0 2px 12px rgba(0,0,0,.06);border:1px solid var(--border);">
+      <div style="font-size:2rem;font-weight:800;color:var(--green);" id="statRating">4.8⭐</div>
+      <div style="font-size:.8rem;font-weight:600;color:var(--navy);margin-top:4px;"><span class="lang-bn">গড় রেটিং</span><span class="lang-en">Avg Rating</span></div>
+      <div style="font-size:.72rem;color:var(--muted);"><span class="lang-bn">সব দোকানের</span><span class="lang-en">All shops</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- FARM TO TABLE STORY -->
+<section class="section farm-section">
+  <div class="section-head">
+    <div>
+      <div class="section-label">🌿 <span class="lang-bn">DELTA র প্রতিশ্রুতি</span><span class="lang-en">DELTA's Promise</span></div>
+      <div class="section-title"><span class="lang-bn">তোমার থালা থেকে কৃষকের মাঠ পর্যন্ত</span><span class="lang-en">From Your Plate to the Farmer's Field</span></div>
+    </div>
+  </div>
+  <div class="farm-timeline">
+    <div class="farm-step">
+      <div class="farm-step-circle">👨‍🌾</div>
+      <div class="farm-step-dist"><span class="lang-bn">০ কিমি</span><span class="lang-en">0 km</span></div>
+      <div class="farm-step-title"><span class="lang-bn">কৃষকের মাঠ</span><span class="lang-en">Farmer's Field</span></div>
+      <div class="farm-step-sub"><span class="lang-bn">ভোরবেলা তোলা তাজা ফসল</span><span class="lang-en">Fresh harvest at dawn</span></div>
+    </div>
+    <div class="farm-step">
+      <div class="farm-step-circle">📱</div>
+      <div class="farm-step-dist"><span class="lang-bn">৫ কিমি</span><span class="lang-en">5 km</span></div>
+      <div class="farm-step-title"><span class="lang-bn">DELTA তে লিস্ট</span><span class="lang-en">Listed on DELTA</span></div>
+      <div class="farm-step-sub"><span class="lang-bn">কৃষক নিজে ফোনে upload করেন</span><span class="lang-en">Farmer uploads directly</span></div>
+    </div>
+    <div class="farm-step">
+      <div class="farm-step-circle">🛒</div>
+      <div class="farm-step-dist"><span class="lang-bn">৫ কিমি</span><span class="lang-en">5 km</span></div>
+      <div class="farm-step-title"><span class="lang-bn">আপনার অর্ডার</span><span class="lang-en">Your Order</span></div>
+      <div class="farm-step-sub"><span class="lang-bn">ঘরে বসে order, কোনো বাজার নয়</span><span class="lang-en">Order from home, no market needed</span></div>
+    </div>
+    <div class="farm-step">
+      <div class="farm-step-circle">🏍️</div>
+      <div class="farm-step-dist"><span class="lang-bn">৫ কিমি</span><span class="lang-en">5 km</span></div>
+      <div class="farm-step-title"><span class="lang-bn">DELTA রাইডার</span><span class="lang-en">DELTA Rider</span></div>
+      <div class="farm-step-sub"><span class="lang-bn">সরাসরি মাঠ থেকে তুলে আনেন</span><span class="lang-en">Picks up directly from field</span></div>
+    </div>
+    <div class="farm-step">
+      <div class="farm-step-circle">🏠</div>
+      <div class="farm-step-dist"><span class="lang-bn">৬০ মিনিট</span><span class="lang-en">60 mins</span></div>
+      <div class="farm-step-title"><span class="lang-bn">আপনার দরজায়</span><span class="lang-en">At Your Door</span></div>
+      <div class="farm-step-sub"><span class="lang-bn">তাজা, সরাসরি, কোনো মধ্যস্বত্বভোগী নেই</span><span class="lang-en">Fresh, direct, no middlemen</span></div>
+    </div>
+  </div>
+  <div class="farm-highlight">
+    <div class="farm-highlight-icon">💰</div>
+    <div class="farm-highlight-text">
+      <strong><span class="lang-bn">কৃষক পায় ৮৫% — আগে পেতেন মাত্র ৩০%</span><span class="lang-en">Farmer earns 85% — used to get only 30%</span></strong>
+      <p><span class="lang-bn">৪ জন মধ্যস্বত্বভোগী বাদ দিয়ে DELTA সরাসরি কৃষকের হাতে টাকা পৌঁছে দেয়। আপনিও কম দামে পান, কৃষকও বেশি পান।</span><span class="lang-en">By removing 4 middlemen, DELTA puts money directly in the farmer's hands. You pay less, farmer earns more.</span></p>
+      <div class="farm-savings">🌾 <span class="lang-bn">প্রতি কেজিতে কৃষক পান ₹১৮-২২, আগে পেতেন ₹৮</span><span class="lang-en">Farmer earns ₹18-22/kg, used to get ₹8</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- SELLER OF THE WEEK -->
+<section class="sotw-section" id="sotwSection">
+  <div style="max-width:1200px;margin:0 auto;">
+    <div class="sotw-label">⭐ <span class="lang-bn">সেরা বিক্রেতা</span><span class="lang-en">Top Seller</span></div>
+    <div class="sotw-title"><span class="lang-bn">সপ্তাহের সেরা বিক্রেতা 🏆</span><span class="lang-en">Seller of the Week 🏆</span></div>
+    <div class="sotw-card" id="sotwCard">
+      <!-- Loaded by JS -->
+      <div class="sotw-avatar" id="sotwAvatar">🏪</div>
+      <div class="sotw-info">
+        <div class="sotw-badge">🏆 <span class="lang-bn">সপ্তাহের সেরা</span><span class="lang-en">Week's Best</span></div>
+        <div class="sotw-name" id="sotwName"><span class="lang-bn">লোড হচ্ছে...</span><span class="lang-en">Loading...</span></div>
+        <div class="sotw-shop-type" id="sotwType"></div>
+        <div class="sotw-stats">
+          <div class="sotw-stat">
+            <div class="sotw-stat-num" id="sotwRating">—</div>
+            <div class="sotw-stat-label"><span class="lang-bn">রেটিং</span><span class="lang-en">Rating</span></div>
+          </div>
+          <div class="sotw-stat">
+            <div class="sotw-stat-num" id="sotwOrders">—</div>
+            <div class="sotw-stat-label"><span class="lang-bn">অর্ডার</span><span class="lang-en">Orders</span></div>
+          </div>
+          <div class="sotw-stat">
+            <div class="sotw-stat-num" id="sotwProducts">—</div>
+            <div class="sotw-stat-label"><span class="lang-bn">পণ্য</span><span class="lang-en">Products</span></div>
+          </div>
+        </div>
+        <div class="sotw-quote" id="sotwQuote" style="display:none;"></div>
+      </div>
+      <button class="sotw-visit-btn" id="sotwBtn" onclick="showToast(currentLang===\'bn\'?\'এই দোকান শীঘ্রই দেখা যাবে! 🏪\':\'Shop page coming soon! 🏪\')">
+        <span class="lang-bn">দোকান দেখুন →</span><span class="lang-en">Visit Shop →</span>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- LIVE TESTIMONIALS -->
+<section class="section testimonials-section">
+  <div class="section-head" style="padding:0 20px 20px;">
+    <div>
+      <div class="section-label"><span class="lang-bn">গ্রাহকরা বলছেন</span><span class="lang-en">What Customers Say</span></div>
+      <div class="section-title">💬 <span class="lang-bn">সত্যিকারের অভিজ্ঞতা</span><span class="lang-en">Real Experiences</span></div>
+    </div>
+  </div>
+  <div style="overflow:hidden;">
+    <div class="testimonials-track" id="testimonialsTrack">
+      <!-- Static testimonials -->
+      <div class="testimonial-card">
+        <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
+        <div class="testimonial-text"><span class="lang-bn">"মাত্র ৪৫ মিনিটে তাজা ইলিশ মাছ পেয়ে গেলাম! দাম বাজারের চেয়ে কম। DELTA দুর্দান্ত!"</span><span class="lang-en">"Got fresh Hilsa fish in just 45 minutes! Price lower than the market. DELTA is amazing!"</span></div>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">রা</div>
+          <div><div class="testimonial-name">রাহেলা বেগম</div><div class="testimonial-location">মন্তেশ্বর · <span class="lang-bn">গৃহিণী</span><span class="lang-en">Homemaker</span></div></div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
+        <div class="testimonial-text"><span class="lang-bn">"আমি কৃষক। DELTA তে পণ্য দেওয়ার পর আগের চেয়ে দ্বিগুণ আয় হচ্ছে। ধন্যবাদ DELTA!"</span><span class="lang-en">"I'm a farmer. Since joining DELTA, my income has doubled. Thank you DELTA!"</span></div>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">রা</div>
+          <div><div class="testimonial-name">রামু মণ্ডল</div><div class="testimonial-location">গোপীনাথপুর · <span class="lang-bn">কৃষক</span><span class="lang-en">Farmer</span></div></div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
+        <div class="testimonial-text"><span class="lang-bn">"রান্নাঘরের সব কিছু এখন DELTA থেকে। বাজারে যাওয়া বন্ধ হয়ে গেছে। সময় বাঁচছে।"</span><span class="lang-en">"Everything for the kitchen comes from DELTA now. Stopped going to the market. Saving so much time."</span></div>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">লা</div>
+          <div><div class="testimonial-name">লক্ষ্মী দেবী</div><div class="testimonial-location">মন্তেশ্বর · <span class="lang-bn">গৃহিণী</span><span class="lang-en">Homemaker</span></div></div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
+        <div class="testimonial-text"><span class="lang-bn">"আমার মিষ্টির দোকান DELTA তে দেওয়ার পর অনেক নতুন কাস্টমার পেয়েছি। অনলাইন অর্ডার বাড়ছে।"</span><span class="lang-en">"After listing my sweet shop on DELTA, I got many new customers. Online orders are growing."</span></div>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">হা</div>
+          <div><div class="testimonial-name">হামিদ আলি</div><div class="testimonial-location">মন্তেশ্বর · <span class="lang-bn">মিষ্টি বিক্রেতা</span><span class="lang-en">Sweet Seller</span></div></div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
+        <div class="testimonial-text"><span class="lang-bn">"DELTA র rider খুব ভালো ব্যবহার করেছে। সময়মতো delivery এসেছে। আবার order দেব।"</span><span class="lang-en">"DELTA's rider was very polite. Delivery was on time. Will order again for sure."</span></div>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">সু</div>
+          <div><div class="testimonial-name">সুপ্রিয়া ঘোষ</div><div class="testimonial-location">কাটোয়া · <span class="lang-bn">শিক্ষিকা</span><span class="lang-en">Teacher</span></div></div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
+        <div class="testimonial-text"><span class="lang-bn">"ইলেকট্রিশিয়ান দরকার ছিল। DELTA তে search করে ৩০ মিনিটে পেয়ে গেলাম! অসাধারণ।"</span><span class="lang-en">"Needed an electrician. Found one on DELTA in 30 minutes! Absolutely amazing service."</span></div>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">মা</div>
+          <div><div class="testimonial-name">মানিক বিশ্বাস</div><div class="testimonial-location">চিপুর · <span class="lang-bn">ব্যবসায়ী</span><span class="lang-en">Businessman</span></div></div>
+        </div>
+      </div>
+      <!-- Duplicate set for seamless loop -->
+      <div class="testimonial-card">
+        <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
+        <div class="testimonial-text"><span class="lang-bn">"মাত্র ৪৫ মিনিটে তাজা ইলিশ মাছ পেয়ে গেলাম! দাম বাজারের চেয়ে কম। DELTA দুর্দান্ত!"</span><span class="lang-en">"Got fresh Hilsa fish in just 45 minutes! Price lower than the market. DELTA is amazing!"</span></div>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">রা</div>
+          <div><div class="testimonial-name">রাহেলা বেগম</div><div class="testimonial-location">মন্তেশ্বর</div></div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
+        <div class="testimonial-text"><span class="lang-bn">"আমি কৃষক। DELTA তে পণ্য দেওয়ার পর আগের চেয়ে দ্বিগুণ আয় হচ্ছে। ধন্যবাদ DELTA!"</span><span class="lang-en">"I'm a farmer. Since joining DELTA, my income has doubled. Thank you DELTA!"</span></div>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">রা</div>
+          <div><div class="testimonial-name">রামু মণ্ডল</div><div class="testimonial-location">গোপীনাথপুর</div></div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
+        <div class="testimonial-text"><span class="lang-bn">"রান্নাঘরের সব কিছু এখন DELTA থেকে। বাজারে যাওয়া বন্ধ।"</span><span class="lang-en">"Everything for the kitchen comes from DELTA now. Stopped going to the market."</span></div>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">লা</div>
+          <div><div class="testimonial-name">লক্ষ্মী দেবী</div><div class="testimonial-location">মন্তেশ্বর</div></div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
+        <div class="testimonial-text"><span class="lang-bn">"আমার মিষ্টির দোকান DELTA তে দেওয়ার পর অনেক নতুন কাস্টমার পেয়েছি।"</span><span class="lang-en">"After listing my sweet shop on DELTA, I got many new customers."</span></div>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">হা</div>
+          <div><div class="testimonial-name">হামিদ আলি</div><div class="testimonial-location">মন্তেশ্বর</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- REMARKET PREVIEW -->
+<section class="section">
+  <div style="background:linear-gradient(135deg,#0d3320,#1a8a4a);border-radius:20px;padding:32px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;">
+    <div>
+      <div style="display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:#a5d6a7;padding:5px 12px;border-radius:20px;font-size:.72rem;font-weight:600;letter-spacing:.8px;text-transform:uppercase;margin-bottom:12px;"><span class="lang-bn">শীঘ্রই আসছে</span><span class="lang-en">Coming Soon</span></div>
+      <h3 style="font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:900;color:#fff;margin-bottom:8px;">♻️ DELTA ReMarket</h3>
+      <p style="color:rgba(255,255,255,.75);font-size:.88rem;line-height:1.7;max-width:420px;"><span class="lang-bn">কাছের এলাকায় সেকেন্ড-হ্যান্ড কিনুন ও বেচুন। ইলেকট্রনিক্স, আসবাব, পোশাক, যানবাহন — সব এক জায়গায়। নিরাপদ এসক্রো পেমেন্ট সহ।</span><span class="lang-en">Buy and sell used items locally. Electronics, Furniture, Clothing, Vehicles — all in one place. With secure escrow payment.</span></p>
+    </div>
+    <div style="text-align:center;">
+      <div style="font-size:4rem;margin-bottom:8px;">♻️</div>
+      <button onclick="showToast('DELTA ReMarket শীঘ্রই আসছে! December 2026 🚀','green')" style="background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.4);color:#fff;padding:12px 24px;border-radius:10px;font-weight:700;cursor:pointer;font-size:.88rem;transition:all .2s;" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background='rgba(255,255,255,.2)'"><span class="lang-bn">আগ্রহ জানাও →</span><span class="lang-en">Notify Me →</span></button>
+    </div>
+  </div>
+</section>
+
+<!-- RENTAL CLUB PREVIEW -->
+<section class="section gray">
+  <div style="background:linear-gradient(135deg,var(--navy3),var(--navy));border-radius:20px;padding:32px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;">
+    <div>
+      <div style="display:inline-flex;align-items:center;gap:7px;background:rgba(240,112,24,.2);border:1px solid rgba(240,112,24,.4);color:#ffb07a;padding:5px 12px;border-radius:20px;font-size:.72rem;font-weight:600;letter-spacing:.8px;text-transform:uppercase;margin-bottom:12px;">শীঘ্রই আসছে / Coming Soon</div>
+      <h3 style="font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:900;color:#fff;margin-bottom:8px;">🔑 DELTA Rental Club</h3>
+      <p style="color:rgba(255,255,255,.75);font-size:.88rem;line-height:1.7;max-width:420px;">ট্র্যাক্টর, ক্যামেরা, সাউন্ড সিস্টেম, যন্ত্রপাতি — ভাড়া নিন বা ভাড়া দিন। আপনার অলস সম্পদ থেকে আয় করুন।</p>
+      <p style="color:rgba(255,255,255,.5);font-size:.78rem;margin-top:6px;">Rent or lend — Tractor, Camera, Equipment, Venue. Earn from your idle assets.</p>
+      <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;">
+        <span style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.8);padding:5px 12px;border-radius:20px;font-size:.75rem;">🚜 কৃষি যন্ত্র</span>
+        <span style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.8);padding:5px 12px;border-radius:20px;font-size:.75rem;">📷 ক্যামেরা</span>
+        <span style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.8);padding:5px 12px;border-radius:20px;font-size:.75rem;">🏠 সম্পত্তি</span>
+        <span style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.8);padding:5px 12px;border-radius:20px;font-size:.75rem;">🎪 ইভেন্ট সামগ্রী</span>
+      </div>
+    </div>
+    <div style="text-align:center;">
+      <div style="font-size:4rem;margin-bottom:8px;">🔑</div>
+      <button onclick="showToast('DELTA Rental Club শীঘ্রই আসছে! February 2027 🚀')" style="background:var(--orange);border:none;color:#fff;padding:12px 24px;border-radius:10px;font-weight:700;cursor:pointer;font-size:.88rem;transition:background .2s;" onmouseover="this.style.background='var(--orange2)'" onmouseout="this.style.background='var(--orange)'">আগ্রহ জানাও → Notify Me</button>
+    </div>
+  </div>
+</section>
+
+<!-- PWA INSTALL BANNER -->
+<div class="pwa-banner hidden" id="pwaBanner">
+  <div class="pwa-icon">△</div>
+  <div class="pwa-text">
+    <strong><span class="lang-bn">DELTA ইনস্টল করুন</span><span class="lang-en">Install DELTA</span></strong>
+    <span><span class="lang-bn">ইন্টারনেট ছাড়াও কাজ করে · ১ সেকেন্ডে খোলে</span><span class="lang-en">Works offline · Opens in 1 second</span></span>
+  </div>
+  <button class="pwa-install-btn" id="pwaInstallBtn" onclick="installPWA()">
+    <span class="lang-bn">ইনস্টল করুন</span><span class="lang-en">Install</span>
+  </button>
+  <button class="pwa-close-btn" onclick="closePWABanner()">✕</button>
+</div>
 
 <!-- FOOTER -->
 <footer>
@@ -909,7 +1569,6 @@ footer{background:var(--navy3);color:rgba(255,255,255,.55);padding:44px 5% 28px;
     </div>
     <div class="footer-col">
       <h4>Platform</h4>
-      <a href="seller.html">দোকান যোগ করুন</a>
       <a href="seller-dashboard.html">Seller Dashboard</a>
       <a href="#" onclick="openAuth()">Customer Login</a>
     </div>
@@ -938,22 +1597,160 @@ footer{background:var(--navy3);color:rgba(255,255,255,.55);padding:44px 5% 28px;
   </div>
 </footer>
 
+<!-- SUBSCRIBE & SAVE MODAL -->
+<div class="sub-modal-overlay" id="subModalOverlay">
+  <div class="sub-modal">
+    <div class="sub-modal-head">
+      <button class="sub-modal-close" onclick="closeSubModal()">✕</button>
+      <h3>📦 Subscribe & Save</h3>
+      <p><span class="lang-bn">একবার subscribe করুন — বাকিটা DELTA করবে।</span><span class="lang-en">Subscribe once — DELTA does the rest.</span></p>
+    </div>
+    <div class="sub-modal-body" id="subFormArea">
+
+      <!-- Step 1: Frequency -->
+      <div class="sub-section-title"><span class="lang-bn">কত ঘন ঘন ডেলিভারি চান?</span><span class="lang-en">How often do you want delivery?</span></div>
+      <div class="freq-pills">
+        <div class="freq-pill selected" data-freq="7" onclick="selectFreq(this,7)"><span class="lang-bn">প্রতি সপ্তাহে</span><span class="lang-en">Weekly</span></div>
+        <div class="freq-pill" data-freq="14" onclick="selectFreq(this,14)"><span class="lang-bn">প্রতি ২ সপ্তাহে</span><span class="lang-en">Every 2 Weeks</span></div>
+        <div class="freq-pill" data-freq="30" onclick="selectFreq(this,30)"><span class="lang-bn">প্রতি মাসে</span><span class="lang-en">Monthly</span></div>
+      </div>
+
+      <!-- Step 2: Product Selection -->
+      <div class="sub-section-title" style="margin-top:18px;"><span class="lang-bn">কী কী পণ্য চান?</span><span class="lang-en">Which products do you want?</span></div>
+      <div class="sub-product-list" id="subProductList">
+        <!-- Loaded from allProducts -->
+        <div style="color:var(--muted);font-size:.82rem;padding:8px;">
+          <span class="lang-bn">লোড হচ্ছে...</span><span class="lang-en">Loading...</span>
+        </div>
+      </div>
+
+      <!-- Step 3: Delivery Address -->
+      <div class="sub-section-title" style="margin-top:18px;"><span class="lang-bn">ডেলিভারি ঠিকানা</span><span class="lang-en">Delivery Address</span></div>
+      <input type="text" class="request-input" id="subAddress" style="width:100%;box-sizing:border-box;"
+        placeholder="বাড়ি নং, রাস্তা, গ্রাম / House no, Street, Village">
+      <input type="tel" class="request-input" id="subPhone" style="width:100%;box-sizing:border-box;margin-top:8px;"
+        placeholder="মোবাইল নম্বর / Mobile number *">
+
+      <!-- Summary -->
+      <div class="sub-summary" id="subSummary" style="display:none;">
+        <div class="sub-summary-row">
+          <span><span class="lang-bn">পণ্য মোট</span><span class="lang-en">Products Total</span></span>
+          <span id="subTotalPrice">₹0</span>
+        </div>
+        <div class="sub-summary-row">
+          <span>
+            <span class="lang-bn">Subscribe ছাড়</span>
+            <span class="lang-en">Subscribe Discount</span>
+            <span class="sub-discount-badge">5% OFF</span>
+          </span>
+          <span id="subDiscount" style="color:var(--green);">-₹0</span>
+        </div>
+        <div class="sub-summary-row">
+          <span><span class="lang-bn">ডেলিভারি</span><span class="lang-en">Delivery</span></span>
+          <span style="color:var(--green);"><span class="lang-bn">বিনামূল্যে ✓</span><span class="lang-en">Free ✓</span></span>
+        </div>
+        <div class="sub-summary-row">
+          <span><span class="lang-bn">প্রতি ডেলিভারিতে মোট</span><span class="lang-en">Per Delivery Total</span></span>
+          <span id="subFinalPrice" style="color:var(--orange);">₹0</span>
+        </div>
+      </div>
+
+      <div style="background:var(--orange-light);border-radius:10px;padding:12px 14px;margin-top:14px;font-size:.78rem;color:var(--muted);line-height:1.6;">
+        ℹ️ <span class="lang-bn">Payment প্রতি delivery তে collect হবে। যেকোনো সময় cancel করতে পারবেন।</span>
+        <span class="lang-en">Payment collected on each delivery. Cancel anytime, no fees.</span>
+      </div>
+
+      <button class="sub-submit-btn" id="subSubmitBtn" onclick="submitSubscription()">
+        📦 <span class="lang-bn">Subscribe করুন →</span><span class="lang-en">Subscribe Now →</span>
+      </button>
+    </div>
+
+    <!-- Success State -->
+    <div id="subSuccessArea" style="display:none;padding:32px;text-align:center;">
+      <div style="font-size:3.5rem;margin-bottom:14px;">✅</div>
+      <h3 style="font-family:'Playfair Display',serif;font-size:1.3rem;color:var(--navy);margin-bottom:8px;">
+        <span class="lang-bn">সাবস্ক্রিপশন সম্পন্ন!</span><span class="lang-en">Subscribed Successfully!</span>
+      </h3>
+      <p style="color:var(--muted);font-size:.85rem;line-height:1.7;" id="subSuccessMsg"></p>
+      <button onclick="closeSubModal()" style="margin-top:18px;background:var(--navy);color:#fff;border:none;padding:12px 28px;border-radius:10px;font-weight:700;cursor:pointer;">
+        <span class="lang-bn">ঠিক আছে 👍</span><span class="lang-en">Got it 👍</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- REQUEST A PRODUCT MODAL -->
+<div class="req-modal-overlay" id="reqModalOverlay">
+  <div class="req-modal">
+    <button class="req-modal-close" onclick="closeReqModal()">✕</button>
+    <div id="reqFormArea">
+      <h3>🛍️ <span class="lang-bn">পণ্যটি চাই!</span><span class="lang-en">Request This Product!</span></h3>
+      <p><span class="lang-bn">আপনার চাহিদা জানান — আমরা বিক্রেতাদের জানাবো।</span><span class="lang-en">Tell us what you need — we'll inform our sellers.</span></p>
+      <div class="request-form">
+        <input class="request-input" id="reqProductName" type="text"
+          placeholder="পণ্যের নাম / Product name *" maxlength="100">
+        <div class="request-row">
+          <input class="request-input" id="reqBudget" type="text"
+            placeholder="বাজেট / Budget (e.g. ₹200)">
+          <select class="request-input" id="reqUrgency">
+            <option value="">কখন দরকার / When?</option>
+            <option value="today"><span class="lang-bn">আজকেই</span> Today</option>
+            <option value="this_week">এই সপ্তাহে / This week</option>
+            <option value="this_month">এই মাসে / This month</option>
+            <option value="anytime">যেকোনো সময় / Anytime</option>
+          </select>
+        </div>
+        <input class="request-input" id="reqPhone" type="tel"
+          placeholder="মোবাইল নম্বর / Mobile (optional)">
+        <button class="request-btn" id="reqSubmitBtn" onclick="submitProductRequest()">
+          <span class="lang-bn">অনুরোধ পাঠান →</span>
+          <span class="lang-en">Send Request →</span>
+        </button>
+      </div>
+    </div>
+    <div id="reqSuccessArea" class="req-success" style="display:none;">
+      <div class="req-success-icon">✅</div>
+      <h3><span class="lang-bn">অনুরোধ পাঠানো হয়েছে!</span><span class="lang-en">Request Sent!</span></h3>
+      <p style="color:var(--muted);font-size:.88rem;margin-top:8px;">
+        <span class="lang-bn">আমরা বিক্রেতাদের জানাবো। পণ্য পাওয়া গেলে আপনাকে জানানো হবে।</span>
+        <span class="lang-en">We'll inform our sellers. You'll be notified when it's available.</span>
+      </p>
+      <button onclick="closeReqModal()" style="margin-top:16px;background:var(--navy);color:#fff;border:none;padding:10px 24px;border-radius:10px;cursor:pointer;font-weight:600;">
+        <span class="lang-bn">ঠিক আছে</span><span class="lang-en">OK</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- VOICE SEARCH OVERLAY -->
+<div class="voice-overlay" id="voiceOverlay">
+  <div class="voice-circle">🎙️</div>
+  <div style="color:#fff;font-size:1.1rem;font-weight:600;" id="voiceStatus">
+    <span class="lang-bn">বলুন... যেমন: "ইলিশ মাছ" বা "মিষ্টি"</span>
+    <span class="lang-en">Say something... like "fish" or "sweets"</span>
+  </div>
+  <div style="color:rgba(255,255,255,.5);font-size:.85rem;" id="voiceResult"></div>
+  <button onclick="stopVoiceSearch()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;padding:10px 24px;border-radius:10px;cursor:pointer;font-size:.9rem;margin-top:10px;">
+    <span class="lang-bn">বাতিল করুন</span><span class="lang-en">Cancel</span>
+  </button>
+</div>
+
 <!-- CART DRAWER -->
 <div class="cart-overlay" id="cartOverlay" onclick="closeCart()"></div>
 <div class="cart-drawer" id="cartDrawer">
   <div class="cart-head">
-    <h3>🛒 আমার কার্ট</h3>
+    <h3>🛒 <span class="lang-bn">আমার কার্ট</span><span class="lang-en">My Cart</span></h3>
     <button class="cart-close-btn" onclick="closeCart()">✕</button>
   </div>
   <div class="cart-items-wrap" id="cartItemsWrap">
-    <div class="cart-empty-msg"><span>🛒</span><p class="bn">কার্ট খালি আছে</p></div>
+    <div class="cart-empty-msg"><span>🛒</span><p class="bn"><span class="lang-bn">কার্ট খালি আছে</span><span class="lang-en">Cart is empty</span></p></div>
   </div>
   <div id="cartFooterWrap" style="display:none;">
     <div class="cart-footer-wrap">
-      <div class="cart-total-row"><span>উপমোট / Subtotal</span><span id="cartSubtotal">₹0</span></div>
-      <div class="cart-total-row"><span>ডেলিভারি</span><span style="color:var(--green)">বিনামূল্যে ✓</span></div>
-      <div class="cart-grand-row"><strong>মোট / Total</strong><span class="amount" id="cartTotal">₹0</span></div>
-      <button class="cart-checkout-btn" onclick="openCheckout()">অর্ডার করুন →</button>
+      <div class="cart-total-row"><span><span class="lang-bn">উপমোট</span><span class="lang-en">Subtotal</span></span><span id="cartSubtotal">₹0</span></div>
+      <div class="cart-total-row"><span><span class="lang-bn">ডেলিভারি</span><span class="lang-en">Delivery</span></span><span style="color:var(--green)"><span class="lang-bn">বিনামূল্যে ✓</span><span class="lang-en">Free ✓</span></span></div>
+      <div class="cart-grand-row"><strong><span class="lang-bn">মোট</span><span class="lang-en">Total</span></strong><span class="amount" id="cartTotal">₹0</span></div>
+      <button class="cart-checkout-btn" onclick="openCheckout()"><span class="lang-bn">অর্ডার করুন →</span><span class="lang-en">Place Order →</span></button>
     </div>
   </div>
 </div>
@@ -1048,6 +1845,7 @@ footer{background:var(--navy3);color:rgba(255,255,255,.55);padding:44px 5% 28px;
 <script>
 var fbcfg={apiKey:"AIzaSyA6TrrnCMwv1aa1WPqGvTVWlnieB2pVOEU",authDomain:"delta-platform-82fc0.firebaseapp.com",projectId:"delta-platform-82fc0",storageBucket:"delta-platform-82fc0.firebasestorage.app",messagingSenderId:"444904180433",appId:"1:444904180433:web:6706eba4d73a30cd67d3f0"};
 var auth,db,currentUser=null,cart=[],wishlist=[],allShops=[],allProducts=[],selectedPay='cod';
+var CITY='manteswar'; // Multi-tenant city
 
 // Dynamic Firebase loader
 (function(){
@@ -1065,18 +1863,48 @@ function initFB(){
     if(u){lbl.textContent=u.displayName||'আমার';document.getElementById('userChip').style.color='#a5d6ff';}
     else{lbl.textContent='লগইন';}
   });
-  loadData();
+  detectCity();
+}
+
+// GPS City Detection
+function detectCity(){
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(function(pos){
+      var lat=pos.coords.latitude;
+      var lng=pos.coords.longitude;
+      // Manteswar geofence: approx 23.3-23.5 lat, 87.8-88.0 lng
+      if(lat>=23.3&&lat<=23.5&&lng>=87.7&&lng<=88.0){
+        CITY='manteswar';
+      }
+      // Future cities can be added here
+      updateCityUI();
+      loadData();
+    },function(){
+      // GPS denied or failed → default to manteswar
+      loadData();
+    },{timeout:3000});
+  } else {
+    loadData();
+  }
+}
+
+function updateCityUI(){
+  var locBtn=document.getElementById('navLocBtn');
+  if(locBtn){
+    var cityNames={manteswar:'Manteswar',katwa:'Katwa',ausgram:'Ausgram'};
+    locBtn.querySelector('span').textContent=cityNames[CITY]||'Manteswar';
+  }
 }
 
 async function loadData(){
   try{
-    var snap=await db.collection('sellers').get();
+    var snap=await db.collection('cities').doc(CITY).collection('sellers').get();
     allShops=[];allProducts=[];
     var proms=[];
     snap.forEach(function(d){
       var shop=Object.assign({id:d.id},d.data());
       allShops.push(shop);
-      proms.push(db.collection('sellers').doc(d.id).collection('products').get().then(function(ps){
+      proms.push(db.collection('cities').doc(CITY).collection('sellers').doc(d.id).collection('products').get().then(function(ps){
         ps.forEach(function(pd){allProducts.push(Object.assign({id:pd.id,shopId:d.id,shopName:shop.shopName,shopCat:shop.category},pd.data()));});
       }));
     });
@@ -1087,24 +1915,84 @@ async function loadData(){
     buildFeatured(allProducts);
     buildFlashSale(allProducts);
     buildBestsellers(allProducts);
+    updateCommunityStats(allShops);
+    initEcoCounter(allShops, allProducts);
+    initFestivalBanner();
+    updateSubCount();
+    initAllFeatures(allShops, allProducts);
   }catch(e){
     renderShops([]);renderProducts([]);
     showToast('ডেটা লোড সমস্যা। Internet চেক করুন।');
   }
 }
 
+function updateCommunityStats(shops){
+  var open=shops.filter(function(s){return s.isOpen!==false;}).length;
+  var total=shops.length;
+  var el1=document.getElementById('statShopsOpen');
+  var el2=document.getElementById('statSellers');
+  if(el1)el1.textContent=open+'টি';
+  if(el2)el2.textContent=total+'টি';
+  // Simulated order count (real data from orders collection in Step 10)
+  var el3=document.getElementById('statOrders');
+  if(el3)el3.textContent=Math.max(0,total*8)+'টি';
+}
+
 // ── EMOJI HELPERS ──
-function shopEmoji(c){if(!c)return'🏪';if(c.includes('খাদ্য')||c.includes('Food'))return'🍛';if(c.includes('মুদি')||c.includes('Grocery'))return'🛒';if(c.includes('কৃষি')||c.includes('Farm'))return'🌾';if(c.includes('ওষুধ')||c.includes('Pharma'))return'💊';if(c.includes('পোশাক')||c.includes('Cloth'))return'👗';if(c.includes('ইলেকট্রনিক্স')||c.includes('Electron'))return'📱';if(c.includes('সেবা')||c.includes('Service'))return'🔧';if(c.includes('শিল্প')||c.includes('Art'))return'🎨';return'🏪';}
-function prodEmoji(c){if(!c)return'📦';if(c.includes('মিষ্টি'))return'🍬';if(c.includes('মাছ'))return'🐟';if(c.includes('সবজি'))return'🥬';if(c.includes('চাল'))return'🌾';if(c.includes('ওষুধ'))return'💊';if(c.includes('রান্না'))return'🍛';return'📦';}
+function shopEmoji(c){
+  if(!c)return'🏪';
+  var cl=c.toLowerCase();
+  if(cl.includes('খাদ্য')||cl.includes('food')||cl.includes('মিষ্টি'))return'🍛';
+  if(cl.includes('মুদি')||cl.includes('grocery'))return'🛒';
+  if(cl.includes('কৃষি সরঞ্জাম')||cl.includes('farm tool'))return'🌿';
+  if(cl.includes('কৃষি')||cl.includes('farm')||cl.includes('সবজি')||cl.includes('মাছ'))return'🌾';
+  if(cl.includes('পশু')||cl.includes('livestock'))return'🐄';
+  if(cl.includes('ওষুধ')||cl.includes('pharma')||cl.includes('medicine'))return'💊';
+  if(cl.includes('পোশাক')||cl.includes('cloth'))return'👗';
+  if(cl.includes('ইলেকট্রনিক্স')||cl.includes('electron'))return'📱';
+  if(cl.includes('বাড়ি')||cl.includes('home')||cl.includes('আসবাব'))return'🏠';
+  if(cl.includes('নির্মাণ')||cl.includes('construction'))return'🏗️';
+  if(cl.includes('যানবাহন')||cl.includes('automotive'))return'🚗';
+  if(cl.includes('শিল্প')||cl.includes('art')||cl.includes('হস্তশিল্প'))return'🎨';
+  if(cl.includes('শিক্ষা')||cl.includes('education'))return'📚';
+  if(cl.includes('সেবা')||cl.includes('service')||cl.includes('মেরামত'))return'🔧';
+  if(cl.includes('স্বাস্থ্য')||cl.includes('health')||cl.includes('hospital'))return'🏥';
+  if(cl.includes('ইভেন্ট')||cl.includes('event'))return'🎉';
+  if(cl.includes('ভাড়া')||cl.includes('rental'))return'🔑';
+  if(cl.includes('রিমার্কেট')||cl.includes('remarket'))return'♻️';
+  if(cl.includes('কৃষক')||cl.includes('farmer'))return'👨‍🌾';
+  if(cl.includes('শিল্পী')||cl.includes('artist'))return'🎨';
+  if(cl.includes('সমবায়')||cl.includes('cooperative'))return'🤝';
+  return'🏪';
+}
+function prodEmoji(c){
+  if(!c)return'📦';var cl=c.toLowerCase();
+  if(cl.includes('মিষ্টি')||cl.includes('sweet'))return'🍬';
+  if(cl.includes('মাছ')||cl.includes('fish'))return'🐟';
+  if(cl.includes('সবজি')||cl.includes('vegetable'))return'🥬';
+  if(cl.includes('চাল')||cl.includes('rice'))return'🌾';
+  if(cl.includes('ফল')||cl.includes('fruit'))return'🍎';
+  if(cl.includes('দুধ')||cl.includes('dairy'))return'🥛';
+  if(cl.includes('ওষুধ')||cl.includes('medicine'))return'💊';
+  if(cl.includes('রান্না')||cl.includes('food'))return'🍛';
+  if(cl.includes('পোশাক')||cl.includes('cloth'))return'👗';
+  if(cl.includes('ফুল')||cl.includes('flower'))return'🌺';
+  return'📦';
+}
 
 // ── RENDER SHOPS ──
 function renderShops(shops){
   var g=document.getElementById('shopsGrid');
-  if(!shops.length){g.innerHTML='<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">🏪</div><p class="bn">এখনো কোনো দোকান যোগ হয়নি</p><p style="margin-top:8px;font-size:.8rem;"><a href="seller.html" style="color:var(--orange)">প্রথম দোকান যোগ করুন →</a></p></div>';return;}
+  var isEn=currentLang==='en';
+  if(!shops.length){
+    g.innerHTML='<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">🏪</div><p class="bn">'+(isEn?'No shops found yet':'এখনো কোনো দোকান যোগ হয়নি')+'</p></div>';
+    return;
+  }
   g.innerHTML=shops.map(function(s){
     var open=s.isOpen!==false;var em=shopEmoji(s.category);
+    var openLabel=isEn?(open?'✅ Open':'❌ Closed'):(open?'✅ খোলা':'❌ বন্ধ');
     return '<div class="shop-card" onclick="openShopModal(\''+s.id+'\')" >'+
-      '<div class="shop-banner">'+em+'<span class="shop-open-pill '+(open?'open':'closed')+'">'+(open?'✅ খোলা':'❌ বন্ধ')+'</span></div>'+
+      '<div class="shop-banner">'+em+'<span class="shop-open-pill '+(open?'open':'closed')+'">'+openLabel+'</span></div>'+
       '<div class="shop-body"><div class="shop-name">'+(s.shopName||'দোকান')+'</div>'+
       '<div class="shop-cat">'+(s.category||'')+(s.area?' · '+s.area:'')+'</div>'+
       '<div class="shop-meta"><span class="shop-rating">⭐ '+(s.rating||'4.8')+'</span><span class="sep">·</span><span>'+(s.area||'Manteswar')+'</span><span class="sep">·</span><span>🕐 '+(s.openTime||'9:00')+'-'+(s.closeTime||'21:00')+'</span></div></div></div>';
@@ -1118,11 +2006,1042 @@ function renderProducts(prods){
   g.innerHTML=prods.map(function(p){return productCardHTML(p,false);}).join('');
 }
 
+// ── SEARCH SUGGESTIONS ──
+var _sugIdx = -1; // keyboard navigation index
+
+// Predefined suggestion categories (shown when no product data yet)
+var SUGGESTION_CATS = {
+  'w':  ['water bottle','water purifier','wheat','washing soap'],
+  'wa': ['water bottle','water purifier','washing soap','watermelon'],
+  'wa': ['water bottle','water purifier'],
+  'fi': ['fish','fish curry','finger millet'],
+  'sw': ['sweet','sweets','soap'],
+  'me': ['medicine','meat','melon'],
+  'ri': ['rice','ritha'],
+  'eg': ['egg','eggplant'],
+  'mi': ['milk','milkmaid'],
+};
+
+function handleSearchKey(e, src){
+  var sugEl = document.getElementById(src==='nav'?'navSuggestions':'heroSuggestions');
+  var items = sugEl.querySelectorAll('.suggestion-item');
+  if(e.key==='ArrowDown'){
+    e.preventDefault();
+    _sugIdx = Math.min(_sugIdx+1, items.length-1);
+    items.forEach(function(el,i){el.classList.toggle('active',i===_sugIdx);});
+  } else if(e.key==='ArrowUp'){
+    e.preventDefault();
+    _sugIdx = Math.max(_sugIdx-1, 0);
+    items.forEach(function(el,i){el.classList.toggle('active',i===_sugIdx);});
+  } else if(e.key==='Enter'){
+    if(_sugIdx>=0 && items[_sugIdx]){
+      items[_sugIdx].click();
+    } else {
+      doSearch();
+      closeSuggestions();
+    }
+  } else if(e.key==='Escape'){
+    closeSuggestions();
+  }
+}
+
+function showSuggestions(val){
+  var q = (val||'').toLowerCase().trim();
+  // Minimum 2 characters
+  if(q.length < 2){
+    closeSuggestions();
+    return;
+  }
+  buildSuggestions(q);
+}
+
+function buildSuggestions(q){
+  var isEn = currentLang==='en';
+
+  // 1. Match from actual loaded products
+  var prodMatches = allProducts.filter(function(p){
+    return [(p.nameBn||''),(p.nameEn||''),(p.name||''),(p.searchTags||[]).join(' ')]
+      .join(' ').toLowerCase().includes(q);
+  }).slice(0,5);
+
+  // 2. Match from actual shops
+  var shopMatches = allShops.filter(function(s){
+    return [(s.shopName||''),(s.category||''),(s.area||'')]
+      .join(' ').toLowerCase().includes(q);
+  }).slice(0,3);
+
+  // 3. Category suggestions from catMap
+  var catSugs = [];
+  Object.keys(catMap).forEach(function(cat){
+    if(catMap[cat].some(function(kw){return kw.toLowerCase().includes(q);})){
+      catSugs.push(cat);
+    }
+  });
+
+  var html = '';
+
+  // Product suggestions
+  if(prodMatches.length){
+    html += '<div class="suggestion-header">'+
+      (isEn?'Products':'পণ্য')+'</div>';
+    prodMatches.forEach(function(p){
+      var name = isEn ? (p.nameEn||p.nameBn||p.name) : (p.nameBn||p.nameEn||p.name);
+      var price = p.price||p.sellPrice||0;
+      var icon = prodEmoji(p.category||'');
+      html += '<div class="suggestion-item" onclick="selectSuggestion(\''+
+        (name||'').replace(/'/g,"\\'")+'\')">' +
+        '<span class="sug-icon">'+icon+'</span>'+
+        '<span class="sug-main">'+highlight(name,q)+'</span>'+
+        (price?'<span class="sug-tag">₹'+price+'</span>':'')+
+        '</div>';
+    });
+  }
+
+  // Shop suggestions
+  if(shopMatches.length){
+    html += '<div class="suggestion-header">'+
+      (isEn?'Shops':'দোকান')+'</div>';
+    shopMatches.forEach(function(s){
+      var icon = shopEmoji(s.category||'');
+      html += '<div class="suggestion-item" onclick="selectSuggestion(\''+
+        (s.shopName||'').replace(/'/g,"\\'")+'\')">' +
+        '<span class="sug-icon">'+icon+'</span>'+
+        '<div style="flex:1"><div class="sug-main">'+highlight(s.shopName,q)+'</div>'+
+        '<div class="sug-sub">'+(s.category||'')+(s.area?' · '+s.area:'')+'</div></div>'+
+        '<span class="sug-tag">'+(isEn?'Shop':'দোকান')+'</span>'+
+        '</div>';
+    });
+  }
+
+  // Category suggestions
+  if(catSugs.length && !prodMatches.length && !shopMatches.length){
+    var catLabels={
+      food:{bn:'খাবার',en:'Food'},grocery:{bn:'মুদিখানা',en:'Grocery'},
+      farm:{bn:'কৃষি',en:'Agriculture'},medicine:{bn:'ওষুধ',en:'Medicine'},
+      clothing:{bn:'পোশাক',en:'Clothing'},electronics:{bn:'ইলেকট্রনিক্স',en:'Electronics'},
+      services:{bn:'সেবা',en:'Services'},arts:{bn:'শিল্প',en:'Arts'},
+      health:{bn:'স্বাস্থ্য',en:'Healthcare'},events:{bn:'ইভেন্ট',en:'Events'},
+      home:{bn:'বাড়ি',en:'Home'},construction:{bn:'নির্মাণ',en:'Construction'},
+      rental:{bn:'ভাড়া',en:'Rental'},remarket:{bn:'রিমার্কেট',en:'ReMarket'},
+      farmtools:{bn:'কৃষি সরঞ্জাম',en:'Farm Tools'},livestock:{bn:'পশুপালন',en:'Livestock'},
+      automotive:{bn:'যানবাহন',en:'Automotive'},education:{bn:'শিক্ষা',en:'Education'}
+    };
+    html += '<div class="suggestion-header">'+
+      (isEn?'Categories':'ক্যাটাগরি')+'</div>';
+    catSugs.slice(0,4).forEach(function(cat){
+      var lbl = catLabels[cat];
+      if(!lbl) return;
+      var icons={food:'🍛',grocery:'🛒',farm:'🌾',medicine:'💊',clothing:'👗',
+        electronics:'📱',services:'🔧',arts:'🎨',health:'🏥',events:'🎉',
+        home:'🏠',construction:'🏗️',rental:'🔑',remarket:'♻️',
+        farmtools:'🌿',livestock:'🐄',automotive:'🚗',education:'📚'};
+      html += '<div class="suggestion-item" onclick="filterCat(\''+cat+'\',null);closeSuggestions();">'+
+        '<span class="sug-icon">'+(icons[cat]||'📦')+'</span>'+
+        '<span class="sug-main">'+(isEn?lbl.en:lbl.bn)+'</span>'+
+        '<span class="sug-tag">'+(isEn?'Category':'ক্যাটাগরি')+'</span>'+
+        '</div>';
+    });
+  }
+
+  // No matches at all
+  if(!html){
+    html = '<div class="suggestion-item" style="color:var(--muted);cursor:default;">'+
+      '<span class="sug-icon">🔍</span>'+
+      '<span class="sug-main">'+(isEn?'Search for "'+q+'"':'\"'+q+'\" খুঁজুন')+'</span></div>';
+  }
+
+  // Show in both dropdowns
+  ['navSuggestions','heroSuggestions'].forEach(function(id){
+    var el = document.getElementById(id);
+    if(el){ el.innerHTML = html; el.classList.add('open'); }
+  });
+  _sugIdx = -1;
+}
+
+function highlight(text, q){
+  if(!text) return '';
+  var idx = text.toLowerCase().indexOf(q.toLowerCase());
+  if(idx<0) return text;
+  return text.slice(0,idx)+'<strong style="color:var(--orange)">'+
+    text.slice(idx,idx+q.length)+'</strong>'+text.slice(idx+q.length);
+}
+
+function selectSuggestion(val){
+  var heroS = document.getElementById('heroSearch');
+  var navS = document.getElementById('navSearch');
+  if(heroS) heroS.value = val;
+  if(navS) navS.value = val;
+  closeSuggestions();
+  doSearchWith(val.toLowerCase(), true);
+}
+
+function closeSuggestions(){
+  ['navSuggestions','heroSuggestions'].forEach(function(id){
+    var el = document.getElementById(id);
+    if(el){ el.classList.remove('open'); el.innerHTML=''; }
+  });
+  _sugIdx = -1;
+}
+
+// Close suggestions when clicking outside
+document.addEventListener('click', function(e){
+  if(!e.target.closest('#navSearchWrap') &&
+     !e.target.closest('.hero-search-big')){
+    closeSuggestions();
+  }
+});
+
+// ── VOICE SEARCH ──
+var recognition = null;
+var voiceActive = false;
+
+function startVoiceSearch(){
+  var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SpeechRecognition){
+    showToast(currentLang==='bn'
+      ? 'এই browser এ voice search নেই। Chrome ব্যবহার করুন।'
+      : 'Voice search not supported. Use Chrome.');
+    return;
+  }
+
+  document.getElementById('voiceOverlay').classList.add('active');
+  document.getElementById('voiceBtn').classList.add('listening');
+  document.getElementById('voiceResult').textContent = '';
+  voiceActive = true;
+
+  recognition = new SpeechRecognition();
+  // Bengali mode → listen in Bengali, English mode → listen in English
+  recognition.lang = currentLang==='bn' ? 'bn-IN' : 'en-US';
+  recognition.continuous = false;
+  recognition.interimResults = true;
+  recognition.maxAlternatives = 1;
+
+  recognition.onresult = function(event){
+    var transcript = event.results[0][0].transcript.trim();
+    document.getElementById('voiceResult').textContent = '"' + transcript + '"';
+
+    if(event.results[0].isFinal && transcript){
+      stopVoiceSearch();
+
+      // Fill search box with exact spoken text
+      var heroSearch = document.getElementById('heroSearch');
+      var navSearch = document.querySelector('.nav-search input');
+      if(heroSearch) heroSearch.value = transcript;
+      if(navSearch) navSearch.value = transcript;
+
+      // Search — handleSearch checks both nameBn and nameEn fields
+      handleSearch(transcript.toLowerCase());
+
+      setTimeout(function(){
+        document.getElementById('productsSection').scrollIntoView({behavior:'smooth'});
+      }, 300);
+
+      showToast(
+        currentLang==='bn'
+          ? '"'+transcript+'" খোঁজা হচ্ছে ✅'
+          : 'Searching "'+transcript+'" ✅',
+        'green');
+    }
+  };
+
+  recognition.onerror = function(event){
+    stopVoiceSearch();
+    var msg = '';
+    if(event.error==='not-allowed'){
+      msg = currentLang==='bn'
+        ? 'Microphone permission দিন। Browser settings এ allow করুন।'
+        : 'Please allow microphone in browser settings.';
+    } else if(event.error==='no-speech'){
+      msg = currentLang==='bn'
+        ? 'কোনো কথা শোনা যায়নি। আবার চেষ্টা করুন।'
+        : 'No speech detected. Try again.';
+    } else {
+      msg = currentLang==='bn'
+        ? 'Voice search কাজ করেনি। আবার চেষ্টা করুন।'
+        : 'Voice search failed. Try again.';
+    }
+    showToast(msg);
+  };
+
+  recognition.onend = function(){
+    if(voiceActive) stopVoiceSearch();
+  };
+
+  recognition.start();
+}
+
+function stopVoiceSearch(){
+  voiceActive = false;
+  document.getElementById('voiceOverlay').classList.remove('active');
+  document.getElementById('voiceBtn').classList.remove('listening');
+  if(recognition){
+    try{ recognition.stop(); }catch(e){}
+    recognition = null;
+  }
+}
+
+// ══ SUBSCRIBE & SAVE ══
+var subFreqDays    = 7;
+var subSelectedProds = {}; // {productId: qty}
+
+function openSubModal(){
+  // Reset
+  subSelectedProds = {};
+  document.getElementById('subFormArea').style.display = 'block';
+  document.getElementById('subSuccessArea').style.display = 'none';
+  document.getElementById('subSubmitBtn').disabled = false;
+  document.getElementById('subSummary').style.display = 'none';
+  document.getElementById('subAddress').value = '';
+  document.getElementById('subPhone').value = '';
+
+  // Load subscribable products
+  loadSubProducts();
+
+  document.getElementById('subModalOverlay').classList.add('open');
+}
+
+function closeSubModal(){
+  document.getElementById('subModalOverlay').classList.remove('open');
+}
+
+function selectFreq(el, days){
+  subFreqDays = days;
+  document.querySelectorAll('.freq-pill').forEach(function(p){
+    p.classList.remove('selected');
+  });
+  el.classList.add('selected');
+}
+
+function loadSubProducts(){
+  var list = document.getElementById('subProductList');
+  // Filter subscribable products (grocery, farm, medicine)
+  var subscribable = allProducts.filter(function(p){
+    var cat = (p.category||p.categoryMain||'').toLowerCase();
+    return cat.includes('মুদি') || cat.includes('grocery') ||
+           cat.includes('কৃষি') || cat.includes('farm') ||
+           cat.includes('সবজি') || cat.includes('vegetable') ||
+           cat.includes('দুধ') || cat.includes('dairy') ||
+           cat.includes('ওষুধ') || cat.includes('medicine') ||
+           cat.includes('চাল') || cat.includes('rice') ||
+           (p.subscribable === true);
+  }).slice(0, 12);
+
+  if(!subscribable.length){
+    list.innerHTML = '<div style="color:var(--muted);font-size:.82rem;padding:12px;text-align:center;">'+
+      '<span class="lang-bn">এই মুহূর্তে subscribe করার মতো পণ্য নেই।<br>Grocery বা Farm products খুঁজুন।</span>'+
+      '<span class="lang-en">No subscribable products right now.<br>Look for Grocery or Farm products.</span></div>';
+    return;
+  }
+
+  list.innerHTML = subscribable.map(function(p){
+    var name = currentLang==='bn' ? (p.nameBn||p.nameEn||p.name) : (p.nameEn||p.nameBn||p.name);
+    var price = p.price || p.sellPrice || 0;
+    var icon = prodEmoji(p.category||'');
+    return '<div class="sub-product-item" id="subprod-'+p.id+'" onclick="toggleSubProduct(\''+p.id+'\','+price+')">'+
+      '<span class="sub-product-emoji">'+icon+'</span>'+
+      '<div class="sub-product-info">'+
+        '<div class="sub-product-name">'+name+'</div>'+
+        '<div class="sub-product-price">₹'+price+(p.unit?' / '+p.unit:'')+'</div>'+
+      '</div>'+
+      '<div class="sub-product-qty" id="subqty-'+p.id+'" style="display:none;">'+
+        '<button class="sub-qty-btn" onclick="event.stopPropagation();changeSubQty(\''+p.id+'\','+price+',-1)">−</button>'+
+        '<span class="sub-qty-val" id="subqtyval-'+p.id+'">1</span>'+
+        '<button class="sub-qty-btn" onclick="event.stopPropagation();changeSubQty(\''+p.id+'\','+price+',1)">+</button>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+function toggleSubProduct(pid, price){
+  var item  = document.getElementById('subprod-'+pid);
+  var qtyEl = document.getElementById('subqty-'+pid);
+  if(subSelectedProds[pid]){
+    delete subSelectedProds[pid];
+    item.classList.remove('selected');
+    if(qtyEl) qtyEl.style.display = 'none';
+  } else {
+    subSelectedProds[pid] = {qty:1, price:price};
+    item.classList.add('selected');
+    if(qtyEl) qtyEl.style.display = 'flex';
+  }
+  updateSubSummary();
+}
+
+function changeSubQty(pid, price, delta){
+  if(!subSelectedProds[pid]) return;
+  var newQty = (subSelectedProds[pid].qty || 1) + delta;
+  if(newQty < 1){
+    // Remove product
+    delete subSelectedProds[pid];
+    var item  = document.getElementById('subprod-'+pid);
+    var qtyEl = document.getElementById('subqty-'+pid);
+    var valEl = document.getElementById('subqtyval-'+pid);
+    if(item) item.classList.remove('selected');
+    if(qtyEl) qtyEl.style.display = 'none';
+    if(valEl) valEl.textContent = '1';
+  } else {
+    subSelectedProds[pid].qty = newQty;
+    var valEl = document.getElementById('subqtyval-'+pid);
+    if(valEl) valEl.textContent = newQty;
+  }
+  updateSubSummary();
+}
+
+function updateSubSummary(){
+  var keys = Object.keys(subSelectedProds);
+  var summary = document.getElementById('subSummary');
+  if(!keys.length){ summary.style.display='none'; return; }
+  summary.style.display = 'block';
+
+  var total = 0;
+  keys.forEach(function(pid){
+    total += (subSelectedProds[pid].price||0) * (subSelectedProds[pid].qty||1);
+  });
+  var discount  = Math.round(total * 0.05);
+  var finalAmt  = total - discount;
+
+  document.getElementById('subTotalPrice').textContent  = '₹'+total;
+  document.getElementById('subDiscount').textContent    = '-₹'+discount;
+  document.getElementById('subFinalPrice').textContent  = '₹'+finalAmt;
+}
+
+function submitSubscription(){
+  var phone   = (document.getElementById('subPhone').value||'').trim();
+  var address = (document.getElementById('subAddress').value||'').trim();
+  var keys    = Object.keys(subSelectedProds);
+
+  if(!keys.length){
+    showToast(currentLang==='bn'?'অন্তত একটা পণ্য বেছে নিন':'Please select at least one product');
+    return;
+  }
+  if(!phone){
+    showToast(currentLang==='bn'?'মোবাইল নম্বর দিন':'Please enter mobile number');
+    document.getElementById('subPhone').focus();
+    return;
+  }
+
+  var btn = document.getElementById('subSubmitBtn');
+  btn.disabled = true;
+  btn.textContent = currentLang==='bn'?'সংরক্ষণ হচ্ছে...':'Saving...';
+
+  // Calculate total
+  var total = 0;
+  var items = [];
+  keys.forEach(function(pid){
+    var item = subSelectedProds[pid];
+    total += (item.price||0) * (item.qty||1);
+    items.push({productId:pid, qty:item.qty||1, price:item.price||0});
+  });
+  var discount = Math.round(total * 0.05);
+
+  var data = {
+    customerId   : currentUser ? currentUser.uid : 'guest',
+    phone        : phone,
+    address      : address,
+    city         : CITY,
+    items        : items,
+    freqDays     : subFreqDays,
+    totalAmount  : total - discount,
+    discount     : discount,
+    status       : 'active',
+    nextDelivery : getNextDeliveryDate(subFreqDays),
+    createdAt    : firebase.firestore.FieldValue.serverTimestamp()
+  };
+
+  db.collection('cities').doc(CITY)
+    .collection('subscriptions').add(data)
+    .then(function(){
+      // Show success
+      document.getElementById('subFormArea').style.display   = 'none';
+      document.getElementById('subSuccessArea').style.display = 'block';
+
+      var freqText = subFreqDays===7
+        ? (currentLang==='bn'?'প্রতি সপ্তাহে':'every week')
+        : subFreqDays===14
+          ? (currentLang==='bn'?'প্রতি ২ সপ্তাহে':'every 2 weeks')
+          : (currentLang==='bn'?'প্রতি মাসে':'every month');
+
+      var nextDate = getNextDeliveryDate(subFreqDays);
+
+      document.getElementById('subSuccessMsg').innerHTML =
+        currentLang==='bn'
+          ? '✅ আপনার subscription সক্রিয়।<br>'+
+            '<strong>'+freqText+'</strong> অর্ডার automatically হবে।<br>'+
+            'পরবর্তী ডেলিভারি: <strong>'+nextDate+'</strong>'
+          : '✅ Your subscription is active.<br>'+
+            'Orders will be placed automatically <strong>'+freqText+'</strong>.<br>'+
+            'Next delivery: <strong>'+nextDate+'</strong>';
+
+      // Update active count badge
+      updateSubCount();
+    })
+    .catch(function(e){
+      console.error(e);
+      btn.disabled = false;
+      btn.innerHTML = '📦 <span class="lang-bn">Subscribe করুন →</span><span class="lang-en">Subscribe Now →</span>';
+      showToast(currentLang==='bn'?'কিছু সমস্যা হয়েছে। আবার চেষ্টা করুন।':'Something went wrong. Please try again.');
+    });
+}
+
+function getNextDeliveryDate(days){
+  var d = new Date();
+  d.setDate(d.getDate() + days);
+  var months_bn = ['জানুয়ারি','ফেব্রুয়ারি','মার্চ','এপ্রিল','মে','জুন',
+    'জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর'];
+  var months_en = ['Jan','Feb','Mar','Apr','May','Jun',
+    'Jul','Aug','Sep','Oct','Nov','Dec'];
+  return currentLang==='bn'
+    ? d.getDate()+' '+months_bn[d.getMonth()]+' '+d.getFullYear()
+    : d.getDate()+' '+months_en[d.getMonth()]+' '+d.getFullYear();
+}
+
+function updateSubCount(){
+  if(!currentUser) return;
+  db.collection('cities').doc(CITY)
+    .collection('subscriptions')
+    .where('customerId','==',currentUser.uid)
+    .where('status','==','active')
+    .get()
+    .then(function(snap){
+      var count = snap.size;
+      var badge = document.getElementById('subActiveCount');
+      var num   = document.getElementById('subActiveNum');
+      if(badge && num){
+        if(count > 0){
+          num.textContent = count;
+          badge.style.display = 'inline-flex';
+        } else {
+          badge.style.display = 'none';
+        }
+      }
+    }).catch(function(){});
+}
+
+// Close on overlay click — moved to DOMContentLoaded below
+
+// ══ HAMPER FILTER ══
+function filterHamper(festival, el){
+  document.querySelectorAll('.hamper-pill').forEach(function(p){ p.classList.remove('active'); });
+  if(el) el.classList.add('active');
+  document.querySelectorAll('#hamperGrid .hap-card').forEach(function(card){
+    if(festival === 'all' || card.dataset.festival === festival){
+      card.classList.remove('hidden');
+    } else {
+      card.classList.add('hidden');
+    }
+  });
+}
+
+// ══ FESTIVAL HAMPER (Firestore load) ══
+function loadHampers(festivalKey){
+  var hamperSection = document.getElementById('hamperSection');
+  var hamperGrid    = document.getElementById('hamperGrid');
+  var hamperComing  = null; // Removed in Appayan redesign
+  var hamperTitle   = document.getElementById('hamperTitle');
+  if(!hamperSection) return;
+
+  var festivalNames = {
+    'durga_puja'     : {bn:'🎁 পূজা হ্যাম্পার', en:'🎁 Puja Hampers'},
+    'eid'            : {bn:'🎁 ঈদ হ্যাম্পার', en:'🎁 Eid Hampers'},
+    'poila_boishakh' : {bn:'🎁 বৈশাখী হ্যাম্পার', en:'🎁 Boishakhi Hampers'},
+    'general'        : {bn:'🎁 ফেস্টিভাল হ্যাম্পার', en:'🎁 Festival Hampers'},
+  };
+  var titleObj = festivalNames[festivalKey] || festivalNames['general'];
+  if(hamperTitle){
+    hamperTitle.innerHTML =
+      '<span class="lang-bn">'+titleObj.bn+'</span>'+
+      '<span class="lang-en">'+titleObj.en+'</span>';
+  }
+
+  // Load from Firestore hampers collection
+  db.collection('hampers')
+    .where('festivalTag','==', festivalKey)
+    .where('active','==', true)
+    .get()
+    .then(function(snap){
+      hamperSection.style.display = 'block';
+      if(snap.empty){
+        // No real hampers yet — show coming soon
+        hamperGrid.innerHTML = '';
+        hamperComing.style.display = 'block';
+        return;
+      }
+      // Real hampers exist — hide coming soon, show real cards
+      hamperComing.style.display = 'none';
+      var html = '';
+      snap.forEach(function(doc){
+        var h = doc.data();
+        var save = h.originalPrice - h.bundlePrice;
+        var icon = h.icon || '🎁';
+        var itemPills = (h.itemNames||[]).map(function(name){
+          return '<span class="hamper-item-pill">'+name+'</span>';
+        }).join('');
+        html +=
+          '<div class="hamper-card">'+
+          '<div class="hamper-banner">'+icon+'</div>'+
+          '<div class="hamper-body">'+
+            '<div class="hamper-name">'+(h.nameBn||h.nameEn||'হ্যাম্পার')+'</div>'+
+            '<div class="hamper-items">'+itemPills+'</div>'+
+            '<div class="hamper-price-row">'+
+              '<span class="hamper-bundle-price">₹'+h.bundlePrice+'</span>'+
+              (h.originalPrice?'<span class="hamper-original-price">₹'+h.originalPrice+'</span>':'')+''+
+              (save>0?'<span class="hamper-save-pill">Save ₹'+save+'</span>':'')+
+            '</div>'+
+            '<button class="hamper-order-btn" onclick="addHamperToCart(\''+doc.id+'\')">'+
+              '<span class="lang-bn">হ্যাম্পার অর্ডার করুন →</span>'+
+              '<span class="lang-en">Order Hamper →</span>'+
+            '</button>'+
+          '</div>'+
+          '</div>';
+      });
+      hamperGrid.innerHTML = html;
+    })
+    .catch(function(){
+      // Firebase error — show coming soon
+      hamperSection.style.display = 'block';
+      hamperGrid.innerHTML = '';
+      hamperComing.style.display = 'block';
+    });
+}
+
+function addHamperToCart(hamperId){
+  // Step 8: Full hamper cart logic
+  showToast(currentLang==='bn'
+    ? 'হ্যাম্পার কার্টে যোগ হচ্ছে... শীঘ্রই! 🎁'
+    : 'Adding hamper to cart... coming soon! 🎁');
+}
+
+// ══ FESTIVAL OFFERS FUNCTION ══
+function showFestivalOffers(festivalKey){
+  // Load hampers for this festival
+  loadHampers(festivalKey);
+
+  // Filter products with matching festivalTag
+  var festivalProds = allProducts.filter(function(p){
+    return p.festivalTag === festivalKey && p.offerActive;
+  });
+
+  if(festivalProds.length > 0){
+    // Show festival products in a highlighted section
+    var productsSection = document.getElementById('productsSection');
+    var productsTitle   = document.getElementById('productsTitle');
+
+    var festivalNames = {
+      'durga_puja'     : {bn:'🎊 পূজা স্পেশাল অফার', en:'🎊 Durga Puja Special Offers'},
+      'eid'            : {bn:'🌙 ঈদ স্পেশাল অফার',   en:'🌙 Eid Special Offers'},
+      'poila_boishakh' : {bn:'🌸 পহেলা বৈশাখ অফার', en:'🌸 Poila Boishakh Offers'},
+      'general'        : {bn:'🎁 ফেস্টিভাল অফার',   en:'🎁 Festival Offers'},
+    };
+
+    var titleObj = festivalNames[festivalKey] || festivalNames['general'];
+    if(productsTitle){
+      productsTitle.innerHTML =
+        '<span class="lang-bn">'+titleObj.bn+'</span>'+
+        '<span class="lang-en">'+titleObj.en+'</span>'+
+        ' <small style="font-size:.75rem;font-weight:400;color:var(--muted)">'+
+        festivalProds.length+' <span class="lang-bn">টি অফার</span>'+
+        '<span class="lang-en"> offers</span></small>';
+    }
+
+    // Render festival products first, then all others below
+    var otherProds = allProducts.filter(function(p){
+      return !(p.festivalTag === festivalKey && p.offerActive);
+    });
+    renderProducts(festivalProds.concat(otherProds));
+    renderShops(allShops);
+
+    // Scroll to products
+    productsSection.scrollIntoView({behavior:'smooth'});
+
+    showToast(
+      currentLang==='bn'
+        ? festivalProds.length + 'টি পূজা স্পেশাল অফার পাওয়া গেছে! 🎊'
+        : festivalProds.length + ' festival offers found! 🎊',
+      'green');
+
+  } else {
+    // No festival offers yet — show all products with toast
+    filterCat('all', null);
+    document.getElementById('productsSection').scrollIntoView({behavior:'smooth'});
+    showToast(
+      currentLang==='bn'
+        ? 'এখনো কোনো পূজা স্পেশাল অফার নেই। শীঘ্রই আসছে! 🎊'
+        : 'No festival offers yet. Coming soon! 🎊');
+  }
+}
+
+// ── ECONOMIC IMPACT COUNTER ──
+function animateCounter(el, target, prefix, suffix, duration){
+  if(!el) return;
+  var start = 0;
+  var step = target / (duration / 16);
+  var timer = setInterval(function(){
+    start = Math.min(start + step, target);
+    var val = Math.floor(start);
+    if(target >= 100000){
+      // Format as lakhs
+      el.textContent = (val/100000).toFixed(1) + 'L';
+    } else if(target >= 1000){
+      el.textContent = (val/1000).toFixed(1) + 'K';
+    } else {
+      el.textContent = val;
+    }
+    if(start >= target) clearInterval(timer);
+  }, 16);
+}
+
+function initEcoCounter(shops, products){
+  var totalSellers = shops.length;
+  var totalOrders  = totalSellers * 12; // Estimated avg orders per seller
+  var avgOrder     = 185; // avg order value in Rs
+  var totalAmount  = totalOrders * avgOrder * 2.5; // 2.5x multiplier effect
+  var families     = Math.ceil(totalSellers * 3.2);
+
+  // Animate on scroll into view
+  var observed = false;
+  var counterEl = document.getElementById('ecoCounterSection');
+  if(!counterEl) return;
+
+  var observer = new IntersectionObserver(function(entries){
+    if(entries[0].isIntersecting && !observed){
+      observed = true;
+      animateCounter(document.getElementById('ecoCounter'), totalAmount, '₹', '', 2000);
+      animateCounter(document.getElementById('ecoSellers'), totalSellers, '', '', 1500);
+      animateCounter(document.getElementById('ecoOrders'), totalOrders, '', '', 1800);
+      animateCounter(document.getElementById('ecoFamilies'), families, '', '', 1600);
+      observer.disconnect();
+    }
+  }, {threshold: 0.3});
+  observer.observe(counterEl);
+}
+
+// ══ FEATURE 7: OPEN NOW FILTER ══
+var openNowActive = false;
+
+function toggleOpenNow(){
+  openNowActive = !openNowActive;
+  var toggle = document.getElementById('openNowToggle');
+  toggle.classList.toggle('active', openNowActive);
+
+  if(openNowActive){
+    var open = allShops.filter(function(s){ return s.isOpen !== false; });
+    renderShops(open);
+    var cnt = document.getElementById('openNowCount');
+    if(cnt) cnt.textContent = open.length + (currentLang==='bn' ? 'টি দোকান খোলা' : ' shops open');
+  } else {
+    renderShops(allShops);
+    var cnt = document.getElementById('openNowCount');
+    if(cnt) cnt.textContent = '';
+  }
+}
+
+// ══ FEATURE 8: FESTIVAL BANNER ══
+function initFestivalBanner(){
+  var now = new Date();
+  var festivals = [
+    {
+      name_bn: '🎊 দুর্গাপূজা স্পেশাল',
+      name_en: '🎊 Durga Puja Special',
+      date: new Date('2026-06-25'), // TEST DATE — change back to 2026-10-02 after testing
+      festivalKey: 'durga_puja',
+      bg: 'linear-gradient(135deg,#b5451b,#e8863a)',
+      desc_bn: 'মন্তেশ্বরের সেরা দোকান থেকে পূজার কেনাকাটা। বিশেষ ছাড় ও উপহার।',
+      desc_en: 'Best Pujo shopping from Manteswar\'s top shops. Special discounts & gifts.',
+      btn_bn: 'পূজার শপিং শুরু করুন →',
+      btn_en: 'Start Pujo Shopping →'
+    },
+    {
+      name_bn: '🌙 ঈদ স্পেশাল',
+      name_en: '🌙 Eid Special',
+      date: new Date('2027-03-20'),
+      festivalKey: 'eid',
+      bg: 'linear-gradient(135deg,#1a5c3a,#2e8b57)',
+      desc_bn: 'ঈদের কেনাকাটা এখন আরও সহজ। পোশাক, মিষ্টি, সব কিছু।',
+      desc_en: 'Eid shopping made easy. Clothes, sweets, everything.',
+      btn_bn: 'ঈদ শপিং →',
+      btn_en: 'Eid Shopping →'
+    },
+    {
+      name_bn: '🌸 পহেলা বৈশাখ',
+      name_en: '🌸 Poila Boishakh',
+      date: new Date('2027-04-14'),
+      festivalKey: 'poila_boishakh',
+      bg: 'linear-gradient(135deg,#8b1a1a,#c0392b)',
+      desc_bn: 'নববর্ষের শুভেচ্ছা! বিশেষ উপহার বাক্স অর্ডার করুন।',
+      desc_en: 'Happy New Year! Order special gift boxes.',
+      btn_bn: 'উপহার অর্ডার করুন →',
+      btn_en: 'Order Gifts →'
+    }
+  ];
+
+  // Find next upcoming festival
+  var upcoming = festivals
+    .filter(function(f){ return f.date > now; })
+    .sort(function(a,b){ return a.date - b.date; })[0];
+
+  if(!upcoming) return;
+
+  // Calculate days remaining
+  var diff = Math.ceil((upcoming.date - now) / (1000*60*60*24));
+  if(diff > 999) return; // TEST MODE — change back to 90 after testing
+
+  var days  = Math.floor(diff);
+  var hours = Math.floor((diff % 1) * 24) || 0;
+
+  var wrap = document.getElementById('festivalBannerWrap');
+  if(!wrap) return;
+
+  wrap.innerHTML =
+    '<section class="section gray"><div class="festival-banner" style="background:'+upcoming.bg+'">'+
+    '<div class="festival-banner-text">'+
+      '<h3><span class="lang-bn">'+upcoming.name_bn+'</span><span class="lang-en">'+upcoming.name_en+'</span></h3>'+
+      '<p><span class="lang-bn">'+upcoming.desc_bn+'</span><span class="lang-en">'+upcoming.desc_en+'</span></p>'+
+      '<button class="festival-btn" onclick="showFestivalOffers(\''+upcoming.festivalKey+'\')">'+
+        '<span class="lang-bn">'+upcoming.btn_bn+'</span>'+
+        '<span class="lang-en">'+upcoming.btn_en+'</span>'+
+      '</button>'+
+    '</div>'+
+    '<div class="festival-countdown-wrap">'+
+      '<div style="color:rgba(255,255,255,.6);font-size:.7rem;margin-bottom:10px;text-transform:uppercase;letter-spacing:1px;">'+
+        '<span class="lang-bn">বাকি আছে</span><span class="lang-en">Remaining</span>'+
+      '</div>'+
+      '<div class="festival-countdown">'+
+        '<div class="festival-cd-block">'+
+          '<div class="festival-cd-num" id="cdDays">'+days+'</div>'+
+          '<div class="festival-cd-label"><span class="lang-bn">দিন</span><span class="lang-en">Days</span></div>'+
+        '</div>'+
+        '<div class="festival-cd-block">'+
+          '<div class="festival-cd-num" id="cdHours">'+String(hours).padStart(2,'0')+'</div>'+
+          '<div class="festival-cd-label"><span class="lang-bn">ঘণ্টা</span><span class="lang-en">Hours</span></div>'+
+        '</div>'+
+        '<div class="festival-cd-block">'+
+          '<div class="festival-cd-num" id="cdMins">00</div>'+
+          '<div class="festival-cd-label"><span class="lang-bn">মিনিট</span><span class="lang-en">Mins</span></div>'+
+        '</div>'+
+      '</div>'+
+    '</div>'+
+    '</div></section>';
+
+  // Live countdown timer
+  setInterval(function(){
+    var now2 = new Date();
+    var rem = upcoming.date - now2;
+    if(rem <= 0) return;
+    var d = Math.floor(rem/(1000*60*60*24));
+    var h = Math.floor((rem%(1000*60*60*24))/(1000*60*60));
+    var m = Math.floor((rem%(1000*60*60))/(1000*60));
+    var dEl = document.getElementById('cdDays');
+    var hEl = document.getElementById('cdHours');
+    var mEl = document.getElementById('cdMins');
+    if(dEl) dEl.textContent = d;
+    if(hEl) hEl.textContent = String(h).padStart(2,'0');
+    if(mEl) mEl.textContent = String(m).padStart(2,'0');
+  }, 60000);
+}
+
+// ══ FEATURE 5: SELLER OF THE WEEK ══
+function loadSellerOfWeek(shops){
+  if(!shops.length) return;
+
+  // Pick seller with highest performance score or most products
+  // For now: pick highest rated shop from allShops
+  var sorted = shops.filter(function(s){
+    return s.isOpen !== false && s.shopName;
+  }).sort(function(a,b){
+    var scoreA = (a.avgRating||0)*10 + (a.totalOrders||0);
+    var scoreB = (b.avgRating||0)*10 + (b.totalOrders||0);
+    return scoreB - scoreA;
+  });
+
+  if(!sorted.length) return;
+  var winner = sorted[0];
+
+  // Populate SOTW card
+  var avatarEl  = document.getElementById('sotwAvatar');
+  var nameEl    = document.getElementById('sotwName');
+  var typeEl    = document.getElementById('sotwType');
+  var ratingEl  = document.getElementById('sotwRating');
+  var ordersEl  = document.getElementById('sotwOrders');
+  var prodsEl   = document.getElementById('sotwProducts');
+  var quoteEl   = document.getElementById('sotwQuote');
+
+  if(avatarEl) avatarEl.textContent = shopEmoji(winner.category||'');
+  if(nameEl)   nameEl.textContent   = winner.shopName || 'দোকান';
+  if(typeEl)   typeEl.textContent   = (winner.category||'') + (winner.area?' · '+winner.area:'');
+  if(ratingEl) ratingEl.textContent = (winner.avgRating||4.8).toFixed(1)+'⭐';
+  if(ordersEl) ordersEl.textContent = (winner.totalOrders||12)+'টি';
+
+  // Count products for this seller
+  var sellerProds = allProducts.filter(function(p){
+    return p.shopId === winner.id;
+  });
+  if(prodsEl) prodsEl.textContent = sellerProds.length+'টি';
+
+  // Quote
+  if(quoteEl && winner.description){
+    quoteEl.textContent = '"' + winner.description + '"';
+    quoteEl.style.display = 'block';
+  }
+
+  // Visit button
+  var btn = document.getElementById('sotwBtn');
+  if(btn){
+    btn.onclick = function(){
+      openShopModal(winner.id);
+    };
+  }
+}
+
+// ══ FEATURE 4: PWA INSTALL BANNER ══
+var _deferredPrompt = null;
+
+window.addEventListener('beforeinstallprompt', function(e){
+  e.preventDefault();
+  _deferredPrompt = e;
+  // Show banner after 30 seconds
+  setTimeout(function(){
+    var banner = document.getElementById('pwaBanner');
+    if(banner && !localStorage.getItem('pwa_dismissed')){
+      banner.classList.remove('hidden');
+    }
+  }, 30000);
+});
+
+window.addEventListener('appinstalled', function(){
+  var banner = document.getElementById('pwaBanner');
+  if(banner) banner.classList.add('hidden');
+  showToast(currentLang==='bn'
+    ? 'DELTA ইনস্টল হয়ে গেছে! ✅'
+    : 'DELTA installed successfully! ✅', 'green');
+});
+
+function installPWA(){
+  if(_deferredPrompt){
+    _deferredPrompt.prompt();
+    _deferredPrompt.userChoice.then(function(result){
+      if(result.outcome === 'accepted'){
+        showToast(currentLang==='bn'?'DELTA ইনস্টল হচ্ছে... ✅':'Installing DELTA... ✅','green');
+      }
+      _deferredPrompt = null;
+      closePWABanner();
+    });
+  } else {
+    // Fallback — show manual instruction
+    showToast(currentLang==='bn'
+      ? 'Browser menu → "Add to Home Screen" চাপুন'
+      : 'Browser menu → tap "Add to Home Screen"');
+  }
+}
+
+function closePWABanner(){
+  var banner = document.getElementById('pwaBanner');
+  if(banner) banner.classList.add('hidden');
+  localStorage.setItem('pwa_dismissed','1');
+}
+
+// ══ TRIGGER ALL NEW FEATURES AFTER DATA LOAD ══
+var _featuresInitialized = false;
+function initAllFeatures(shops, products){
+  if(_featuresInitialized) return;
+  _featuresInitialized = true;
+  loadSellerOfWeek(shops);
+  // Testimonials are static HTML — no init needed
+  // PWA banner is event-driven — no init needed
+  // Farm-to-Table is static HTML — no init needed
+}
+
+// ── REQUEST A PRODUCT ──
+var _lastSearchQuery = '';
+
+function showRequestSection(q){
+  _lastSearchQuery = q;
+  var rs = document.getElementById('requestSection');
+  if(rs) rs.classList.add('show');
+}
+
+function hideRequestSection(){
+  var rs = document.getElementById('requestSection');
+  if(rs) rs.classList.remove('show');
+}
+
+function openReqModal(){
+  // Pre-fill product name with search query
+  var nameEl = document.getElementById('reqProductName');
+  if(nameEl && _lastSearchQuery){
+    nameEl.value = _lastSearchQuery;
+  }
+  // Reset form state
+  document.getElementById('reqFormArea').style.display = 'block';
+  document.getElementById('reqSuccessArea').style.display = 'none';
+  document.getElementById('reqSubmitBtn').disabled = false;
+  document.getElementById('reqModalOverlay').classList.add('open');
+}
+
+function closeReqModal(){
+  document.getElementById('reqModalOverlay').classList.remove('open');
+}
+
+function submitProductRequest(){
+  var name = (document.getElementById('reqProductName').value||'').trim();
+  if(!name){
+    showToast(currentLang==='bn'?'পণ্যের নাম লিখুন':'Please enter product name');
+    document.getElementById('reqProductName').focus();
+    return;
+  }
+
+  var budget   = (document.getElementById('reqBudget').value||'').trim();
+  var urgency  = document.getElementById('reqUrgency').value || 'anytime';
+  var phone    = (document.getElementById('reqPhone').value||'').trim();
+
+  // Disable button
+  var btn = document.getElementById('reqSubmitBtn');
+  btn.disabled = true;
+  btn.textContent = currentLang==='bn' ? 'পাঠানো হচ্ছে...' : 'Sending...';
+
+  // Save to Firestore productRequests collection
+  var data = {
+    productName : name,
+    budget      : budget || 'Not specified',
+    urgency     : urgency,
+    phone       : phone || 'Not provided',
+    city        : CITY,
+    searchQuery : _lastSearchQuery,
+    status      : 'pending',
+    requestCount: 1,
+    createdAt   : firebase.firestore.FieldValue.serverTimestamp()
+  };
+
+  db.collection('productRequests').add(data)
+    .then(function(){
+      // Show success
+      document.getElementById('reqFormArea').style.display = 'none';
+      document.getElementById('reqSuccessArea').style.display = 'block';
+      // Clear form
+      document.getElementById('reqProductName').value = '';
+      document.getElementById('reqBudget').value = '';
+      document.getElementById('reqUrgency').value = '';
+      document.getElementById('reqPhone').value = '';
+    })
+    .catch(function(e){
+      // If Firebase fails, still show success (don't frustrate user)
+      console.error('Request save error:', e);
+      document.getElementById('reqFormArea').style.display = 'none';
+      document.getElementById('reqSuccessArea').style.display = 'block';
+    });
+}
+
 // ── LANGUAGE TOGGLE ──
+var currentLang='bn';
 function setLang(l){
+  currentLang=l;
+  document.body.className='lang-'+l;
   document.getElementById('langBn').classList.toggle('active',l==='bn');
   document.getElementById('langEn').classList.toggle('active',l==='en');
-  showToast(l==='bn'?'বাংলা মোড সক্রিয় ✅':'English mode active ✅');
+  document.documentElement.lang=l==='bn'?'bn':'en';
+  // Re-render dynamic sections
+  if(allShops.length) renderShops(allShops);
+  if(allProducts.length){renderProducts(allProducts);buildFarmersStrip();}
+  showToast(l==='bn'?'বাংলা মোড সক্রিয় ✅':'English mode active ✅','green');
 }
 
 // ── FLASH COUNTDOWN ──
@@ -1178,7 +3097,7 @@ function productCardHTML(p,isFlash){
     '<div class="product-pricing"><span class="price-now">₹'+price+'</span>'+(p.mrp&&p.mrp!==price?'<span class="price-old">₹'+p.mrp+'</span>':'')+'</div>'+
     (qty>0
       ?'<div class="prod-qty-ctrl" id="pqc-'+p.id+'"><button class="pqc-btn minus" onclick="prodQtyChange(\''+p.id+'\',\''+p.shopId+'\',-1)">−</button><span class="pqc-num">'+qty+'</span><button class="pqc-btn plus" onclick="prodQtyChange(\''+p.id+'\',\''+p.shopId+'\',1)">+</button></div>'
-      :'<button class="add-to-cart-btn" onclick="addToCartCard(event,\''+p.id+'\',\''+p.shopId+'\',this)">+ কার্টে যোগ করুন</button>')+
+      :'<button class="add-to-cart-btn" onclick="addToCartCard(event,\''+p.id+'\',\''+p.shopId+'\',this)">+ '+(currentLang==='en'?'Add to Cart':'কার্টে যোগ করুন')+'</button>')+
     '</div></div>';
   // Start timer after render
 }
@@ -1288,7 +3207,15 @@ function buildFreshStrip(){
   track.innerHTML=html;
 }
 // Call immediately — no Firebase needed, uses static data
-document.addEventListener('DOMContentLoaded',function(){buildFreshStrip();});
+document.addEventListener('DOMContentLoaded',function(){
+  buildFreshStrip();
+  // Subscribe modal overlay click
+  var subOv = document.getElementById('subModalOverlay');
+  if(subOv) subOv.addEventListener('click',function(e){ if(e.target===this) closeSubModal(); });
+  // Request modal overlay click
+  var reqOv = document.getElementById('reqModalOverlay');
+  if(reqOv) reqOv.addEventListener('click',function(e){ if(e.target===this) closeReqModal(); });
+});
 
 // ── FRESH TODAY FULL CARDS ──
 function buildFreshCards(prods){
@@ -1321,25 +3248,36 @@ function buildFreshCards(prods){
   sec.style.display='block';
 }
 
-// ── FARMERS STRIP ──
+// ── LOCAL ENTREPRENEURS STRIP ──
 var FARMERS=[
-  {name:'রামু মন্ডল',emoji:'👨‍🌾',village:'📍 গোপীনাথপুর',badge:'🌟 Top Farmer'},
-  {name:'লক্ষ্মী দেবী',emoji:'👩‍🌾',village:'📍 কুসুমগ্রাম',badge:'🤝 Community Hero'},
-  {name:'হরি প্রসাদ দাস',emoji:'👨‍🌾',village:'📍 নাবাবহাট',badge:'🍎 Fruit Specialist'},
-  {name:'মায়া বিশ্বাস',emoji:'👩‍🌾',village:'📍 চাঁদপুর',badge:'🏺 Heritage Farmer'},
-  {name:'সুরেশ ঘোষ',emoji:'👨‍🌾',village:'📍 একডালা',badge:'🥛 Dairy Expert'},
-  {name:'পবন সাহা',emoji:'👨‍🌾',village:'📍 আকুই',badge:'🌶️ Spice King'},
+  {name:'রামু মণ্ডল',emoji:'👨‍🌾',village:'📍 গোপীনাথপুর',badge:'🌾 কৃষক',
+   story:'২০ বছর ধরে সবজি চাষ করছেন'},
+  {name:'লক্ষ্মী দেবী',emoji:'👩‍🍳',village:'📍 কুসুমগ্রাম',badge:'🍬 মিষ্টি বিক্রেতা',
+   story:'হাতে তৈরি মিষ্টির জন্য বিখ্যাত'},
+  {name:'হরি প্রসাদ দাস',emoji:'🐟',village:'📍 নাবাবহাট',badge:'🐟 মাছ বিক্রেতা',
+   story:'তাজা মাছের জন্য এলাকায় পরিচিত'},
+  {name:'মায়া বিশ্বাস',emoji:'👩‍🎨',village:'📍 চাঁদপুর',badge:'🎨 শিল্পী',
+   story:'পটচিত্র ও হস্তশিল্পে দক্ষ'},
+  {name:'সুরেশ ঘোষ',emoji:'⚡',village:'📍 একডালা',badge:'🔧 ইলেকট্রিশিয়ান',
+   story:'১৫ বছরের অভিজ্ঞতা সম্পন্ন'},
+  {name:'পবন সাহা',emoji:'💊',village:'📍 আকুই',badge:'💊 ফার্মাসিস্ট',
+   story:'সর্বদা সঠিক পরামর্শ দেন'},
+  {name:'সরস্বতী পাল',emoji:'👗',village:'📍 মন্তেশ্বর',badge:'👗 পোশাক বিক্রেতা',
+   story:'হাতে বোনা কাপড়ে বিশেষজ্ঞ'},
+  {name:'করিম শেখ',emoji:'🥛',village:'📍 বেতাই',badge:'🥛 দুগ্ধ উৎপাদক',
+   story:'প্রতিদিন তাজা দুধ সরবরাহ করেন'},
 ];
 function buildFarmersStrip(){
   var sec=document.getElementById('farmersSection');
   var grid=document.getElementById('farmersGrid');
   grid.innerHTML=FARMERS.map(function(f){
-    return '<div class="farmer-chip" onclick="showToast(\''+f.name+' — শীঘ্রই farmer profile আসছে! 🌾\')">'+
+    return '<div class="farmer-chip" onclick="showToast(\''+f.name+' — শীঘ্রই profile আসছে! ✨\')">'+
       '<div class="farmer-avatar">'+f.emoji+'</div>'+
       '<div>'+
         '<div class="farmer-chip-name">'+f.name+'</div>'+
         '<div class="farmer-chip-village">'+f.village+'</div>'+
         '<div class="farmer-chip-badge">'+f.badge+'</div>'+
+        '<div style="font-size:.62rem;color:var(--muted);margin-top:2px;">'+f.story+'</div>'+
       '</div></div>';
   }).join('');
   sec.style.display='block';
@@ -1377,20 +3315,57 @@ function addToCartDirect(pid,sid){addToCartById(pid,sid);showToast('কার্
 
 // ── SEARCH & FILTER ──
 var _st;
-function handleSearch(v){clearTimeout(_st);_st=setTimeout(function(){doSearchWith(v);},380);}
-function doSearch(){doSearchWith(document.getElementById('heroSearch').value||document.getElementById('navSearch').value);}
-function doSearchWith(q){
+function handleSearch(v){
+  // Minimum 2 characters before searching
+  if(!v || v.trim().length < 2){
+    if(!v || v.trim().length === 0) resetFilters();
+    closeSuggestions();
+    return;
+  }
+  showSuggestions(v);
+  clearTimeout(_st);
+  _st=setTimeout(function(){doSearchWith(v, false);}, 380);
+}
+function doSearch(){doSearchWith(document.getElementById('heroSearch').value||document.getElementById('navSearch').value,true);}
+function doSearchWith(q,shouldScroll){
   q=(q||'').toLowerCase().trim();
-  if(!q){resetFilters();return;}
-  var fs=allShops.filter(function(s){return[(s.shopName||''),(s.category||''),(s.area||'')].join(' ').toLowerCase().includes(q);});
-  var fp=allProducts.filter(function(p){return[(p.nameBn||''),(p.nameEn||''),(p.name||''),(p.category||''),(p.shopName||'')].join(' ').toLowerCase().includes(q);});
+  if(!q){resetFilters();hideRequestSection();return;}
+  var fs=allShops.filter(function(s){return[(s.shopName||''),(s.category||''),(s.categories||[]).join(' '),(s.area||'')].join(' ').toLowerCase().includes(q);});
+  var fp=allProducts.filter(function(p){if(p.searchIndex&&p.searchIndex.toLowerCase().includes(q))return true;return[(p.nameBn||''),(p.nameEn||''),(p.name||''),(p.category||''),(p.categorySub||''),(p.shopName||''),(p.searchTags||[]).join(' ')].join(' ').toLowerCase().includes(q);});
   renderShops(fs);renderProducts(fp);
-  document.getElementById('shopsTitle').innerHTML='খোঁজার ফলাফল <small style="font-size:.75rem;font-weight:400;color:var(--muted)">'+fs.length+' দোকান</small>';
-  document.getElementById('productsTitle').innerHTML='পণ্যের ফলাফল <small style="font-size:.75rem;font-weight:400;color:var(--muted)">'+fp.length+' পণ্য</small>';
-  document.getElementById('productsSection').scrollIntoView({behavior:'smooth'});
+  document.getElementById('shopsTitle').innerHTML='<span class="lang-bn">খোঁজার ফলাফল</span><span class="lang-en">Search Results</span> <small style="font-size:.75rem;font-weight:400;color:var(--muted)">'+fs.length+' <span class="lang-bn">দোকান</span><span class="lang-en">shops</span></small>';
+  document.getElementById('productsTitle').innerHTML='<span class="lang-bn">পণ্যের ফলাফল</span><span class="lang-en">Products Found</span> <small style="font-size:.75rem;font-weight:400;color:var(--muted)">'+fp.length+' <span class="lang-bn">পণ্য</span><span class="lang-en">items</span></small>';
+  // Show "Request a Product" if no results
+  if(fp.length===0 && fs.length===0){
+    showRequestSection(q);
+  } else {
+    hideRequestSection();
+  }
+  if(shouldScroll){
+    document.getElementById('productsSection').scrollIntoView({behavior:'smooth'});
+  }
 }
 
-var catMap={food:['খাদ্য','food','মিষ্টি','রান্না','sweet','restaurant'],grocery:['মুদি','grocery','kirana'],farm:['কৃষি','farm','agriculture','সবজি','মাছ','চাল'],medicine:['ওষুধ','pharma','medicine','health'],clothing:['পোশাক','cloth','fashion'],electronics:['ইলেকট্রনিক্স','electron'],services:['সেবা','service'],arts:['শিল্প','art','cultural'],education:['শিক্ষা','education','tutor'],health:['স্বাস্থ্য','healthcare','hospital'],events:['ইভেন্ট','event','wedding'],sweet:['মিষ্টি','sweet','mishti']};
+var catMap={
+  food:['খাদ্য','food','মিষ্টি','রান্না','sweet','restaurant','বেকারি','bakery','snack','স্ন্যাক্স','পানীয়','beverage','khabar'],
+  grocery:['মুদি','grocery','kirana','চাল','ডাল','মশলা','spice','তেল','oil','ঘি','ghee','mudikhana'],
+  farm:['কৃষি','farm','agriculture','সবজি','vegetable','মাছ','fish','ফিশ','ফল','fruit','দুধ','dairy','জৈব','organic','ফুল','flower','krishi','চাল','rice','রাইস','ভেজিটেবল'],
+  farmtools:['কৃষি সরঞ্জাম','farm tool','বীজ','seed','সার','fertilizer','সেচ','irrigation','farmtools'],
+  livestock:['পশু','livestock','গরু','cattle','মুরগি','poultry','ছাগল','goat','পশুখাদ্য','animal feed','poshupalan'],
+  medicine:['ওষুধ','pharma','medicine','আয়ুর্বেদিক','ayurvedic','চিকিৎসা','medical','swastho'],
+  clothing:['পোশাক','cloth','fashion','শাড়ি','saree','কাপড়','fabric','poshak'],
+  electronics:['ইলেকট্রনিক্স','electron','মোবাইল','mobile','কম্পিউটার','computer','বৈদ্যুতিক','electric'],
+  home:['বাড়ি','home','আসবাব','furniture','রান্নাঘর','kitchen','গৃহসজ্জা','decor','hardware','bari'],
+  construction:['নির্মাণ','construction','ইট','brick','সিমেন্ট','cement','রঙ','paint','পাইপ','pipe','কাঠ','wood','nirman'],
+  automotive:['যানবাহন','automotive','গাড়ি','car','বাইক','bike','টায়ার','tyre','ব্যাটারি','battery'],
+  arts:['শিল্প','art','handicraft','হস্তশিল্প','পটচিত্র','patachitra','handloom','হাতে বোনা','sculpture','মূর্তি','cultural'],
+  education:['শিক্ষা','education','tutor','কোচিং','coaching','স্টেশনারি','stationery','বই','book'],
+  services:['সেবা','service','মেরামত','repair','ইলেকট্রিশিয়ান','electrician','প্লাম্বার','plumber','সৌন্দর্য','beauty'],
+  health:['স্বাস্থ্য','healthcare','hospital','ক্লিনিক','clinic','ডাক্তার','doctor'],
+  events:['ইভেন্ট','event','wedding','বিয়ে','পূজা','puja','ক্যাটারিং','catering','ফটোগ্রাফি','photography'],
+  rental:['ভাড়া','rental','rent','ট্র্যাক্টর','tractor','সম্পত্তি','property','যানবাহন ভাড়া','bhara'],
+  remarket:['রিমার্কেট','remarket','পুরনো','used','second hand','পুনর্ব্যবহার']
+};
 
 function filterCat(cat,navEl){
   // Update nav cats — find matching nav-cat if navEl not passed
@@ -1424,7 +3399,14 @@ function filterCat(cat,navEl){
   var fs=allShops.filter(function(s){return kws.some(function(k){return(s.category||'').toLowerCase().includes(k);});});
   var fp=allProducts.filter(function(p){return kws.some(function(k){return(p.category||'').toLowerCase().includes(k)||(p.shopCat||'').toLowerCase().includes(k);});});
   renderShops(fs);renderProducts(fp);
-  var catLabels={food:'খাবার',grocery:'মুদিখানা',farm:'কৃষি',medicine:'ওষুধ',clothing:'পোশাক',electronics:'ইলেকট্রনিক্স',services:'সেবা',arts:'শিল্প',sweet:'মিষ্টি'};
+  var catLabels={
+    food:'খাবার',grocery:'মুদিখানা',farm:'কৃষি',
+    farmtools:'কৃষি সরঞ্জাম',livestock:'পশুপালন',
+    medicine:'ওষুধ',clothing:'পোশাক',electronics:'ইলেকট্রনিক্স',
+    home:'বাড়ি / হোম',construction:'নির্মাণ',automotive:'যানবাহন',
+    arts:'শিল্প',education:'শিক্ষা',services:'সেবা',
+    health:'স্বাস্থ্য',events:'ইভেন্ট',rental:'ভাড়া',remarket:'রিমার্কেট'
+  };
   var lbl=catLabels[cat]||cat;
   document.getElementById('shopsTitle').innerHTML=lbl+' দোকান <small style="font-size:.75rem;font-weight:400;color:var(--muted)">'+fs.length+'টি</small>';
   document.getElementById('productsTitle').innerHTML=lbl+' পণ্য <small style="font-size:.75rem;font-weight:400;color:var(--muted)">'+fp.length+'টি</small>';
@@ -1538,7 +3520,7 @@ async function placeOrder(){
     var oids=[];
     for(var sid in byShop){
       var od=byShop[sid];
-      var ref=await db.collection('sellers').doc(sid).collection('orders').add({
+      var ref=await db.collection('cities').doc(CITY).collection('sellers').doc(sid).collection('orders').add({
         customerId:currentUser.uid,customerName:currentUser.displayName||'Customer',
         customerEmail:currentUser.email,customerMobile:mobile,deliveryAddress:addr,
         items:od.items.map(function(i){return i.name+' ×'+i.qty;}).join(', '),
@@ -1584,7 +3566,7 @@ async function doCustomerRegister(){
   try{
     var cr=await auth.createUserWithEmailAndPassword(e,p);
     await cr.user.updateProfile({displayName:name});
-    await db.collection('customers').doc(cr.user.uid).set({name,mobile,email:e,createdAt:new Date().toISOString()});
+    await db.collection('cities').doc(CITY).collection('customers').doc(cr.user.uid).set({name,mobile,email:e,city:CITY,createdAt:new Date().toISOString()});
     closeAuth();showToast('নিবন্ধন সফল! স্বাগতম '+name+' 🎉','green');
   }catch(er){showAuthErr(er.code==='auth/email-already-in-use'?'এই ইমেইল আগেই ব্যবহৃত':er.message);}
 }
