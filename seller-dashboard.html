@@ -1104,6 +1104,22 @@ select.form-input{cursor:pointer;}
               placeholder="যেমন: RAHIM20 (customer এই code দিলে offer পাবে)"
               oninput="this.value=this.value.toUpperCase();updateOfferPreview()">
           </div>
+          <!-- FESTIVAL TAG -->
+          <div class="form-group">
+            <label>🎊 Festival Tag (optional)</label>
+            <select class="form-input" id="fFestivalTag" onchange="updateOfferPreview()">
+              <option value="">কোনো festival নয় / No festival</option>
+              <option value="durga_puja">🎊 দুর্গাপূজা স্পেশাল</option>
+              <option value="eid">🌙 ঈদ স্পেশাল</option>
+              <option value="poila_boishakh">🌸 পহেলা বৈশাখ স্পেশাল</option>
+              <option value="christmas">🎄 Christmas Special</option>
+              <option value="new_year">🎆 New Year Special</option>
+              <option value="general">🎁 General Festival Offer</option>
+            </select>
+            <div style="font-size:.72rem;color:var(--muted);margin-top:4px;">
+              💡 Festival tag দিলে customer homepage এর festival banner এ এই পণ্য দেখাবে।
+            </div>
+          </div>
           <!-- Preview -->
           <div id="offerPreview" style="background:#fff;border-radius:8px;padding:10px;
             border:1px solid rgba(26,138,74,.2);margin-top:10px">
@@ -1263,16 +1279,32 @@ function doRegister(){
   var pass=document.getElementById('rPass').value;
   var catDataRaw=document.getElementById('rCatData').value;
   var categories=catDataRaw?JSON.parse(catDataRaw):[];
-  var primaryCat=categories[0]||'';
+  // Get category from dropdown directly if catData empty
+  if(!categories.length){
+    var directCat=document.getElementById('rCat').value;
+    if(directCat&&!directCat.includes('বেছে নিন'))categories=[directCat];
+  }
+  var primaryCat=categories[0]||'অন্যান্য / Other';
   var err=document.getElementById('regErr');
+  var btn=document.getElementById('regBtn');
   err.style.display='none';
-  if(!shopType){err.textContent='আপনি কে সেটা বেছে নিন।';err.style.display='block';return;}
-  if(!shop){err.textContent='নাম দিন।';err.style.display='block';return;}
-  if(!owner){err.textContent='মালিকের নাম দিন।';err.style.display='block';return;}
-  if(!primaryCat){err.textContent='কমপক্ষে একটি category বেছে নিন।';err.style.display='block';return;}
-  if(!email){err.textContent='Email দিন।';err.style.display='block';return;}
-  if(pass.length<6){err.textContent='পাসওয়ার্ড কমপক্ষে ৬ অক্ষর।';err.style.display='block';return;}
-  var btn=document.getElementById('regBtn'); btn.disabled=true; btn.textContent='নিবন্ধন হচ্ছে...';
+  if(!shop){
+    err.textContent='নাম দিন।';err.style.display='block';
+    btn.disabled=false;btn.textContent='✅ নিবন্ধন করুন';return;
+  }
+  if(!owner){
+    err.textContent='মালিকের নাম দিন।';err.style.display='block';
+    btn.disabled=false;btn.textContent='✅ নিবন্ধন করুন';return;
+  }
+  if(!email){
+    err.textContent='Email দিন।';err.style.display='block';
+    btn.disabled=false;btn.textContent='✅ নিবন্ধন করুন';return;
+  }
+  if(pass.length<6){
+    err.textContent='পাসওয়ার্ড কমপক্ষে ৬ অক্ষর।';err.style.display='block';
+    btn.disabled=false;btn.textContent='✅ নিবন্ধন করুন';return;
+  }
+  btn.disabled=true; btn.textContent='নিবন্ধন হচ্ছে...';
   auth.createUserWithEmailAndPassword(email,pass).then(function(cr){
     return sellerRef(cr.user.uid).set({
       shopName:shop, ownerName:owner, mobile:phone, area:area,
@@ -1343,24 +1375,34 @@ var PAGE_TITLES = {
 function setLang(lang){
   currentLang = lang;
   // Update toggle buttons
-  document.getElementById('langBnBtn').classList.toggle('active', lang==='bn');
-  document.getElementById('langEnBtn').classList.toggle('active', lang==='en');
-  // Update all data-lang elements
+  var bnBtn = document.getElementById('langBnBtn');
+  var enBtn = document.getElementById('langEnBtn');
+  if(bnBtn) bnBtn.classList.toggle('active', lang==='bn');
+  if(enBtn) enBtn.classList.toggle('active', lang==='en');
+  // Update ALL data-lang elements in one pass
   document.querySelectorAll('[data-lang-bn]').forEach(function(el){
-    el.textContent = lang==='bn' ? el.getAttribute('data-lang-bn') : el.getAttribute('data-lang-en');
+    var val = lang==='bn' ? el.getAttribute('data-lang-bn') : el.getAttribute('data-lang-en');
+    if(val) el.textContent = val;
   });
-  // Update page title
-  var activePage = document.querySelector('.page.active');
-  if(activePage){
-    var pageId = activePage.id.replace('page-','');
-    var titles = PAGE_TITLES[pageId];
-    if(titles) document.getElementById('pageTitle').textContent = titles[lang];
-  }
-  // Update product count text
-  document.getElementById('prodCount').textContent =
-    products.length + (lang==='bn'?' পণ্য':' products');
-  document.getElementById('orderCount').textContent =
-    orders.length + (lang==='bn'?' অর্ডার':' orders');
+  // Update page title safely
+  try{
+    var activePage = document.querySelector('.page.active');
+    if(activePage){
+      var pageId = activePage.id.replace('page-','');
+      var titles = PAGE_TITLES[pageId];
+      var ptEl = document.getElementById('pageTitle');
+      if(titles && ptEl) ptEl.textContent = titles[lang];
+    }
+  }catch(e){}
+  // Update counts safely
+  try{
+    var pcEl = document.getElementById('prodCount');
+    var ocEl = document.getElementById('orderCount');
+    var pLen = (typeof products !== 'undefined') ? products.length : 0;
+    var oLen = (typeof orders !== 'undefined') ? orders.length : 0;
+    if(pcEl) pcEl.textContent = pLen + (lang==='bn'?' পণ্য':' products');
+    if(ocEl) ocEl.textContent = oLen + (lang==='bn'?' অর্ডার':' orders');
+  }catch(e){}
   // Save preference to Firebase
   if(CU) sellerRef().update({language:lang}).catch(function(){});
   showToast(lang==='bn'?'বাংলা ভাষা সক্রিয় ✅':'English language active ✅','green');
@@ -1566,6 +1608,7 @@ async function saveProduct(){
     offerActive:offerActive,
     offerLabel:offerActive?document.getElementById('fOfferLabel').value:'',
     couponCode:offerActive?document.getElementById('fCouponCode').value:'',
+    festivalTag:offerActive?(document.getElementById('fFestivalTag').value||''):'',
     offerEndTime:offerActive?getOfferEndTimestamp():null,
   };
 
@@ -2525,6 +2568,7 @@ function clearOfferFields(){
   document.getElementById('fOfferDuration').value='1d';
   document.getElementById('fOfferLabel').value='Flash Sale';
   document.getElementById('fCouponCode').value='';
+  document.getElementById('fFestivalTag').value='';
 }
 
 function loadOfferFields(p){
@@ -2533,6 +2577,7 @@ function loadOfferFields(p){
   document.getElementById('offerFields').style.display='block';
   document.getElementById('fOfferLabel').value=p.offerLabel||'Flash Sale';
   document.getElementById('fCouponCode').value=p.couponCode||'';
+  document.getElementById('fFestivalTag').value=p.festivalTag||'';
   if(p.offerEndTime){
     document.getElementById('fOfferDuration').value='custom';
     document.getElementById('customEndGroup').style.display='block';
