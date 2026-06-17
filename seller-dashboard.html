@@ -1415,8 +1415,12 @@ function loadSellerData(){
       if(SD.language && SD.language !== currentLang){
         setLang(SD.language);
       }
-      updateSidebar(); loadProfile();
+    } else {
+      // Document doesn't exist yet (e.g. account created but profile never saved) —
+      // initialize SD as an empty object so later Object.assign/save calls don't crash
+      SD={};
     }
+    updateSidebar(); loadProfile();
     productsRef().orderBy('createdAt','desc').get().then(function(snap){
       products=[]; snap.forEach(function(d){products.push(Object.assign({id:d.id},d.data()));});
       updateProductStats();
@@ -2888,6 +2892,7 @@ function saveProfile(){
     updatedAt:new Date().toISOString()
   };
   sellerRef().set(upd, {merge:true}).then(function(){
+    if(!SD) SD={};
     Object.assign(SD,upd); updateSidebar(); loadProfile();
     showToast('প্রোফাইল সেভ হয়েছে ✅','green');
     btn.disabled=false; btn.textContent='💾 সেভ করুন';
