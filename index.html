@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="bn">
 <head>
 <meta charset="UTF-8">
@@ -3683,10 +3683,14 @@ document.addEventListener('DOMContentLoaded',function(){
   if(reqOv) reqOv.addEventListener('click',function(e){ if(e.target===this) closeReqModal(); });
 });
 
-// Fix: browser Back/Forward button restores a cached page snapshot (bfcache) where the
-// HTML is intact but allShops/allProducts have reset to empty — showing "no shop added yet"
-// until a manual refresh. loadData() has its own in-progress guard (_loadDataInProgress),
-// so calling it here is always safe even if it overlaps with the initial page load.
+// Fix: browser Back/Forward button was restoring a cached page snapshot (bfcache) where
+// allShops/allProducts had reset to empty, showing "no shop/product added yet" until a
+// manual refresh. The presence of an 'unload' listener tells browsers to NOT use bfcache
+// for this page, forcing a full fresh reload (re-running all init/load logic) on back/forward
+// navigation instead of restoring a stale snapshot. This is the most reliable cross-browser fix.
+window.addEventListener('unload', function(){});
+
+// Backup safety net in case some browser still restores a stale snapshot despite the above.
 window.addEventListener('pageshow', function(event){
   setTimeout(function(){
     if(!allShops.length && !allProducts.length && typeof db !== 'undefined' && db){
