@@ -2254,10 +2254,7 @@ function skipGate(){
   // Not saved to localStorage on skip — will ask again next visit
 }
 
-var _loadDataInProgress = false;
 async function loadData(retryCount){
-  if(_loadDataInProgress) return; // prevent duplicate concurrent calls (e.g. from pageshow firing close to initial load)
-  _loadDataInProgress = true;
   retryCount = retryCount || 0;
   try{
     var snap=await db.collection('cities').doc(CITY).collection('sellers').get();
@@ -2285,18 +2282,15 @@ async function loadData(retryCount){
     initFestivalBanner();
     updateSubCount();
     initAllFeatures(allShops, allProducts);
-    _loadDataInProgress = false;
   }catch(e){
     console.error('DELTA loadData error (attempt '+(retryCount+1)+'):', e);
     if(retryCount < 2){
       // Retry after a short delay — handles transient network hiccups
-      _loadDataInProgress = false; // allow the retry call through
       setTimeout(function(){ loadData(retryCount+1); }, 1200);
       return;
     }
     renderShops([]);renderProducts([]);
     showToast('ডেটা লোড সমস্যা। Internet চেক করুন। ('+(e.code||e.message||'unknown')+')');
-    _loadDataInProgress = false;
   }
 }
 
