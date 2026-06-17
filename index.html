@@ -3679,11 +3679,15 @@ document.addEventListener('DOMContentLoaded',function(){
 
 // Fix: browser Back/Forward button restores a cached page snapshot (bfcache) where the
 // HTML is intact but allShops/allProducts have reset to empty — showing "no shop added yet"
-// until a manual refresh. Detect bfcache restoration and reload data automatically.
+// until a manual refresh. event.persisted is not reliable across all browsers, so we also
+// directly check if data is empty whenever the page becomes visible again. Calling loadData()
+// directly (not detectCity) avoids re-triggering the GPS/pincode prompt unnecessarily.
 window.addEventListener('pageshow', function(event){
-  if(event.persisted){
-    if(typeof detectCity === 'function') detectCity();
-  }
+  setTimeout(function(){
+    if((!allShops.length && !allProducts.length) && typeof db !== 'undefined' && db){
+      loadData();
+    }
+  }, 300);
 });
 
 // ── FRESH TODAY FULL CARDS ──
