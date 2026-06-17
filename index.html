@@ -2254,7 +2254,10 @@ function skipGate(){
   // Not saved to localStorage on skip — will ask again next visit
 }
 
+var _loadDataInProgress = false;
 async function loadData(retryCount){
+  if(_loadDataInProgress) return; // prevent duplicate concurrent calls (e.g. from pageshow firing close to initial load)
+  _loadDataInProgress = true;
   retryCount = retryCount || 0;
   try{
     var snap=await db.collection('cities').doc(CITY).collection('sellers').get();
@@ -2282,15 +2285,18 @@ async function loadData(retryCount){
     initFestivalBanner();
     updateSubCount();
     initAllFeatures(allShops, allProducts);
+    _loadDataInProgress = false;
   }catch(e){
     console.error('DELTA loadData error (attempt '+(retryCount+1)+'):', e);
     if(retryCount < 2){
       // Retry after a short delay — handles transient network hiccups
+      _loadDataInProgress = false; // allow the retry call through
       setTimeout(function(){ loadData(retryCount+1); }, 1200);
       return;
     }
     renderShops([]);renderProducts([]);
     showToast('ডেটা লোড সমস্যা। Internet চেক করুন। ('+(e.code||e.message||'unknown')+')');
+    _loadDataInProgress = false;
   }
 }
 
@@ -3679,15 +3685,14 @@ document.addEventListener('DOMContentLoaded',function(){
 
 // Fix: browser Back/Forward button restores a cached page snapshot (bfcache) where the
 // HTML is intact but allShops/allProducts have reset to empty — showing "no shop added yet"
-// until a manual refresh. event.persisted is not reliable across all browsers, so we also
-// directly check if data is empty whenever the page becomes visible again. Calling loadData()
-// directly (not detectCity) avoids re-triggering the GPS/pincode prompt unnecessarily.
+// until a manual refresh. loadData() has its own in-progress guard (_loadDataInProgress),
+// so calling it here is always safe even if it overlaps with the initial page load.
 window.addEventListener('pageshow', function(event){
   setTimeout(function(){
-    if((!allShops.length && !allProducts.length) && typeof db !== 'undefined' && db){
+    if(!allShops.length && !allProducts.length && typeof db !== 'undefined' && db){
       loadData();
     }
-  }, 300);
+  }, 500);
 });
 
 // ── FRESH TODAY FULL CARDS ──
