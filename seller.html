@@ -1641,12 +1641,24 @@ function requestRegCategory(idx){
     'https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js',
     'https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js'
   ];
-  var n=0;
+  var n=0, fbInitDone=false, hadError=false;
+  function tryInit(){
+    if(fbInitDone) return;
+    fbInitDone=true;
+    if(hadError || typeof firebase==='undefined'){
+      showToast('Internet সংযোগ সমস্যা — Page reload করুন','red');
+      return;
+    }
+    initFB();
+  }
   scripts.forEach(function(src){
     var s=document.createElement('script');s.src=src;
-    s.onload=function(){if(++n===scripts.length)initFB();};
+    s.onload=function(){ n++; if(n===scripts.length) tryInit(); };
+    s.onerror=function(){ hadError=true; n++; if(n===scripts.length) tryInit(); };
     document.head.appendChild(s);
   });
+  // Safety net: if scripts hang (no load/error event fires within 8s), try init anyway
+  setTimeout(tryInit, 8000);
 })();
 
 function initFB(){
@@ -1664,6 +1676,12 @@ function showToast(msg,type){
 }
 
 async function doRegister(){
+  var err=document.getElementById('regErr');
+  if(typeof auth==='undefined' || !auth){
+    err.textContent='⚠️ Internet সংযোগ ধীর — পেজ Reload করে আবার চেষ্টা করুন।';
+    err.style.display='block';
+    return;
+  }
   var shop=document.getElementById('rShop').value.trim();
   var owner=document.getElementById('rOwner').value.trim();
   var phone=document.getElementById('rPhone').value.trim();
@@ -1674,7 +1692,6 @@ async function doRegister(){
   var primaryCat=categories[0]||'';
   var email=document.getElementById('rEmail').value.trim();
   var pass=document.getElementById('rPass').value;
-  var err=document.getElementById('regErr');
   err.style.display='none';
   if(!shopType){err.textContent='আপনি কে সেটা বেছে নিন।';err.style.display='block';return;}
   if(!shop){err.textContent='নাম দিন।';err.style.display='block';return;}
