@@ -179,7 +179,11 @@ function initFB(){
     var db=firebase.firestore();
     db.collection('cities').doc(CITY).collection('sellers').get().then(function(snap){
       allShops=[];
-      snap.forEach(function(d){ allShops.push(Object.assign({id:d.id},d.data())); });
+      snap.forEach(function(d){
+        var shop = Object.assign({id:d.id},d.data());
+        if(shop.status === 'pending') return; // hide shops awaiting admin approval
+        allShops.push(shop);
+      });
       renderShopsGrid(allShops);
     }).catch(function(){ renderShopsGrid([]); });
   }catch(e){ renderShopsGrid([]); }
