@@ -779,6 +779,55 @@ select.form-input{cursor:pointer;}
               <input type="text" class="form-input" id="pDesc" placeholder="সংক্ষিপ্ত বিবরণ..."></div>
           </div>
 
+          <!-- ═══ SHOP PHOTO GALLERY SECTION ═══ -->
+          <div class="shop-gallery-section" style="margin-top:22px;padding-top:18px;border-top:2px dashed var(--border)">
+            <h3 style="font-size:.95rem;font-weight:800;color:var(--navy);margin-bottom:4px">
+              <span data-lang-bn="🖼️ দোকানের ছবি" data-lang-en="🖼️ Shop Photos">🖼️ দোকানের ছবি</span>
+            </h3>
+            <p style="font-size:.72rem;color:var(--gray);margin-bottom:14px" data-lang-bn="আপনার দোকানের ভিতরে/বাইরের ছবি দিন — হোমপেজে কাস্টমাররা দেখতে পাবে (সর্বোচ্চ ৬টি)"
+               data-lang-en="Add photos of your shop inside/outside — customers will see these on the homepage (max 6)">আপনার দোকানের ভিতরে/বাইরের ছবি দিন — হোমপেজে কাস্টমাররা দেখতে পাবে (সর্বোচ্চ ৬টি)</p>
+
+            <div class="img-upload-grid" id="shopGalleryGrid" style="grid-template-columns:repeat(6,1fr);">
+              <div class="img-slot" id="shopGSlot0" onclick="triggerShopGalleryImg(0)">
+                <img id="shopGImg0" style="display:none">
+                <span class="slot-plus">+</span>
+                <button class="del-img-btn" onclick="delShopGalleryImg(event,0)">✕</button>
+              </div>
+              <div class="img-slot" id="shopGSlot1" onclick="triggerShopGalleryImg(1)">
+                <img id="shopGImg1" style="display:none">
+                <span class="slot-plus">+</span>
+                <button class="del-img-btn" onclick="delShopGalleryImg(event,1)">✕</button>
+              </div>
+              <div class="img-slot" id="shopGSlot2" onclick="triggerShopGalleryImg(2)">
+                <img id="shopGImg2" style="display:none">
+                <span class="slot-plus">+</span>
+                <button class="del-img-btn" onclick="delShopGalleryImg(event,2)">✕</button>
+              </div>
+              <div class="img-slot" id="shopGSlot3" onclick="triggerShopGalleryImg(3)">
+                <img id="shopGImg3" style="display:none">
+                <span class="slot-plus">+</span>
+                <button class="del-img-btn" onclick="delShopGalleryImg(event,3)">✕</button>
+              </div>
+              <div class="img-slot" id="shopGSlot4" onclick="triggerShopGalleryImg(4)">
+                <img id="shopGImg4" style="display:none">
+                <span class="slot-plus">+</span>
+                <button class="del-img-btn" onclick="delShopGalleryImg(event,4)">✕</button>
+              </div>
+              <div class="img-slot" id="shopGSlot5" onclick="triggerShopGalleryImg(5)">
+                <img id="shopGImg5" style="display:none">
+                <span class="slot-plus">+</span>
+                <button class="del-img-btn" onclick="delShopGalleryImg(event,5)">✕</button>
+              </div>
+            </div>
+            <input type="file" id="shopGalleryFileInput" accept="image/*" style="display:none" onchange="handleShopGalleryUpload(this)">
+            <div id="shopGalleryProg" style="display:none;margin-top:8px">
+              <div style="height:6px;background:var(--cream);border-radius:4px;overflow:hidden">
+                <div id="shopGalleryFill" style="height:100%;width:0;background:var(--orange);transition:width .3s"></div>
+              </div>
+              <small id="shopGalleryMsg" style="color:var(--gray);font-size:.7rem"></small>
+            </div>
+          </div>
+
           <!-- ═══ STORY / PROFILE SHOWCASE SECTION ═══ -->
           <div class="story-section" style="margin-top:22px;padding-top:18px;border-top:2px dashed var(--border)">
             <h3 style="font-size:.95rem;font-weight:800;color:var(--navy);margin-bottom:4px">
@@ -2693,6 +2742,46 @@ function delImg(e,slot){
   document.getElementById('slot'+slot).classList.remove('has-img');
 }
 
+// ═══ SHOP PHOTO GALLERY (multiple images) ═══
+var shopGalleryUrls = [null,null,null,null,null,null];
+var activeShopGallerySlot = 0;
+
+function triggerShopGalleryImg(slot){
+  activeShopGallerySlot = slot;
+  document.getElementById('shopGalleryFileInput').click();
+}
+
+async function handleShopGalleryUpload(input){
+  var file=input.files[0]; if(!file)return;
+  var prog=document.getElementById('shopGalleryProg');
+  var fill=document.getElementById('shopGalleryFill');
+  var msg=document.getElementById('shopGalleryMsg');
+  prog.style.display='block'; msg.textContent='ছবি আপলোড হচ্ছে...'; fill.style.width='20%';
+  var fd=new FormData();
+  fd.append('file',file); fd.append('upload_preset',PRESET); fd.append('cloud_name',CLOUD);
+  fd.append('folder','delta/shop_gallery');
+  try{
+    fill.style.width='60%';
+    var res=await fetch('https://api.cloudinary.com/v1_1/'+CLOUD+'/image/upload',{method:'POST',body:fd});
+    var data=await res.json(); fill.style.width='100%';
+    if(data.secure_url){
+      shopGalleryUrls[activeShopGallerySlot]=data.secure_url;
+      var img=document.getElementById('shopGImg'+activeShopGallerySlot);
+      img.src=data.secure_url; img.style.display='block';
+      document.getElementById('shopGSlot'+activeShopGallerySlot).classList.add('has-img');
+      setTimeout(function(){prog.style.display='none';fill.style.width='0';},800);
+      showToast('ছবি আপলোড সফল ✅','green');
+    } else { throw new Error(data.error?data.error.message:'Upload failed'); }
+  }catch(e){prog.style.display='none';fill.style.width='0';showToast('ছবি আপলোড ব্যর্থ: '+e.message,'red');}
+  input.value='';
+}
+
+function delShopGalleryImg(e,slot){
+  e.stopPropagation(); shopGalleryUrls[slot]=null;
+  var img=document.getElementById('shopGImg'+slot); img.src=''; img.style.display='none';
+  document.getElementById('shopGSlot'+slot).classList.remove('has-img');
+}
+
 // ═══ STORY PHOTO / VIDEO UPLOAD ═══
 async function handleStoryPhotoUpload(input){
   var file=input.files[0]; if(!file)return;
@@ -2841,6 +2930,21 @@ function loadProfile(){
   document.getElementById('pCloseTime').value=SD.closeTime||'21:00';
   document.getElementById('pAddress').value=SD.address||'';
   document.getElementById('pDesc').value=SD.description||'';
+  // Shop gallery
+  shopGalleryUrls = [null,null,null,null,null,null];
+  var savedGallery = SD.shopImages || [];
+  for(var gi=0; gi<6; gi++){
+    var gImg=document.getElementById('shopGImg'+gi);
+    var gSlot=document.getElementById('shopGSlot'+gi);
+    if(savedGallery[gi]){
+      shopGalleryUrls[gi]=savedGallery[gi];
+      gImg.src=savedGallery[gi]; gImg.style.display='block';
+      gSlot.classList.add('has-img');
+    } else {
+      gImg.src=''; gImg.style.display='none';
+      gSlot.classList.remove('has-img');
+    }
+  }
   // Story fields
   document.getElementById('pBadge').value=SD.badge||'';
   document.getElementById('pYearsExp').value=SD.yearsExp||'';
@@ -2865,6 +2969,7 @@ function loadProfile(){
   document.getElementById('pShopType').value = sType;
   selectProfileType(sType);
   updateProductFormLabels(sType);
+  var plan = SD.plan || 'free';
   document.getElementById('subPlanName').textContent=plan.toUpperCase()+' PLAN';
   document.getElementById('dashPlanName').textContent=plan.toUpperCase()+' PLAN';
 }
@@ -2883,6 +2988,7 @@ function saveProfile(){
     closeTime:document.getElementById('pCloseTime').value,
     address:document.getElementById('pAddress').value.trim(),
     description:document.getElementById('pDesc').value.trim(),
+    shopImages: shopGalleryUrls.filter(Boolean),
     badge:document.getElementById('pBadge').value,
     yearsExp:document.getElementById('pYearsExp').value?parseInt(document.getElementById('pYearsExp').value):null,
     specialtyTags:document.getElementById('pSpecialty').value.split(',').map(function(s){return s.trim();}).filter(Boolean),
