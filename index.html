@@ -3678,16 +3678,35 @@ function buildFreshCards(prods){
   var d=new Date();
   var days=['রবি','সোম','মঙ্গল','বুধ','বৃহ','শুক্র','শনি'];
   if(dateEl)dateEl.textContent='— '+days[d.getDay()]+', '+d.getDate()+'/'+(d.getMonth()+1);
-  var badges=['fc-just','fc-special','fc-just','fc-limited','fc-special','fc-just'];
-  var badgeLabels=['JUST IN','SPECIAL','নতুন','LIMITED','অফার','তাজা'];
-  grid.innerHTML=prods.slice(0,10).map(function(p,i){
+
+  // Automatic recency-based selection: products added in the last 48 hours, newest first.
+  // Falls back to the 10 most-recently-added products if nothing qualifies (e.g. early launch days),
+  // so the section is never empty. No manual seller toggle — keeps this fair/neutral across sellers.
+  var now = Date.now();
+  var FRESH_WINDOW_MS = 48 * 60 * 60 * 1000;
+  var withDates = prods.filter(function(p){ return !!p.createdAt; }).map(function(p){
+    return Object.assign({}, p, {_createdMs: new Date(p.createdAt).getTime()});
+  });
+  var recentlyAdded = withDates
+    .filter(function(p){ return (now - p._createdMs) <= FRESH_WINDOW_MS; })
+    .sort(function(a,b){ return b._createdMs - a._createdMs; });
+
+  var freshList = recentlyAdded.length
+    ? recentlyAdded.slice(0,10)
+    : withDates.sort(function(a,b){ return b._createdMs - a._createdMs; }).slice(0,10);
+
+  if(!freshList.length) return; // no products have createdAt at all — nothing to show
+
+  grid.innerHTML=freshList.map(function(p){
     var img=p.imageUrl||(p.images&&p.images[0])||'';
     var name=p.nameBn||p.nameEn||p.name||'পণ্য';
     var price=p.price||p.sellPrice||0;
-    var bi=i%badges.length;
+    var hoursOld = (now - p._createdMs) / 3600000;
+    var badgeClass = hoursOld <= 24 ? 'fc-just' : 'fc-special';
+    var badgeLabel = hoursOld <= 24 ? 'JUST IN' : 'তাজা';
     return '<div class="fresh-card">'+
       '<div class="fresh-card-img">'+(img?'<img src="'+img+'" alt="'+name+'" loading="lazy">':prodEmoji(p.category))+
-      '<div class="fresh-card-badges"><span class="'+badges[bi]+'">'+badgeLabels[bi]+'</span>'+
+      '<div class="fresh-card-badges"><span class="'+badgeClass+'">'+badgeLabel+'</span>'+
       (p.discount?'<span class="fc-special">'+p.discount+'% OFF</span>':'')+
       '</div></div>'+
       '<div class="fresh-card-body">'+
