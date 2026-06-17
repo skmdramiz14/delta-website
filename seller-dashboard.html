@@ -1477,7 +1477,7 @@ function setLang(lang){
     if(ocEl) ocEl.textContent = oLen + (lang==='bn'?' অর্ডার':' orders');
   }catch(e){}
   // Save preference to Firebase
-  if(CU) sellerRef().update({language:lang}).catch(function(){});
+  if(CU) sellerRef().set({language:lang}, {merge:true}).catch(function(){});
   showToast(lang==='bn'?'বাংলা ভাষা সক্রিয় ✅':'English language active ✅','green');
 }
 function updateSidebar(){
@@ -2052,7 +2052,7 @@ function selectProfileType(type){
   });
   document.getElementById('pShopType').value = type;
   updateProductFormLabels(type);
-  if(CU) sellerRef().update({shopType:type}).catch(function(){});
+  if(CU) sellerRef().set({shopType:type}, {merge:true}).catch(function(){});
   var st = SHOP_TYPES[type]||SHOP_TYPES.shop;
   showToast(st.icon+' '+st.label+' mode active ✅','green');
 }
@@ -2887,7 +2887,7 @@ function saveProfile(){
     videoUrl:storyVideoUrl||null,
     updatedAt:new Date().toISOString()
   };
-  sellerRef().update(upd).then(function(){
+  sellerRef().set(upd, {merge:true}).then(function(){
     Object.assign(SD,upd); updateSidebar(); loadProfile();
     showToast('প্রোফাইল সেভ হয়েছে ✅','green');
     btn.disabled=false; btn.textContent='💾 সেভ করুন';
@@ -2901,7 +2901,7 @@ function toggleShopOpen(){
   var isOpen=document.getElementById('shopOpenToggle').checked;
   document.getElementById('toggleText').textContent=isOpen?'খোলা আছে ✅':'বন্ধ আছে ❌';
   document.getElementById('toggleText').style.color=isOpen?'var(--green)':'var(--red)';
-  sellerRef().update({isOpen:isOpen}).catch(function(){});
+  sellerRef().set({isOpen:isOpen}, {merge:true}).catch(function(){});
   if(SD)SD.isOpen=isOpen;
 }
 
