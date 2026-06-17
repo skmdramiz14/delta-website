@@ -3677,6 +3677,15 @@ document.addEventListener('DOMContentLoaded',function(){
   if(reqOv) reqOv.addEventListener('click',function(e){ if(e.target===this) closeReqModal(); });
 });
 
+// Fix: browser Back/Forward button restores a cached page snapshot (bfcache) where the
+// HTML is intact but allShops/allProducts have reset to empty — showing "no shop added yet"
+// until a manual refresh. Detect bfcache restoration and reload data automatically.
+window.addEventListener('pageshow', function(event){
+  if(event.persisted){
+    if(typeof detectCity === 'function') detectCity();
+  }
+});
+
 // ── FRESH TODAY FULL CARDS ──
 function buildFreshCards(prods){
   if(!prods||!prods.length)return;
