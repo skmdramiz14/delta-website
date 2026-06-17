@@ -1199,7 +1199,7 @@ body.lang-bn .lang-en{display:none!important;}
       <div class="flash-label">⚡ Flash Sale — Ends in</div>
       <div class="flash-countdown" id="flashCountdown">--:--:--</div>
     </div>
-    <button class="view-all" onclick="filterCat('all',null)">সব দেখুন →</button>
+    <button class="view-all" onclick="filterCat('all',null);document.getElementById('productsSection').scrollIntoView({behavior:'smooth'})">সব দেখুন →</button>
   </div>
   <div class="products-grid" id="flashGrid"></div>
 </section>
@@ -1238,9 +1238,7 @@ body.lang-bn .lang-en{display:none!important;}
       <div class="section-label">Today's Pick</div>
       <div class="section-title"><span class="lang-bn">আজকের বিশেষ পণ্য 🌅</span><span class="lang-en">Today's Special 🌅</span></div>
     </div>
-    <button class="view-all" onclick="filterCat('all',null)"><span class="lang-bn">সব দেখুন →</span><span class="lang-en">View All →</span></button>
-  </div>
-  <div class="products-grid" id="featuredGrid"></div>
+    <button class="view-all" onclick="filterCat('all',null);document.getElementById('productsSection').scrollIntoView({behavior:'smooth'})"><span class="lang-bn">সব দেখুন →</span><span class="lang-en">View All →</span></button>
 </section>
 
 <!-- PRODUCTS (All) -->
@@ -1250,7 +1248,7 @@ body.lang-bn .lang-en{display:none!important;}
       <div class="section-label">Fresh Picks</div>
       <div class="section-title" id="productsTitle"><span class="lang-bn">সব পণ্য</span><span class="lang-en">All Products</span></div>
     </div>
-    <button class="view-all"><span class="lang-bn">সব দেখুন →</span><span class="lang-en">View All →</span></button>
+    <button class="view-all" onclick="filterCat('all',null);document.getElementById('productsSection').scrollIntoView({behavior:'smooth'})"><span class="lang-bn">সব দেখুন →</span><span class="lang-en">View All →</span></button>
   </div>
   <div id="productsGrid" class="products-grid">
     <div class="skeleton skel-prod"></div>
@@ -1284,7 +1282,7 @@ body.lang-bn .lang-en{display:none!important;}
       <div class="section-label">Community Favorites</div>
       <div class="section-title">🔥 <span class="lang-bn">বেস্টসেলার</span><span class="lang-en">Bestsellers</span></div>
     </div>
-    <button class="view-all" onclick="filterCat('all',null)"><span class="lang-bn">সব দেখুন →</span><span class="lang-en">View All →</span></button>
+    <button class="view-all" onclick="filterCat('all',null);document.getElementById('productsSection').scrollIntoView({behavior:'smooth'})"><span class="lang-bn">সব দেখুন →</span><span class="lang-en">View All →</span></button>
   </div>
   <div class="products-grid" id="bestsellersGrid"></div>
 </section>
@@ -1296,7 +1294,7 @@ body.lang-bn .lang-en{display:none!important;}
       <div class="section-label"><span class="lang-bn">আজকের তাজা</span><span class="lang-en">Fresh Today</span></div>
       <div class="section-title">🌿 <span class="lang-bn">তাজা পণ্য</span><span class="lang-en">Fresh Today</span> <span id="freshTodayDate" style="font-size:.75rem;font-weight:400;color:var(--muted);font-family:'DM Sans',sans-serif;"></span></div>
     </div>
-    <button class="view-all" onclick="filterCat('farm',null)"><span class="lang-bn">সব দেখুন →</span><span class="lang-en">View All →</span></button>
+    <button class="view-all" onclick="filterCat('farm',null);document.getElementById('productsSection').scrollIntoView({behavior:'smooth'})"><span class="lang-bn">সব দেখুন →</span><span class="lang-en">View All →</span></button>
   </div>
   <div class="fresh-cards-scroll" id="freshCardsGrid"></div>
 </section>
@@ -3974,6 +3972,11 @@ var catMap={
 };
 
 function filterCat(cat,navEl){
+  // Safety: if data hasn't loaded yet, inform the customer instead of showing an empty result
+  if((!allShops || !allShops.length) && (!allProducts || !allProducts.length)){
+    showToast(currentLang==='bn' ? 'ডেটা লোড হচ্ছে... একটু পর আবার চেষ্টা করুন' : 'Data is loading... please try again in a moment');
+    return;
+  }
   // Update nav cats — find matching nav-cat if navEl not passed
   document.querySelectorAll('.nav-cat').forEach(function(c){c.classList.remove('active');});
   if(navEl){navEl.classList.add('active');}
