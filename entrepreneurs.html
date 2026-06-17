@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>স্থানীয় উদ্যোক্তারা — DELTA</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --navy:#0a1f35;--navy2:#122840;--navy3:#061526;
+  --orange:#f07018;--orange2:#ff8c3a;--orange-dark:#d9610f;
+  --green:#2da86a;--green2:#1a7a4c;
+  --white:#fff;--sand:#eef2f7;--cream:#f7f9fc;
+  --border:#dde5ef;--muted:#6b7b8d;--gray:#6b7b8d;--charcoal:#1a2535;
+  --orange-light:#fff4ec;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charcoal);}
+
+/* ── NAV ── */
+.nav{background:var(--navy);padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.nav-logo{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:900;color:#fff;cursor:pointer;text-decoration:none;}
+.nav-logo em{color:var(--orange);font-style:normal;}
+.nav-back{color:rgba(255,255,255,.7);font-size:.85rem;cursor:pointer;display:flex;align-items:center;gap:6px;text-decoration:none;}
+.nav-back:hover{color:#fff;}
+.nav-lang{display:flex;gap:2px;background:rgba(255,255,255,.1);border-radius:20px;padding:3px;}
+.lang-btn{padding:4px 10px;border-radius:16px;border:none;background:transparent;color:rgba(255,255,255,.6);font-size:.75rem;font-weight:700;cursor:pointer;transition:all .2s;}
+.lang-btn.active{background:var(--orange);color:#fff;}
+
+/* ── HERO BANNER ── */
+.hero-banner{background:linear-gradient(135deg,var(--green2),var(--green),#5fc98a);padding:32px 20px 40px;text-align:center;position:relative;overflow:hidden;}
+.hero-banner::before{content:'🌾';position:absolute;left:-20px;top:-10px;font-size:8rem;opacity:.12;}
+.hero-banner::after{content:'🧑‍🌾';position:absolute;right:-20px;bottom:-10px;font-size:8rem;opacity:.12;}
+.hero-title{font-family:'Playfair Display',serif;font-size:clamp(1.6rem,5vw,2.4rem);font-weight:900;color:#fff;margin-bottom:8px;}
+.hero-sub{color:rgba(255,255,255,.85);font-size:.88rem;margin-bottom:6px;max-width:500px;margin-left:auto;margin-right:auto;}
+.hero-count{color:rgba(255,255,255,.95);font-size:.8rem;font-weight:700;margin-top:10px;}
+
+/* ── MAIN CONTENT ── */
+.main{max-width:1100px;margin:0 auto;padding:24px 16px 60px;}
+.section-label{font-size:.75rem;font-weight:700;color:var(--orange);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:4px;}
+.section-title{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:900;color:var(--navy);margin-bottom:20px;}
+
+/* ── ENTREPRENEUR GRID ── */
+.fa-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
+@media(max-width:900px){.fa-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:560px){.fa-grid{grid-template-columns:1fr;}}
+.fa-card{background:var(--white);border-radius:16px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.06);transition:transform .2s;}
+.fa-card:hover{transform:translateY(-3px);}
+.fa-card-top{background:linear-gradient(135deg,var(--green2),var(--green));padding:22px 18px;text-align:center;color:#fff;}
+.fa-card-avatar{width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:1.8rem;margin:0 auto 10px;overflow:hidden;border:2px solid rgba(255,255,255,.3);}
+.fa-card-avatar img{width:100%;height:100%;object-fit:cover;}
+.fa-card-name{font-weight:800;font-size:1rem;margin-bottom:2px;}
+.fa-card-loc{font-size:.76rem;opacity:.85;margin-bottom:8px;}
+.fa-card-badge{display:inline-block;background:rgba(255,255,255,.18);padding:4px 12px;border-radius:14px;font-size:.7rem;font-weight:700;}
+.fa-card-body{padding:14px 16px 16px;}
+.fa-card-meta{background:var(--cream);border-radius:8px;padding:8px 10px;font-size:.72rem;color:var(--charcoal);margin-bottom:10px;font-weight:600;}
+.fa-card-story{font-size:.78rem;color:var(--gray);line-height:1.5;margin-bottom:12px;min-height:54px;}
+.fa-card-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
+.fa-card-tag{font-size:.68rem;font-weight:600;padding:3px 9px;border-radius:10px;background:var(--orange-light);color:var(--orange);}
+.fa-card-tag.video{background:#e8f0fe;color:#1a56db;}
+.fa-card-btn{width:100%;background:var(--navy);color:#fff;border:none;padding:10px;border-radius:9px;font-weight:700;font-size:.8rem;cursor:pointer;}
+.fa-card-btn:hover{background:var(--orange);}
+
+.empty-state{text-align:center;padding:60px 20px;color:var(--muted);grid-column:1/-1;}
+.empty-icon{font-size:2.5rem;margin-bottom:10px;}
+
+/* ── FARMER DETAIL MODAL ── */
+.fm-overlay{position:fixed;inset:0;background:rgba(10,31,53,.55);z-index:2000;display:flex;align-items:flex-end;justify-content:center;animation:fmFadeIn .25s ease;}
+@keyframes fmFadeIn{from{opacity:0}to{opacity:1}}
+.fm-sheet{background:var(--white);width:100%;max-width:480px;max-height:88vh;overflow-y:auto;border-radius:22px 22px 0 0;animation:fmSlideUp .3s ease;}
+@keyframes fmSlideUp{from{transform:translateY(40px)}to{transform:translateY(0)}}
+.fm-hero{background:linear-gradient(135deg,var(--green2),var(--green));padding:28px 22px 22px;border-radius:22px 22px 0 0;position:relative;text-align:center;color:#fff;}
+.fm-close{position:absolute;top:14px;right:14px;background:rgba(255,255,255,.18);border:none;color:#fff;width:32px;height:32px;border-radius:50%;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.fm-avatar{width:84px;height:84px;border-radius:50%;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:2.4rem;margin:0 auto 12px;overflow:hidden;border:3px solid rgba(255,255,255,.3);}
+.fm-avatar img{width:100%;height:100%;object-fit:cover;}
+.fm-name{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:800;margin-bottom:4px;}
+.fm-loc{font-size:.82rem;opacity:.9;margin-bottom:10px;}
+.fm-badge-pill{display:inline-block;background:rgba(255,255,255,.18);padding:5px 14px;border-radius:20px;font-size:.74rem;font-weight:700;}
+.fm-body{padding:20px 22px 28px;}
+.fm-quote{background:var(--cream);border-left:4px solid var(--orange);border-radius:10px;padding:14px 16px;font-size:.85rem;color:var(--charcoal);line-height:1.6;font-style:italic;margin-bottom:16px;}
+.fm-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:18px;}
+.fm-stat{background:var(--cream);border-radius:10px;padding:10px 6px;text-align:center;}
+.fm-stat-val{font-size:1rem;font-weight:800;color:var(--navy);}
+.fm-stat-label{font-size:.65rem;color:var(--muted);margin-top:2px;}
+.fm-section-label{font-size:.78rem;font-weight:700;color:var(--navy);margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+.fm-tags{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:18px;}
+.fm-tag{background:var(--orange-light);color:var(--orange);font-size:.74rem;font-weight:600;padding:5px 12px;border-radius:14px;}
+.fm-cert{background:#eef9f0;border-radius:10px;padding:10px 14px;font-size:.76rem;color:#1a7a4c;margin-bottom:18px;}
+.fm-video-box{background:var(--navy);border-radius:14px;overflow:hidden;margin-bottom:18px;cursor:pointer;position:relative;}
+.fm-video-box video{width:100%;display:block;max-height:280px;background:#000;}
+.fm-video-placeholder{padding:40px 20px;text-align:center;color:#fff;}
+.fm-video-play{width:54px;height:54px;border-radius:50%;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:1.3rem;}
+.fm-shop-btn{width:100%;background:var(--orange);color:#fff;border:none;padding:13px;border-radius:12px;font-weight:700;font-size:.9rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;}
+.fm-shop-btn:hover{background:var(--orange-dark);}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:12px 22px;border-radius:10px;font-size:.85rem;font-weight:600;z-index:9999;display:none;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.3);}
+.toast.show{display:block;animation:fadeInUp .3s ease;}
+@keyframes fadeInUp{from{opacity:0;transform:translate(-50%,20px);}to{opacity:1;transform:translate(-50%,0);}}
+
+/* ── LANG ── */
+body.lang-en .lang-bn{display:none!important;}
+body.lang-bn .lang-en{display:none!important;}
+</style>
+</head>
+<body class="lang-bn">
+
+<!-- NAV -->
+<nav class="nav">
+  <a class="nav-back" href="index.html">← <span class="lang-bn">হোমে ফিরুন</span><span class="lang-en">Back to Home</span></a>
+  <a class="nav-logo" href="index.html">△ DELT<em>A</em></a>
+  <div class="nav-lang">
+    <button class="lang-btn active" id="langBn" onclick="setLang('bn')">বাং</button>
+    <button class="lang-btn" id="langEn" onclick="setLang('en')">ENG</button>
+  </div>
+</nav>
+
+<!-- HERO BANNER -->
+<div class="hero-banner">
+  <div class="hero-title">🌟 <span class="lang-bn">স্থানীয় উদ্যোক্তারা</span><span class="lang-en">Local Entrepreneurs</span></div>
+  <p class="hero-sub">
+    <span class="lang-bn">মন্তেশ্বরের কৃষক, শিল্পী ও দোকানদারদের সাথে পরিচিত হন — আপনার খাবার যেখান থেকে আসে</span>
+    <span class="lang-en">Meet the farmers, artists & shopkeepers of Manteswar — where your food comes from</span>
+  </p>
+  <div class="hero-count" id="heroCount"><span class="lang-bn">লোড হচ্ছে...</span><span class="lang-en">Loading...</span></div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="section-label"><span class="lang-bn">DELTA কমিউনিটি</span><span class="lang-en">DELTA Community</span></div>
+  <div class="section-title"><span class="lang-bn">সবার সাথে পরিচিত হন</span><span class="lang-en">Meet Everyone</span></div>
+
+  <div class="fa-grid" id="faGrid">
+    <div class="empty-state"><div class="empty-icon">⏳</div><p><span class="lang-bn">লোড হচ্ছে...</span><span class="lang-en">Loading...</span></p></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var currentLang='bn';
+function setLang(l){
+  currentLang=l;
+  document.body.className='lang-'+l;
+  document.getElementById('langBn').classList.toggle('active',l==='bn');
+  document.getElementById('langEn').classList.toggle('active',l==='en');
+}
+function showToast(msg,type){
+  var t=document.getElementById('toast');
+  t.textContent=msg;
+  t.style.background=type==='green'?'#1a8a4a':'#0a1f35';
+  t.classList.add('show');
+  setTimeout(function(){t.classList.remove('show');},2800);
+}
+
+var BADGE_MAP={
+  top:'🏆 Top Farmer/Seller', hero:'⭐ Community Hero',
+  heritage:'🎗️ Heritage Seller', expert:'🔥 Expert', new:'🌱 New Joiner'
+};
+
+// Static demo fallback (same as index.html FARMERS array)
+var FARMERS=[
+  {name:'রামু মণ্ডল',village:'📍 গোপীনাথপুর',badge:'🏆 Top Farmer',story:'রামু ২২ বছর ধরে জৈব চাষ করছেন। তার ৩ একর জমিতে...',emoji:'🧑\u200d🌾',yearsExp:22,specialtyTags:['ব্রকলি','পালং শাক']},
+  {name:'লক্ষ্মী দেবী',village:'📍 কুসুমগ্রাম',badge:'⭐ Community Hero',story:'লক্ষ্মী একা হাতে তার ফার্ম চালান, তার টমেটো মন্তেশ্বরে বিখ্যাত...',emoji:'👩\u200d🌾',yearsExp:8,specialtyTags:['টমেটো']},
+  {name:'হরি প্রসাদ দাস',village:'📍 নবাবহাট',badge:'🍊 Fruit Specialist',story:'হরি ১৫০+ গাছ নিয়ে তার পারিবারিক বাগান চালান...',emoji:'🧑\u200d🌾',yearsExp:18,specialtyTags:['কলা','আম']},
+  {name:'মায়া বিশ্বাস',village:'📍 চাঁদপুর',badge:'🌾 Heritage Farmer',story:'মায়া তৃতীয় প্রজন্মের কৃষক, বিরল গোবিন্দভোগ চাল ফলান...',emoji:'👩\u200d🌾',yearsExp:15,specialtyTags:['গোবিন্দভোগ চাল']},
+  {name:'সুরেশ ঘোষ',village:'📍 একদালা',badge:'🐄 Dairy Expert',story:'সুরেশের ৮টি গির গরুর ছোট ডেয়ারি আছে, তাজা পনির ও দই তৈরি করেন...',emoji:'🧑\u200d🌾',yearsExp:10,specialtyTags:['পনির','দই']},
+  {name:'পবন সরকার',village:'📍 আকুই',badge:'🌶️ Spice Keeper',story:'পবন দেশীয় জাতের হলুদ চাষ করেন এবং সনাতন কাঠের ঘানিতে তেল মাড়েন...',emoji:'🧑\u200d🌾',yearsExp:20,specialtyTags:['হলুদ']}
+];
+
+var allShops=[];
+var fbcfg={apiKey:"AIzaSyA6TrrnCMwv1aa1WPqGvTVWlnieB2pVOEU",authDomain:"delta-platform-82fc0.firebaseapp.com",projectId:"delta-platform-82fc0",storageBucket:"delta-platform-82fc0.firebasestorage.app",messagingSenderId:"444904180433",appId:"1:444904180433:web:6706eba4d73a30cd67d3f0"};
+var CITY='manteswar';
+
+(function(){
+  var s=['https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js','https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js'];
+  var n=0;
+  s.forEach(function(src){
+    var el=document.createElement('script'); el.src=src;
+    el.onload=function(){ if(++n===s.length) initFB(); };
+    el.onerror=function(){ renderGrid(); }; // fallback to demo data if Firebase fails
+    document.head.appendChild(el);
+  });
+})();
+
+function initFB(){
+  try{
+    firebase.initializeApp(fbcfg);
+    var db=firebase.firestore();
+    db.collection('cities').doc(CITY).collection('sellers').get().then(function(snap){
+      allShops=[];
+      snap.forEach(function(d){ allShops.push(Object.assign({id:d.id},d.data())); });
+      renderGrid();
+    }).catch(function(){ renderGrid(); });
+  }catch(e){ renderGrid(); }
+}
+
+function renderGrid(){
+  var realSellers = allShops.filter(function(s){ return s.storyText; });
+  var source = realSellers.length ? realSellers : FARMERS;
+  var grid = document.getElementById('faGrid');
+  var countEl = document.getElementById('heroCount');
+
+  countEl.innerHTML = '<span class="lang-bn">'+source.length+' জন কৃষক, শিল্পী ও দোকানদার — মন্তেশ্বর ব্লক</span><span class="lang-en">'+source.length+' farmers, artists & shopkeepers — Manteswar Block</span>';
+
+  grid.innerHTML = source.map(function(f,i){
+    var isReal = !!f.shopName;
+    var name = isReal ? (f.shopName||f.ownerName) : f.name;
+    var loc = isReal ? ('📍 '+(f.area||'')) : f.village;
+    var badge = isReal ? (BADGE_MAP[f.badge]||f.category||'🏪 বিক্রেতা') : f.badge;
+    var story = isReal ? (f.storyText||'') : f.story;
+    var photo = isReal ? f.photoUrl : null;
+    var emoji = isReal ? '🏪' : f.emoji;
+    var years = isReal ? f.yearsExp : f.yearsExp;
+    var tags = isReal ? (f.specialtyTags||[]) : (f.specialtyTags||[]);
+    var hasVideo = isReal ? !!f.videoUrl : false;
+    var idx = isReal ? f.id : i;
+    var meta = years ? (years+' বছরের অভিজ্ঞতা'+(isReal&&f.category?' · '+f.category:'')) : (isReal?(f.category||''):'');
+
+    return '<div class="fa-card">'+
+      '<div class="fa-card-top">'+
+        '<div class="fa-card-avatar">'+(photo?'<img src="'+photo+'">':emoji)+'</div>'+
+        '<div class="fa-card-name">'+name+'</div>'+
+        '<div class="fa-card-loc">'+loc+'</div>'+
+        '<span class="fa-card-badge">'+badge+'</span>'+
+      '</div>'+
+      '<div class="fa-card-body">'+
+        (meta?'<div class="fa-card-meta">'+meta+'</div>':'')+
+        '<div class="fa-card-story">'+(story||'এই বিক্রেতা সম্পর্কে এখনো কোনো গল্প যুক্ত করা হয়নি।').slice(0,90)+'</div>'+
+        '<div class="fa-card-tags">'+
+          tags.slice(0,2).map(function(t){return '<span class="fa-card-tag">🌱 '+t+'</span>';}).join('')+
+          (hasVideo?'<span class="fa-card-tag video">🎬 Video Story</span>':'')+
+        '</div>'+
+        '<button class="fa-card-btn" onclick="openFarmerModal(\''+(isReal?'real':'demo')+'\',\''+idx+'\')">View Story →</button>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+function openFarmerModal(type,idx){
+  var f, isReal = type==='real';
+  if(isReal){ f = allShops.find(function(s){return s.id===idx;}); if(!f)return; }
+  else { f = FARMERS[idx]; if(!f)return; }
+
+  var name = isReal ? (f.shopName||f.ownerName||'বিক্রেতা') : f.name;
+  var loc = isReal ? (f.area||'মন্তেশ্বর') : f.village.replace('📍 ','');
+  var badgeText = isReal ? (BADGE_MAP[f.badge]||'🏪 বিক্রেতা') : f.badge;
+  var story = isReal ? (f.storyText||'এই বিক্রেতা সম্পর্কে এখনো কোনো গল্প যুক্ত করা হয়নি।') : f.story;
+  var photo = isReal ? f.photoUrl : null;
+  var video = isReal ? f.videoUrl : null;
+  var years = isReal ? f.yearsExp : f.yearsExp;
+  var tags = isReal ? (f.specialtyTags||[]) : (f.specialtyTags||[]);
+  var emoji = isReal ? '🏪' : f.emoji;
+  var rating = isReal ? (f.avgRating||4.7).toFixed(1) : '4.8';
+
+  var ov=document.createElement('div');
+  ov.className='fm-overlay';
+  ov.onclick=function(e){ if(e.target===ov) ov.remove(); };
+
+  var html = '<div class="fm-sheet">';
+  html += '<div class="fm-hero">';
+  html += '<button class="fm-close" onclick="this.closest(\'.fm-overlay\').remove()">✕</button>';
+  html += '<div class="fm-avatar">'+(photo?'<img src="'+photo+'">':emoji)+'</div>';
+  html += '<div class="fm-name">'+name+'</div>';
+  html += '<div class="fm-loc">📍 '+loc+(isReal&&f.shopType?' · মন্তেশ্বর ব্লক':'')+'</div>';
+  html += '<span class="fm-badge-pill">'+badgeText+'</span>';
+  html += '</div>';
+
+  html += '<div class="fm-body">';
+  html += '<div class="fm-quote">"'+story+'"</div>';
+
+  html += '<div class="fm-stats">';
+  html += '<div class="fm-stat"><div class="fm-stat-val">⭐ '+rating+'</div><div class="fm-stat-label">Rating</div></div>';
+  html += '<div class="fm-stat"><div class="fm-stat-val">'+(video?'1':'0')+'</div><div class="fm-stat-label">Video Story</div></div>';
+  html += '<div class="fm-stat"><div class="fm-stat-val">'+(years?years+' yr':'—')+'</div><div class="fm-stat-label">Experience</div></div>';
+  html += '</div>';
+
+  if(tags.length){
+    html += '<div class="fm-section-label">🌿 বিশেষত্ব / Specialty</div>';
+    html += '<div class="fm-tags">'+tags.map(function(t){return '<span class="fm-tag">'+t+'</span>';}).join('')+'</div>';
+  }
+
+  if(years){
+    html += '<div class="fm-cert">🎗️ '+years+' বছরের অভিজ্ঞতা'+(isReal&&f.category?' · '+f.category:'')+'</div>';
+  }
+
+  html += '<div class="fm-section-label">🎬 '+name+' এর গল্প</div>';
+  if(video){
+    html += '<div class="fm-video-box"><video controls preload="metadata" src="'+video+'"></video></div>';
+  } else {
+    html += '<div class="fm-video-box"><div class="fm-video-placeholder">'+
+      '<div class="fm-video-play">▶</div><div style="font-size:.8rem;font-weight:600">ভিডিও স্টোরি শীঘ্রই আসছে</div>'+
+      '<div style="font-size:.68rem;opacity:.7;margin-top:4px">Video story coming soon</div></div></div>';
+  }
+
+  if(isReal){
+    html += '<a class="fm-shop-btn" href="index.html" style="text-decoration:none">🛍️ দোকান দেখুন →</a>';
+  }
+  html += '</div></div>';
+
+  ov.innerHTML = html;
+  document.body.appendChild(ov);
+}
+
+// Safety: if Firebase scripts take too long, fall back to demo data after 4s
+setTimeout(function(){
+  if(document.getElementById('faGrid').innerHTML.indexOf('লোড হচ্ছে') !== -1){
+    renderGrid();
+  }
+},4000);
+</script>
+</body>
+</html>
