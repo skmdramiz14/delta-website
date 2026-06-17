@@ -1989,7 +1989,8 @@ function updateCityUI(){
   }
 }
 
-async function loadData(){
+async function loadData(retryCount){
+  retryCount = retryCount || 0;
   try{
     var snap=await db.collection('cities').doc(CITY).collection('sellers').get();
     allShops=[];allProducts=[];
@@ -2014,8 +2015,14 @@ async function loadData(){
     updateSubCount();
     initAllFeatures(allShops, allProducts);
   }catch(e){
+    console.error('DELTA loadData error (attempt '+(retryCount+1)+'):', e);
+    if(retryCount < 2){
+      // Retry after a short delay — handles transient network hiccups
+      setTimeout(function(){ loadData(retryCount+1); }, 1200);
+      return;
+    }
     renderShops([]);renderProducts([]);
-    showToast('ডেটা লোড সমস্যা। Internet চেক করুন।');
+    showToast('ডেটা লোড সমস্যা। Internet চেক করুন। ('+(e.code||e.message||'unknown')+')');
   }
 }
 
