@@ -778,6 +778,78 @@ select.form-input{cursor:pointer;}
             <div class="form-group full"><label class="bn">দোকানের বিবরণ</label>
               <input type="text" class="form-input" id="pDesc" placeholder="সংক্ষিপ্ত বিবরণ..."></div>
           </div>
+
+          <!-- ═══ STORY / PROFILE SHOWCASE SECTION ═══ -->
+          <div class="story-section" style="margin-top:22px;padding-top:18px;border-top:2px dashed var(--border)">
+            <h3 style="font-size:.95rem;font-weight:800;color:var(--navy);margin-bottom:4px">
+              <span data-lang-bn="📖 আপনার গল্প (ঐচ্ছিক)" data-lang-en="📖 Your Story (Optional)">📖 আপনার গল্প (ঐচ্ছিক)</span>
+            </h3>
+            <p style="font-size:.72rem;color:var(--gray);margin-bottom:14px" data-lang-bn="হোমপেজে আপনার প্রোফাইল কার্ডে এই তথ্য দেখাবে — কাস্টমারের বিশ্বাস বাড়বে"
+               data-lang-en="This shows on your homepage profile card — builds customer trust">হোমপেজে আপনার প্রোফাইল কার্ডে এই তথ্য দেখাবে — কাস্টমারের বিশ্বাস বাড়বে</p>
+
+            <div class="form-grid">
+              <!-- Profile Photo -->
+              <div class="form-group">
+                <label><span data-lang-bn="প্রোফাইল ছবি" data-lang-en="Profile Photo">প্রোফাইল ছবি</span></label>
+                <div style="display:flex;align-items:center;gap:10px">
+                  <div id="storyPhotoPreview" style="width:56px;height:56px;border-radius:50%;background:var(--cream);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.4rem;overflow:hidden;flex-shrink:0">🏪</div>
+                  <button type="button" class="btn-sm btn-outline" onclick="document.getElementById('storyPhotoInput').click()">
+                    📷 <span data-lang-bn="ছবি দিন" data-lang-en="Upload">ছবি দিন</span>
+                  </button>
+                  <input type="file" id="storyPhotoInput" accept="image/*" style="display:none" onchange="handleStoryPhotoUpload(this)">
+                </div>
+              </div>
+
+              <!-- Badge -->
+              <div class="form-group">
+                <label><span data-lang-bn="ব্যাজ" data-lang-en="Badge">ব্যাজ</span></label>
+                <select class="form-input" id="pBadge">
+                  <option value="">— কোনো ব্যাজ না —</option>
+                  <option value="top">🏆 Top Farmer/Seller</option>
+                  <option value="hero">⭐ Community Hero</option>
+                  <option value="heritage">🎗️ Heritage Seller</option>
+                  <option value="expert">🔥 Expert</option>
+                  <option value="new">🌱 New Joiner</option>
+                </select>
+              </div>
+
+              <!-- Years Experience -->
+              <div class="form-group">
+                <label><span data-lang-bn="অভিজ্ঞতা (বছর)" data-lang-en="Experience (years)">অভিজ্ঞতা (বছর)</span></label>
+                <input type="number" class="form-input" id="pYearsExp" min="0" placeholder="যেমন: 22">
+              </div>
+
+              <!-- Specialty Tags -->
+              <div class="form-group">
+                <label><span data-lang-bn="বিশেষত্ব (কমা দিয়ে আলাদা)" data-lang-en="Specialty (comma separated)">বিশেষত্ব</span></label>
+                <input type="text" class="form-input" id="pSpecialty" placeholder="যেমন: সবজি, মাছ, দুধ">
+              </div>
+
+              <!-- Story Text -->
+              <div class="form-group full">
+                <label><span data-lang-bn="আপনার গল্প" data-lang-en="Your Story">আপনার গল্প</span></label>
+                <textarea class="form-input" id="pStory" rows="3" placeholder="যেমন: রামু ২২ বছর ধরে জৈব চাষ করছেন। তার ৩ একর জমিতে..." style="resize:vertical;font-family:inherit"></textarea>
+              </div>
+
+              <!-- Video Story Upload -->
+              <div class="form-group full">
+                <label><span data-lang-bn="🎬 ভিডিও স্টোরি (ঐচ্ছিক, ৩০ সেকেন্ড)" data-lang-en="🎬 Video Story (optional, 30 sec)">🎬 ভিডিও স্টোরি</span></label>
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                  <button type="button" class="btn-sm btn-outline" onclick="document.getElementById('storyVideoInput').click()" id="storyVideoBtn">
+                    🎬 <span data-lang-bn="ভিডিও আপলোড করুন" data-lang-en="Upload Video">ভিডিও আপলোড করুন</span>
+                  </button>
+                  <span id="storyVideoStatus" style="font-size:.75rem;color:var(--green);font-weight:600"></span>
+                  <input type="file" id="storyVideoInput" accept="video/*" style="display:none" onchange="handleStoryVideoUpload(this)">
+                </div>
+                <div id="storyVideoProg" style="display:none;margin-top:8px">
+                  <div style="height:6px;background:var(--cream);border-radius:4px;overflow:hidden">
+                    <div id="storyVideoFill" style="height:100%;width:0;background:var(--orange);transition:width .3s"></div>
+                  </div>
+                  <small id="storyVideoMsg" style="color:var(--gray);font-size:.7rem"></small>
+                </div>
+              </div>
+            </div>
+          </div>
           <!-- Open/Close Toggle -->
           <div class="open-toggle-row">
             <span class="bn" style="font-size:.85rem;font-weight:600;color:var(--charcoal)">দোকান খোলা/বন্ধ:</span>
@@ -1192,6 +1264,7 @@ var FB_CFG = {
   appId:"1:444904180433:web:6706eba4d73a30cd67d3f0"
 };
 var CLOUD = 'djthojcmy', PRESET = 'delta_products';
+var storyPhotoUrl = null, storyVideoUrl = null;
 var CITY = 'manteswar'; // Multi-tenant: current city
 
 // ═══ STATE ═══
@@ -2616,6 +2689,63 @@ function delImg(e,slot){
   document.getElementById('slot'+slot).classList.remove('has-img');
 }
 
+// ═══ STORY PHOTO / VIDEO UPLOAD ═══
+async function handleStoryPhotoUpload(input){
+  var file=input.files[0]; if(!file)return;
+  var preview=document.getElementById('storyPhotoPreview');
+  var fd=new FormData();
+  fd.append('file',file); fd.append('upload_preset',PRESET); fd.append('cloud_name',CLOUD);
+  fd.append('folder','delta/seller_story');
+  try{
+    showToast('ছবি আপলোড হচ্ছে...','orange');
+    var res=await fetch('https://api.cloudinary.com/v1_1/'+CLOUD+'/image/upload',{method:'POST',body:fd});
+    var data=await res.json();
+    if(data.secure_url){
+      storyPhotoUrl=data.secure_url;
+      preview.innerHTML='<img src="'+data.secure_url+'" style="width:100%;height:100%;object-fit:cover">';
+      showToast('প্রোফাইল ছবি আপলোড সফল ✅','green');
+    } else { throw new Error(data.error?data.error.message:'Upload failed'); }
+  }catch(e){ showToast('আপলোড ব্যর্থ: '+e.message,'red'); }
+  input.value='';
+}
+
+async function handleStoryVideoUpload(input){
+  var file=input.files[0]; if(!file)return;
+  if(file.size > 50*1024*1024){
+    showToast('ভিডিও সাইজ ৫০ MB এর কম হতে হবে','red'); input.value=''; return;
+  }
+  var prog=document.getElementById('storyVideoProg');
+  var fill=document.getElementById('storyVideoFill');
+  var msg=document.getElementById('storyVideoMsg');
+  var statusEl=document.getElementById('storyVideoStatus');
+  prog.style.display='block'; msg.textContent='ভিডিও আপলোড হচ্ছে... (একটু সময় লাগবে)'; fill.style.width='15%';
+  var fd=new FormData();
+  fd.append('file',file); fd.append('upload_preset',PRESET); fd.append('cloud_name',CLOUD);
+  fd.append('folder','delta/seller_video');
+  try{
+    fill.style.width='50%';
+    var res=await fetch('https://api.cloudinary.com/v1_1/'+CLOUD+'/video/upload',{method:'POST',body:fd});
+    var data=await res.json(); fill.style.width='100%';
+    if(data.secure_url){
+      storyVideoUrl=data.secure_url;
+      statusEl.textContent='✅ ভিডিও যুক্ত হয়েছে';
+      msg.textContent='';
+      setTimeout(function(){prog.style.display='none';fill.style.width='0';},800);
+      showToast('ভিডিও আপলোড সফল ✅','green');
+    } else { throw new Error(data.error?data.error.message:'Upload failed'); }
+  }catch(e){
+    prog.style.display='none'; fill.style.width='0';
+    showToast('ভিডিও আপলোড ব্যর্থ: '+e.message,'red');
+  }
+  input.value='';
+}
+
+function removeStoryVideo(){
+  storyVideoUrl=null;
+  document.getElementById('storyVideoStatus').textContent='';
+  showToast('ভিডিও মুছে ফেলা হয়েছে','orange');
+}
+
 // ═══ ORDERS ═══
 var statusMap={
   pending:{label:'⏳ Pending',cls:'status-pending'},
@@ -2707,6 +2837,17 @@ function loadProfile(){
   document.getElementById('pCloseTime').value=SD.closeTime||'21:00';
   document.getElementById('pAddress').value=SD.address||'';
   document.getElementById('pDesc').value=SD.description||'';
+  // Story fields
+  document.getElementById('pBadge').value=SD.badge||'';
+  document.getElementById('pYearsExp').value=SD.yearsExp||'';
+  document.getElementById('pSpecialty').value=(SD.specialtyTags||[]).join(', ');
+  document.getElementById('pStory').value=SD.storyText||'';
+  storyPhotoUrl = SD.photoUrl||null;
+  storyVideoUrl = SD.videoUrl||null;
+  var sPreview=document.getElementById('storyPhotoPreview');
+  if(storyPhotoUrl){ sPreview.innerHTML='<img src="'+storyPhotoUrl+'" style="width:100%;height:100%;object-fit:cover">'; }
+  else { sPreview.innerHTML='🏪'; }
+  document.getElementById('storyVideoStatus').textContent = storyVideoUrl ? '✅ ভিডিও যুক্ত আছে' : '';
   document.getElementById('profileShopName').textContent=SD.shopName||'আপনার দোকান';
   document.getElementById('profileOwnerName').textContent=SD.ownerName||'';
   document.getElementById('profileAvatar').textContent=(SD.shopName||'D').charAt(0).toUpperCase();
@@ -2738,6 +2879,12 @@ function saveProfile(){
     closeTime:document.getElementById('pCloseTime').value,
     address:document.getElementById('pAddress').value.trim(),
     description:document.getElementById('pDesc').value.trim(),
+    badge:document.getElementById('pBadge').value,
+    yearsExp:document.getElementById('pYearsExp').value?parseInt(document.getElementById('pYearsExp').value):null,
+    specialtyTags:document.getElementById('pSpecialty').value.split(',').map(function(s){return s.trim();}).filter(Boolean),
+    storyText:document.getElementById('pStory').value.trim(),
+    photoUrl:storyPhotoUrl||null,
+    videoUrl:storyVideoUrl||null,
     updatedAt:new Date().toISOString()
   };
   sellerRef().update(upd).then(function(){
