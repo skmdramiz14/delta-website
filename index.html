@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="bn">
 <head>
 <meta charset="UTF-8">
@@ -638,6 +638,28 @@ body.lang-bn .lang-en{display:none!important;}
 .sub-modal-overlay.open{display:flex;}
 .sub-modal{background:#fff;border-radius:20px;width:min(500px,96vw);max-height:92vh;overflow-y:auto;position:relative;animation:slideUp .3s ease;}
 .sub-modal-head{background:linear-gradient(135deg,var(--navy3),var(--navy));padding:24px 24px 20px;border-radius:20px 20px 0 0;}
+
+/* ── BOX vs CUSTOM TAB TOGGLE ── */
+.sub-mode-tabs{display:flex;gap:6px;background:rgba(255,255,255,.1);border-radius:12px;padding:4px;margin-top:14px;}
+.sub-mode-tab{flex:1;text-align:center;padding:9px 8px;border-radius:9px;font-size:.8rem;font-weight:700;color:rgba(255,255,255,.6);cursor:pointer;transition:all .2s;}
+.sub-mode-tab.active{background:var(--orange);color:#fff;}
+
+/* ── PRE-DEFINED BOX CARDS ── */
+.box-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media(max-width:480px){.box-grid{grid-template-columns:1fr;}}
+.box-card{border:1.5px solid var(--border);border-radius:14px;padding:16px;position:relative;transition:all .2s;}
+.box-card.popular{border-color:var(--orange);}
+.box-pop-badge{position:absolute;top:-9px;right:12px;background:var(--orange);color:#fff;font-size:.65rem;font-weight:700;padding:3px 10px;border-radius:10px;}
+.box-icon{font-size:1.8rem;margin-bottom:8px;}
+.box-name{font-weight:800;font-size:.95rem;color:var(--navy);margin-bottom:5px;}
+.box-desc{font-size:.74rem;color:var(--muted);line-height:1.5;margin-bottom:10px;min-height:36px;}
+.box-items{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px;}
+.box-item-tag{font-size:.68rem;background:var(--cream);color:var(--charcoal);padding:3px 8px;border-radius:8px;font-weight:600;}
+.box-footer{display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border);padding-top:10px;margin-top:auto;}
+.box-price{font-weight:800;color:var(--navy);font-size:1rem;}
+.box-price small{font-size:.68rem;color:var(--muted);font-weight:500;}
+.box-sub-btn{background:var(--navy);color:#fff;border:none;padding:8px 14px;border-radius:8px;font-weight:700;font-size:.78rem;cursor:pointer;}
+.box-sub-btn:hover{background:var(--orange);}
 .sub-modal-head h3{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:900;color:#fff;margin-bottom:4px;}
 .sub-modal-head p{color:rgba(255,255,255,.65);font-size:.82rem;}
 .sub-modal-close{position:absolute;top:14px;right:16px;background:rgba(255,255,255,.15);border:none;color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;}
@@ -1660,8 +1682,23 @@ body.lang-bn .lang-en{display:none!important;}
       <button class="sub-modal-close" onclick="closeSubModal()">✕</button>
       <h3>📦 Subscribe & Save</h3>
       <p><span class="lang-bn">একবার subscribe করুন — বাকিটা DELTA করবে।</span><span class="lang-en">Subscribe once — DELTA does the rest.</span></p>
+      <div class="sub-mode-tabs">
+        <div class="sub-mode-tab active" id="tabBox" onclick="switchSubMode('box')">📦 <span class="lang-bn">প্রি-সেট বক্স</span><span class="lang-en">Pre-set Box</span></div>
+        <div class="sub-mode-tab" id="tabCustom" onclick="switchSubMode('custom')">🛒 <span class="lang-bn">নিজে বানান</span><span class="lang-en">Build Your Own</span></div>
+      </div>
     </div>
-    <div class="sub-modal-body" id="subFormArea">
+
+    <!-- BOX MODE -->
+    <div class="sub-modal-body" id="subBoxArea">
+      <div class="sub-section-title"><span class="lang-bn">আপনার সাপ্তাহিক বক্স বেছে নিন</span><span class="lang-en">Choose Your Weekly Box</span></div>
+      <div class="box-grid" id="boxGrid">
+        <div style="color:var(--muted);font-size:.82rem;padding:8px;grid-column:1/-1;">
+          <span class="lang-bn">লোড হচ্ছে...</span><span class="lang-en">Loading...</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sub-modal-body" id="subFormArea" style="display:none;">
 
       <!-- Step 1: Frequency -->
       <div class="sub-section-title"><span class="lang-bn">কত ঘন ঘন ডেলিভারি চান?</span><span class="lang-en">How often do you want delivery?</span></div>
@@ -2343,17 +2380,103 @@ var subSelectedProds = {}; // {productId: qty}
 function openSubModal(){
   // Reset
   subSelectedProds = {};
-  document.getElementById('subFormArea').style.display = 'block';
+  switchSubMode('box');
   document.getElementById('subSuccessArea').style.display = 'none';
   document.getElementById('subSubmitBtn').disabled = false;
   document.getElementById('subSummary').style.display = 'none';
   document.getElementById('subAddress').value = '';
   document.getElementById('subPhone').value = '';
 
-  // Load subscribable products
+  // Load subscribable products + boxes
   loadSubProducts();
+  loadSubscriptionBoxes();
 
   document.getElementById('subModalOverlay').classList.add('open');
+}
+
+function switchSubMode(mode){
+  document.getElementById('tabBox').classList.toggle('active', mode==='box');
+  document.getElementById('tabCustom').classList.toggle('active', mode==='custom');
+  document.getElementById('subBoxArea').style.display = mode==='box' ? 'block' : 'none';
+  document.getElementById('subFormArea').style.display = mode==='custom' ? 'block' : 'none';
+  document.getElementById('subSuccessArea').style.display = 'none';
+}
+
+// Demo fallback boxes (used if subscriptionBoxes collection is empty)
+var DEMO_BOXES=[
+  {id:'veggie', icon:'🥦', name:'Weekly Veggie Box', nameBn:'সাপ্তাহিক ভেজি বক্স', desc:'Farm-fresh seasonal vegetables handpicked from our farmers every week.', descBn:'প্রতি সপ্তাহে আমাদের কৃষকদের তাজা সবজি।', items:['Tomatoes 1kg','Onions 1kg','Spinach 250g','Carrots 500g','Broccoli 500g'], price:299, popular:true},
+  {id:'fruit', icon:'🍎', name:'Fruit Basket', nameBn:'ফল বাস্কেট', desc:'Seasonal fruits sourced directly from local orchards.', descBn:'স্থানীয় বাগান থেকে সরাসরি মৌসুমি ফল।', items:['Bananas 1 dozen','Lemons 6 pcs','Grapes 500g','Mango 500g'], price:349},
+  {id:'dairy', icon:'🥛', name:'Dairy Pack', nameBn:'দুগ্ধ প্যাক', desc:'Fresh paneer and curd made every morning.', descBn:'প্রতিদিন সকালে তৈরি তাজা পনির ও দই।', items:['Paneer 200g','Dahi 500g'], price:249},
+  {id:'staples', icon:'🌾', name:'Weekly Staples Box', nameBn:'সাপ্তাহিক প্রয়োজনীয় বক্স', desc:'Your weekly kitchen essentials — rice, flour, oil and spices.', descBn:'আপনার সাপ্তাহিক রান্নাঘরের প্রয়োজনীয় জিনিস।', items:['Gobindobhog Rice 2kg','Atta 5kg','Mustard Oil 1L','Turmeric 200g'], price:499},
+  {id:'family', icon:'🏠', name:'Family Bundle', nameBn:'ফ্যামিলি বান্ডেল', desc:'Everything your family needs for the week.', descBn:'সপ্তাহের জন্য আপনার পরিবারের সব প্রয়োজন।', items:['Tomatoes 1kg','Onions 1kg','Bananas','Paneer 200g','Rice 2kg','Mustard Oil'], price:799, popular:true}
+];
+
+function loadSubscriptionBoxes(){
+  var grid = document.getElementById('boxGrid');
+  if(!db){ renderBoxGrid(DEMO_BOXES); return; }
+  db.collection('subscriptionBoxes').where('status','==','active').get()
+    .then(function(snap){
+      var boxes=[];
+      snap.forEach(function(d){ boxes.push(Object.assign({id:d.id},d.data())); });
+      renderBoxGrid(boxes.length ? boxes : DEMO_BOXES);
+    })
+    .catch(function(){ renderBoxGrid(DEMO_BOXES); });
+}
+
+function renderBoxGrid(boxes){
+  var grid = document.getElementById('boxGrid');
+  grid.innerHTML = boxes.map(function(b){
+    var name = currentLang==='bn' ? (b.nameBn||b.name) : (b.name||b.nameBn);
+    var desc = currentLang==='bn' ? (b.descBn||b.desc) : (b.desc||b.descBn);
+    return '<div class="box-card'+(b.popular?' popular':'')+'">'+
+      (b.popular?'<span class="box-pop-badge">⭐ Popular</span>':'')+
+      '<div class="box-icon">'+b.icon+'</div>'+
+      '<div class="box-name">'+name+'</div>'+
+      '<div class="box-desc">'+desc+'</div>'+
+      '<div class="box-items">'+b.items.map(function(it){return '<span class="box-item-tag">'+it+'</span>';}).join('')+'</div>'+
+      '<div class="box-footer">'+
+        '<div class="box-price">₹'+b.price+' <small>/week</small></div>'+
+        '<button class="box-sub-btn" onclick="subscribeToBox(\''+b.id+'\',\''+name.replace(/'/g,"\\'")+'\','+b.price+')">'+
+          '<span class="lang-bn">সাবস্ক্রাইব →</span><span class="lang-en">Subscribe →</span></button>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+function subscribeToBox(boxId, boxName, price){
+  if(!currentUser){
+    showToast(currentLang==='bn'?'প্রথমে লগইন করুন':'Please login first');
+    openAuth();
+    return;
+  }
+  var data = {
+    customerId   : currentUser.uid,
+    city         : CITY,
+    boxId        : boxId,
+    boxName      : boxName,
+    type         : 'box',
+    freqDays     : 7,
+    totalAmount  : price,
+    status       : 'active',
+    nextDelivery : getNextDeliveryDate(7),
+    createdAt    : firebase.firestore.FieldValue.serverTimestamp()
+  };
+  db.collection('cities').doc(CITY)
+    .collection('subscriptions').add(data)
+    .then(function(){
+      document.getElementById('subBoxArea').style.display = 'none';
+      document.getElementById('subSuccessArea').style.display = 'block';
+      var nextDate = getNextDeliveryDate(7);
+      document.getElementById('subSuccessMsg').innerHTML =
+        currentLang==='bn'
+          ? '✅ <strong>'+boxName+'</strong> সাবস্ক্রিপশন সক্রিয়।<br>প্রতি সপ্তাহে অর্ডার হবে।<br>পরবর্তী ডেলিভারি: <strong>'+nextDate+'</strong>'
+          : '✅ <strong>'+boxName+'</strong> subscription active.<br>Orders placed every week.<br>Next delivery: <strong>'+nextDate+'</strong>';
+      updateSubCount();
+    })
+    .catch(function(e){
+      console.error(e);
+      showToast(currentLang==='bn'?'সমস্যা হয়েছে, আবার চেষ্টা করুন':'Something went wrong, try again');
+    });
 }
 
 function closeSubModal(){
