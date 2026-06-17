@@ -208,6 +208,26 @@ select.form-input{cursor:pointer;}
 .progress-bar{height:3px;background:var(--border);border-radius:2px;margin-top:5px;overflow:hidden;}
 .progress-fill{height:100%;background:var(--orange);border-radius:2px;transition:width .3s;width:0;}
 
+/* ── IMAGE CROP MODAL ── */
+.crop-overlay{position:fixed;inset:0;background:rgba(10,20,30,.85);z-index:4000;display:flex;align-items:center;justify-content:center;padding:16px;}
+.crop-sheet{background:#fff;width:100%;max-width:420px;border-radius:16px;overflow:hidden;}
+.crop-head{background:var(--navy);padding:16px 18px;color:#fff;display:flex;align-items:center;justify-content:space-between;}
+.crop-head h4{font-size:.95rem;font-weight:700;}
+.crop-close{background:rgba(255,255,255,.15);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:1rem;}
+.crop-body{padding:18px;}
+.crop-canvas-wrap{position:relative;width:100%;aspect-ratio:1;background:#111;border-radius:10px;overflow:hidden;touch-action:none;cursor:move;}
+.crop-canvas-wrap img{position:absolute;max-width:none;user-select:none;-webkit-user-drag:none;}
+.crop-zoom-row{display:flex;align-items:center;gap:10px;margin-top:14px;}
+.crop-zoom-row input[type=range]{flex:1;}
+.crop-actions{display:flex;gap:10px;margin-top:16px;}
+.crop-btn{flex:1;padding:11px;border-radius:10px;font-weight:700;font-size:.85rem;cursor:pointer;border:none;}
+.crop-btn.cancel{background:var(--cream);color:var(--charcoal);}
+.crop-btn.confirm{background:var(--orange);color:#fff;}
+.crop-btn.confirm:hover{background:var(--orange-dark,#d9610f);}
+.crop-aspect-row{display:flex;gap:6px;margin-bottom:12px;}
+.crop-aspect-btn{flex:1;padding:7px;border-radius:8px;border:1.5px solid var(--border);background:#fff;font-size:.74rem;font-weight:600;cursor:pointer;}
+.crop-aspect-btn.active{border-color:var(--orange);background:var(--orange-light);color:var(--orange);}
+
 /* ── ORDER CARDS ── */
 .order-filters{display:flex;gap:7px;margin-bottom:16px;flex-wrap:wrap;}
 .filter-pill{padding:6px 14px;border-radius:20px;font-size:.78rem;font-weight:600;
@@ -352,6 +372,34 @@ select.form-input{cursor:pointer;}
 </style>
 </head>
 <body>
+
+<!-- IMAGE CROP MODAL -->
+<div class="crop-overlay" id="cropOverlay" style="display:none;">
+  <div class="crop-sheet">
+    <div class="crop-head">
+      <h4>✂️ ছবি ক্রপ করুন</h4>
+      <button class="crop-close" onclick="closeCropModal()">✕</button>
+    </div>
+    <div class="crop-body">
+      <div class="crop-aspect-row">
+        <button class="crop-aspect-btn active" data-ratio="1" onclick="setCropAspect(1,this)">⬜ 1:1</button>
+        <button class="crop-aspect-btn" data-ratio="1.33" onclick="setCropAspect(1.33,this)">▭ 4:3</button>
+        <button class="crop-aspect-btn" data-ratio="1.78" onclick="setCropAspect(1.78,this)">▬ 16:9</button>
+      </div>
+      <div class="crop-canvas-wrap" id="cropCanvasWrap">
+        <img id="cropImgEl" src="" draggable="false">
+      </div>
+      <div class="crop-zoom-row">
+        <span style="font-size:.8rem">🔍</span>
+        <input type="range" id="cropZoomSlider" min="100" max="300" value="100" oninput="updateCropZoom(this.value)">
+      </div>
+      <div class="crop-actions">
+        <button class="crop-btn cancel" onclick="closeCropModal()">বাতিল</button>
+        <button class="crop-btn confirm" onclick="confirmCrop()">✓ ক্রপ করুন</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- LOADING -->
 <div class="loading-screen" id="loadingScreen">
@@ -2742,6 +2790,173 @@ function delImg(e,slot){
   document.getElementById('slot'+slot).classList.remove('has-img');
 }
 
+// ═══ IMAGE CROP MODAL (reusable for any image upload) ═══
+var cropState = {
+  file: null,
+  onCropDone: null, // callback(croppedBlob)
+  aspect: 1,
+  scale: 1,
+  offsetX: 0,
+  offsetY: 0,
+  imgNaturalW: 0,
+  imgNaturalH: 0,
+  dragging: false,
+  dragStartX: 0,
+  dragStartY: 0
+};
+
+function openCropModal(file, onCropDone){
+  cropState.file = file;
+  cropState.onCropDone = onCropDone;
+  cropState.scale = 1;
+  cropState.offsetX = 0;
+  cropState.offsetY = 0;
+  cropState.aspect = 1;
+  document.getElementById('cropZoomSlider').value = 100;
+  document.querySelectorAll('.crop-aspect-btn').forEach(function(b,i){ b.classList.toggle('active', i===0); });
+  applyCropAspectRatio(1);
+
+  var reader = new FileReader();
+  reader.onload = function(e){
+    var img = document.getElementById('cropImgEl');
+    img.onload = function(){
+      cropState.imgNaturalW = img.naturalWidth;
+      cropState.imgNaturalH = img.naturalHeight;
+      fitImageToCropArea();
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+
+  document.getElementById('cropOverlay').style.display='flex';
+  setupCropDragHandlers();
+}
+
+function closeCropModal(){
+  document.getElementById('cropOverlay').style.display='none';
+  cropState.file=null; cropState.onCropDone=null;
+}
+
+function applyCropAspectRatio(ratio){
+  cropState.aspect = ratio;
+  var wrap = document.getElementById('cropCanvasWrap');
+  // height stays based on container width / ratio (width:height)
+  wrap.style.aspectRatio = ratio;
+}
+
+function setCropAspect(ratio, btn){
+  document.querySelectorAll('.crop-aspect-btn').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  applyCropAspectRatio(ratio);
+  fitImageToCropArea();
+}
+
+function fitImageToCropArea(){
+  var wrap = document.getElementById('cropCanvasWrap');
+  var img = document.getElementById('cropImgEl');
+  var wrapRect = wrap.getBoundingClientRect();
+  var wrapW = wrapRect.width, wrapH = wrapRect.height;
+  var natW = cropState.imgNaturalW, natH = cropState.imgNaturalH;
+  if(!natW || !natH) return;
+
+  // Scale image so it covers the crop area fully (like object-fit: cover)
+  var coverScale = Math.max(wrapW/natW, wrapH/natH);
+  cropState.baseScale = coverScale;
+  cropState.scale = 1; // multiplier on top of baseScale, controlled by zoom slider
+  cropState.offsetX = 0;
+  cropState.offsetY = 0;
+  renderCropImage();
+}
+
+function renderCropImage(){
+  var img = document.getElementById('cropImgEl');
+  var wrap = document.getElementById('cropCanvasWrap');
+  var wrapRect = wrap.getBoundingClientRect();
+  var totalScale = cropState.baseScale * cropState.scale;
+  var dispW = cropState.imgNaturalW * totalScale;
+  var dispH = cropState.imgNaturalH * totalScale;
+
+  // Clamp offsets so image always covers the crop area
+  var maxOffsetX = Math.max(0, (dispW - wrapRect.width)/2);
+  var maxOffsetY = Math.max(0, (dispH - wrapRect.height)/2);
+  cropState.offsetX = Math.max(-maxOffsetX, Math.min(maxOffsetX, cropState.offsetX));
+  cropState.offsetY = Math.max(-maxOffsetY, Math.min(maxOffsetY, cropState.offsetY));
+
+  img.style.width = dispW+'px';
+  img.style.height = dispH+'px';
+  img.style.left = ((wrapRect.width-dispW)/2 + cropState.offsetX)+'px';
+  img.style.top = ((wrapRect.height-dispH)/2 + cropState.offsetY)+'px';
+}
+
+function updateCropZoom(val){
+  cropState.scale = val/100;
+  renderCropImage();
+}
+
+function setupCropDragHandlers(){
+  var wrap = document.getElementById('cropCanvasWrap');
+  if(wrap._cropHandlersSet) return;
+  wrap._cropHandlersSet = true;
+
+  function startDrag(x,y){
+    cropState.dragging = true;
+    cropState.dragStartX = x - cropState.offsetX;
+    cropState.dragStartY = y - cropState.offsetY;
+  }
+  function moveDrag(x,y){
+    if(!cropState.dragging) return;
+    cropState.offsetX = x - cropState.dragStartX;
+    cropState.offsetY = y - cropState.dragStartY;
+    renderCropImage();
+  }
+  function endDrag(){ cropState.dragging = false; }
+
+  wrap.addEventListener('mousedown', function(e){ startDrag(e.clientX, e.clientY); });
+  window.addEventListener('mousemove', function(e){ moveDrag(e.clientX, e.clientY); });
+  window.addEventListener('mouseup', endDrag);
+
+  wrap.addEventListener('touchstart', function(e){
+    var t=e.touches[0]; startDrag(t.clientX, t.clientY);
+  }, {passive:true});
+  wrap.addEventListener('touchmove', function(e){
+    var t=e.touches[0]; moveDrag(t.clientX, t.clientY);
+  }, {passive:true});
+  wrap.addEventListener('touchend', endDrag);
+}
+
+function confirmCrop(){
+  var wrap = document.getElementById('cropCanvasWrap');
+  var wrapRect = wrap.getBoundingClientRect();
+  var totalScale = cropState.baseScale * cropState.scale;
+
+  // Output at a fixed resolution for consistency, respecting the chosen aspect ratio
+  var outW = 800;
+  var outH = Math.round(outW / cropState.aspect);
+  var canvas = document.createElement('canvas');
+  canvas.width = outW; canvas.height = outH;
+  var ctx = canvas.getContext('2d');
+
+  var img = document.getElementById('cropImgEl');
+  // Map the visible crop window back to natural image coordinates
+  var dispW = cropState.imgNaturalW * totalScale;
+  var dispH = cropState.imgNaturalH * totalScale;
+  var imgLeft = (wrapRect.width-dispW)/2 + cropState.offsetX;
+  var imgTop = (wrapRect.height-dispH)/2 + cropState.offsetY;
+
+  // Crop window in natural image pixels
+  var srcX = (0 - imgLeft) / totalScale;
+  var srcY = (0 - imgTop) / totalScale;
+  var srcW = wrapRect.width / totalScale;
+  var srcH = wrapRect.height / totalScale;
+
+  ctx.drawImage(img, srcX, srcY, srcW, srcH, 0, 0, outW, outH);
+
+  canvas.toBlob(function(blob){
+    if(cropState.onCropDone) cropState.onCropDone(blob);
+    closeCropModal();
+  }, 'image/jpeg', 0.88);
+}
+
 // ═══ SHOP PHOTO GALLERY (multiple images) ═══
 var shopGalleryUrls = [null,null,null,null,null,null];
 var activeShopGallerySlot = 0;
@@ -2751,28 +2966,38 @@ function triggerShopGalleryImg(slot){
   document.getElementById('shopGalleryFileInput').click();
 }
 
-async function handleShopGalleryUpload(input){
-  var file=input.files[0]; if(!file)return;
-  var prog=document.getElementById('shopGalleryProg');
-  var fill=document.getElementById('shopGalleryFill');
-  var msg=document.getElementById('shopGalleryMsg');
-  prog.style.display='block'; msg.textContent='ছবি আপলোড হচ্ছে...'; fill.style.width='20%';
+async function uploadBlobToCloudinary(blob, folder){
   var fd=new FormData();
-  fd.append('file',file); fd.append('upload_preset',PRESET); fd.append('cloud_name',CLOUD);
-  fd.append('folder','delta/shop_gallery');
-  try{
-    fill.style.width='60%';
-    var res=await fetch('https://api.cloudinary.com/v1_1/'+CLOUD+'/image/upload',{method:'POST',body:fd});
-    var data=await res.json(); fill.style.width='100%';
-    if(data.secure_url){
-      shopGalleryUrls[activeShopGallerySlot]=data.secure_url;
+  fd.append('file', blob, 'cropped.jpg');
+  fd.append('upload_preset', PRESET); fd.append('cloud_name', CLOUD);
+  fd.append('folder', folder);
+  var res = await fetch('https://api.cloudinary.com/v1_1/'+CLOUD+'/image/upload', {method:'POST', body:fd});
+  var data = await res.json();
+  if(!data.secure_url) throw new Error(data.error ? data.error.message : 'Upload failed');
+  return data.secure_url;
+}
+
+function handleShopGalleryUpload(input){
+  var file=input.files[0]; if(!file){input.value='';return;}
+  openCropModal(file, async function(croppedBlob){
+    var prog=document.getElementById('shopGalleryProg');
+    var fill=document.getElementById('shopGalleryFill');
+    var msg=document.getElementById('shopGalleryMsg');
+    prog.style.display='block'; msg.textContent='ছবি আপলোড হচ্ছে...'; fill.style.width='40%';
+    try{
+      var url = await uploadBlobToCloudinary(croppedBlob, 'delta/shop_gallery');
+      fill.style.width='100%';
+      shopGalleryUrls[activeShopGallerySlot]=url;
       var img=document.getElementById('shopGImg'+activeShopGallerySlot);
-      img.src=data.secure_url; img.style.display='block';
+      img.src=url; img.style.display='block';
       document.getElementById('shopGSlot'+activeShopGallerySlot).classList.add('has-img');
       setTimeout(function(){prog.style.display='none';fill.style.width='0';},800);
       showToast('ছবি আপলোড সফল ✅','green');
-    } else { throw new Error(data.error?data.error.message:'Upload failed'); }
-  }catch(e){prog.style.display='none';fill.style.width='0';showToast('ছবি আপলোড ব্যর্থ: '+e.message,'red');}
+    }catch(e){
+      prog.style.display='none'; fill.style.width='0';
+      showToast('ছবি আপলোড ব্যর্থ: '+e.message,'red');
+    }
+  });
   input.value='';
 }
 
@@ -2783,22 +3008,20 @@ function delShopGalleryImg(e,slot){
 }
 
 // ═══ STORY PHOTO / VIDEO UPLOAD ═══
-async function handleStoryPhotoUpload(input){
-  var file=input.files[0]; if(!file)return;
-  var preview=document.getElementById('storyPhotoPreview');
-  var fd=new FormData();
-  fd.append('file',file); fd.append('upload_preset',PRESET); fd.append('cloud_name',CLOUD);
-  fd.append('folder','delta/seller_story');
-  try{
+function handleStoryPhotoUpload(input){
+  var file=input.files[0]; if(!file){input.value='';return;}
+  openCropModal(file, async function(croppedBlob){
+    var preview=document.getElementById('storyPhotoPreview');
     showToast('ছবি আপলোড হচ্ছে...','orange');
-    var res=await fetch('https://api.cloudinary.com/v1_1/'+CLOUD+'/image/upload',{method:'POST',body:fd});
-    var data=await res.json();
-    if(data.secure_url){
-      storyPhotoUrl=data.secure_url;
-      preview.innerHTML='<img src="'+data.secure_url+'" style="width:100%;height:100%;object-fit:cover">';
+    try{
+      var url = await uploadBlobToCloudinary(croppedBlob, 'delta/seller_story');
+      storyPhotoUrl=url;
+      preview.innerHTML='<img src="'+url+'" style="width:100%;height:100%;object-fit:cover">';
       showToast('প্রোফাইল ছবি আপলোড সফল ✅','green');
-    } else { throw new Error(data.error?data.error.message:'Upload failed'); }
-  }catch(e){ showToast('আপলোড ব্যর্থ: '+e.message,'red'); }
+    }catch(e){
+      showToast('আপলোড ব্যর্থ: '+e.message,'red');
+    }
+  });
   input.value='';
 }
 
