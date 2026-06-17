@@ -1998,7 +1998,7 @@ async function loadData(){
       var shop=Object.assign({id:d.id},d.data());
       allShops.push(shop);
       proms.push(db.collection('cities').doc(CITY).collection('sellers').doc(d.id).collection('products').get().then(function(ps){
-        ps.forEach(function(pd){allProducts.push(Object.assign({id:pd.id,shopId:d.id,shopName:shop.shopName,shopCat:shop.category},pd.data()));});
+        ps.forEach(function(pd){allProducts.push(Object.assign({id:pd.id,shopId:d.id,shopName:shop.shopName,shopCat:shop.category,shopArea:shop.area},pd.data()));});
       }));
     });
     await Promise.all(proms);
@@ -3269,7 +3269,7 @@ function productCardHTML(p,isFlash){
     // Flash timer bar — only for flash products
     (isFlash?'<div class="flash-timer-bar" id="'+barId+'"><span class="flash-timer-label">⚡ Offer ends in</span><span class="flash-timer-digits" id="'+timerId+'">--:--:--</span></div>':'')+
     '<div class="product-body">'+
-    '<div class="product-shop">🏪 '+(p.shopName||'')+'</div>'+
+    '<div class="product-shop">🏪 '+(p.shopName||'')+(p.shopArea?', '+p.shopArea:'')+'</div>'+
     '<div class="product-name">'+name+'</div>'+
     (unit?'<div class="product-weight">'+unit+'</div>':'')+
     '<div class="product-rating">⭐ 4.8 <span style="color:var(--muted)">(24)</span></div>'+
