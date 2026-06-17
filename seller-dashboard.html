@@ -796,7 +796,7 @@ select.form-input{cursor:pointer;}
               <input type="hidden" id="pShopType" value="shop">
             </div>
             <div class="form-group"><label>মালিকের নাম / Owner Name</label>
-              <input type="text" class="form-input" id="pOwnerName"></div>
+              <input type="text" class="form-input" id="pOwnerName" oninput="updateStoryOwnerNameDisplay()"></div>
             <div class="form-group"><label>Mobile</label>
               <input type="tel" class="form-input" id="pPhone"></div>
             <div class="form-group">
@@ -883,6 +883,14 @@ select.form-input{cursor:pointer;}
             </h3>
             <p style="font-size:.72rem;color:var(--gray);margin-bottom:14px" data-lang-bn="হোমপেজে আপনার প্রোফাইল কার্ডে এই তথ্য দেখাবে — কাস্টমারের বিশ্বাস বাড়বে"
                data-lang-en="This shows on your homepage profile card — builds customer trust">হোমপেজে আপনার প্রোফাইল কার্ডে এই তথ্য দেখাবে — কাস্টমারের বিশ্বাস বাড়বে</p>
+
+            <div style="background:var(--orange-light);border-radius:10px;padding:10px 14px;margin-bottom:16px;font-size:.78rem;color:var(--charcoal);display:flex;align-items:center;gap:8px;">
+              👤 <span data-lang-bn="আপনার নাম:" data-lang-en="Your name:">আপনার নাম:</span>
+              <strong id="storyOwnerNameDisplay" style="color:var(--navy)">—</strong>
+              <span style="margin-left:auto;font-size:.7rem;color:var(--gray)">
+                <span data-lang-bn="(কাস্টমাররা এই নামটি দেখবে)" data-lang-en="(customers will see this name)">(কাস্টমাররা এই নামটি দেখবে)</span>
+              </span>
+            </div>
 
             <div class="form-grid">
               <!-- Profile Photo -->
@@ -3141,10 +3149,18 @@ function updateOrder(id,status){
 }
 
 // ═══ SHOP PROFILE ═══
+function updateStoryOwnerNameDisplay(){
+  var el = document.getElementById('storyOwnerNameDisplay');
+  if(!el) return;
+  var val = (document.getElementById('pOwnerName').value||'').trim();
+  el.textContent = val || '— (উপরে নাম লিখুন)';
+}
+
 function loadProfile(){
   if(!SD)return;
   document.getElementById('pShopName').value=SD.shopName||'';
   document.getElementById('pOwnerName').value=SD.ownerName||'';
+  updateStoryOwnerNameDisplay();
   document.getElementById('pPhone').value=SD.mobile||'';
   document.getElementById('pArea').value=SD.area||'';
   document.getElementById('pCategory').value=SD.category||'';
