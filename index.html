@@ -2262,6 +2262,9 @@ async function loadData(retryCount){
     var proms=[];
     snap.forEach(function(d){
       var shop=Object.assign({id:d.id},d.data());
+      // Hide shops awaiting admin approval. Shops without a status field (registered
+      // before this approval system existed) are treated as approved for backward compatibility.
+      if(shop.status === 'pending') return;
       allShops.push(shop);
       proms.push(db.collection('cities').doc(CITY).collection('sellers').doc(d.id).collection('products').get().then(function(ps){
         ps.forEach(function(pd){allProducts.push(Object.assign({id:pd.id,shopId:d.id,shopName:shop.shopName,shopCat:shop.category,shopArea:shop.area},pd.data()));});
