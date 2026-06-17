@@ -354,6 +354,52 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 .fm-shop-btn{width:100%;background:var(--orange);color:#fff;border:none;padding:13px;border-radius:12px;font-weight:700;font-size:.9rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;}
 .fm-shop-btn:hover{background:var(--orange-dark,#d9610f);}
 
+/* ── PINCODE DELIVERY CHECK MODAL ── */
+.pin-overlay{position:fixed;inset:0;background:rgba(10,31,53,.55);z-index:2100;display:flex;align-items:center;justify-content:center;padding:20px;animation:fmFadeIn .2s ease;}
+.pin-sheet{background:var(--white);width:100%;max-width:380px;border-radius:18px;overflow:hidden;animation:fmSlideUp .25s ease;}
+.pin-head{background:linear-gradient(135deg,var(--navy3),var(--navy));padding:22px 22px 18px;position:relative;text-align:center;color:#fff;}
+.pin-close{position:absolute;top:12px;right:12px;background:rgba(255,255,255,.15);border:none;color:#fff;width:30px;height:30px;border-radius:50%;font-size:1rem;cursor:pointer;}
+.pin-head-icon{font-size:1.8rem;margin-bottom:6px;}
+.pin-head-title{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:800;margin-bottom:4px;}
+.pin-head-sub{font-size:.78rem;color:rgba(255,255,255,.7);}
+.pin-body{padding:22px;}
+.pin-input-row{display:flex;gap:8px;}
+.pin-input{flex:1;padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:1rem;font-weight:600;letter-spacing:1px;}
+.pin-input:focus{outline:none;border-color:var(--orange);}
+.pin-check-btn{background:var(--orange);color:#fff;border:none;padding:0 18px;border-radius:10px;font-weight:700;font-size:.85rem;cursor:pointer;white-space:nowrap;}
+.pin-check-btn:hover{background:var(--orange-dark,#d9610f);}
+.pin-check-btn:disabled{opacity:.6;cursor:not-allowed;}
+.pin-result{margin-top:16px;border-radius:12px;padding:14px 16px;font-size:.82rem;line-height:1.6;display:none;}
+.pin-result.success{background:#eef9f0;color:#1a7a4c;display:block;}
+.pin-result.fail{background:#fdeeec;color:#c0392b;display:block;}
+.pin-result strong{display:block;font-size:.9rem;margin-bottom:3px;}
+.pin-notify-btn{margin-top:10px;width:100%;background:var(--navy);color:#fff;border:none;padding:10px;border-radius:9px;font-weight:700;font-size:.78rem;cursor:pointer;}
+.pin-notify-btn:hover{background:var(--orange);}
+.pin-served-list{margin-top:14px;font-size:.74rem;color:var(--muted);text-align:center;}
+
+/* ── WELCOME PINCODE GATE (first visit) ── */
+.gate-overlay{position:fixed;inset:0;background:linear-gradient(135deg,var(--navy3),var(--navy));z-index:5000;display:flex;align-items:center;justify-content:center;padding:24px;}
+.gate-card{background:var(--white);width:100%;max-width:400px;border-radius:20px;overflow:hidden;text-align:center;animation:fmSlideUp .3s ease;}
+.gate-top{background:linear-gradient(135deg,var(--green2,#1a7a4c),var(--green,#2da86a));padding:32px 24px 26px;color:#fff;}
+.gate-logo{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:900;margin-bottom:10px;}
+.gate-logo em{color:#ffe5c2;font-style:normal;}
+.gate-icon{font-size:2.2rem;margin-bottom:8px;}
+.gate-title{font-size:1.05rem;font-weight:800;margin-bottom:6px;}
+.gate-sub{font-size:.8rem;opacity:.9;line-height:1.5;}
+.gate-body{padding:24px;}
+.gate-input-row{display:flex;gap:8px;}
+.gate-input{flex:1;padding:13px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:1.05rem;font-weight:700;letter-spacing:1.5px;text-align:center;}
+.gate-input:focus{outline:none;border-color:var(--orange);}
+.gate-check-btn{background:var(--orange);color:#fff;border:none;padding:0 20px;border-radius:10px;font-weight:700;font-size:.85rem;cursor:pointer;}
+.gate-check-btn:hover{background:var(--orange-dark,#d9610f);}
+.gate-result{margin-top:14px;border-radius:12px;padding:14px 16px;font-size:.8rem;line-height:1.6;display:none;text-align:left;}
+.gate-result.success{background:#eef9f0;color:#1a7a4c;display:block;}
+.gate-result.fail{background:#fdeeec;color:#c0392b;display:block;}
+.gate-result strong{display:block;font-size:.88rem;margin-bottom:3px;}
+.gate-skip{margin-top:16px;font-size:.78rem;color:var(--muted);cursor:pointer;text-decoration:underline;}
+.gate-skip:hover{color:var(--navy);}
+.gate-served{margin-top:14px;font-size:.72rem;color:var(--muted);}
+
 /* ── ALL ENTREPRENEURS FULL GRID VIEW ── */
 .fa-overlay{position:fixed;inset:0;background:var(--cream);z-index:1800;overflow-y:auto;}
 .fa-header{background:linear-gradient(135deg,var(--navy3),var(--navy));padding:18px 5%;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:1;}
@@ -883,6 +929,35 @@ body.lang-bn .lang-en{display:none!important;}
 </head>
 <body class="lang-bn">
 
+<!-- WELCOME PINCODE GATE (first visit only) -->
+<div class="gate-overlay" id="gateOverlay" style="display:none;">
+  <div class="gate-card">
+    <div class="gate-top">
+      <div class="gate-logo">△ DELT<em>A</em></div>
+      <div class="gate-icon">📍</div>
+      <div class="gate-title"><span class="lang-bn">আপনার এলাকা চেক করুন</span><span class="lang-en">Check Your Area</span></div>
+      <div class="gate-sub">
+        <span class="lang-bn">পিনকোড দিন — দেখি আমরা পৌঁছাতে পারি কিনা</span>
+        <span class="lang-en">Enter your pincode — let's see if we deliver there</span>
+      </div>
+    </div>
+    <div class="gate-body">
+      <div class="gate-input-row">
+        <input type="text" class="gate-input" id="gateInput" placeholder="৭১৩১৪৫" maxlength="6" inputmode="numeric" onkeydown="if(event.key==='Enter')checkGatePincode()">
+        <button class="gate-check-btn" onclick="checkGatePincode()"><span class="lang-bn">চেক করুন</span><span class="lang-en">Check</span></button>
+      </div>
+      <div class="gate-result" id="gateResult"></div>
+      <div class="gate-served">
+        <span class="lang-bn">এখন সার্ভিস এলাকা: মন্তেশ্বর ব্লক (713145, 713422)</span>
+        <span class="lang-en">Currently serving: Manteswar Block (713145, 713422)</span>
+      </div>
+      <div class="gate-skip" onclick="skipGate()">
+        <span class="lang-bn">এখন স্কিপ করুন, পরে দেখবো →</span><span class="lang-en">Skip for now, browse anyway →</span>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- TOAST -->
 <div class="toast" id="toastEl"></div>
 
@@ -898,7 +973,7 @@ body.lang-bn .lang-en{display:none!important;}
         <div class="search-suggestions" id="navSuggestions"></div>
       </div>
     </div>
-    <div class="nav-loc-btn" onclick="showToast('📍 Manteswar, Purba Bardhaman')">
+    <div class="nav-loc-btn" id="navLocBtn" onclick="openPinModal()">
       📍 <span>Manteswar</span> <span style="font-size:.6rem;opacity:.6">▾</span>
     </div>
     <div class="nav-actions">
@@ -1676,6 +1751,29 @@ body.lang-bn .lang-en{display:none!important;}
 </footer>
 
 <!-- SUBSCRIBE & SAVE MODAL -->
+<!-- PINCODE DELIVERY CHECK MODAL -->
+<div class="pin-overlay" id="pinModalOverlay" style="display:none;">
+  <div class="pin-sheet">
+    <div class="pin-head">
+      <button class="pin-close" onclick="closePinModal()">✕</button>
+      <div class="pin-head-icon">📍</div>
+      <div class="pin-head-title"><span class="lang-bn">ডেলিভারি চেক করুন</span><span class="lang-en">Check Delivery</span></div>
+      <div class="pin-head-sub"><span class="lang-bn">আপনার পিনকোড দিয়ে দেখুন আমরা পৌঁছাই কিনা</span><span class="lang-en">Enter your pincode to see if we deliver there</span></div>
+    </div>
+    <div class="pin-body">
+      <div class="pin-input-row">
+        <input type="text" class="pin-input" id="pinInput" placeholder="যেমন 713145" maxlength="6" inputmode="numeric" onkeydown="if(event.key==='Enter')checkPincode()">
+        <button class="pin-check-btn" id="pinCheckBtn" onclick="checkPincode()"><span class="lang-bn">চেক করুন</span><span class="lang-en">Check</span></button>
+      </div>
+      <div class="pin-result" id="pinResult"></div>
+      <div class="pin-served-list">
+        <span class="lang-bn">এখন সার্ভিস এলাকা: মন্তেশ্বর ব্লক (713145, 713422)</span>
+        <span class="lang-en">Currently serving: Manteswar Block (713145, 713422)</span>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="sub-modal-overlay" id="subModalOverlay">
   <div class="sub-modal">
     <div class="sub-modal-head">
@@ -1940,11 +2038,30 @@ var fbcfg={apiKey:"AIzaSyA6TrrnCMwv1aa1WPqGvTVWlnieB2pVOEU",authDomain:"delta-pl
 var auth,db,currentUser=null,cart=[],wishlist=[],allShops=[],allProducts=[],selectedPay='cod';
 var CITY='manteswar'; // Multi-tenant city
 
-// Dynamic Firebase loader
+// Dynamic Firebase loader — robust version with error handling + timeout fallback
 (function(){
   var s=['https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js','https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js','https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js'];
-  var n=0;
-  s.forEach(function(src){var el=document.createElement('script');el.src=src;el.onload=function(){if(++n===s.length)initFB();};el.onerror=function(){document.getElementById('shopsGrid').innerHTML='<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">⚠️</div><p>Internet সংযোগ নেই। Reload করুন।</p></div>';document.getElementById('productsGrid').innerHTML='';};document.head.appendChild(el);});
+  var n=0, fbInitDone=false, hadError=false;
+  function tryInit(){
+    if(fbInitDone) return;
+    fbInitDone=true;
+    if(hadError || typeof firebase==='undefined'){
+      // Firebase failed to load — show offline state but don't hang the page
+      var sg=document.getElementById('shopsGrid'); if(sg) sg.innerHTML='<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">⚠️</div><p>Internet সংযোগ সমস্যা। Reload করুন।</p></div>';
+      var pg=document.getElementById('productsGrid'); if(pg) pg.innerHTML='';
+      return;
+    }
+    initFB();
+  }
+  s.forEach(function(src){
+    var el=document.createElement('script');
+    el.src=src;
+    el.onload=function(){ n++; if(n===s.length) tryInit(); };
+    el.onerror=function(){ hadError=true; n++; if(n===s.length) tryInit(); };
+    document.head.appendChild(el);
+  });
+  // Safety net: if scripts hang (no load/error event fires within 8s), try init anyway
+  setTimeout(tryInit, 8000);
 })();
 
 function initFB(){
@@ -1959,25 +2076,74 @@ function initFB(){
   detectCity();
 }
 
-// GPS City Detection
+// ── CITY GEOFENCE CONFIG (add new cities here as platform expands) ──
+var CITY_GEOFENCES = [
+  { city:'manteswar', latMin:23.3, latMax:23.5, lngMin:87.7, lngMax:88.0 }
+  // Future cities (Phase 3, Step 22+): { city:'katwa', latMin:..., latMax:..., lngMin:..., lngMax:... }
+];
+
+// ── PINCODE DELIVERY CHECK (also used as GPS fallback) ──
+var SERVED_PINCODES = {
+  '713145': 'manteswar',
+  '713422': 'manteswar'
+};
+
+function matchCityByCoords(lat,lng){
+  for(var i=0;i<CITY_GEOFENCES.length;i++){
+    var g=CITY_GEOFENCES[i];
+    if(lat>=g.latMin&&lat<=g.latMax&&lng>=g.lngMin&&lng<=g.lngMax) return g.city;
+  }
+  return null;
+}
+
+// GPS City Detection — GPS is primary (silent, no custom UI), pincode gate is fallback
 function detectCity(){
+  var fired=false;
+  function proceedWithData(){
+    if(fired) return;
+    fired=true;
+    loadData();
+  }
+  function fallbackToPincodeGate(){
+    // GPS failed/denied/out-of-range → ask via pincode gate instead
+    if(!localStorage.getItem('delta_verified_pincode')){
+      document.getElementById('gateOverlay').style.display='flex';
+    }
+    proceedWithData();
+  }
+
+  // If already verified via pincode in a previous visit, trust that and skip GPS prompt entirely
+  var savedPin = localStorage.getItem('delta_verified_pincode');
+  if(savedPin && SERVED_PINCODES[savedPin]){
+    CITY = SERVED_PINCODES[savedPin];
+    updateCityUI();
+    proceedWithData();
+    return;
+  }
+
   if(navigator.geolocation){
     navigator.geolocation.getCurrentPosition(function(pos){
       var lat=pos.coords.latitude;
       var lng=pos.coords.longitude;
-      // Manteswar geofence: approx 23.3-23.5 lat, 87.8-88.0 lng
-      if(lat>=23.3&&lat<=23.5&&lng>=87.7&&lng<=88.0){
-        CITY='manteswar';
+      var matchedCity = matchCityByCoords(lat,lng);
+      if(matchedCity){
+        CITY = matchedCity;
+        updateCityUI();
+        // GPS successfully confirmed location — no need to ask for pincode
+        localStorage.setItem('delta_verified_pincode', Object.keys(SERVED_PINCODES).find(function(p){return SERVED_PINCODES[p]===matchedCity;}) || '');
+        proceedWithData();
+      } else {
+        // GPS worked but customer is outside any known service area
+        fallbackToPincodeGate();
       }
-      // Future cities can be added here
-      updateCityUI();
-      loadData();
     },function(){
-      // GPS denied or failed → default to manteswar
-      loadData();
+      // GPS denied or failed → fallback to manual pincode gate
+      fallbackToPincodeGate();
     },{timeout:3000});
+    // Extra safety net in case the geolocation callbacks never fire at all
+    setTimeout(fallbackToPincodeGate, 5000);
   } else {
-    loadData();
+    fallbackToPincodeGate();
   }
 }
 
@@ -1987,6 +2153,107 @@ function updateCityUI(){
     var cityNames={manteswar:'Manteswar',katwa:'Katwa',ausgram:'Ausgram'};
     locBtn.querySelector('span').textContent=cityNames[CITY]||'Manteswar';
   }
+}
+
+// ── PINCODE DELIVERY CHECK ──
+function openPinModal(){
+  document.getElementById('pinModalOverlay').style.display='flex';
+  document.getElementById('pinResult').style.display='none';
+  document.getElementById('pinResult').className='pin-result';
+  document.getElementById('pinInput').value='';
+  document.getElementById('pinInput').focus();
+}
+
+function closePinModal(){
+  document.getElementById('pinModalOverlay').style.display='none';
+}
+
+function checkPincode(){
+  var pin=(document.getElementById('pinInput').value||'').trim();
+  var resultEl=document.getElementById('pinResult');
+
+  if(!/^\d{6}$/.test(pin)){
+    resultEl.className='pin-result fail';
+    resultEl.style.display='block';
+    resultEl.innerHTML='<strong>⚠️ '+(currentLang==='bn'?'সঠিক পিনকোড দিন':'Enter a valid pincode')+'</strong>'+
+      (currentLang==='bn'?'৬ সংখ্যার পিনকোড লিখুন।':'Please enter a 6-digit pincode.');
+    return;
+  }
+
+  if(SERVED_PINCODES[pin]){
+    var cityKey = SERVED_PINCODES[pin];
+    resultEl.className='pin-result success';
+    resultEl.style.display='block';
+    resultEl.innerHTML='<strong>✅ '+(currentLang==='bn'?'ডেলিভারি উপলব্ধ!':'Delivery Available!')+'</strong>'+
+      (currentLang==='bn'?'মন্তেশ্বর ব্লকে আমরা পৌঁছাই। 30-60 মিনিটে ডেলিভারি।':'We deliver to Manteswar Block. Delivery in 30-60 minutes.');
+    CITY = cityKey;
+    localStorage.setItem('delta_verified_pincode', pin);
+    updateCityUI();
+    setTimeout(closePinModal, 1800);
+  } else {
+    resultEl.className='pin-result fail';
+    resultEl.style.display='block';
+    resultEl.innerHTML='<strong>😔 '+(currentLang==='bn'?'এখনো এই এলাকায় নেই':'Not available here yet')+'</strong>'+
+      (currentLang==='bn'?'আমরা এখনো মন্তেশ্বর ব্লকেই আছি। শীঘ্রই আরও এলাকায় যাচ্ছি!':'We currently only serve Manteswar Block. Expanding soon!')+
+      '<button class="pin-notify-btn" onclick="notifyPinExpansion(\''+pin+'\')">🔔 <span class="lang-bn">এই এলাকায় আসলে জানান</span><span class="lang-en">Notify me when available</span></button>';
+  }
+}
+
+function notifyPinExpansion(pin){
+  if(db){
+    db.collection('expansionRequests').add({
+      pincode: pin,
+      requestedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }).catch(function(e){ console.error(e); });
+  }
+  showToast(currentLang==='bn'?'ধন্যবাদ! আমরা আপনাকে জানাবো 🔔':'Thanks! We will notify you 🔔');
+  closePinModal();
+}
+
+// ── WELCOME PINCODE GATE (shown on first visit only) ──
+function showWelcomeGateIfNeeded(){
+  var verified = localStorage.getItem('delta_verified_pincode');
+  if(!verified){
+    document.getElementById('gateOverlay').style.display='flex';
+  }
+}
+
+function checkGatePincode(){
+  var pin=(document.getElementById('gateInput').value||'').trim();
+  var resultEl=document.getElementById('gateResult');
+
+  if(!/^\d{6}$/.test(pin)){
+    resultEl.className='gate-result fail';
+    resultEl.style.display='block';
+    resultEl.innerHTML='<strong>⚠️ '+(currentLang==='bn'?'সঠিক পিনকোড দিন':'Enter a valid pincode')+'</strong>'+
+      (currentLang==='bn'?'৬ সংখ্যার পিনকোড লিখুন।':'Please enter a 6-digit pincode.');
+    return;
+  }
+
+  if(SERVED_PINCODES[pin]){
+    var cityKey = SERVED_PINCODES[pin];
+    resultEl.className='gate-result success';
+    resultEl.style.display='block';
+    resultEl.innerHTML='<strong>✅ '+(currentLang==='bn'?'দারুণ! ডেলিভারি উপলব্ধ':'Great! Delivery Available')+'</strong>'+
+      (currentLang==='bn'?'মন্তেশ্বর ব্লকে আমরা পৌঁছাই। ৩০-৬০ মিনিটে ডেলিভারি।':'We deliver to Manteswar Block. Delivery in 30-60 minutes.');
+    CITY = cityKey;
+    localStorage.setItem('delta_verified_pincode', pin);
+    setTimeout(function(){
+      document.getElementById('gateOverlay').style.display='none';
+      updateCityUI();
+    }, 1400);
+  } else {
+    resultEl.className='gate-result fail';
+    resultEl.style.display='block';
+    resultEl.innerHTML='<strong>😔 '+(currentLang==='bn'?'এখনো এই এলাকায় নেই':'Not available here yet')+'</strong>'+
+      (currentLang==='bn'?'আমরা এখনো মন্তেশ্বর ব্লকেই আছি। আপনি browse করতে পারেন, শীঘ্রই আরও এলাকায় যাচ্ছি!':'We currently only serve Manteswar Block. You can still browse — expanding soon!')+
+      '<button class="pin-notify-btn" style="margin-top:8px" onclick="notifyPinExpansion(\''+pin+'\');skipGate();">🔔 <span class="lang-bn">এই এলাকায় আসলে জানান</span><span class="lang-en">Notify me when available</span></button>';
+  }
+}
+
+function skipGate(){
+  document.getElementById('gateOverlay').style.display='none';
+  // Not saved to localStorage on skip — will ask again next visit
 }
 
 async function loadData(retryCount){
