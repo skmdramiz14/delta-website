@@ -736,6 +736,10 @@ select.form-input{cursor:pointer;}
           </button>
         </div>
         <div class="profile-card">
+          <div id="pendingApprovalBanner" style="display:none;background:#fff4ec;border:1.5px solid var(--orange);border-radius:12px;padding:14px 18px;margin-bottom:18px;font-size:.85rem;color:var(--charcoal);">
+            ⏳ <strong><span data-lang-bn="আপনার দোকান অনুমোদনের অপেক্ষায়" data-lang-en="Your shop is awaiting approval">আপনার দোকান অনুমোদনের অপেক্ষায়</span></strong><br>
+            <span style="font-size:.78rem;color:var(--gray)" data-lang-bn="DELTA টিম খুব শীঘ্রই আপনার দোকান review করবে। অনুমোদনের পর এটি কাস্টমারদের কাছে দেখা যাবে। আপনি এখন প্রোফাইল ও পণ্য যোগ করতে পারবেন।" data-lang-en="The DELTA team will review your shop shortly. Once approved, it will be visible to customers. You can add your profile and products now.">DELTA টিম খুব শীঘ্রই আপনার দোকান review করবে। অনুমোদনের পর এটি কাস্টমারদের কাছে দেখা যাবে। আপনি এখন প্রোফাইল ও পণ্য যোগ করতে পারবেন।</span>
+          </div>
           <div class="profile-header">
             <div class="shop-avatar" id="profileAvatar">🏪</div>
             <div class="shop-info">
@@ -1491,6 +1495,7 @@ function doRegister(){
       email:email, city:CITY,
       shopType:shopType,
       plan:'free', isOpen:true,
+      status:'pending',
       openTime:'09:00', closeTime:'21:00',
       address:'', pin:'', description:'',
       rating:0, totalOrders:0,
@@ -3158,6 +3163,8 @@ function updateStoryOwnerNameDisplay(){
 
 function loadProfile(){
   if(!SD)return;
+  var pendingBanner = document.getElementById('pendingApprovalBanner');
+  if(pendingBanner) pendingBanner.style.display = (SD.status === 'pending') ? 'block' : 'none';
   document.getElementById('pShopName').value=SD.shopName||'';
   document.getElementById('pOwnerName').value=SD.ownerName||'';
   updateStoryOwnerNameDisplay();
