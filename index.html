@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="bn">
 <head>
 <meta charset="UTF-8">
@@ -3729,7 +3729,7 @@ function buildFarmersStrip(){
   var source = realSellers.length ? realSellers : FARMERS;
   grid.innerHTML=source.map(function(f,i){
     var isReal = !!f.shopName;
-    var name = isReal ? (f.shopName||f.ownerName) : f.name;
+    var name = isReal ? (f.ownerName||f.shopName) : f.name;
     var village = isReal ? ('📍 '+(f.area||'')) : f.village;
     var badge = isReal ? (BADGE_MAP[f.badge]||f.category||'') : f.badge;
     var story = isReal ? (f.storyText||'').slice(0,60)+((f.storyText||'').length>60?'...':'') : f.story;
@@ -3768,7 +3768,7 @@ function openAllFarmersModal(){
 
   html += source.map(function(f,i){
     var isReal = !!f.shopName;
-    var name = isReal ? (f.shopName||f.ownerName) : f.name;
+    var name = isReal ? (f.ownerName||f.shopName) : f.name;
     var loc = isReal ? ('📍 '+(f.area||'')) : f.village;
     var badge = isReal ? (BADGE_MAP[f.badge]||f.category||'🏪 বিক্রেতা') : f.badge;
     var story = isReal ? (f.storyText||'') : f.story;
@@ -3809,7 +3809,8 @@ function openFarmerModal(type,idx){
   if(isReal){ f = (allShops||[]).find(function(s){return s.id===idx;}); if(!f)return; }
   else { f = FARMERS[idx]; if(!f)return; }
 
-  var name = isReal ? (f.shopName||f.ownerName||'বিক্রেতা') : f.name;
+  var name = isReal ? (f.ownerName||f.shopName||'বিক্রেতা') : f.name;
+  var shopNameForSub = isReal ? (f.shopName||'') : '';
   var loc = isReal ? (f.area||'মন্তেশ্বর') : f.village.replace('📍 ','');
   var badgeText = isReal ? (BADGE_MAP[f.badge]||'🏪 বিক্রেতা') : f.badge;
   var story = isReal ? (f.storyText||'এই বিক্রেতা সম্পর্কে এখনো কোনো গল্প যুক্ত করা হয়নি।') : f.story;
@@ -3829,7 +3830,7 @@ function openFarmerModal(type,idx){
   html += '<button class="fm-close" onclick="this.closest(\'.fm-overlay\').remove()">✕</button>';
   html += '<div class="fm-avatar">'+(photo?'<img src="'+photo+'">':emoji)+'</div>';
   html += '<div class="fm-name">'+name+'</div>';
-  html += '<div class="fm-loc">📍 '+loc+(isReal&&f.shopType?' · মন্তেশ্বর ব্লক':'')+'</div>';
+  html += '<div class="fm-loc">📍 '+loc+(shopNameForSub?' · '+shopNameForSub:'')+'</div>';
   html += '<span class="fm-badge-pill">'+badgeText+'</span>';
   html += '</div>';
 
