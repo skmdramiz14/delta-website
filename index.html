@@ -1,4 +1,4 @@
-<!DOCTYPE html>   
+<!DOCTYPE html>
 <html lang="bn">
 <head>
 <meta charset="UTF-8">
@@ -2358,8 +2358,9 @@ function renderShops(shops){
   g.innerHTML=shops.map(function(s){
     var open=s.isOpen!==false;var em=shopEmoji(s.category);
     var openLabel=isEn?(open?'✅ Open':'❌ Closed'):(open?'✅ খোলা':'❌ বন্ধ');
+    var thumb = (s.shopImages && s.shopImages[0]) ? '<img src="'+s.shopImages[0]+'" style="width:100%;height:100%;object-fit:cover">' : em;
     return '<div class="shop-card" onclick="openShopModal(\''+s.id+'\')" >'+
-      '<div class="shop-banner">'+em+'<span class="shop-open-pill '+(open?'open':'closed')+'">'+openLabel+'</span></div>'+
+      '<div class="shop-banner">'+thumb+'<span class="shop-open-pill '+(open?'open':'closed')+'">'+openLabel+'</span></div>'+
       '<div class="shop-body"><div class="shop-name">'+(s.shopName||'দোকান')+'</div>'+
       '<div class="shop-cat">'+(s.category||'')+(s.area?' · '+s.area:'')+'</div>'+
       '<div class="shop-meta"><span class="shop-rating">⭐ '+(s.rating||'4.8')+'</span><span class="sep">·</span><span>'+(s.area||'Manteswar')+'</span><span class="sep">·</span><span>🕐 '+(s.openTime||'9:00')+'-'+(s.closeTime||'21:00')+'</span></div></div></div>';
@@ -3877,6 +3878,16 @@ function openShopModal(shopId){
     '<div><div style="font-family:Playfair Display,serif;font-size:1.2rem;font-weight:800;color:#fff;">'+(shop.shopName||'দোকান')+'</div>'+
     '<div style="font-size:.78rem;color:rgba(255,255,255,.6);">'+(shop.category||'')+(shop.area?' · '+shop.area:'')+(shop.isOpen!==false?' · <span style="color:#4ade80">খোলা ✅</span>':' · <span style="color:#f87171">বন্ধ</span>')+'</div></div></div>'+
     '<div style="padding:28px 5%;">';
+  // Shop photo gallery (if seller has uploaded shop photos)
+  if(shop.shopImages && shop.shopImages.length){
+    html+='<div style="display:flex;gap:10px;overflow-x:auto;padding-bottom:14px;margin-bottom:18px;-webkit-overflow-scrolling:touch;">';
+    html+=shop.shopImages.map(function(img){
+      return '<div style="flex-shrink:0;width:160px;height:110px;border-radius:12px;overflow:hidden;background:var(--cream);">'+
+        '<img src="'+img+'" style="width:100%;height:100%;object-fit:cover;cursor:pointer;" onclick="openImageViewer(\''+img+'\')">'+
+      '</div>';
+    }).join('');
+    html+='</div>';
+  }
   if(!prods.length){html+='<div class="empty-state"><div class="empty-icon">📦</div><p class="bn">এই দোকানে এখনো পণ্য যোগ হয়নি</p></div>';}
   else{
     html+='<div class="products-grid">';
@@ -3897,6 +3908,15 @@ function openShopModal(shopId){
 }
 
 function addToCartDirect(pid,sid){addToCartById(pid,sid);showToast('কার্টে যোগ হয়েছে ✅','green');}
+
+function openImageViewer(imgUrl){
+  var ov=document.createElement('div');
+  ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:3000;display:flex;align-items:center;justify-content:center;padding:20px;';
+  ov.onclick=function(){ov.remove();};
+  ov.innerHTML='<img src="'+imgUrl+'" style="max-width:100%;max-height:90vh;border-radius:10px;object-fit:contain;">'+
+    '<button onclick="this.closest(\'div\').remove()" style="position:absolute;top:20px;right:20px;background:rgba(255,255,255,.15);border:none;color:#fff;width:38px;height:38px;border-radius:50%;font-size:1.1rem;cursor:pointer;">✕</button>';
+  document.body.appendChild(ov);
+}
 
 // ── SEARCH & FILTER ──
 var _st;
