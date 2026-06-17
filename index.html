@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="bn"> 
+<html lang="bn">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -2351,6 +2351,7 @@ function prodEmoji(c){
 // ── RENDER SHOPS ──
 function renderShops(shops){
   var g=document.getElementById('shopsGrid');
+  if(!g)return;
   var isEn=currentLang==='en';
   if(!shops.length){
     g.innerHTML='<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">🏪</div><p class="bn">'+(isEn?'No shops found yet':'এখনো কোনো দোকান যোগ হয়নি')+'</p></div>';
@@ -2371,6 +2372,7 @@ function renderShops(shops){
 // ── RENDER PRODUCTS ──
 function renderProducts(prods){
   var g=document.getElementById('productsGrid');
+  if(!g)return;
   if(!prods.length){g.innerHTML='<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">📦</div><p class="bn">এখনো কোনো পণ্য যোগ হয়নি</p></div>';return;}
   g.innerHTML=prods.map(function(p){return productCardHTML(p,false);}).join('');
 }
@@ -3563,6 +3565,7 @@ function buildFeatured(prods){
   if(!prods||prods.length<2)return;
   var sec=document.getElementById('featuredSection');
   var grid=document.getElementById('featuredGrid');
+  if(!sec||!grid)return;
   var featured=prods.filter(function(p){return p.discount>0;}).slice(0,4);
   if(!featured.length)featured=prods.slice(0,4);
   grid.innerHTML=featured.map(function(p){return productCardHTML(p,false);}).join('');
@@ -3576,6 +3579,7 @@ function buildFlashSale(prods){
   if(!flash.length)return;
   var sec=document.getElementById('flashSection');
   var grid=document.getElementById('flashGrid');
+  if(!sec||!grid)return;
   // Assign end times to flash products
   flash.forEach(function(p,i){
     p._flashEnd=Date.now()+(2+i)*3600000+Math.floor(Math.random()*60)*60000;
@@ -3613,6 +3617,7 @@ function buildBestsellers(prods){
   if(!prods||prods.length<2)return;
   var sec=document.getElementById('bestsellersSection');
   var grid=document.getElementById('bestsellersGrid');
+  if(!sec||!grid)return;
   var best=prods.slice(Math.max(0,prods.length-6));
   if(best.length<2)best=prods;
   grid.innerHTML=best.slice(0,6).map(function(p){return productCardHTML(p,false);}).join('');
@@ -3678,6 +3683,7 @@ function buildFreshCards(prods){
   var sec=document.getElementById('freshTodaySection');
   var grid=document.getElementById('freshCardsGrid');
   var dateEl=document.getElementById('freshTodayDate');
+  if(!sec||!grid)return; // elements not in DOM — nothing to render into
   var d=new Date();
   var days=['রবি','সোম','মঙ্গল','বুধ','বৃহ','শুক্র','শনি'];
   if(dateEl)dateEl.textContent='— '+days[d.getDay()]+', '+d.getDate()+'/'+(d.getMonth()+1);
@@ -4022,8 +4028,8 @@ function filterCat(cat,navEl){
   var cc=document.getElementById('cat-'+cat);if(cc)cc.classList.add('active');
   if(cat==='all'){
     renderShops(allShops);renderProducts(allProducts);
-    document.getElementById('shopsTitle').innerHTML='কাছের দোকান / Nearby Shops';
-    document.getElementById('productsTitle').innerHTML='সব পণ্য / All Products';
+    var st=document.getElementById('shopsTitle'); if(st) st.innerHTML='কাছের দোকান / Nearby Shops';
+    var pt=document.getElementById('productsTitle'); if(pt) pt.innerHTML='সব পণ্য / All Products';
     return;
   }
   var kws=catMap[cat]||[cat];
@@ -4039,9 +4045,12 @@ function filterCat(cat,navEl){
     health:'স্বাস্থ্য',events:'ইভেন্ট',rental:'ভাড়া',remarket:'রিমার্কেট'
   };
   var lbl=catLabels[cat]||cat;
-  document.getElementById('shopsTitle').innerHTML=lbl+' দোকান <small style="font-size:.75rem;font-weight:400;color:var(--muted)">'+fs.length+'টি</small>';
-  document.getElementById('productsTitle').innerHTML=lbl+' পণ্য <small style="font-size:.75rem;font-weight:400;color:var(--muted)">'+fp.length+'টি</small>';
-  document.getElementById('shopsSection').scrollIntoView({behavior:'smooth'});
+  var st2=document.getElementById('shopsTitle');
+  if(st2) st2.innerHTML=lbl+' দোকান <small style="font-size:.75rem;font-weight:400;color:var(--muted)">'+fs.length+'টি</small>';
+  var pt2=document.getElementById('productsTitle');
+  if(pt2) pt2.innerHTML=lbl+' পণ্য <small style="font-size:.75rem;font-weight:400;color:var(--muted)">'+fp.length+'টি</small>';
+  var ss=document.getElementById('shopsSection');
+  if(ss) ss.scrollIntoView({behavior:'smooth'});
 }
 
 function resetFilters(){filterCat('all',document.querySelector('.nav-cat'));}
