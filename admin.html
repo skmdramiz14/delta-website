@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DELTA — Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600;700&family=Tiro+Bangla&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --navy:#0a1f35;--navy2:#122840;--navy3:#061526;
+  --orange:#f07018;--orange2:#ff8c3a;--orange-light:#fff4ec;
+  --white:#fff;--cream:#f7f9fc;--sand:#eef2f7;
+  --border:#dde5ef;--muted:#6b7b8d;--charcoal:#1a2535;
+  --green:#1a8a4a;--green2:#e8f7ef;--red:#c0392b;--red2:#ffeaea;
+  --yellow:#f39c12;--yellow2:#fff8e8;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charcoal);}
+.bn{font-family:'Tiro Bangla',serif;}
+button,input,select{font-family:'DM Sans',sans-serif;}
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-thumb{background:#c0cdd8;border-radius:3px;}
+
+/* ── AUTH ── */
+#authScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,var(--navy3),var(--navy),#1a3050);padding:20px;}
+.auth-box{background:#fff;border-radius:22px;padding:36px;width:100%;max-width:400px;
+  box-shadow:0 24px 70px rgba(0,0,0,.3);}
+.auth-logo{text-align:center;margin-bottom:24px;}
+.auth-logo h1{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:900;
+  color:var(--navy);letter-spacing:2px;}
+.auth-logo h1 em{color:var(--orange);font-style:normal;}
+.auth-logo p{font-size:.78rem;color:var(--muted);margin-top:4px;}
+.form-group{margin-bottom:13px;}
+.form-group label{display:block;font-size:.72rem;font-weight:700;color:var(--muted);
+  margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px;}
+.form-input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:9px;
+  font-size:.875rem;outline:none;transition:border-color .2s;background:var(--cream);}
+.form-input:focus{border-color:var(--orange);background:#fff;}
+.btn-primary{width:100%;padding:13px;background:var(--orange);color:#fff;border:none;
+  border-radius:10px;font-size:.92rem;font-weight:700;cursor:pointer;transition:all .2s;margin-top:4px;}
+.btn-primary:hover{background:var(--orange2);}
+.btn-primary:disabled{opacity:.6;cursor:not-allowed;}
+.auth-err{background:var(--red2);color:var(--red);padding:9px 13px;border-radius:8px;
+  font-size:.8rem;margin-bottom:12px;display:none;}
+
+/* ── APP LAYOUT ── */
+#appScreen{display:none;min-height:100vh;}
+.topbar{background:var(--navy);padding:0 24px;height:60px;display:flex;
+  align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;
+  box-shadow:0 2px 12px rgba(0,0,0,.15);}
+.tb-logo{display:flex;align-items:center;gap:10px;}
+.tb-logo-mark{width:34px;height:34px;background:var(--orange);border-radius:9px;
+  display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;
+  font-weight:900;color:#fff;font-size:.9rem;flex-shrink:0;}
+.tb-logo-text{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:900;
+  color:#fff;letter-spacing:1px;}
+.tb-logo-text em{color:var(--orange);font-style:normal;}
+.tb-badge{background:rgba(240,112,24,.18);border:1px solid rgba(240,112,24,.35);
+  color:#ffb07a;font-size:.68rem;font-weight:700;padding:3px 10px;border-radius:20px;
+  margin-left:10px;}
+.tb-right{display:flex;align-items:center;gap:14px;}
+.tb-email{font-size:.78rem;color:rgba(255,255,255,.55);}
+.logout-btn{background:rgba(192,57,43,.18);border:none;color:#ff8a80;padding:7px 14px;
+  border-radius:8px;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .2s;}
+.logout-btn:hover{background:rgba(192,57,43,.32);}
+
+.tabs{display:flex;gap:4px;padding:0 24px;background:#fff;border-bottom:1px solid var(--border);
+  overflow-x:auto;}
+.tab-btn{padding:14px 18px;border:none;background:transparent;cursor:pointer;
+  font-size:.85rem;font-weight:600;color:var(--muted);border-bottom:3px solid transparent;
+  transition:all .2s;white-space:nowrap;display:flex;align-items:center;gap:7px;}
+.tab-btn:hover{color:var(--navy);}
+.tab-btn.active{color:var(--orange);border-bottom-color:var(--orange);}
+.tab-count{background:var(--orange);color:#fff;font-size:.65rem;font-weight:800;
+  padding:1px 7px;border-radius:10px;min-width:18px;text-align:center;}
+.tab-count.zero{background:var(--border);color:var(--muted);}
+
+.content{padding:24px;max-width:1200px;margin:0 auto;}
+.page{display:none;}
+.page.active{display:block;}
+
+.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;
+  flex-wrap:wrap;gap:10px;}
+.sec-title{font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:700;color:var(--navy);}
+.sec-title small{font-size:.78rem;font-weight:400;font-family:'DM Sans',sans-serif;
+  color:var(--muted);margin-left:8px;}
+
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;align-items:center;}
+.search-input{flex:1;min-width:200px;padding:10px 14px;border:1.5px solid var(--border);
+  border-radius:9px;font-size:.85rem;background:#fff;}
+.search-input:focus{outline:none;border-color:var(--orange);}
+.filter-pill{padding:7px 15px;border-radius:20px;font-size:.78rem;font-weight:600;
+  cursor:pointer;border:1.5px solid var(--border);background:#fff;color:var(--muted);
+  transition:all .2s;white-space:nowrap;}
+.filter-pill.active{background:var(--navy);color:#fff;border-color:var(--navy);}
+
+.card-grid{display:flex;flex-direction:column;gap:10px;}
+.seller-card{background:#fff;border-radius:14px;border:1px solid var(--border);
+  padding:16px 18px;transition:all .2s;box-shadow:0 2px 6px rgba(0,0,0,.03);}
+.seller-card.pending{border-left:4px solid var(--yellow);}
+.seller-card.approved{border-left:4px solid var(--green);}
+.seller-card.rejected{border-left:4px solid var(--red);}
+.sc-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
+  margin-bottom:10px;flex-wrap:wrap;}
+.sc-name{font-size:.98rem;font-weight:700;color:var(--charcoal);}
+.sc-name .type-icon{margin-right:6px;}
+.sc-status-badge{font-size:.68rem;font-weight:700;padding:3px 10px;border-radius:20px;
+  white-space:nowrap;}
+.status-pending-badge{background:var(--yellow2);color:#7d5a00;}
+.status-approved-badge{background:var(--green2);color:var(--green);}
+.status-rejected-badge{background:var(--red2);color:var(--red);}
+.sc-meta{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;font-size:.78rem;
+  color:var(--muted);margin-bottom:12px;}
+.sc-meta-item strong{display:block;color:var(--charcoal);font-size:.82rem;font-weight:600;
+  margin-top:2px;}
+.sc-actions{display:flex;gap:8px;flex-wrap:wrap;}
+.btn-sm{padding:8px 16px;border-radius:8px;font-size:.8rem;font-weight:600;cursor:pointer;
+  border:none;transition:all .2s;display:inline-flex;align-items:center;gap:6px;}
+.btn-green{background:var(--green2);color:var(--green);}
+.btn-green:hover{background:var(--green);color:#fff;}
+.btn-red{background:var(--red2);color:var(--red);}
+.btn-red:hover{background:var(--red);color:#fff;}
+.btn-outline{background:#fff;color:var(--navy);border:1.5px solid var(--border);}
+.btn-outline:hover{border-color:var(--orange);color:var(--orange);}
+
+.empty-state{text-align:center;padding:52px 20px;background:#fff;
+  border-radius:16px;border:2px dashed var(--border);}
+.empty-icon{font-size:2.6rem;margin-bottom:12px;}
+.empty-state p{color:var(--muted);font-size:.88rem;}
+
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;}
+.stat-box{background:#fff;border-radius:14px;padding:18px;border:1px solid var(--border);
+  text-align:center;}
+.stat-box strong{display:block;font-size:1.6rem;font-weight:800;color:var(--navy);
+  font-family:'Playfair Display',serif;}
+.stat-box span{font-size:.74rem;color:var(--muted);margin-top:3px;display:block;}
+
+.req-card{background:#fff;border-radius:14px;border:1px solid var(--border);
+  padding:16px 18px;margin-bottom:10px;}
+.req-top{display:flex;justify-content:space-between;align-items:flex-start;
+  margin-bottom:8px;flex-wrap:wrap;gap:8px;}
+.req-name{font-size:.92rem;font-weight:700;color:var(--charcoal);}
+.req-meta{font-size:.76rem;color:var(--muted);margin-top:3px;}
+
+.loading-screen{position:fixed;inset:0;background:var(--navy3);display:flex;
+  align-items:center;justify-content:center;z-index:1000;}
+.loading-spinner{width:40px;height:40px;border:3px solid rgba(255,255,255,.15);
+  border-top-color:var(--orange);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{color:rgba(255,255,255,.5);font-size:.78rem;text-align:center;}
+
+.toast{position:fixed;bottom:24px;right:24px;background:var(--navy);color:#fff;
+  padding:12px 18px;border-radius:12px;font-size:.82rem;font-weight:500;
+  box-shadow:0 6px 24px rgba(0,0,0,.2);z-index:999;display:none;align-items:center;
+  gap:10px;border-left:3px solid var(--orange);max-width:320px;}
+.toast.show{display:flex;animation:toastIn .3s ease;}
+.toast.green{border-left-color:var(--green);}
+.toast.red{border-left-color:var(--red);}
+@keyframes toastIn{from{transform:translateX(80px);opacity:0}to{transform:translateX(0);opacity:1}}
+
+@media(max-width:768px){
+  .stats-row{grid-template-columns:1fr 1fr;}
+  .sc-meta{grid-template-columns:1fr 1fr;}
+  .content{padding:16px;}
+}
+@media(max-width:480px){
+  .stats-row{grid-template-columns:1fr 1fr;}
+}
+</style>
+</head>
+<body>
+
+<div class="toast" id="toastEl"></div>
+
+<div class="loading-screen" id="loadingScreen">
+  <div>
+    <div class="loading-spinner"></div>
+    <div class="loading-text">DELTA Admin লোড হচ্ছে...</div>
+  </div>
+</div>
+
+<!-- ═══════ AUTH ═══════ -->
+<div id="authScreen" style="display:none">
+  <div class="auth-box">
+    <div class="auth-logo">
+      <h1>△ DELT<em>A</em></h1>
+      <p>Admin Panel — শুধুমাত্র অনুমোদিত ব্যবহারকারীদের জন্য</p>
+    </div>
+    <div class="auth-err" id="loginErr"></div>
+    <div class="form-group">
+      <label>Admin Email</label>
+      <input type="email" class="form-input" id="aEmail" placeholder="admin@deltaapp.in">
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" class="form-input" id="aPass" placeholder="••••••••">
+    </div>
+    <button class="btn-primary" id="loginBtn" onclick="doLogin()">🔐 লগইন করুন</button>
+  </div>
+</div>
+
+<!-- ═══════ APP ═══════ -->
+<div id="appScreen">
+  <header class="topbar">
+    <div class="tb-logo">
+      <div class="tb-logo-mark">D</div>
+      <div class="tb-logo-text">DELT<em>A</em></div>
+      <span class="tb-badge">ADMIN</span>
+    </div>
+    <div class="tb-right">
+      <span class="tb-email" id="adminEmailLabel"></span>
+      <button class="logout-btn" onclick="doLogout()">লগআউট</button>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab-btn active" id="tab-pending" onclick="goTab('pending',this)">
+      ⏳ অনুমোদনের অপেক্ষায় <span class="tab-count zero" id="countPending">0</span>
+    </button>
+    <button class="tab-btn" id="tab-sellers" onclick="goTab('sellers',this)">
+      🏪 সব বিক্রেতা <span class="tab-count zero" id="countAll">0</span>
+    </button>
+    <button class="tab-btn" id="tab-requests" onclick="goTab('requests',this)">
+      🏷️ Category Requests <span class="tab-count zero" id="countReq">0</span>
+    </button>
+  </nav>
+
+  <div class="content">
+
+    <!-- ═══ PENDING APPROVAL PAGE ═══ -->
+    <div class="page active" id="page-pending">
+      <div class="stats-row">
+        <div class="stat-box"><strong id="statPendingCount">0</strong><span>অনুমোদনের অপেক্ষায়</span></div>
+        <div class="stat-box"><strong id="statApprovedCount">0</strong><span>অনুমোদিত</span></div>
+        <div class="stat-box"><strong id="statRejectedCount">0</strong><span>প্রত্যাখ্যাত</span></div>
+        <div class="stat-box"><strong id="statTotalCount">0</strong><span>সর্বমোট বিক্রেতা</span></div>
+      </div>
+      <div class="sec-head">
+        <div class="sec-title">⏳ অনুমোদনের অপেক্ষায় <small id="pendingSub">নতুন seller registration review করুন</small></div>
+      </div>
+      <div class="card-grid" id="pendingListWrap"></div>
+    </div>
+
+    <!-- ═══ ALL SELLERS PAGE ═══ -->
+    <div class="page" id="page-sellers">
+      <div class="sec-head">
+        <div class="sec-title">🏪 সব বিক্রেতা <small id="sellersSub">0 জন</small></div>
+      </div>
+      <div class="toolbar">
+        <input type="text" class="search-input" id="sellerSearch" placeholder="🔍 দোকানের নাম, owner, mobile দিয়ে খুঁজুন..." oninput="renderAllSellers()">
+        <button class="filter-pill active" data-f="all" onclick="setSellerFilter('all',this)">সব</button>
+        <button class="filter-pill" data-f="pending" onclick="setSellerFilter('pending',this)">⏳ Pending</button>
+        <button class="filter-pill" data-f="approved" onclick="setSellerFilter('approved',this)">✅ Approved</button>
+        <button class="filter-pill" data-f="rejected" onclick="setSellerFilter('rejected',this)">❌ Rejected</button>
+      </div>
+      <div class="card-grid" id="allSellersWrap"></div>
+    </div>
+
+    <!-- ═══ CATEGORY REQUESTS PAGE ═══ -->
+    <div class="page" id="page-requests">
+      <div class="sec-head">
+        <div class="sec-title">🏷️ Category Requests <small id="reqSub">বিক্রেতাদের পাঠানো নতুন category এর অনুরোধ</small></div>
+      </div>
+      <div class="card-grid" id="reqListWrap"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+var FB_CFG = {
+  apiKey:"AIzaSyA6TrrnCMwv1aa1WPqGvTVWlnieB2pVOEU",
+  authDomain:"delta-platform-82fc0.firebaseapp.com",
+  projectId:"delta-platform-82fc0",
+  storageBucket:"delta-platform-82fc0.firebasestorage.app",
+  messagingSenderId:"444904180433",
+  appId:"1:444904180433:web:6706eba4d73a30cd67d3f0"
+};
+var CITY = 'manteswar';
+var ADMIN_UID = 'j0KgzF3bRFa1e8kTlJThnStnhLs1';
+var auth, db, allSellers = [], allRequests = [], sellerFilter = 'all';
+
+(function(){
+  var scripts=[
+    'https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js',
+    'https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js',
+    'https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js'
+  ];
+  var n=0, fbInitDone=false, hadError=false;
+  function tryInit(){
+    if(fbInitDone) return;
+    fbInitDone=true;
+    if(hadError || typeof firebase==='undefined'){
+      hideLoading();
+      showAuth();
+      showToast('Internet সংযোগ সমস্যা — Page reload করুন','red');
+      return;
+    }
+    initFirebase();
+  }
+  scripts.forEach(function(src){
+    var s=document.createElement('script');s.src=src;
+    s.onload=function(){ n++; if(n===scripts.length) tryInit(); };
+    s.onerror=function(){ hadError=true; n++; if(n===scripts.length) tryInit(); };
+    document.head.appendChild(s);
+  });
+  setTimeout(tryInit, 8000);
+})();
+
+function initFirebase(){
+  try{
+    firebase.initializeApp(FB_CFG);
+    auth = firebase.auth(); db = firebase.firestore();
+    auth.onAuthStateChanged(function(u){
+      if(u && u.uid === ADMIN_UID){
+        document.getElementById('adminEmailLabel').textContent = u.email;
+        hideLoading(); showApp();
+        loadAllData();
+      } else if(u && u.uid !== ADMIN_UID){
+        // Logged in but not the admin account — block access
+        auth.signOut();
+        hideLoading(); showAuth();
+        document.getElementById('loginErr').textContent = 'এই account এর Admin Panel access নেই।';
+        document.getElementById('loginErr').style.display='block';
+      } else {
+        hideLoading(); showAuth();
+      }
+    });
+  }catch(e){ hideLoading(); showAuth(); showToast('Firebase error: '+e.message,'red'); }
+}
+
+function hideLoading(){ document.getElementById('loadingScreen').style.display='none'; }
+function showAuth(){ document.getElementById('authScreen').style.display='flex'; document.getElementById('appScreen').style.display='none'; }
+function showApp(){ document.getElementById('authScreen').style.display='none'; document.getElementById('appScreen').style.display='block'; }
+function showToast(msg,type){
+  var e=document.getElementById('toastEl'); e.textContent=msg;
+  e.className='toast show '+(type||''); clearTimeout(e._t);
+  e._t=setTimeout(function(){e.className='toast';},3200);
+}
+
+function doLogin(){
+  var e=document.getElementById('aEmail').value.trim();
+  var p=document.getElementById('aPass').value;
+  var err=document.getElementById('loginErr');
+  err.style.display='none';
+  if(!e||!p){err.textContent='Email ও Password দিন।';err.style.display='block';return;}
+  var btn=document.getElementById('loginBtn'); btn.disabled=true; btn.textContent='লগইন হচ্ছে...';
+  auth.signInWithEmailAndPassword(e,p).catch(function(er){
+    var msgs={
+      'auth/user-not-found':'এই admin account পাওয়া যায়নি',
+      'auth/wrong-password':'পাসওয়ার্ড ভুল',
+      'auth/invalid-credential':'Email বা পাসওয়ার্ড ভুল',
+      'auth/invalid-email':'Email সঠিক নয়'
+    };
+    err.textContent = msgs[er.code]||er.message; err.style.display='block';
+    btn.disabled=false; btn.textContent='🔐 লগইন করুন';
+  }).then(function(){
+    btn.disabled=false; btn.textContent='🔐 লগইন করুন';
+  });
+}
+
+function doLogout(){
+  if(!confirm('লগআউট করবেন?'))return;
+  auth.signOut();
+}
+
+// ═══ TABS ═══
+function goTab(tab, btn){
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
+  document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});
+  document.getElementById('page-'+tab).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ═══ DATA LOADING ═══
+function loadAllData(){
+  db.collection('cities').doc(CITY).collection('sellers').get().then(function(snap){
+    allSellers = [];
+    snap.forEach(function(d){ allSellers.push(Object.assign({id:d.id}, d.data())); });
+    renderPendingList();
+    renderAllSellers();
+    updateCounts();
+  }).catch(function(e){
+    showToast('বিক্রেতা লোড করতে সমস্যা: '+e.message,'red');
+  });
+
+  db.collection('categoryRequests').get().then(function(snap){
+    allRequests = [];
+    snap.forEach(function(d){ allRequests.push(Object.assign({id:d.id}, d.data())); });
+    allRequests.sort(function(a,b){
+      return new Date(b.createdAt||0) - new Date(a.createdAt||0);
+    });
+    renderRequests();
+    updateCounts();
+  }).catch(function(e){
+    showToast('Category requests লোড করতে সমস্যা: '+e.message,'red');
+  });
+}
+
+function updateCounts(){
+  var pending = allSellers.filter(function(s){return s.status==='pending';});
+  var approved = allSellers.filter(function(s){return s.status==='approved' || !s.status;});
+  var rejected = allSellers.filter(function(s){return s.status==='rejected';});
+  var pendingReq = allRequests.filter(function(r){return r.status==='pending';});
+
+  document.getElementById('countPending').textContent = pending.length;
+  document.getElementById('countPending').classList.toggle('zero', pending.length===0);
+  document.getElementById('countAll').textContent = allSellers.length;
+  document.getElementById('countAll').classList.toggle('zero', allSellers.length===0);
+  document.getElementById('countReq').textContent = pendingReq.length;
+  document.getElementById('countReq').classList.toggle('zero', pendingReq.length===0);
+
+  document.getElementById('statPendingCount').textContent = pending.length;
+  document.getElementById('statApprovedCount').textContent = approved.length;
+  document.getElementById('statRejectedCount').textContent = rejected.length;
+  document.getElementById('statTotalCount').textContent = allSellers.length;
+
+  document.getElementById('sellersSub').textContent = allSellers.length+' জন';
+  document.getElementById('reqSub').textContent = pendingReq.length+' টি pending request';
+}
+
+var SHOP_TYPE_ICONS = {
+  shop:'🏪', farmer:'👨‍🌾', artist:'🎨', service:'💈',
+  manufacturer:'🏭', wholesaler:'📦', cooperative:'🤝'
+};
+
+function sellerCardHTML(s){
+  var status = s.status || 'approved';
+  var icon = SHOP_TYPE_ICONS[s.shopType] || '🏪';
+  var statusBadge = status==='pending'
+    ? '<span class="sc-status-badge status-pending-badge">⏳ Pending</span>'
+    : status==='rejected'
+    ? '<span class="sc-status-badge status-rejected-badge">❌ Rejected</span>'
+    : '<span class="sc-status-badge status-approved-badge">✅ Approved</span>';
+
+  var actions = '';
+  if(status==='pending'){
+    actions = '<button class="btn-sm btn-green" onclick="updateSellerStatus(\''+s.id+'\',\'approved\')">✅ Approve করুন</button>'+
+      '<button class="btn-sm btn-red" onclick="updateSellerStatus(\''+s.id+'\',\'rejected\')">❌ Reject করুন</button>';
+  } else if(status==='rejected'){
+    actions = '<button class="btn-sm btn-green" onclick="updateSellerStatus(\''+s.id+'\',\'approved\')">✅ Approve করুন</button>';
+  } else {
+    actions = '<button class="btn-sm btn-red" onclick="updateSellerStatus(\''+s.id+'\',\'rejected\')">❌ Reject করুন</button>';
+  }
+
+  var createdStr = s.createdAt ? new Date(s.createdAt).toLocaleDateString('bn-IN',{day:'numeric',month:'short',year:'numeric'}) : '—';
+
+  return '<div class="seller-card '+status+'">'+
+    '<div class="sc-top">'+
+      '<div class="sc-name"><span class="type-icon">'+icon+'</span>'+(s.shopName||'নাম নেই')+'</div>'+
+      statusBadge+
+    '</div>'+
+    '<div class="sc-meta">'+
+      '<div class="sc-meta-item">মালিক<strong>'+(s.ownerName||'—')+'</strong></div>'+
+      '<div class="sc-meta-item">Mobile<strong>'+(s.mobile||'—')+'</strong></div>'+
+      '<div class="sc-meta-item">ক্যাটাগরি<strong>'+(s.category||'—')+'</strong></div>'+
+      '<div class="sc-meta-item">এলাকা<strong>'+(s.area||'—')+'</strong></div>'+
+    '</div>'+
+    '<div class="sc-meta" style="margin-top:-4px">'+
+      '<div class="sc-meta-item">Email<strong style="font-size:.74rem">'+(s.email||'—')+'</strong></div>'+
+      '<div class="sc-meta-item">নিবন্ধনের তারিখ<strong>'+createdStr+'</strong></div>'+
+      '<div class="sc-meta-item">শহর<strong>'+(s.city||CITY)+'</strong></div>'+
+      '<div class="sc-meta-item">Type<strong>'+(s.shopType||'shop')+'</strong></div>'+
+    '</div>'+
+    '<div class="sc-actions">'+actions+'</div>'+
+  '</div>';
+}
+
+function renderPendingList(){
+  var wrap = document.getElementById('pendingListWrap');
+  var pending = allSellers.filter(function(s){return s.status==='pending';});
+  if(!pending.length){
+    wrap.innerHTML = '<div class="empty-state"><div class="empty-icon">✅</div>'+
+      '<p>এখন কোনো বিক্রেতা অনুমোদনের অপেক্ষায় নেই</p></div>';
+    return;
+  }
+  pending.sort(function(a,b){ return new Date(b.createdAt||0) - new Date(a.createdAt||0); });
+  wrap.innerHTML = pending.map(sellerCardHTML).join('');
+}
+
+function setSellerFilter(f, btn){
+  sellerFilter = f;
+  document.querySelectorAll('#page-sellers .filter-pill').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  renderAllSellers();
+}
+
+function renderAllSellers(){
+  var wrap = document.getElementById('allSellersWrap');
+  var search = (document.getElementById('sellerSearch').value||'').toLowerCase().trim();
+  var filtered = allSellers.filter(function(s){
+    var status = s.status || 'approved';
+    if(sellerFilter!=='all' && status!==sellerFilter) return false;
+    if(search){
+      var hay = [(s.shopName||''),(s.ownerName||''),(s.mobile||''),(s.email||'')].join(' ').toLowerCase();
+      if(hay.indexOf(search)===-1) return false;
+    }
+    return true;
+  });
+  if(!filtered.length){
+    wrap.innerHTML = '<div class="empty-state"><div class="empty-icon">🏪</div>'+
+      '<p>কোনো বিক্রেতা পাওয়া যায়নি</p></div>';
+    return;
+  }
+  filtered.sort(function(a,b){ return new Date(b.createdAt||0) - new Date(a.createdAt||0); });
+  wrap.innerHTML = filtered.map(sellerCardHTML).join('');
+}
+
+function updateSellerStatus(id, newStatus){
+  var s = allSellers.find(function(x){return x.id===id;});
+  var label = newStatus==='approved' ? 'Approve' : 'Reject';
+  if(!confirm((s?s.shopName:'এই বিক্রেতা')+' কে '+label+' করতে চান?')) return;
+  db.collection('cities').doc(CITY).collection('sellers').doc(id).update({
+    status: newStatus,
+    statusUpdatedAt: new Date().toISOString()
+  }).then(function(){
+    if(s) s.status = newStatus;
+    renderPendingList();
+    renderAllSellers();
+    updateCounts();
+    showToast((s?s.shopName:'বিক্রেতা')+' '+(newStatus==='approved'?'Approve':'Reject')+' করা হয়েছে ✅','green');
+  }).catch(function(e){
+    showToast('আপডেট ব্যর্থ: '+e.message,'red');
+  });
+}
+
+function reqCardHTML(r){
+  var statusBadge = r.status==='pending'
+    ? '<span class="sc-status-badge status-pending-badge">⏳ Pending</span>'
+    : r.status==='added'
+    ? '<span class="sc-status-badge status-approved-badge">✅ Added</span>'
+    : '<span class="sc-status-badge status-rejected-badge">❌ Dismissed</span>';
+  var createdStr = r.createdAt ? new Date(r.createdAt).toLocaleDateString('bn-IN',{day:'numeric',month:'short',year:'numeric'}) : '—';
+  var actions = '';
+  if(r.status==='pending'){
+    actions = '<button class="btn-sm btn-green" onclick="updateRequestStatus(\''+r.id+'\',\'added\')">✅ Added চিহ্নিত করুন</button>'+
+      '<button class="btn-sm btn-red" onclick="updateRequestStatus(\''+r.id+'\',\'dismissed\')">❌ Dismiss করুন</button>';
+  }
+  return '<div class="req-card">'+
+    '<div class="req-top">'+
+      '<div><div class="req-name">🏷️ '+(r.requestedSub||r.requestedBy||'—')+'</div>'+
+      '<div class="req-meta">'+(r.shopName?'বিক্রেতা: '+r.shopName+' · ':'')+'Main type: '+(r.mainType||r.mainCategory||'—')+' · '+createdStr+'</div></div>'+
+      statusBadge+
+    '</div>'+
+    (actions?'<div class="sc-actions" style="margin-top:8px">'+actions+'</div>':'')+
+  '</div>';
+}
+
+function renderRequests(){
+  var wrap = document.getElementById('reqListWrap');
+  if(!allRequests.length){
+    wrap.innerHTML = '<div class="empty-state"><div class="empty-icon">🏷️</div>'+
+      '<p>এখনো কোনো category request আসেনি</p></div>';
+    return;
+  }
+  wrap.innerHTML = allRequests.map(reqCardHTML).join('');
+}
+
+function updateRequestStatus(id, newStatus){
+  db.collection('categoryRequests').doc(id).update({
+    status: newStatus,
+    reviewedAt: new Date().toISOString()
+  }).then(function(){
+    var r = allRequests.find(function(x){return x.id===id;});
+    if(r) r.status = newStatus;
+    renderRequests();
+    updateCounts();
+    showToast('Request আপডেট হয়েছে ✅','green');
+  }).catch(function(e){
+    showToast('আপডেট ব্যর্থ: '+e.message,'red');
+  });
+}
+</script>
+</body>
+</html>
