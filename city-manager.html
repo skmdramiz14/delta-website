@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DELTA — City Manager Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600;700&family=Tiro+Bangla&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --navy:#0a1f35;--navy2:#122840;--navy3:#061526;
+  --orange:#f07018;--orange2:#ff8c3a;--orange-light:#fff4ec;
+  --white:#fff;--cream:#f7f9fc;--sand:#eef2f7;
+  --border:#dde5ef;--muted:#6b7b8d;--charcoal:#1a2535;
+  --green:#1a8a4a;--green2:#e8f7ef;--red:#c0392b;--red2:#ffeaea;
+  --yellow:#f39c12;--yellow2:#fff8e8;--blue:#0984e3;--blue2:#e8f4ff;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charcoal);}
+.bn{font-family:'Tiro Bangla',serif;}
+button,input,select,textarea{font-family:'DM Sans',sans-serif;}
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-thumb{background:#c0cdd8;border-radius:3px;}
+
+#authScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,var(--navy3),var(--navy),#1a3050);padding:20px;}
+.auth-box{background:#fff;border-radius:22px;padding:36px;width:100%;max-width:400px;
+  box-shadow:0 24px 70px rgba(0,0,0,.3);}
+.auth-logo{text-align:center;margin-bottom:24px;}
+.auth-logo h1{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:900;
+  color:var(--navy);letter-spacing:2px;}
+.auth-logo h1 em{color:var(--orange);font-style:normal;}
+.auth-logo p{font-size:.78rem;color:var(--muted);margin-top:4px;}
+.form-group{margin-bottom:13px;}
+.form-group label{display:block;font-size:.72rem;font-weight:700;color:var(--muted);
+  margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px;}
+.form-input,.form-textarea{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:9px;
+  font-size:.875rem;outline:none;transition:border-color .2s;background:var(--cream);}
+.form-textarea{resize:vertical;font-family:inherit;}
+.form-input:focus,.form-textarea:focus{border-color:var(--orange);background:#fff;}
+.btn-primary{width:100%;padding:13px;background:var(--orange);color:#fff;border:none;
+  border-radius:10px;font-size:.92rem;font-weight:700;cursor:pointer;transition:all .2s;margin-top:4px;}
+.btn-primary:hover{background:var(--orange2);}
+.btn-primary:disabled{opacity:.6;cursor:not-allowed;}
+.auth-err{background:var(--red2);color:var(--red);padding:9px 13px;border-radius:8px;
+  font-size:.8rem;margin-bottom:12px;display:none;}
+
+#appScreen{display:none;min-height:100vh;}
+.topbar{background:var(--navy);padding:0 24px;height:60px;display:flex;
+  align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;
+  box-shadow:0 2px 12px rgba(0,0,0,.15);}
+.tb-logo{display:flex;align-items:center;gap:10px;}
+.tb-logo-mark{width:34px;height:34px;background:var(--orange);border-radius:9px;
+  display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;
+  font-weight:900;color:#fff;font-size:.9rem;flex-shrink:0;}
+.tb-logo-text{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:900;
+  color:#fff;letter-spacing:1px;}
+.tb-logo-text em{color:var(--orange);font-style:normal;}
+.tb-badge{background:rgba(9,132,227,.18);border:1px solid rgba(9,132,227,.35);
+  color:#74b9ff;font-size:.68rem;font-weight:700;padding:3px 10px;border-radius:20px;
+  margin-left:10px;}
+.tb-right{display:flex;align-items:center;gap:14px;}
+.tb-email{font-size:.78rem;color:rgba(255,255,255,.55);}
+.logout-btn{background:rgba(192,57,43,.18);border:none;color:#ff8a80;padding:7px 14px;
+  border-radius:8px;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .2s;}
+.logout-btn:hover{background:rgba(192,57,43,.32);}
+
+.tabs{display:flex;gap:4px;padding:0 24px;background:#fff;border-bottom:1px solid var(--border);
+  overflow-x:auto;}
+.tab-btn{padding:14px 18px;border:none;background:transparent;cursor:pointer;
+  font-size:.85rem;font-weight:600;color:var(--muted);border-bottom:3px solid transparent;
+  transition:all .2s;white-space:nowrap;display:flex;align-items:center;gap:7px;}
+.tab-btn:hover{color:var(--navy);}
+.tab-btn.active{color:var(--orange);border-bottom-color:var(--orange);}
+.tab-count{background:var(--orange);color:#fff;font-size:.65rem;font-weight:800;
+  padding:1px 7px;border-radius:10px;min-width:18px;text-align:center;}
+.tab-count.zero{background:var(--border);color:var(--muted);}
+
+.content{padding:24px;max-width:1200px;margin:0 auto;}
+.page{display:none;}
+.page.active{display:block;}
+
+.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;
+  flex-wrap:wrap;gap:10px;}
+.sec-title{font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:700;color:var(--navy);}
+.sec-title small{font-size:.78rem;font-weight:400;font-family:'DM Sans',sans-serif;
+  color:var(--muted);margin-left:8px;}
+
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;}
+.stat-box{background:#fff;border-radius:14px;padding:18px;border:1px solid var(--border);
+  text-align:center;}
+.stat-box strong{display:block;font-size:1.6rem;font-weight:800;color:var(--navy);
+  font-family:'Playfair Display',serif;}
+.stat-box span{font-size:.74rem;color:var(--muted);margin-top:3px;display:block;}
+
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;align-items:center;}
+.search-input{flex:1;min-width:200px;padding:10px 14px;border:1.5px solid var(--border);
+  border-radius:9px;font-size:.85rem;background:#fff;}
+.search-input:focus{outline:none;border-color:var(--orange);}
+.filter-pill{padding:7px 15px;border-radius:20px;font-size:.78rem;font-weight:600;
+  cursor:pointer;border:1.5px solid var(--border);background:#fff;color:var(--muted);
+  transition:all .2s;white-space:nowrap;}
+.filter-pill.active{background:var(--navy);color:#fff;border-color:var(--navy);}
+
+.btn-sm{padding:8px 16px;border-radius:8px;font-size:.8rem;font-weight:600;cursor:pointer;
+  border:none;transition:all .2s;display:inline-flex;align-items:center;gap:6px;}
+.btn-orange{background:var(--orange);color:#fff;}
+.btn-orange:hover{background:var(--orange2);}
+.btn-green{background:var(--green2);color:var(--green);}
+.btn-green:hover{background:var(--green);color:#fff;}
+.btn-red{background:var(--red2);color:var(--red);}
+.btn-red:hover{background:var(--red);color:#fff;}
+.btn-blue{background:var(--blue2);color:var(--blue);}
+.btn-blue:hover{background:var(--blue);color:#fff;}
+.btn-outline{background:#fff;color:var(--navy);border:1.5px solid var(--border);}
+.btn-outline:hover{border-color:var(--orange);color:var(--orange);}
+
+.empty-state{text-align:center;padding:52px 20px;background:#fff;
+  border-radius:16px;border:2px dashed var(--border);}
+.empty-icon{font-size:2.6rem;margin-bottom:12px;}
+.empty-state p{color:var(--muted);font-size:.88rem;}
+
+.zone-card{background:#fff;border-radius:14px;border:1px solid var(--border);
+  padding:16px 18px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;
+  gap:14px;flex-wrap:wrap;}
+.zone-info{flex:1;min-width:200px;}
+.zone-name{font-size:.92rem;font-weight:700;color:var(--charcoal);}
+.zone-meta{font-size:.78rem;color:var(--muted);margin-top:3px;}
+.zone-charge{font-size:1.1rem;font-weight:800;color:var(--orange);}
+.zone-actions{display:flex;gap:8px;}
+.add-zone-card{background:#fff;border-radius:14px;border:1.5px dashed var(--border);
+  padding:18px;margin-bottom:18px;}
+.zone-form-grid{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:10px;align-items:end;}
+
+.ticket-card{background:#fff;border-radius:14px;border:1px solid var(--border);
+  padding:16px 18px;margin-bottom:10px;}
+.ticket-card.open{border-left:4px solid var(--yellow);}
+.ticket-card.resolved{border-left:4px solid var(--green);}
+.ticket-top{display:flex;justify-content:space-between;align-items:flex-start;
+  margin-bottom:8px;flex-wrap:wrap;gap:8px;}
+.ticket-shop{font-size:.92rem;font-weight:700;color:var(--charcoal);}
+.ticket-meta{font-size:.76rem;color:var(--muted);margin-top:3px;}
+.ticket-msg{font-size:.85rem;color:var(--charcoal);background:var(--sand);border-radius:8px;
+  padding:10px 12px;margin:8px 0;line-height:1.6;}
+.ticket-badge{font-size:.68rem;font-weight:700;padding:3px 10px;border-radius:20px;white-space:nowrap;}
+.badge-open{background:var(--yellow2);color:#7d5a00;}
+.badge-resolved{background:var(--green2);color:var(--green);}
+
+.order-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;
+  border-bottom:1px solid var(--border);font-size:.85rem;}
+.order-row:last-child{border-bottom:none;}
+
+.loading-screen{position:fixed;inset:0;background:var(--navy3);display:flex;
+  align-items:center;justify-content:center;z-index:1000;}
+.loading-spinner{width:40px;height:40px;border:3px solid rgba(255,255,255,.15);
+  border-top-color:var(--orange);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{color:rgba(255,255,255,.5);font-size:.78rem;text-align:center;}
+
+.toast{position:fixed;bottom:24px;right:24px;background:var(--navy);color:#fff;
+  padding:12px 18px;border-radius:12px;font-size:.82rem;font-weight:500;
+  box-shadow:0 6px 24px rgba(0,0,0,.2);z-index:999;display:none;align-items:center;
+  gap:10px;border-left:3px solid var(--orange);max-width:320px;}
+.toast.show{display:flex;animation:toastIn .3s ease;}
+.toast.green{border-left-color:var(--green);}
+.toast.red{border-left-color:var(--red);}
+@keyframes toastIn{from{transform:translateX(80px);opacity:0}to{transform:translateX(0);opacity:1}}
+
+@media(max-width:768px){
+  .stats-row{grid-template-columns:1fr 1fr;}
+  .content{padding:16px;}
+  .zone-form-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<div class="toast" id="toastEl"></div>
+
+<div class="loading-screen" id="loadingScreen">
+  <div>
+    <div class="loading-spinner"></div>
+    <div class="loading-text">DELTA City Manager লোড হচ্ছে...</div>
+  </div>
+</div>
+
+<!-- ═══════ AUTH ═══════ -->
+<div id="authScreen" style="display:none">
+  <div class="auth-box">
+    <div class="auth-logo">
+      <h1>△ DELT<em>A</em></h1>
+      <p>City Manager Panel — শুধুমাত্র অনুমোদিত City Manager দের জন্য</p>
+    </div>
+    <div class="auth-err" id="loginErr"></div>
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" class="form-input" id="aEmail" placeholder="citymanager@deltaapp.in">
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" class="form-input" id="aPass" placeholder="••••••••">
+    </div>
+    <button class="btn-primary" id="loginBtn" onclick="doLogin()">🔐 লগইন করুন</button>
+  </div>
+</div>
+
+<!-- ═══════ APP ═══════ -->
+<div id="appScreen">
+  <header class="topbar">
+    <div class="tb-logo">
+      <div class="tb-logo-mark">D</div>
+      <div class="tb-logo-text">DELT<em>A</em></div>
+      <span class="tb-badge" id="cityBadge">CITY MANAGER</span>
+    </div>
+    <div class="tb-right">
+      <span class="tb-email" id="managerEmailLabel"></span>
+      <button class="logout-btn" onclick="doLogout()">লগআউট</button>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab-btn active" id="tab-overview" onclick="goTab('overview',this)">
+      📊 Overview
+    </button>
+    <button class="tab-btn" id="tab-zones" onclick="goTab('zones',this)">
+      🗺️ Delivery Zones <span class="tab-count zero" id="countZones">0</span>
+    </button>
+    <button class="tab-btn" id="tab-tickets" onclick="goTab('tickets',this)">
+      🎫 Seller Support <span class="tab-count zero" id="countTickets">0</span>
+    </button>
+    <button class="tab-btn" id="tab-directory" onclick="goTab('directory',this)">
+      🏪 Seller Directory <span class="tab-count zero" id="countDirectory">0</span>
+    </button>
+  </nav>
+
+  <div class="content">
+
+    <!-- ═══ OVERVIEW PAGE ═══ -->
+    <div class="page active" id="page-overview">
+      <div class="stats-row">
+        <div class="stat-box"><strong id="statTotalOrders">0</strong><span>সর্বমোট অর্ডার</span></div>
+        <div class="stat-box"><strong id="statTodayOrders">0</strong><span>আজকের অর্ডার</span></div>
+        <div class="stat-box"><strong id="statActiveSellers">0</strong><span>সক্রিয় বিক্রেতা</span></div>
+        <div class="stat-box"><strong id="statOpenTickets">0</strong><span>খোলা Support Ticket</span></div>
+      </div>
+      <div class="sec-head">
+        <div class="sec-title">📊 সাম্প্রতিক অর্ডার <small id="recentOrdersSub">এই শহরের সব বিক্রেতার অর্ডার একসাথে</small></div>
+      </div>
+      <div id="recentOrdersWrap" style="background:#fff;border-radius:14px;border:1px solid var(--border);padding:6px 18px;"></div>
+    </div>
+
+    <!-- ═══ DELIVERY ZONES PAGE ═══ -->
+    <div class="page" id="page-zones">
+      <div class="sec-head">
+        <div class="sec-title">🗺️ Delivery Zones <small id="zonesSub">এলাকা ও ডেলিভারি চার্জ কনফিগার করুন</small></div>
+      </div>
+      <div class="add-zone-card">
+        <div style="font-size:.82rem;font-weight:700;color:var(--navy);margin-bottom:12px">➕ নতুন Zone যোগ করুন</div>
+        <div class="zone-form-grid">
+          <div class="form-group" style="margin-bottom:0">
+            <label>Zone / এলাকার নাম</label>
+            <input type="text" class="form-input" id="zoneName" placeholder="যেমন: কুসুমগ্রাম">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>দূরত্ব (km)</label>
+            <input type="text" class="form-input" id="zoneDistance" placeholder="0-5">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>চার্জ (₹)</label>
+            <input type="number" class="form-input" id="zoneCharge" placeholder="30">
+          </div>
+          <button class="btn-sm btn-orange" style="height:40px" onclick="addZone()">➕ যোগ করুন</button>
+        </div>
+      </div>
+      <div id="zonesListWrap"></div>
+    </div>
+
+    <!-- ═══ SELLER SUPPORT TICKETS PAGE ═══ -->
+    <div class="page" id="page-tickets">
+      <div class="sec-head">
+        <div class="sec-title">🎫 Seller Support <small id="ticketsSub">বিক্রেতাদের সমস্যা ও অনুরোধ</small></div>
+      </div>
+      <div class="toolbar">
+        <button class="filter-pill active" data-f="open" onclick="setTicketFilter('open',this)">🟡 খোলা</button>
+        <button class="filter-pill" data-f="resolved" onclick="setTicketFilter('resolved',this)">✅ সমাধান হয়েছে</button>
+        <button class="filter-pill" data-f="all" onclick="setTicketFilter('all',this)">সব</button>
+      </div>
+      <div id="ticketsListWrap"></div>
+    </div>
+
+    <!-- ═══ SELLER DIRECTORY PAGE (READ-ONLY) ═══ -->
+    <div class="page" id="page-directory">
+      <div class="sec-head">
+        <div class="sec-title">🏪 Seller Directory <small id="directorySub">এই শহরের সব বিক্রেতা (read-only — অনুমোদন admin.html এ হয়)</small></div>
+      </div>
+      <div class="toolbar">
+        <input type="text" class="search-input" id="dirSearch" placeholder="🔍 দোকানের নাম, owner, mobile দিয়ে খুঁজুন..." oninput="renderDirectory()">
+      </div>
+      <div id="directoryListWrap"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+var FB_CFG = {
+  apiKey:"AIzaSyA6TrrnCMwv1aa1WPqGvTVWlnieB2pVOEU",
+  authDomain:"delta-platform-82fc0.firebaseapp.com",
+  projectId:"delta-platform-82fc0",
+  storageBucket:"delta-platform-82fc0.firebasestorage.app",
+  messagingSenderId:"444904180433",
+  appId:"1:444904180433:web:6706eba4d73a30cd67d3f0"
+};
+var auth, db, managerCity = null, allSellers = [], allOrders = [], allTickets = [], allZones = [];
+var ticketFilter = 'open';
+
+(function(){
+  var scripts=[
+    'https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js',
+    'https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js',
+    'https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js'
+  ];
+  var n=0, fbInitDone=false, hadError=false;
+  function tryInit(){
+    if(fbInitDone) return;
+    fbInitDone=true;
+    if(hadError || typeof firebase==='undefined'){
+      hideLoading(); showAuth();
+      showToast('Internet সংযোগ সমস্যা — Page reload করুন','red');
+      return;
+    }
+    initFirebase();
+  }
+  scripts.forEach(function(src){
+    var s=document.createElement('script');s.src=src;
+    s.onload=function(){ n++; if(n===scripts.length) tryInit(); };
+    s.onerror=function(){ hadError=true; n++; if(n===scripts.length) tryInit(); };
+    document.head.appendChild(s);
+  });
+  setTimeout(tryInit, 8000);
+})();
+
+function initFirebase(){
+  try{
+    firebase.initializeApp(FB_CFG);
+    auth = firebase.auth(); db = firebase.firestore();
+    auth.onAuthStateChanged(function(u){
+      if(u){
+        db.collection('cityManagers').doc(u.uid).get().then(function(doc){
+          if(doc.exists){
+            managerCity = doc.data().city;
+            document.getElementById('managerEmailLabel').textContent = u.email;
+            document.getElementById('cityBadge').textContent = 'CITY MANAGER · '+managerCity.toUpperCase();
+            hideLoading(); showApp();
+            loadAllData();
+          } else {
+            auth.signOut();
+            hideLoading(); showAuth();
+            document.getElementById('loginErr').textContent = 'এই account এর City Manager access নেই।';
+            document.getElementById('loginErr').style.display='block';
+          }
+        }).catch(function(){
+          auth.signOut();
+          hideLoading(); showAuth();
+          document.getElementById('loginErr').textContent = 'Access যাচাই করতে সমস্যা হয়েছে।';
+          document.getElementById('loginErr').style.display='block';
+        });
+      } else {
+        hideLoading(); showAuth();
+      }
+    });
+  }catch(e){ hideLoading(); showAuth(); showToast('Firebase error: '+e.message,'red'); }
+}
+
+function hideLoading(){ document.getElementById('loadingScreen').style.display='none'; }
+function showAuth(){ document.getElementById('authScreen').style.display='flex'; document.getElementById('appScreen').style.display='none'; }
+function showApp(){ document.getElementById('authScreen').style.display='none'; document.getElementById('appScreen').style.display='block'; }
+function showToast(msg,type){
+  var e=document.getElementById('toastEl'); e.textContent=msg;
+  e.className='toast show '+(type||''); clearTimeout(e._t);
+  e._t=setTimeout(function(){e.className='toast';},3200);
+}
+
+function doLogin(){
+  var e=document.getElementById('aEmail').value.trim();
+  var p=document.getElementById('aPass').value;
+  var err=document.getElementById('loginErr');
+  err.style.display='none';
+  if(!e||!p){err.textContent='Email ও Password দিন।';err.style.display='block';return;}
+  var btn=document.getElementById('loginBtn'); btn.disabled=true; btn.textContent='লগইন হচ্ছে...';
+  auth.signInWithEmailAndPassword(e,p).catch(function(er){
+    var msgs={
+      'auth/user-not-found':'এই account পাওয়া যায়নি',
+      'auth/wrong-password':'পাসওয়ার্ড ভুল',
+      'auth/invalid-credential':'Email বা পাসওয়ার্ড ভুল',
+      'auth/invalid-email':'Email সঠিক নয়'
+    };
+    err.textContent = msgs[er.code]||er.message; err.style.display='block';
+    btn.disabled=false; btn.textContent='🔐 লগইন করুন';
+  }).then(function(){
+    btn.disabled=false; btn.textContent='🔐 লগইন করুন';
+  });
+}
+
+function doLogout(){
+  if(!confirm('লগআউট করবেন?'))return;
+  auth.signOut();
+}
+
+function goTab(tab, btn){
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
+  document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});
+  document.getElementById('page-'+tab).classList.add('active');
+  btn.classList.add('active');
+}
+
+function loadAllData(){
+  if(!managerCity) return;
+
+  db.collection('cities').doc(managerCity).collection('sellers').get().then(function(snap){
+    allSellers = [];
+    snap.forEach(function(d){ allSellers.push(Object.assign({id:d.id}, d.data())); });
+    renderDirectory();
+    updateOverviewStats();
+    loadAllOrders();
+  }).catch(function(e){ showToast('বিক্রেতা লোড সমস্যা: '+e.message,'red'); });
+
+  db.collection('cities').doc(managerCity).collection('zones').get().then(function(snap){
+    allZones = [];
+    snap.forEach(function(d){ allZones.push(Object.assign({id:d.id}, d.data())); });
+    renderZones();
+    updateOverviewStats();
+  }).catch(function(e){ showToast('Zone লোড সমস্যা: '+e.message,'red'); });
+
+  db.collection('cities').doc(managerCity).collection('supportTickets').get().then(function(snap){
+    allTickets = [];
+    snap.forEach(function(d){ allTickets.push(Object.assign({id:d.id}, d.data())); });
+    allTickets.sort(function(a,b){ return new Date(b.createdAt||0) - new Date(a.createdAt||0); });
+    renderTickets();
+    updateOverviewStats();
+  }).catch(function(e){ showToast('Support ticket লোড সমস্যা: '+e.message,'red'); });
+}
+
+function loadAllOrders(){
+  allOrders = [];
+  var proms = allSellers.map(function(s){
+    return db.collection('cities').doc(managerCity).collection('sellers').doc(s.id)
+      .collection('orders').get().then(function(snap){
+        snap.forEach(function(d){
+          allOrders.push(Object.assign({id:d.id, shopName:s.shopName}, d.data()));
+        });
+      }).catch(function(){});
+  });
+  Promise.all(proms).then(function(){
+    allOrders.sort(function(a,b){ return new Date(b.createdAt||0) - new Date(a.createdAt||0); });
+    renderRecentOrders();
+    updateOverviewStats();
+  });
+}
+
+function updateOverviewStats(){
+  document.getElementById('statTotalOrders').textContent = allOrders.length;
+  var todayStr = new Date().toDateString();
+  var todayCount = allOrders.filter(function(o){
+    return o.createdAt && new Date(o.createdAt).toDateString()===todayStr;
+  }).length;
+  document.getElementById('statTodayOrders').textContent = todayCount;
+  var active = allSellers.filter(function(s){ return (s.status==='approved' || !s.status) && s.isOpen!==false; });
+  document.getElementById('statActiveSellers').textContent = active.length;
+  var openTickets = allTickets.filter(function(t){ return t.status!=='resolved'; });
+  document.getElementById('statOpenTickets').textContent = openTickets.length;
+  document.getElementById('countTickets').textContent = openTickets.length;
+  document.getElementById('countTickets').classList.toggle('zero', openTickets.length===0);
+  document.getElementById('countZones').textContent = allZones.length;
+  document.getElementById('countZones').classList.toggle('zero', allZones.length===0);
+  document.getElementById('countDirectory').textContent = allSellers.length;
+  document.getElementById('countDirectory').classList.toggle('zero', allSellers.length===0);
+}
+
+function renderRecentOrders(){
+  var wrap = document.getElementById('recentOrdersWrap');
+  var recent = allOrders.slice(0,8);
+  if(!recent.length){
+    wrap.innerHTML = '<div class="empty-state" style="border:none"><div class="empty-icon">🛍️</div><p>এখনো কোনো অর্ডার আসেনি</p></div>';
+    return;
+  }
+  wrap.innerHTML = recent.map(function(o){
+    var time = o.createdAt ? new Date(o.createdAt).toLocaleDateString('bn-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) : '—';
+    return '<div class="order-row">'+
+      '<div><strong>'+(o.shopName||'—')+'</strong> · '+(o.customerName||'Customer')+'</div>'+
+      '<div style="color:var(--muted)">₹'+(o.total||0)+' · '+time+'</div>'+
+    '</div>';
+  }).join('');
+}
+
+function renderZones(){
+  var wrap = document.getElementById('zonesListWrap');
+  if(!allZones.length){
+    wrap.innerHTML = '<div class="empty-state"><div class="empty-icon">🗺️</div><p>এখনো কোনো zone যোগ করা হয়নি</p></div>';
+    return;
+  }
+  wrap.innerHTML = allZones.map(function(z){
+    return '<div class="zone-card">'+
+      '<div class="zone-info">'+
+        '<div class="zone-name">'+(z.name||'—')+'</div>'+
+        '<div class="zone-meta">দূরত্ব: '+(z.distance||'—')+' km</div>'+
+      '</div>'+
+      '<div class="zone-charge">₹'+(z.charge||0)+'</div>'+
+      '<div class="zone-actions">'+
+        '<button class="btn-sm btn-red" onclick="deleteZone(\''+z.id+'\')">🗑️ মুছুন</button>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+function addZone(){
+  var name = document.getElementById('zoneName').value.trim();
+  var distance = document.getElementById('zoneDistance').value.trim();
+  var charge = parseFloat(document.getElementById('zoneCharge').value) || 0;
+  if(!name){ showToast('Zone এর নাম দিন','red'); return; }
+  if(!charge){ showToast('Delivery charge দিন','red'); return; }
+  db.collection('cities').doc(managerCity).collection('zones').add({
+    name: name, distance: distance, charge: charge,
+    createdAt: new Date().toISOString()
+  }).then(function(ref){
+    allZones.push({id:ref.id, name:name, distance:distance, charge:charge});
+    renderZones(); updateOverviewStats();
+    document.getElementById('zoneName').value='';
+    document.getElementById('zoneDistance').value='';
+    document.getElementById('zoneCharge').value='';
+    showToast('Zone যোগ হয়েছে ✅','green');
+  }).catch(function(e){ showToast('যোগ করতে সমস্যা: '+e.message,'red'); });
+}
+
+function deleteZone(id){
+  if(!confirm('এই zone মুছবেন?')) return;
+  db.collection('cities').doc(managerCity).collection('zones').doc(id).delete().then(function(){
+    allZones = allZones.filter(function(z){return z.id!==id;});
+    renderZones(); updateOverviewStats();
+    showToast('Zone মুছে ফেলা হয়েছে','green');
+  }).catch(function(e){ showToast('মুছতে সমস্যা: '+e.message,'red'); });
+}
+
+function setTicketFilter(f, btn){
+  ticketFilter = f;
+  document.querySelectorAll('#page-tickets .filter-pill').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  renderTickets();
+}
+
+function renderTickets(){
+  var wrap = document.getElementById('ticketsListWrap');
+  var filtered = allTickets.filter(function(t){
+    if(ticketFilter==='all') return true;
+    if(ticketFilter==='open') return t.status!=='resolved';
+    return t.status==='resolved';
+  });
+  if(!filtered.length){
+    wrap.innerHTML = '<div class="empty-state"><div class="empty-icon">🎫</div><p>এই তালিকায় কোনো ticket নেই</p></div>';
+    return;
+  }
+  wrap.innerHTML = filtered.map(function(t){
+    var isResolved = t.status==='resolved';
+    var createdStr = t.createdAt ? new Date(t.createdAt).toLocaleDateString('bn-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) : '—';
+    return '<div class="ticket-card '+(isResolved?'resolved':'open')+'">'+
+      '<div class="ticket-top">'+
+        '<div><div class="ticket-shop">🏪 '+(t.shopName||'—')+'</div>'+
+        '<div class="ticket-meta">'+createdStr+'</div></div>'+
+        '<span class="ticket-badge '+(isResolved?'badge-resolved':'badge-open')+'">'+(isResolved?'✅ সমাধান হয়েছে':'🟡 খোলা')+'</span>'+
+      '</div>'+
+      '<div class="ticket-msg">'+(t.message||'—')+'</div>'+
+      (!isResolved?'<button class="btn-sm btn-green" onclick="resolveTicket(\''+t.id+'\')">✅ সমাধান হয়েছে চিহ্নিত করুন</button>':'')+
+    '</div>';
+  }).join('');
+}
+
+function resolveTicket(id){
+  db.collection('cities').doc(managerCity).collection('supportTickets').doc(id).update({
+    status:'resolved', resolvedAt: new Date().toISOString()
+  }).then(function(){
+    var t = allTickets.find(function(x){return x.id===id;});
+    if(t) t.status='resolved';
+    renderTickets(); updateOverviewStats();
+    showToast('Ticket সমাধান হিসেবে চিহ্নিত হয়েছে ✅','green');
+  }).catch(function(e){ showToast('আপডেট ব্যর্থ: '+e.message,'red'); });
+}
+
+var SHOP_TYPE_ICONS = {
+  shop:'🏪', farmer:'👨‍🌾', artist:'🎨', service:'💈',
+  manufacturer:'🏭', wholesaler:'📦', cooperative:'🤝'
+};
+
+function renderDirectory(){
+  var wrap = document.getElementById('directoryListWrap');
+  var search = (document.getElementById('dirSearch').value||'').toLowerCase().trim();
+  var filtered = allSellers.filter(function(s){
+    if(!search) return true;
+    var hay = [(s.shopName||''),(s.ownerName||''),(s.mobile||''),(s.email||'')].join(' ').toLowerCase();
+    return hay.indexOf(search)!==-1;
+  });
+  if(!filtered.length){
+    wrap.innerHTML = '<div class="empty-state"><div class="empty-icon">🏪</div><p>কোনো বিক্রেতা পাওয়া যায়নি</p></div>';
+    return;
+  }
+  wrap.innerHTML = filtered.map(function(s){
+    var status = s.status||'approved';
+    var icon = SHOP_TYPE_ICONS[s.shopType]||'🏪';
+    var statusBadge = status==='pending'
+      ? '<span class="ticket-badge badge-open">⏳ Pending</span>'
+      : status==='rejected'
+      ? '<span class="ticket-badge" style="background:var(--red2);color:var(--red)">❌ Rejected</span>'
+      : '<span class="ticket-badge badge-resolved">✅ Approved</span>';
+    return '<div class="zone-card">'+
+      '<div class="zone-info">'+
+        '<div class="zone-name">'+icon+' '+(s.shopName||'—')+'</div>'+
+        '<div class="zone-meta">'+(s.ownerName||'—')+' · '+(s.mobile||'—')+' · '+(s.area||'—')+'</div>'+
+      '</div>'+
+      statusBadge+
+    '</div>';
+  }).join('');
+}
+</script>
+</body>
+</html>
