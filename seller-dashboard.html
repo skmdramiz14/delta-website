@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="bn">
 <head>
 <meta charset="UTF-8">
@@ -318,6 +318,21 @@ select.form-input{cursor:pointer;}
 .qr-placeholder{width:160px;height:160px;background:var(--sand);border-radius:12px;
   margin:16px auto;display:flex;align-items:center;justify-content:center;font-size:3rem;}
 
+/* ── SUPPORT TICKETS ── */
+.ticket-item{background:#fff;border-radius:14px;border:1px solid var(--border);
+  padding:14px 16px;margin-bottom:10px;}
+.ticket-item.t-open{border-left:4px solid var(--yellow);}
+.ticket-item.t-resolved{border-left:4px solid var(--green);}
+.ticket-item-top{display:flex;justify-content:space-between;align-items:flex-start;
+  margin-bottom:6px;flex-wrap:wrap;gap:8px;}
+.ticket-item-cat{font-size:.85rem;font-weight:700;color:var(--charcoal);}
+.ticket-item-time{font-size:.72rem;color:var(--muted);margin-top:2px;}
+.ticket-item-msg{font-size:.82rem;color:var(--charcoal);background:var(--sand);
+  border-radius:8px;padding:9px 11px;margin-top:6px;line-height:1.6;}
+.ticket-status-pill{font-size:.66rem;font-weight:700;padding:3px 10px;border-radius:20px;white-space:nowrap;}
+.tsp-open{background:var(--yellow2);color:#7d5a00;}
+.tsp-resolved{background:var(--green2);color:var(--green);}
+
 /* ── TOAST ── */
 .toast{position:fixed;bottom:24px;right:24px;background:var(--navy);color:#fff;
   padding:12px 18px;border-radius:12px;font-size:.82rem;font-weight:500;
@@ -605,6 +620,8 @@ select.form-input{cursor:pointer;}
         <span class="nicon">📈</span><span data-lang-bn="পারফরম্যান্স" data-lang-en="Performance">পারফরম্যান্স</span></button>
       <button class="nav-btn" id="nb-qr" onclick="goPage('qr',this)">
         <span class="nicon">📲</span><span data-lang-bn="QR কোড" data-lang-en="QR Code">QR কোড</span></button>
+      <button class="nav-btn" id="nb-support" onclick="goPage('support',this)">
+        <span class="nicon">🎫</span><span data-lang-bn="সাহায্য কেন্দ্র" data-lang-en="Support">সাহায্য কেন্দ্র</span></button>
     </nav>
     <div class="sb-bottom">
       <button class="logout-btn" onclick="doLogout()">🚪 <span data-lang-bn="লগআউট" data-lang-en="Logout">লগআউট</span></button>
@@ -1067,6 +1084,46 @@ select.form-input{cursor:pointer;}
           <button class="btn-sm btn-orange" onclick="generateQR()">🔲 QR Generate করুন</button>
           <button class="btn-sm btn-outline" style="margin-left:8px" onclick="printQR()">🖨️ Print করুন</button>
         </div>
+      </div>
+
+      <!-- ═══ SUPPORT PAGE ═══ -->
+      <div class="page" id="page-support">
+        <div class="sec-head">
+          <div class="sec-title">
+            <span data-lang-bn="সাহায্য কেন্দ্র" data-lang-en="Support Center">সাহায্য কেন্দ্র</span>
+          </div>
+        </div>
+        <div class="form-card">
+          <div class="form-card-title">
+            <span data-lang-bn="🎫 সমস্যা জানান" data-lang-en="🎫 Report a Problem">🎫 সমস্যা জানান</span>
+          </div>
+          <div class="form-group">
+            <label><span data-lang-bn="সমস্যার ধরন" data-lang-en="Issue Type">সমস্যার ধরন</span></label>
+            <select class="form-input" id="ticketCategory">
+              <option value="payment" data-lang-bn="💰 পেমেন্ট সংক্রান্ত" data-lang-en="💰 Payment issue">💰 পেমেন্ট সংক্রান্ত</option>
+              <option value="product" data-lang-bn="📦 পণ্য আপলোড সমস্যা" data-lang-en="📦 Product upload issue">📦 পণ্য আপলোড সমস্যা</option>
+              <option value="order" data-lang-bn="🛍️ অর্ডার সংক্রান্ত" data-lang-en="🛍️ Order issue">🛍️ অর্ডার সংক্রান্ত</option>
+              <option value="technical" data-lang-bn="⚙️ প্রযুক্তিগত সমস্যা" data-lang-en="⚙️ Technical issue">⚙️ প্রযুক্তিগত সমস্যা</option>
+              <option value="account" data-lang-bn="👤 অ্যাকাউন্ট সংক্রান্ত" data-lang-en="👤 Account issue">👤 অ্যাকাউন্ট সংক্রান্ত</option>
+              <option value="other" data-lang-bn="📋 অন্যান্য" data-lang-en="📋 Other">📋 অন্যান্য</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label><span data-lang-bn="বিস্তারিত লিখুন" data-lang-en="Describe your issue">বিস্তারিত লিখুন</span></label>
+            <textarea class="form-input" id="ticketMessage" rows="4" style="resize:vertical;font-family:inherit"
+              placeholder="আপনার সমস্যাটি বিস্তারিত লিখুন..."></textarea>
+          </div>
+          <button class="btn-sm btn-orange" onclick="submitTicket()" id="submitTicketBtn">
+            📤 <span data-lang-bn="পাঠান" data-lang-en="Submit">পাঠান</span>
+          </button>
+        </div>
+
+        <div class="sec-head" style="margin-top:24px">
+          <div class="sec-title">
+            <span data-lang-bn="আপনার পাঠানো সমস্যাসমূহ" data-lang-en="Your Submitted Tickets">আপনার পাঠানো সমস্যাসমূহ</span>
+          </div>
+        </div>
+        <div id="myTicketsWrap"></div>
       </div>
 
     </div><!-- end content -->
@@ -1556,7 +1613,8 @@ var PAGE_TITLES = {
   profile:   {bn:'শপ প্রোফাইল', en:'Shop Profile'},
   subscription:{bn:'সাবস্ক্রিপশন', en:'Subscription'},
   performance: {bn:'পারফরম্যান্স', en:'Performance'},
-  qr:        {bn:'QR কোড', en:'QR Code'}
+  qr:        {bn:'QR কোড', en:'QR Code'},
+  support:   {bn:'সাহায্য কেন্দ্র', en:'Support'}
 };
 
 function setLang(lang){
@@ -1620,6 +1678,7 @@ function goPage(page,btnEl){
   if(page==='products')renderProducts();
   if(page==='orders')renderOrders('all');
   if(page==='performance')renderPerformance();
+  if(page==='support')loadMyTickets();
   closeSidebar();
 }
 
@@ -3298,6 +3357,68 @@ function generateQR(){
   showToast('QR কোড তৈরি হয়েছে ✅','green');
 }
 function printQR(){window.print();}
+
+// ═══ SUPPORT TICKETS ═══
+var TICKET_CATEGORY_LABELS = {
+  payment:'💰 পেমেন্ট সংক্রান্ত', product:'📦 পণ্য আপলোড সমস্যা',
+  order:'🛍️ অর্ডার সংক্রান্ত', technical:'⚙️ প্রযুক্তিগত সমস্যা',
+  account:'👤 অ্যাকাউন্ট সংক্রান্ত', other:'📋 অন্যান্য'
+};
+
+function submitTicket(){
+  var category = document.getElementById('ticketCategory').value;
+  var message = document.getElementById('ticketMessage').value.trim();
+  if(!message){ showToast('সমস্যাটি বিস্তারিত লিখুন ⚠️','red'); return; }
+  var btn = document.getElementById('submitTicketBtn');
+  btn.disabled = true; btn.textContent = 'পাঠানো হচ্ছে...';
+  db.collection('cities').doc(CITY).collection('supportTickets').add({
+    sellerId: CU.uid,
+    shopName: SD ? (SD.shopName||'') : '',
+    category: category,
+    message: message,
+    status: 'open',
+    createdAt: new Date().toISOString()
+  }).then(function(){
+    document.getElementById('ticketMessage').value = '';
+    showToast('আপনার সমস্যা পাঠানো হয়েছে ✅','green');
+    loadMyTickets();
+  }).catch(function(e){
+    showToast('পাঠাতে সমস্যা হয়েছে: '+e.message,'red');
+  }).then(function(){
+    btn.disabled = false; btn.textContent = '📤 পাঠান';
+  });
+}
+
+function loadMyTickets(){
+  var wrap = document.getElementById('myTicketsWrap');
+  wrap.innerHTML = '<div class="empty-state"><div class="empty-icon">⏳</div><p>লোড হচ্ছে...</p></div>';
+  db.collection('cities').doc(CITY).collection('supportTickets')
+    .where('sellerId','==',CU.uid).get().then(function(snap){
+      var tickets = [];
+      snap.forEach(function(d){ tickets.push(Object.assign({id:d.id}, d.data())); });
+      tickets.sort(function(a,b){ return new Date(b.createdAt||0) - new Date(a.createdAt||0); });
+      if(!tickets.length){
+        wrap.innerHTML = '<div class="empty-state"><div class="empty-icon">🎫</div>'+
+          '<p>আপনি এখনো কোনো সমস্যা জানাননি</p></div>';
+        return;
+      }
+      wrap.innerHTML = tickets.map(function(t){
+        var isResolved = t.status==='resolved';
+        var catLabel = TICKET_CATEGORY_LABELS[t.category] || t.category || '—';
+        var timeStr = t.createdAt ? new Date(t.createdAt).toLocaleDateString('bn-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) : '—';
+        return '<div class="ticket-item '+(isResolved?'t-resolved':'t-open')+'">'+
+          '<div class="ticket-item-top">'+
+            '<div><div class="ticket-item-cat">'+catLabel+'</div>'+
+            '<div class="ticket-item-time">'+timeStr+'</div></div>'+
+            '<span class="ticket-status-pill '+(isResolved?'tsp-resolved':'tsp-open')+'">'+(isResolved?'✅ সমাধান হয়েছে':'🟡 খোলা')+'</span>'+
+          '</div>'+
+          '<div class="ticket-item-msg">'+t.message+'</div>'+
+        '</div>';
+      }).join('');
+    }).catch(function(e){
+      wrap.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><p>লোড করতে সমস্যা হয়েছে</p></div>';
+    });
+}
 </script>
 </body>
 </html>
