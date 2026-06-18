@@ -143,6 +143,45 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 .req-name{font-size:.92rem;font-weight:700;color:var(--charcoal);}
 .req-meta{font-size:.76rem;color:var(--muted);margin-top:3px;}
 
+.order-card{background:#fff;border-radius:14px;border:1px solid var(--border);
+  padding:16px 18px;margin-bottom:10px;}
+.order-top{display:flex;justify-content:space-between;align-items:flex-start;
+  margin-bottom:10px;flex-wrap:wrap;gap:8px;}
+.order-id-text{font-size:.78rem;font-weight:700;color:var(--orange);}
+.order-shop-name{font-size:.92rem;font-weight:700;color:var(--charcoal);margin-top:2px;}
+.order-meta-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;font-size:.78rem;
+  color:var(--muted);margin-bottom:12px;}
+.order-meta-grid div strong{display:block;color:var(--charcoal);font-size:.82rem;font-weight:600;
+  margin-top:2px;}
+.order-status-sel{padding:7px 12px;border:1.5px solid var(--border);border-radius:8px;
+  font-size:.78rem;font-weight:600;background:#fff;cursor:pointer;}
+.status-badge-pill{font-size:.68rem;font-weight:700;padding:3px 10px;border-radius:20px;white-space:nowrap;}
+.bp-pending{background:var(--yellow2);color:#7d5a00;}
+.bp-confirmed{background:#e8f4ff;color:#0984e3;}
+.bp-preparing{background:#f3e5f5;color:#7b1fa2;}
+.bp-out{background:var(--orange-light);color:var(--orange);}
+.bp-delivered{background:var(--green2);color:var(--green);}
+.bp-cancelled{background:var(--red2);color:var(--red);}
+
+.add-zone-card{background:#fff;border-radius:14px;border:1.5px dashed var(--border);
+  padding:18px;margin-bottom:18px;}
+.zone-form-grid{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:10px;align-items:end;}
+.zone-card{background:#fff;border-radius:14px;border:1px solid var(--border);
+  padding:16px 18px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;
+  gap:14px;flex-wrap:wrap;}
+.zone-info{flex:1;min-width:200px;}
+.zone-name{font-size:.92rem;font-weight:700;color:var(--charcoal);}
+.zone-meta{font-size:.78rem;color:var(--muted);margin-top:3px;}
+.zone-charge{font-size:1.1rem;font-weight:800;color:var(--orange);}
+.zone-actions{display:flex;gap:8px;}
+.zone-source-tag{font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:10px;
+  background:var(--sand);color:var(--muted);margin-left:8px;}
+.zone-source-tag.from-cm{background:#e8f4ff;color:#0984e3;}
+.zone-edit-row{display:none;gap:8px;margin-top:10px;flex-wrap:wrap;width:100%;}
+.zone-edit-row.show{display:flex;}
+.zone-edit-row input{padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;
+  font-size:.8rem;width:120px;}
+
 .loading-screen{position:fixed;inset:0;background:var(--navy3);display:flex;
   align-items:center;justify-content:center;z-index:1000;}
 .loading-spinner{width:40px;height:40px;border:3px solid rgba(255,255,255,.15);
@@ -224,6 +263,12 @@ button,input,select{font-family:'DM Sans',sans-serif;}
     <button class="tab-btn" id="tab-requests" onclick="goTab('requests',this)">
       🏷️ Category Requests <span class="tab-count zero" id="countReq">0</span>
     </button>
+    <button class="tab-btn" id="tab-orders" onclick="goTab('orders',this)">
+      🛍️ Order Management <span class="tab-count zero" id="countOrders">0</span>
+    </button>
+    <button class="tab-btn" id="tab-zones" onclick="goTab('zones',this)">
+      🗺️ Delivery Zones <span class="tab-count zero" id="countZones">0</span>
+    </button>
   </nav>
 
   <div class="content">
@@ -263,6 +308,56 @@ button,input,select{font-family:'DM Sans',sans-serif;}
         <div class="sec-title">🏷️ Category Requests <small id="reqSub">বিক্রেতাদের পাঠানো নতুন category এর অনুরোধ</small></div>
       </div>
       <div class="card-grid" id="reqListWrap"></div>
+    </div>
+
+    <!-- ═══ ORDER MANAGEMENT PAGE ═══ -->
+    <div class="page" id="page-orders">
+      <div class="stats-row">
+        <div class="stat-box"><strong id="statOrdersTotal">0</strong><span>সর্বমোট অর্ডার</span></div>
+        <div class="stat-box"><strong id="statOrdersPending">0</strong><span>Pending</span></div>
+        <div class="stat-box"><strong id="statOrdersDelivered">0</strong><span>Delivered</span></div>
+        <div class="stat-box"><strong id="statOrdersValue">₹0</strong><span>সর্বমোট মূল্য</span></div>
+      </div>
+      <div class="sec-head">
+        <div class="sec-title">🛍️ সব অর্ডার <small id="ordersSub">সব city, সব seller এর সব অর্ডার একসাথে — সম্পূর্ণ override ক্ষমতা</small></div>
+      </div>
+      <div class="toolbar">
+        <input type="text" class="search-input" id="orderSearch" placeholder="🔍 Order ID, shop name, customer name দিয়ে খুঁজুন..." oninput="renderOrders()">
+        <button class="filter-pill active" data-f="all" onclick="setOrderFilter('all',this)">সব</button>
+        <button class="filter-pill" data-f="pending" onclick="setOrderFilter('pending',this)">⏳ Pending</button>
+        <button class="filter-pill" data-f="confirmed" onclick="setOrderFilter('confirmed',this)">✅ Confirmed</button>
+        <button class="filter-pill" data-f="preparing" onclick="setOrderFilter('preparing',this)">🔄 Preparing</button>
+        <button class="filter-pill" data-f="out" onclick="setOrderFilter('out',this)">🛵 Out for Delivery</button>
+        <button class="filter-pill" data-f="delivered" onclick="setOrderFilter('delivered',this)">📦 Delivered</button>
+        <button class="filter-pill" data-f="cancelled" onclick="setOrderFilter('cancelled',this)">❌ Cancelled</button>
+      </div>
+      <div class="card-grid" id="ordersListWrap"></div>
+    </div>
+
+    <!-- ═══ DELIVERY ZONES PAGE (Admin override) ═══ -->
+    <div class="page" id="page-zones">
+      <div class="sec-head">
+        <div class="sec-title">🗺️ Delivery Zones <small id="zonesSub">City Manager যা সেট করে তা এখানে দেখা যাবে — প্রয়োজনে পরিবর্তন বা মুছে ফেলুন</small></div>
+      </div>
+      <div class="add-zone-card">
+        <div style="font-size:.82rem;font-weight:700;color:var(--navy);margin-bottom:12px">➕ নতুন Zone যোগ করুন (Admin থেকে)</div>
+        <div class="zone-form-grid">
+          <div class="form-group" style="margin-bottom:0">
+            <label>Zone / এলাকার নাম</label>
+            <input type="text" class="form-input" id="zoneName" placeholder="যেমন: কুসুমগ্রাম">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>দূরত্ব (km)</label>
+            <input type="text" class="form-input" id="zoneDistance" placeholder="0-5">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>চার্জ (₹)</label>
+            <input type="number" class="form-input" id="zoneCharge" placeholder="30">
+          </div>
+          <button class="btn-sm btn-orange" style="height:40px" onclick="addZoneFromAdmin()">➕ যোগ করুন</button>
+        </div>
+      </div>
+      <div id="zonesListWrap"></div>
     </div>
 
   </div>
@@ -374,6 +469,10 @@ function goTab(tab, btn){
 }
 
 // ═══ DATA LOADING ═══
+var allOrders = [];
+var orderFilter = 'all';
+var allZones = [];
+
 function loadAllData(){
   db.collection('cities').doc(CITY).collection('sellers').get().then(function(snap){
     allSellers = [];
@@ -381,6 +480,7 @@ function loadAllData(){
     renderPendingList();
     renderAllSellers();
     updateCounts();
+    loadAllOrders();
   }).catch(function(e){
     showToast('বিক্রেতা লোড করতে সমস্যা: '+e.message,'red');
   });
@@ -396,6 +496,32 @@ function loadAllData(){
   }).catch(function(e){
     showToast('Category requests লোড করতে সমস্যা: '+e.message,'red');
   });
+
+  db.collection('cities').doc(CITY).collection('zones').get().then(function(snap){
+    allZones = [];
+    snap.forEach(function(d){ allZones.push(Object.assign({id:d.id}, d.data())); });
+    renderZones();
+    updateCounts();
+  }).catch(function(e){
+    showToast('Delivery zone লোড করতে সমস্যা: '+e.message,'red');
+  });
+}
+
+function loadAllOrders(){
+  allOrders = [];
+  var proms = allSellers.map(function(s){
+    return db.collection('cities').doc(CITY).collection('sellers').doc(s.id)
+      .collection('orders').get().then(function(snap){
+        snap.forEach(function(d){
+          allOrders.push(Object.assign({id:d.id, shopId:s.id, shopName:s.shopName}, d.data()));
+        });
+      }).catch(function(){});
+  });
+  Promise.all(proms).then(function(){
+    allOrders.sort(function(a,b){ return new Date(b.createdAt||0) - new Date(a.createdAt||0); });
+    renderOrders();
+    updateCounts();
+  });
 }
 
 function updateCounts(){
@@ -403,6 +529,9 @@ function updateCounts(){
   var approved = allSellers.filter(function(s){return s.status==='approved' || !s.status;});
   var rejected = allSellers.filter(function(s){return s.status==='rejected';});
   var pendingReq = allRequests.filter(function(r){return r.status==='pending';});
+  var pendingOrders = allOrders.filter(function(o){return o.status==='pending';});
+  var deliveredOrders = allOrders.filter(function(o){return o.status==='delivered';});
+  var totalValue = allOrders.reduce(function(sum,o){return sum+(o.total||0);},0);
 
   document.getElementById('countPending').textContent = pending.length;
   document.getElementById('countPending').classList.toggle('zero', pending.length===0);
@@ -410,11 +539,20 @@ function updateCounts(){
   document.getElementById('countAll').classList.toggle('zero', allSellers.length===0);
   document.getElementById('countReq').textContent = pendingReq.length;
   document.getElementById('countReq').classList.toggle('zero', pendingReq.length===0);
+  document.getElementById('countOrders').textContent = allOrders.length;
+  document.getElementById('countOrders').classList.toggle('zero', allOrders.length===0);
+  document.getElementById('countZones').textContent = allZones.length;
+  document.getElementById('countZones').classList.toggle('zero', allZones.length===0);
 
   document.getElementById('statPendingCount').textContent = pending.length;
   document.getElementById('statApprovedCount').textContent = approved.length;
   document.getElementById('statRejectedCount').textContent = rejected.length;
   document.getElementById('statTotalCount').textContent = allSellers.length;
+
+  document.getElementById('statOrdersTotal').textContent = allOrders.length;
+  document.getElementById('statOrdersPending').textContent = pendingOrders.length;
+  document.getElementById('statOrdersDelivered').textContent = deliveredOrders.length;
+  document.getElementById('statOrdersValue').textContent = '₹'+totalValue.toLocaleString('en-IN');
 
   document.getElementById('sellersSub').textContent = allSellers.length+' জন';
   document.getElementById('reqSub').textContent = pendingReq.length+' টি pending request';
@@ -570,6 +708,202 @@ function updateRequestStatus(id, newStatus){
   }).catch(function(e){
     showToast('আপডেট ব্যর্থ: '+e.message,'red');
   });
+}
+
+// ═══ ORDER MANAGEMENT (full admin override) ═══
+var ORDER_STATUS_LABELS = {
+  pending:'⏳ Pending', confirmed:'✅ Confirmed', preparing:'🔄 Preparing',
+  out:'🛵 Out for Delivery', delivered:'📦 Delivered', cancelled:'❌ Cancelled'
+};
+var ORDER_STATUS_BADGE_CLASS = {
+  pending:'bp-pending', confirmed:'bp-confirmed', preparing:'bp-preparing',
+  out:'bp-out', delivered:'bp-delivered', cancelled:'bp-cancelled'
+};
+
+function setOrderFilter(f, btn){
+  orderFilter = f;
+  document.querySelectorAll('#page-orders .filter-pill').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  renderOrders();
+}
+
+function orderCardHTML(o){
+  var status = o.status || 'pending';
+  var badgeClass = ORDER_STATUS_BADGE_CLASS[status] || 'bp-pending';
+  var badgeLabel = ORDER_STATUS_LABELS[status] || status;
+  var time = o.createdAt ? new Date(o.createdAt).toLocaleDateString('bn-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) : '—';
+  var statusOptions = Object.keys(ORDER_STATUS_LABELS).map(function(s){
+    return '<option value="'+s+'"'+(s===status?' selected':'')+'>'+ORDER_STATUS_LABELS[s]+'</option>';
+  }).join('');
+
+  return '<div class="order-card">'+
+    '<div class="order-top">'+
+      '<div>'+
+        '<div class="order-id-text">#'+o.id.slice(-6).toUpperCase()+'</div>'+
+        '<div class="order-shop-name">🏪 '+(o.shopName||'—')+'</div>'+
+      '</div>'+
+      '<span class="status-badge-pill '+badgeClass+'">'+badgeLabel+'</span>'+
+    '</div>'+
+    '<div class="order-meta-grid">'+
+      '<div>গ্রাহক<strong>'+(o.customerName||'—')+'</strong></div>'+
+      '<div>পণ্য<strong>'+(o.items||'—')+'</strong></div>'+
+      '<div>মূল্য<strong>₹'+(o.total||0).toLocaleString('en-IN')+'</strong></div>'+
+      '<div>Payment<strong>'+(o.paymentMethod==='cod'?'Cash on Delivery':(o.paymentMethod||'—'))+'</strong></div>'+
+    '</div>'+
+    '<div class="order-meta-grid" style="margin-top:-4px">'+
+      '<div>ঠিকানা<strong style="font-size:.76rem">'+(o.deliveryAddress||'—')+'</strong></div>'+
+      '<div>অর্ডারের সময়<strong>'+time+'</strong></div>'+
+      '<div>Order ID<strong style="font-size:.7rem">'+o.id+'</strong></div>'+
+      '<div>Shop ID<strong style="font-size:.7rem">'+(o.shopId||'—')+'</strong></div>'+
+    '</div>'+
+    '<div class="sc-actions">'+
+      '<select class="order-status-sel" onchange="changeOrderStatus(\''+o.shopId+'\',\''+o.id+'\',this.value)">'+statusOptions+'</select>'+
+      (status!=='cancelled'?'<button class="btn-sm btn-red" onclick="cancelOrder(\''+o.shopId+'\',\''+o.id+'\')">❌ Order Cancel করুন</button>':'')+
+    '</div>'+
+  '</div>';
+}
+
+function renderOrders(){
+  var wrap = document.getElementById('ordersListWrap');
+  var search = (document.getElementById('orderSearch').value||'').toLowerCase().trim();
+  var filtered = allOrders.filter(function(o){
+    var status = o.status || 'pending';
+    if(orderFilter!=='all' && status!==orderFilter) return false;
+    if(search){
+      var hay = [o.id, (o.shopName||''), (o.customerName||'')].join(' ').toLowerCase();
+      if(hay.indexOf(search)===-1) return false;
+    }
+    return true;
+  });
+  if(!filtered.length){
+    wrap.innerHTML = '<div class="empty-state"><div class="empty-icon">🛍️</div>'+
+      '<p>কোনো অর্ডার পাওয়া যায়নি</p></div>';
+    return;
+  }
+  wrap.innerHTML = filtered.map(orderCardHTML).join('');
+}
+
+function changeOrderStatus(shopId, orderId, newStatus){
+  if(!confirm('Order status "'+ORDER_STATUS_LABELS[newStatus]+'" এ পরিবর্তন করতে চান?')) return;
+  db.collection('cities').doc(CITY).collection('sellers').doc(shopId)
+    .collection('orders').doc(orderId).update({
+      status: newStatus,
+      updatedAt: new Date().toISOString(),
+      statusChangedByAdmin: true
+    }).then(function(){
+      var o = allOrders.find(function(x){return x.id===orderId && x.shopId===shopId;});
+      if(o) o.status = newStatus;
+      renderOrders();
+      updateCounts();
+      showToast('Order status আপডেট হয়েছে ✅','green');
+    }).catch(function(e){
+      showToast('আপডেট ব্যর্থ: '+e.message,'red');
+      renderOrders();
+    });
+}
+
+function cancelOrder(shopId, orderId){
+  if(!confirm('এই order সত্যিই Cancel করতে চান? এটা ফিরিয়ে আনা যাবে না।')) return;
+  db.collection('cities').doc(CITY).collection('sellers').doc(shopId)
+    .collection('orders').doc(orderId).update({
+      status: 'cancelled',
+      updatedAt: new Date().toISOString(),
+      cancelledByAdmin: true
+    }).then(function(){
+      var o = allOrders.find(function(x){return x.id===orderId && x.shopId===shopId;});
+      if(o) o.status = 'cancelled';
+      renderOrders();
+      updateCounts();
+      showToast('Order cancel করা হয়েছে','green');
+    }).catch(function(e){
+      showToast('Cancel ব্যর্থ: '+e.message,'red');
+    });
+}
+
+// ═══ DELIVERY ZONES (Admin override over City Manager's zones) ═══
+function renderZones(){
+  var wrap = document.getElementById('zonesListWrap');
+  if(!allZones.length){
+    wrap.innerHTML = '<div class="empty-state"><div class="empty-icon">🗺️</div>'+
+      '<p>এখনো কোনো zone যোগ করা হয়নি</p></div>';
+    return;
+  }
+  wrap.innerHTML = allZones.map(zoneCardHTML).join('');
+}
+
+function zoneCardHTML(z){
+  var fromCM = z.createdBy === 'cityManager';
+  var sourceTag = fromCM
+    ? '<span class="zone-source-tag from-cm">City Manager তৈরি করেছে</span>'
+    : '<span class="zone-source-tag">Admin তৈরি করেছে</span>';
+  return '<div class="zone-card" id="zoneCard-'+z.id+'">'+
+    '<div class="zone-info">'+
+      '<div class="zone-name">'+(z.name||'—')+sourceTag+'</div>'+
+      '<div class="zone-meta">দূরত্ব: '+(z.distance||'—')+' km</div>'+
+    '</div>'+
+    '<div class="zone-charge">₹'+(z.charge||0)+'</div>'+
+    '<div class="zone-actions">'+
+      '<button class="btn-sm btn-outline" onclick="toggleZoneEdit(\''+z.id+'\')">✏️ পরিবর্তন</button>'+
+      '<button class="btn-sm btn-red" onclick="deleteZone(\''+z.id+'\')">🗑️ মুছুন</button>'+
+    '</div>'+
+    '<div class="zone-edit-row" id="zoneEdit-'+z.id+'">'+
+      '<input type="text" id="editName-'+z.id+'" value="'+(z.name||'')+'" placeholder="নাম">'+
+      '<input type="text" id="editDistance-'+z.id+'" value="'+(z.distance||'')+'" placeholder="দূরত্ব (km)">'+
+      '<input type="number" id="editCharge-'+z.id+'" value="'+(z.charge||0)+'" placeholder="চার্জ (₹)">'+
+      '<button class="btn-sm btn-green" onclick="saveZoneEdit(\''+z.id+'\')">✅ সেভ করুন</button>'+
+    '</div>'+
+  '</div>';
+}
+
+function toggleZoneEdit(id){
+  var row = document.getElementById('zoneEdit-'+id);
+  if(row) row.classList.toggle('show');
+}
+
+function addZoneFromAdmin(){
+  var name = document.getElementById('zoneName').value.trim();
+  var distance = document.getElementById('zoneDistance').value.trim();
+  var charge = parseFloat(document.getElementById('zoneCharge').value) || 0;
+  if(!name){ showToast('Zone এর নাম দিন','red'); return; }
+  if(!charge){ showToast('Delivery charge দিন','red'); return; }
+  db.collection('cities').doc(CITY).collection('zones').add({
+    name: name, distance: distance, charge: charge,
+    createdBy: 'admin',
+    createdAt: new Date().toISOString()
+  }).then(function(ref){
+    allZones.push({id:ref.id, name:name, distance:distance, charge:charge, createdBy:'admin'});
+    renderZones(); updateCounts();
+    document.getElementById('zoneName').value='';
+    document.getElementById('zoneDistance').value='';
+    document.getElementById('zoneCharge').value='';
+    showToast('Zone যোগ হয়েছে ✅','green');
+  }).catch(function(e){ showToast('যোগ করতে সমস্যা: '+e.message,'red'); });
+}
+
+function saveZoneEdit(id){
+  var name = document.getElementById('editName-'+id).value.trim();
+  var distance = document.getElementById('editDistance-'+id).value.trim();
+  var charge = parseFloat(document.getElementById('editCharge-'+id).value) || 0;
+  if(!name){ showToast('Zone এর নাম দিন','red'); return; }
+  db.collection('cities').doc(CITY).collection('zones').doc(id).update({
+    name: name, distance: distance, charge: charge,
+    updatedByAdmin: true,
+    updatedAt: new Date().toISOString()
+  }).then(function(){
+    var z = allZones.find(function(x){return x.id===id;});
+    if(z){ z.name=name; z.distance=distance; z.charge=charge; }
+    renderZones(); updateCounts();
+    showToast('Zone আপডেট হয়েছে ✅','green');
+  }).catch(function(e){ showToast('আপডেট ব্যর্থ: '+e.message,'red'); });
+}
+
+function deleteZone(id){
+  if(!confirm('এই zone মুছবেন? এটা City Manager এর তৈরি করা হলেও মুছে যাবে।')) return;
+  db.collection('cities').doc(CITY).collection('zones').doc(id).delete().then(function(){
+    allZones = allZones.filter(function(z){return z.id!==id;});
+    renderZones(); updateCounts();
+    showToast('Zone মুছে ফেলা হয়েছে','green');
+  }).catch(function(e){ showToast('মুছতে সমস্যা: '+e.message,'red'); });
 }
 </script>
 </body>
