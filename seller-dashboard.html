@@ -1578,13 +1578,10 @@ function loadSellerData(){
   sellerRef().get().then(function(doc){
     if(doc.exists){
       SD=doc.data();
-      // Restore saved language
       if(SD.language && SD.language !== currentLang){
         setLang(SD.language);
       }
     } else {
-      // Document doesn't exist yet (e.g. account created but profile never saved) —
-      // initialize SD as an empty object so later Object.assign/save calls don't crash
       SD={};
     }
     updateSidebar(); loadProfile();
@@ -1597,9 +1594,14 @@ function loadSellerData(){
       updateOrderStats();
       renderOrders('all');
       renderRecentOrders();
-    }).catch(function(){orders=[];});
+      // Start real-time listener AFTER initial load so existing orders
+      // don't trigger "new order" notifications on page load.
+      startOrderListener();
+    }).catch(function(){orders=[]; startOrderListener();});
     hideLoading(); showApp();
     setDate();
+    // Ask for browser notification permission once
+    requestNotificationPermission();
   }).catch(function(){ hideLoading(); showApp(); });
 }
 
@@ -3358,7 +3360,113 @@ function generateQR(){
 }
 function printQR(){window.print();}
 
-// ═══ SUPPORT TICKETS ═══
+// ═══ REAL-TIME ORDER NOTIFICATION ═══
+var _orderListenerUnsub = null;
+var _knownOrderIds = {};
+
+function startOrderListener(){
+  // Mark all currently loaded orders as "already known"
+  // so we don't fire notifications for them on startup
+  orders.forEach(function(o){ _knownOrderIds[o.id] = true; });
+
+  // Unsubscribe from any previous listener (safety net for re-login)
+  if(_orderListenerUnsub) _orderListenerUnsub();
+
+  _orderListenerUnsub = ordersRef()
+    .orderBy('createdAt','desc')
+    .onSnapshot(function(snap){
+      snap.docChanges().forEach(function(change){
+        if(change.type === 'added'){
+          var o = Object.assign({id:change.doc.id}, change.doc.data());
+          if(_knownOrderIds[o.id]) return; // already knew about this order
+          // This is a genuinely NEW order that arrived while dashboard is open
+          _knownOrderIds[o.id] = true;
+          orders.unshift(o);
+          updateOrderStats();
+          renderOrders('all');
+          renderRecentOrders();
+          fireNewOrderNotification(o);
+        } else if(change.type === 'modified'){
+          // Order status changed — update local state silently
+          var idx = orders.findIndex(function(x){return x.id===change.doc.id;});
+          if(idx>=0) orders[idx] = Object.assign({id:change.doc.id}, change.doc.data());
+          updateOrderStats();
+          renderOrders('all');
+          renderRecentOrders();
+        } else if(change.type === 'removed'){
+          orders = orders.filter(function(x){return x.id!==change.doc.id;});
+          updateOrderStats();
+        }
+      });
+    }, function(err){
+      console.error('Order listener error:', err);
+    });
+}
+
+function fireNewOrderNotification(o){
+  var shopName = SD ? SD.shopName||'আপনার দোকান' : 'আপনার দোকান';
+  var msg = '🛍️ নতুন অর্ডার এসেছে! ₹'+(o.total||0)+' — '+(o.customerName||'Customer');
+
+  // 1. In-app toast
+  showToast(msg, 'green');
+
+  // 2. Play a subtle sound
+  playNotificationSound();
+
+  // 3. Browser notification (if permission granted)
+  if(window.Notification && Notification.permission === 'granted'){
+    try{
+      new Notification('DELTA — '+shopName, {
+        body: '🛍️ নতুন অর্ডার! ₹'+(o.total||0)+'\nগ্রাহক: '+(o.customerName||'Customer'),
+        icon: 'https://deltaapp.in/favicon.ico',
+        badge: 'https://deltaapp.in/favicon.ico',
+        tag: 'new-order-'+o.id
+      });
+    }catch(e){}
+  }
+
+  // 4. Flash the page title briefly
+  flashPageTitle('🔔 নতুন অর্ডার!');
+}
+
+function playNotificationSound(){
+  try{
+    var ctx = new (window.AudioContext || window.webkitAudioContext)();
+    // Two-tone pleasant chime: high note then slightly lower
+    [880, 660].forEach(function(freq, i){
+      var osc = ctx.createOscillator();
+      var gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = freq;
+      osc.type = 'sine';
+      gain.gain.setValueAtTime(0, ctx.currentTime + i*0.18);
+      gain.gain.linearRampToValueAtTime(0.18, ctx.currentTime + i*0.18 + 0.04);
+      gain.gain.linearRampToValueAtTime(0, ctx.currentTime + i*0.18 + 0.28);
+      osc.start(ctx.currentTime + i*0.18);
+      osc.stop(ctx.currentTime + i*0.18 + 0.3);
+    });
+  }catch(e){}
+}
+
+function requestNotificationPermission(){
+  if(window.Notification && Notification.permission === 'default'){
+    Notification.requestPermission();
+  }
+}
+
+var _titleFlashInterval = null;
+function flashPageTitle(msg){
+  var orig = document.title;
+  var count = 0;
+  clearInterval(_titleFlashInterval);
+  _titleFlashInterval = setInterval(function(){
+    document.title = count%2===0 ? msg : orig;
+    count++;
+    if(count >= 8){ clearInterval(_titleFlashInterval); document.title = orig; }
+  }, 700);
+}
+</script>
 var TICKET_CATEGORY_LABELS = {
   payment:'💰 পেমেন্ট সংক্রান্ত', product:'📦 পণ্য আপলোড সমস্যা',
   order:'🛍️ অর্ডার সংক্রান্ত', technical:'⚙️ প্রযুক্তিগত সমস্যা',
