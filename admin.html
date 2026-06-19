@@ -548,10 +548,15 @@ function loadAllData(){
 
   db.collection('deliveryBoys').get().then(function(snap){
     allDeliveryBoys = [];
-    snap.forEach(function(d){ allDeliveryBoys.push(Object.assign({id:d.id}, d.data())); });
+    console.log('DELTA DEBUG deliveryBoys snap size:', snap.size);
+    snap.forEach(function(d){
+      console.log('DELTA DEBUG deliveryBoy doc:', d.id, d.data());
+      allDeliveryBoys.push(Object.assign({id:d.id}, d.data()));
+    });
     renderDeliveryBoys();
     updateCounts();
   }).catch(function(e){
+    console.log('DELTA DEBUG deliveryBoys error:', e.code, e.message);
     showToast('Delivery Boy লোড করতে সমস্যা: '+e.message,'red');
   });
 }
