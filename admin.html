@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="bn"> 
+<html lang="bn">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -269,6 +269,9 @@ button,input,select{font-family:'DM Sans',sans-serif;}
     <button class="tab-btn" id="tab-zones" onclick="goTab('zones',this)">
       🗺️ Delivery Zones <span class="tab-count zero" id="countZones">0</span>
     </button>
+    <button class="tab-btn" id="tab-deliveryboys" onclick="goTab('deliveryboys',this)">
+      🛵 Delivery Boys <span class="tab-count zero" id="countDBoys">0</span>
+    </button>
   </nav>
 
   <div class="content">
@@ -358,6 +361,42 @@ button,input,select{font-family:'DM Sans',sans-serif;}
         </div>
       </div>
       <div id="zonesListWrap"></div>
+    </div>
+
+    <!-- ═══ DELIVERY BOYS PAGE ═══ -->
+    <div class="page" id="page-deliveryboys">
+      <div class="sec-head">
+        <div class="sec-title">🛵 Delivery Boys <small id="dboysSub">নিবন্ধিত Delivery Boy দের তালিকা ও management</small></div>
+      </div>
+
+      <!-- Add new delivery boy form -->
+      <div class="add-zone-card" style="margin-bottom:20px">
+        <div style="font-size:.82rem;font-weight:700;color:var(--navy);margin-bottom:4px">➕ নতুন Delivery Boy যুক্ত করুন</div>
+        <div style="font-size:.72rem;color:var(--muted);margin-bottom:14px">
+          ⚠️ আগে Firebase Console → Authentication-এ email+password account তৈরি করুন, তারপর সেই UID দিয়ে এখানে যোগ করুন।
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+          <div class="form-group" style="margin-bottom:0">
+            <label>Firebase Auth UID *</label>
+            <input type="text" class="form-input" id="dbUid" placeholder="Firebase Console থেকে UID copy করুন">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>নাম *</label>
+            <input type="text" class="form-input" id="dbName" placeholder="যেমন: Karim Rider">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>Phone *</label>
+            <input type="tel" class="form-input" id="dbPhone" placeholder="9XXXXXXXXX">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>Email</label>
+            <input type="email" class="form-input" id="dbEmail" placeholder="rider@deltaapp.in">
+          </div>
+        </div>
+        <button class="btn-sm btn-orange" onclick="addDeliveryBoy()">➕ যুক্ত করুন</button>
+      </div>
+
+      <div id="dboysListWrap"></div>
     </div>
 
   </div>
@@ -472,6 +511,7 @@ function goTab(tab, btn){
 var allOrders = [];
 var orderFilter = 'all';
 var allZones = [];
+var allDeliveryBoys = [];
 
 function loadAllData(){
   db.collection('cities').doc(CITY).collection('sellers').get().then(function(snap){
@@ -504,6 +544,15 @@ function loadAllData(){
     updateCounts();
   }).catch(function(e){
     showToast('Delivery zone লোড করতে সমস্যা: '+e.message,'red');
+  });
+
+  db.collection('deliveryBoys').get().then(function(snap){
+    allDeliveryBoys = [];
+    snap.forEach(function(d){ allDeliveryBoys.push(Object.assign({id:d.id}, d.data())); });
+    renderDeliveryBoys();
+    updateCounts();
+  }).catch(function(e){
+    showToast('Delivery Boy লোড করতে সমস্যা: '+e.message,'red');
   });
 }
 
@@ -543,6 +592,9 @@ function updateCounts(){
   document.getElementById('countOrders').classList.toggle('zero', allOrders.length===0);
   document.getElementById('countZones').textContent = allZones.length;
   document.getElementById('countZones').classList.toggle('zero', allZones.length===0);
+  document.getElementById('countDBoys').textContent = allDeliveryBoys.length;
+  document.getElementById('countDBoys').classList.toggle('zero', allDeliveryBoys.length===0);
+  document.getElementById('dboysSub').textContent = allDeliveryBoys.length+' জন নিবন্ধিত';
 
   document.getElementById('statPendingCount').textContent = pending.length;
   document.getElementById('statApprovedCount').textContent = approved.length;
@@ -903,6 +955,87 @@ function deleteZone(id){
     allZones = allZones.filter(function(z){return z.id!==id;});
     renderZones(); updateCounts();
     showToast('Zone মুছে ফেলা হয়েছে','green');
+  }).catch(function(e){ showToast('মুছতে সমস্যা: '+e.message,'red'); });
+}
+
+// ═══ DELIVERY BOYS MANAGEMENT ═══
+function renderDeliveryBoys(){
+  var wrap = document.getElementById('dboysListWrap');
+  if(!wrap) return;
+  if(!allDeliveryBoys.length){
+    wrap.innerHTML = '<div class="empty-state"><div class="empty-icon">🛵</div>'+
+      '<p>এখনো কোনো Delivery Boy যুক্ত করা হয়নি</p></div>';
+    return;
+  }
+  wrap.innerHTML = allDeliveryBoys.map(function(d){
+    var isActive = d.isActive===true || d.isActive==='true';
+    return '<div class="zone-card" style="flex-wrap:wrap;gap:14px">'+
+      '<div class="zone-info">'+
+        '<div class="zone-name">🛵 '+(d.name||'—')+
+          '<span class="zone-source-tag '+(isActive?'from-cm':'')+'">'+
+            (isActive?'✅ Active':'❌ Inactive')+
+          '</span>'+
+        '</div>'+
+        '<div class="zone-meta">'+
+          (d.phone?'📞 '+d.phone+' · ':'')+
+          (d.email?'✉️ '+d.email+' · ':'')+
+          '🏙️ '+(d.city||CITY)+
+        '</div>'+
+        '<div class="zone-meta" style="font-size:.68rem;margin-top:3px;color:var(--muted)">'+
+          'UID: '+d.id+
+        '</div>'+
+      '</div>'+
+      '<div class="zone-actions">'+
+        '<button class="btn-sm '+(isActive?'btn-red':'btn-green')+'" '+
+          'onclick="toggleDeliveryBoy(\''+d.id+'\','+(!isActive)+')">'+(isActive?'❌ Deactivate':'✅ Activate')+'</button>'+
+        '<button class="btn-sm btn-red" onclick="deleteDeliveryBoy(\''+d.id+'\')">🗑️</button>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+function addDeliveryBoy(){
+  var uid = document.getElementById('dbUid').value.trim();
+  var name = document.getElementById('dbName').value.trim();
+  var phone = document.getElementById('dbPhone').value.trim();
+  var email = document.getElementById('dbEmail').value.trim();
+  if(!uid){ showToast('Firebase Auth UID দিন','red'); return; }
+  if(!name){ showToast('নাম দিন','red'); return; }
+  if(!phone){ showToast('Phone number দিন','red'); return; }
+  // Check if UID already exists
+  var exists = allDeliveryBoys.some(function(d){ return d.id===uid; });
+  if(exists){ showToast('এই UID ইতিমধ্যে যুক্ত আছে','red'); return; }
+  db.collection('deliveryBoys').doc(uid).set({
+    name: name, phone: phone, email: email,
+    city: CITY, isActive: true,
+    createdAt: new Date().toISOString()
+  }).then(function(){
+    allDeliveryBoys.push({id:uid, name:name, phone:phone, email:email, city:CITY, isActive:true});
+    renderDeliveryBoys(); updateCounts();
+    document.getElementById('dbUid').value='';
+    document.getElementById('dbName').value='';
+    document.getElementById('dbPhone').value='';
+    document.getElementById('dbEmail').value='';
+    showToast(name+' যুক্ত হয়েছে ✅','green');
+  }).catch(function(e){ showToast('যুক্ত করতে সমস্যা: '+e.message,'red'); });
+}
+
+function toggleDeliveryBoy(id, newActive){
+  db.collection('deliveryBoys').doc(id).update({ isActive: newActive }).then(function(){
+    var d = allDeliveryBoys.find(function(x){ return x.id===id; });
+    if(d) d.isActive = newActive;
+    renderDeliveryBoys();
+    showToast(newActive?'Activate করা হয়েছে ✅':'Deactivate করা হয়েছে','green');
+  }).catch(function(e){ showToast('আপডেট ব্যর্থ: '+e.message,'red'); });
+}
+
+function deleteDeliveryBoy(id){
+  var d = allDeliveryBoys.find(function(x){ return x.id===id; });
+  if(!confirm((d?d.name:'এই Delivery Boy')+' কে মুছবেন? Firebase Auth account আলাদা মুছতে হবে।')) return;
+  db.collection('deliveryBoys').doc(id).delete().then(function(){
+    allDeliveryBoys = allDeliveryBoys.filter(function(x){ return x.id!==id; });
+    renderDeliveryBoys(); updateCounts();
+    showToast('Delivery Boy মুছে ফেলা হয়েছে','green');
   }).catch(function(e){ showToast('মুছতে সমস্যা: '+e.message,'red'); });
 }
 </script>
