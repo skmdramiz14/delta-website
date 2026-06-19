@@ -317,22 +317,29 @@ function initFirebase(){
     auth=firebase.auth(); db=firebase.firestore();
     auth.onAuthStateChanged(function(u){
       if(u){
+        console.log('DELTA DEBUG: User logged in, UID =', u.uid);
         // Check deliveryBoys collection to verify this is a registered delivery boy
         db.collection('deliveryBoys').doc(u.uid).get().then(function(doc){
+          console.log('DELTA DEBUG: doc.exists =', doc.exists, '| doc.id =', doc.id);
           if(doc.exists){
             CU=u; DBProfile=doc.data();
             document.getElementById('dbNameLabel').textContent = DBProfile.name||u.email;
             hideLoading(); showApp();
             loadAllOrders();
           } else {
+            console.log('DELTA DEBUG: Document not found in deliveryBoys for UID:', u.uid);
             auth.signOut();
             hideLoading(); showAuth();
             var err=document.getElementById('loginErr');
             err.textContent='এই account-এর Delivery Panel access নেই।';
             err.style.display='block';
           }
-        }).catch(function(){
+        }).catch(function(e){
+          console.log('DELTA DEBUG: Firestore error =', e.code, e.message);
           auth.signOut(); hideLoading(); showAuth();
+          var err=document.getElementById('loginErr');
+          err.textContent='সমস্যা: '+e.message;
+          err.style.display='block';
         });
       } else {
         hideLoading(); showAuth();
