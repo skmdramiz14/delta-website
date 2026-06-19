@@ -505,6 +505,7 @@ function goTab(tab, btn){
   document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});
   document.getElementById('page-'+tab).classList.add('active');
   btn.classList.add('active');
+  if(tab==='deliveryboys') loadDeliveryBoysAdmin();
 }
 
 // ═══ DATA LOADING ═══
@@ -964,6 +965,18 @@ function deleteZone(id){
 }
 
 // ═══ DELIVERY BOYS MANAGEMENT ═══
+function loadDeliveryBoysAdmin(){
+  db.collection('deliveryBoys').get().then(function(snap){
+    allDeliveryBoys = [];
+    snap.forEach(function(d){
+      allDeliveryBoys.push(Object.assign({id:d.id}, d.data()));
+    });
+    renderDeliveryBoys();
+    updateCounts();
+  }).catch(function(e){
+    showToast('Delivery Boy লোড করতে সমস্যা: '+e.message,'red');
+  });
+}
 function renderDeliveryBoys(){
   var wrap = document.getElementById('dboysListWrap');
   if(!wrap) return;
