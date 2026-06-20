@@ -182,6 +182,30 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 .zone-edit-row input{padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;
   font-size:.8rem;width:120px;}
 
+/* ── RATE SETTINGS BAR ── */
+.rate-settings-bar{background:#fff;border:1.5px dashed var(--border);border-radius:12px;
+  padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.rate-input{width:80px;padding:7px 10px;border:1.5px solid var(--border);border-radius:8px;
+  font-size:.82rem;font-weight:600;}
+
+/* ── RIDER PAYOUT BOX (in order card) ── */
+.payout-box{background:var(--orange-light);border-radius:10px;padding:12px 14px;
+  margin-top:10px;border:1px solid rgba(240,112,24,.2);}
+.payout-box-title{font-size:.74rem;font-weight:700;color:var(--orange);margin-bottom:8px;}
+.maps-link-btn{display:inline-block;font-size:.76rem;font-weight:600;color:var(--blue);
+  text-decoration:none;margin-bottom:10px;background:var(--blue2);padding:6px 12px;border-radius:8px;}
+.maps-link-btn:hover{text-decoration:underline;}
+.payout-input-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+.payout-mini-label{display:block;font-size:.66rem;color:var(--muted);margin-bottom:3px;
+  text-transform:uppercase;letter-spacing:.3px;}
+.payout-input{width:100%;padding:7px 10px;border:1.5px solid var(--border);border-radius:8px;
+  font-size:.82rem;}
+.payout-rate-display, .payout-result{padding:7px 10px;background:#fff;border-radius:8px;
+  font-size:.85rem;font-weight:700;color:var(--navy);text-align:center;border:1px solid var(--border);}
+.payout-result{color:var(--orange);}
+.db-assigned-tag{background:var(--green2);color:var(--green);border-radius:8px;padding:7px 12px;
+  margin-top:8px;font-size:.78rem;font-weight:600;}
+
 .loading-screen{position:fixed;inset:0;background:var(--navy3);display:flex;
   align-items:center;justify-content:center;z-index:1000;}
 .loading-spinner{width:40px;height:40px;border:3px solid rgba(255,255,255,.15);
@@ -272,6 +296,9 @@ button,input,select{font-family:'DM Sans',sans-serif;}
     <button class="tab-btn" id="tab-deliveryboys" onclick="goTab('deliveryboys',this)">
       🛵 Delivery Boys <span class="tab-count zero" id="countDBoys">0</span>
     </button>
+    <button class="tab-btn" id="tab-ordermanagers" onclick="goTab('ordermanagers',this)">
+      🛍️ Order Managers <span class="tab-count zero" id="countOMgrs">0</span>
+    </button>
   </nav>
 
   <div class="content">
@@ -323,6 +350,12 @@ button,input,select{font-family:'DM Sans',sans-serif;}
       </div>
       <div class="sec-head">
         <div class="sec-title">🛍️ সব অর্ডার <small id="ordersSub">সব city, সব seller এর সব অর্ডার একসাথে — সম্পূর্ণ override ক্ষমতা</small></div>
+      </div>
+      <div class="rate-settings-bar">
+        <span style="font-size:.8rem;font-weight:700;color:var(--navy)">🛵 Rider Per-KM Rate:</span>
+        <input type="number" id="perKmRateInput" class="rate-input" placeholder="যেমন: 5" oninput="">
+        <button class="btn-sm btn-orange" onclick="savePerKmRate()">💾 Rate সেভ করুন</button>
+        <span style="font-size:.74rem;color:var(--muted)" id="currentRateDisplay">বর্তমান rate: ₹0/km</span>
       </div>
       <div class="toolbar">
         <input type="text" class="search-input" id="orderSearch" placeholder="🔍 Order ID, shop name, customer name দিয়ে খুঁজুন..." oninput="renderOrders()">
@@ -397,6 +430,37 @@ button,input,select{font-family:'DM Sans',sans-serif;}
       </div>
 
       <div id="dboysListWrap"></div>
+    </div>
+
+    <!-- ═══ ORDER MANAGERS PAGE ═══ -->
+    <div class="page" id="page-ordermanagers">
+      <div class="sec-head">
+        <div class="sec-title">🛍️ Order Managers <small id="omgrsSub">যারা শুধুমাত্র Order status, Cancel, ও Rider Payout handle করবে — Seller approval, Zone pricing, বা Delivery Boy access নেই</small></div>
+      </div>
+
+      <div class="add-zone-card" style="margin-bottom:20px">
+        <div style="font-size:.82rem;font-weight:700;color:var(--navy);margin-bottom:4px">➕ নতুন Order Manager যুক্ত করুন</div>
+        <div style="font-size:.72rem;color:var(--muted);margin-bottom:14px">
+          ⚠️ আগে Firebase Console → Authentication-এ email+password account তৈরি করুন, তারপর সেই UID দিয়ে এখানে যোগ করুন। এই panel-টা <code>order-manager.html</code>-এ গিয়ে ব্যবহার করবে।
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+          <div class="form-group" style="margin-bottom:0">
+            <label>Firebase Auth UID *</label>
+            <input type="text" class="form-input" id="omUid" placeholder="Firebase Console থেকে UID copy করুন">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>নাম *</label>
+            <input type="text" class="form-input" id="omName" placeholder="যেমন: Order Staff 1">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>Email</label>
+            <input type="email" class="form-input" id="omEmail" placeholder="orderstaff@deltaapp.in">
+          </div>
+        </div>
+        <button class="btn-sm btn-orange" onclick="addOrderManager()">➕ যুক্ত করুন</button>
+      </div>
+
+      <div id="omgrsListWrap"></div>
     </div>
 
   </div>
@@ -506,6 +570,7 @@ function goTab(tab, btn){
   document.getElementById('page-'+tab).classList.add('active');
   btn.classList.add('active');
   if(tab==='deliveryboys') loadDeliveryBoysAdmin();
+  if(tab==='ordermanagers') loadOrderManagersAdmin();
 }
 
 // ═══ DATA LOADING ═══
@@ -513,6 +578,7 @@ var allOrders = [];
 var orderFilter = 'all';
 var allZones = [];
 var allDeliveryBoys = [];
+var allOrderManagers = [];
 
 function loadAllData(){
   db.collection('cities').doc(CITY).collection('sellers').get().then(function(snap){
@@ -525,6 +591,8 @@ function loadAllData(){
   }).catch(function(e){
     showToast('বিক্রেতা লোড করতে সমস্যা: '+e.message,'red');
   });
+
+  loadPerKmRate();
 
   db.collection('categoryRequests').get().then(function(snap){
     allRequests = [];
@@ -601,6 +669,8 @@ function updateCounts(){
   document.getElementById('countDBoys').textContent = allDeliveryBoys.length;
   document.getElementById('countDBoys').classList.toggle('zero', allDeliveryBoys.length===0);
   document.getElementById('dboysSub').textContent = allDeliveryBoys.length+' জন নিবন্ধিত';
+  document.getElementById('countOMgrs').textContent = allOrderManagers.length;
+  document.getElementById('countOMgrs').classList.toggle('zero', allOrderManagers.length===0);
 
   document.getElementById('statPendingCount').textContent = pending.length;
   document.getElementById('statApprovedCount').textContent = approved.length;
@@ -794,6 +864,37 @@ function orderCardHTML(o){
     return '<option value="'+s+'"'+(s===status?' selected':'')+'>'+ORDER_STATUS_LABELS[s]+'</option>';
   }).join('');
 
+  // Google Maps directions link: shop address → delivery address
+  var shopAddr = encodeURIComponent(o.shopAddress || o.shopName || '');
+  var custAddr = encodeURIComponent(o.deliveryAddress || '');
+  var mapsUrl = 'https://www.google.com/maps/dir/'+shopAddr+'/'+custAddr;
+
+  var currentDistance = o.deliveryDistance || '';
+  var currentPayout = o.riderPayout || 0;
+  var perKmRate = window._perKmRate || 0;
+
+  var payoutSection = '<div class="payout-box">'+
+    '<div class="payout-box-title">🛵 Rider Payout নির্ধারণ করুন</div>'+
+    '<a href="'+mapsUrl+'" target="_blank" class="maps-link-btn">📍 Google Maps-এ Route দেখুন →</a>'+
+    '<div class="payout-input-row">'+
+      '<div>'+
+        '<label class="payout-mini-label">দূরত্ব (km)</label>'+
+        '<input type="number" step="0.1" class="payout-input" id="dist-'+o.id+'" value="'+currentDistance+'" '+
+          'placeholder="যেমন: 3.5" oninput="calcPayout(\''+o.id+'\')">'+
+      '</div>'+
+      '<div>'+
+        '<label class="payout-mini-label">Rate/km</label>'+
+        '<div class="payout-rate-display">₹'+perKmRate+'</div>'+
+      '</div>'+
+      '<div>'+
+        '<label class="payout-mini-label">মোট Payout</label>'+
+        '<div class="payout-result" id="payoutResult-'+o.id+'">₹'+currentPayout+'</div>'+
+      '</div>'+
+    '</div>'+
+    '<button class="btn-sm btn-blue" style="width:100%;justify-content:center;margin-top:8px" '+
+      'onclick="saveRiderPayout(\''+o.shopId+'\',\''+o.id+'\')">💾 Payout সেভ করুন</button>'+
+  '</div>';
+
   return '<div class="order-card">'+
     '<div class="order-top">'+
       '<div>'+
@@ -814,11 +915,43 @@ function orderCardHTML(o){
       '<div>Order ID<strong style="font-size:.7rem">'+o.id+'</strong></div>'+
       '<div>Shop ID<strong style="font-size:.7rem">'+(o.shopId||'—')+'</strong></div>'+
     '</div>'+
+    (o.deliveryBoyName?'<div class="db-assigned-tag">🛵 '+o.deliveryBoyName+' কে assign করা আছে'+(o.riderPayout?' · Payout: ₹'+o.riderPayout:'')+'</div>':'')+
+    payoutSection+
     '<div class="sc-actions">'+
       '<select class="order-status-sel" onchange="changeOrderStatus(\''+o.shopId+'\',\''+o.id+'\',this.value)">'+statusOptions+'</select>'+
       (status!=='cancelled'?'<button class="btn-sm btn-red" onclick="cancelOrder(\''+o.shopId+'\',\''+o.id+'\')">❌ Order Cancel করুন</button>':'')+
     '</div>'+
   '</div>';
+}
+
+function calcPayout(orderId){
+  var distInput = document.getElementById('dist-'+orderId);
+  var resultEl = document.getElementById('payoutResult-'+orderId);
+  var dist = parseFloat(distInput.value) || 0;
+  var rate = window._perKmRate || 0;
+  var payout = Math.round(dist * rate);
+  resultEl.textContent = '₹'+payout;
+}
+
+function saveRiderPayout(shopId, orderId){
+  var distInput = document.getElementById('dist-'+orderId);
+  var dist = parseFloat(distInput.value) || 0;
+  var rate = window._perKmRate || 0;
+  var payout = Math.round(dist * rate);
+  if(!dist){ showToast('দূরত্ব লিখুন','red'); return; }
+  db.collection('cities').doc(CITY).collection('sellers').doc(shopId)
+    .collection('orders').doc(orderId).update({
+      deliveryDistance: dist,
+      riderPayout: payout,
+      payoutSetAt: new Date().toISOString()
+    }).then(function(){
+      var o = allOrders.find(function(x){return x.id===orderId && x.shopId===shopId;});
+      if(o){ o.deliveryDistance=dist; o.riderPayout=payout; }
+      showToast('Rider payout সেভ হয়েছে: ₹'+payout+' ✅','green');
+      renderOrders();
+    }).catch(function(e){
+      showToast('সেভ ব্যর্থ: '+e.message,'red');
+    });
 }
 
 function renderOrders(){
@@ -1054,6 +1187,110 @@ function deleteDeliveryBoy(id){
     allDeliveryBoys = allDeliveryBoys.filter(function(x){ return x.id!==id; });
     renderDeliveryBoys(); updateCounts();
     showToast('Delivery Boy মুছে ফেলা হয়েছে','green');
+  }).catch(function(e){ showToast('মুছতে সমস্যা: '+e.message,'red'); });
+}
+
+// ═══ RIDER PER-KM RATE SETTINGS ═══
+window._perKmRate = 0;
+
+function loadPerKmRate(){
+  db.collection('cities').doc(CITY).collection('settings').doc('deliverySettings').get()
+    .then(function(doc){
+      if(doc.exists){
+        window._perKmRate = doc.data().perKmRate || 0;
+      }
+      var input = document.getElementById('perKmRateInput');
+      var display = document.getElementById('currentRateDisplay');
+      if(input) input.value = window._perKmRate || '';
+      if(display) display.textContent = 'বর্তমান rate: ₹'+window._perKmRate+'/km';
+    }).catch(function(){});
+}
+
+function savePerKmRate(){
+  var val = parseFloat(document.getElementById('perKmRateInput').value) || 0;
+  if(val<=0){ showToast('সঠিক rate দিন','red'); return; }
+  db.collection('cities').doc(CITY).collection('settings').doc('deliverySettings').set({
+    perKmRate: val,
+    updatedAt: new Date().toISOString()
+  }, {merge:true}).then(function(){
+    window._perKmRate = val;
+    document.getElementById('currentRateDisplay').textContent = 'বর্তমান rate: ₹'+val+'/km';
+    renderOrders();
+    showToast('Per-km rate সেভ হয়েছে: ₹'+val+'/km ✅','green');
+  }).catch(function(e){
+    showToast('সেভ ব্যর্থ: '+e.message,'red');
+  });
+}
+
+// ═══ ORDER MANAGERS MANAGEMENT ═══
+function loadOrderManagersAdmin(){
+  db.collection('orderManagers').get().then(function(snap){
+    allOrderManagers = [];
+    snap.forEach(function(d){ allOrderManagers.push(Object.assign({id:d.id}, d.data())); });
+    renderOrderManagers();
+    updateCounts();
+  }).catch(function(e){
+    showToast('Order Manager লোড করতে সমস্যা: '+e.message,'red');
+  });
+}
+
+function renderOrderManagers(){
+  var wrap = document.getElementById('omgrsListWrap');
+  if(!wrap) return;
+  if(!allOrderManagers.length){
+    wrap.innerHTML = '<div class="empty-state"><div class="empty-icon">🛍️</div>'+
+      '<p>এখনো কোনো Order Manager যুক্ত করা হয়নি</p></div>';
+    return;
+  }
+  wrap.innerHTML = allOrderManagers.map(function(m){
+    return '<div class="zone-card" style="flex-wrap:wrap;gap:14px">'+
+      '<div class="zone-info">'+
+        '<div class="zone-name">🛍️ '+(m.name||'—')+
+          '<span class="zone-source-tag from-cm">✅ Active</span>'+
+        '</div>'+
+        '<div class="zone-meta">'+
+          (m.email?'✉️ '+m.email+' · ':'')+
+          '🏙️ '+(m.city||CITY)+
+        '</div>'+
+        '<div class="zone-meta" style="font-size:.68rem;margin-top:3px;color:var(--muted)">'+
+          'UID: '+m.id+
+        '</div>'+
+      '</div>'+
+      '<div class="zone-actions">'+
+        '<button class="btn-sm btn-red" onclick="deleteOrderManager(\''+m.id+'\')">🗑️ মুছুন</button>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+function addOrderManager(){
+  var uid = document.getElementById('omUid').value.trim();
+  var name = document.getElementById('omName').value.trim();
+  var email = document.getElementById('omEmail').value.trim();
+  if(!uid){ showToast('Firebase Auth UID দিন','red'); return; }
+  if(!name){ showToast('নাম দিন','red'); return; }
+  var exists = allOrderManagers.some(function(m){ return m.id===uid; });
+  if(exists){ showToast('এই UID ইতিমধ্যে যুক্ত আছে','red'); return; }
+  db.collection('orderManagers').doc(uid).set({
+    name: name, email: email, city: CITY,
+    createdAt: new Date().toISOString()
+  }).then(function(){
+    allOrderManagers.push({id:uid, name:name, email:email, city:CITY});
+    renderOrderManagers(); updateCounts();
+    document.getElementById('omUid').value='';
+    document.getElementById('omName').value='';
+    document.getElementById('omEmail').value='';
+    showToast(name+' যুক্ত হয়েছে ✅','green');
+  }).catch(function(e){ showToast('যুক্ত করতে সমস্যা: '+e.message,'red'); });
+}
+
+function deleteOrderManager(id){
+  var m = allOrderManagers.find(function(x){ return x.id===id; });
+  if(!confirm((m?m.name:'এই Order Manager')+' কে মুছবেন? Firebase Auth account আলাদা মুছতে হবে।')) return;
+  db.collection('orderManagers').doc(id).delete().then(function(){
+    allOrderManagers = allOrderManagers.filter(function(x){ return x.id!==id; });
+    renderOrderManagers(); updateCounts();
+    showToast('Order Manager মুছে ফেলা হয়েছে','green');
   }).catch(function(e){ showToast('মুছতে সমস্যা: '+e.message,'red'); });
 }
 </script>
