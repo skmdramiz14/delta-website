@@ -299,6 +299,9 @@ button,input,select{font-family:'DM Sans',sans-serif;}
     <button class="tab-btn" id="tab-ordermanagers" onclick="goTab('ordermanagers',this)">
       🛍️ Order Managers <span class="tab-count zero" id="countOMgrs">0</span>
     </button>
+    <button class="tab-btn" id="tab-citymanagers" onclick="goTab('citymanagers',this)">
+      👤 City Managers <span class="tab-count zero" id="countCMgrs">0</span>
+    </button>
   </nav>
 
   <div class="content">
@@ -463,6 +466,41 @@ button,input,select{font-family:'DM Sans',sans-serif;}
       <div id="omgrsListWrap"></div>
     </div>
 
+    <!-- ═══ CITY MANAGERS PAGE ═══ -->
+    <div class="page" id="page-citymanagers">
+      <div class="sec-head">
+        <div class="sec-title">👤 City Managers <small id="cmgrsSub">যারা Delivery Zones, Seller Support, ও Order overview দেখার access পাবে (city-manager.html)</small></div>
+      </div>
+
+      <div class="add-zone-card" style="margin-bottom:20px">
+        <div style="font-size:.82rem;font-weight:700;color:var(--navy);margin-bottom:4px">➕ নতুন City Manager যুক্ত করুন</div>
+        <div style="font-size:.72rem;color:var(--muted);margin-bottom:14px">
+          ⚠️ আগে Firebase Console → Authentication-এ email+password account তৈরি করুন, তারপর সেই UID দিয়ে এখানে যোগ করুন। এই panel-টা <code>city-manager.html</code>-এ গিয়ে ব্যবহার করবে।
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+          <div class="form-group" style="margin-bottom:0">
+            <label>Firebase Auth UID *</label>
+            <input type="text" class="form-input" id="cmUid" placeholder="Firebase Console থেকে UID copy করুন">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>নাম *</label>
+            <input type="text" class="form-input" id="cmName" placeholder="যেমন: City Manager Manteswar">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>City *</label>
+            <input type="text" class="form-input" id="cmCity" placeholder="manteswar" value="manteswar">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>Email</label>
+            <input type="email" class="form-input" id="cmEmail" placeholder="citymanager@deltaapp.in">
+          </div>
+        </div>
+        <button class="btn-sm btn-orange" onclick="addCityManager()">➕ যুক্ত করুন</button>
+      </div>
+
+      <div id="cmgrsListWrap"></div>
+    </div>
+
   </div>
 </div>
 
@@ -571,6 +609,7 @@ function goTab(tab, btn){
   btn.classList.add('active');
   if(tab==='deliveryboys') loadDeliveryBoysAdmin();
   if(tab==='ordermanagers') loadOrderManagersAdmin();
+  if(tab==='citymanagers') loadCityManagersAdmin();
 }
 
 // ═══ DATA LOADING ═══
@@ -579,6 +618,7 @@ var orderFilter = 'all';
 var allZones = [];
 var allDeliveryBoys = [];
 var allOrderManagers = [];
+var allCityManagers = [];
 
 function loadAllData(){
   db.collection('cities').doc(CITY).collection('sellers').get().then(function(snap){
@@ -671,6 +711,8 @@ function updateCounts(){
   document.getElementById('dboysSub').textContent = allDeliveryBoys.length+' জন নিবন্ধিত';
   document.getElementById('countOMgrs').textContent = allOrderManagers.length;
   document.getElementById('countOMgrs').classList.toggle('zero', allOrderManagers.length===0);
+  document.getElementById('countCMgrs').textContent = allCityManagers.length;
+  document.getElementById('countCMgrs').classList.toggle('zero', allCityManagers.length===0);
 
   document.getElementById('statPendingCount').textContent = pending.length;
   document.getElementById('statApprovedCount').textContent = approved.length;
@@ -1291,6 +1333,80 @@ function deleteOrderManager(id){
     allOrderManagers = allOrderManagers.filter(function(x){ return x.id!==id; });
     renderOrderManagers(); updateCounts();
     showToast('Order Manager মুছে ফেলা হয়েছে','green');
+  }).catch(function(e){ showToast('মুছতে সমস্যা: '+e.message,'red'); });
+}
+
+// ═══ CITY MANAGERS MANAGEMENT ═══
+function loadCityManagersAdmin(){
+  db.collection('cityManagers').get().then(function(snap){
+    allCityManagers = [];
+    snap.forEach(function(d){ allCityManagers.push(Object.assign({id:d.id}, d.data())); });
+    renderCityManagers();
+    updateCounts();
+  }).catch(function(e){
+    showToast('City Manager লোড করতে সমস্যা: '+e.message,'red');
+  });
+}
+
+function renderCityManagers(){
+  var wrap = document.getElementById('cmgrsListWrap');
+  if(!wrap) return;
+  if(!allCityManagers.length){
+    wrap.innerHTML = '<div class="empty-state"><div class="empty-icon">👤</div>'+
+      '<p>এখনো কোনো City Manager যুক্ত করা হয়নি</p></div>';
+    return;
+  }
+  wrap.innerHTML = allCityManagers.map(function(m){
+    return '<div class="zone-card" style="flex-wrap:wrap;gap:14px">'+
+      '<div class="zone-info">'+
+        '<div class="zone-name">👤 '+(m.name||'—')+
+          '<span class="zone-source-tag from-cm">✅ Active</span>'+
+        '</div>'+
+        '<div class="zone-meta">'+
+          (m.email?'✉️ '+m.email+' · ':'')+
+          '🏙️ '+(m.city||CITY)+
+        '</div>'+
+        '<div class="zone-meta" style="font-size:.68rem;margin-top:3px;color:var(--muted)">'+
+          'UID: '+m.id+
+        '</div>'+
+      '</div>'+
+      '<div class="zone-actions">'+
+        '<button class="btn-sm btn-red" onclick="deleteCityManager(\''+m.id+'\')">🗑️ মুছুন</button>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+function addCityManager(){
+  var uid = document.getElementById('cmUid').value.trim();
+  var name = document.getElementById('cmName').value.trim();
+  var city = document.getElementById('cmCity').value.trim() || CITY;
+  var email = document.getElementById('cmEmail').value.trim();
+  if(!uid){ showToast('Firebase Auth UID দিন','red'); return; }
+  if(!name){ showToast('নাম দিন','red'); return; }
+  var exists = allCityManagers.some(function(m){ return m.id===uid; });
+  if(exists){ showToast('এই UID ইতিমধ্যে যুক্ত আছে','red'); return; }
+  db.collection('cityManagers').doc(uid).set({
+    name: name, email: email, city: city,
+    assignedAt: new Date().toISOString(),
+    assignedBy: 'j0KgzF3bRFa1e8kTlJThnStnhLs1'
+  }).then(function(){
+    allCityManagers.push({id:uid, name:name, email:email, city:city});
+    renderCityManagers(); updateCounts();
+    document.getElementById('cmUid').value='';
+    document.getElementById('cmName').value='';
+    document.getElementById('cmEmail').value='';
+    showToast(name+' যুক্ত হয়েছে ✅','green');
+  }).catch(function(e){ showToast('যুক্ত করতে সমস্যা: '+e.message,'red'); });
+}
+
+function deleteCityManager(id){
+  var m = allCityManagers.find(function(x){ return x.id===id; });
+  if(!confirm((m?m.name:'এই City Manager')+' কে মুছবেন? Firebase Auth account আলাদা মুছতে হবে।')) return;
+  db.collection('cityManagers').doc(id).delete().then(function(){
+    allCityManagers = allCityManagers.filter(function(x){ return x.id!==id; });
+    renderCityManagers(); updateCounts();
+    showToast('City Manager মুছে ফেলা হয়েছে','green');
   }).catch(function(e){ showToast('মুছতে সমস্যা: '+e.message,'red'); });
 }
 </script>
