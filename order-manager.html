@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DELTA — Order Manager Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600;700&family=Tiro+Bangla&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --navy:#0a1f35;--navy2:#122840;--navy3:#061526;
+  --orange:#f07018;--orange2:#ff8c3a;--orange-light:#fff4ec;
+  --white:#fff;--cream:#f7f9fc;--sand:#eef2f7;
+  --border:#dde5ef;--muted:#6b7b8d;--charcoal:#1a2535;
+  --green:#1a8a4a;--green2:#e8f7ef;--red:#c0392b;--red2:#ffeaea;
+  --yellow:#f39c12;--yellow2:#fff8e8;--blue:#0984e3;--blue2:#e8f4ff;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charcoal);}
+.bn{font-family:'Tiro Bangla',serif;}
+button,input,select{font-family:'DM Sans',sans-serif;}
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-thumb{background:#c0cdd8;border-radius:3px;}
+
+#authScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,var(--navy3),var(--navy),#1a3050);padding:20px;}
+.auth-box{background:#fff;border-radius:22px;padding:36px;width:100%;max-width:400px;
+  box-shadow:0 24px 70px rgba(0,0,0,.3);}
+.auth-logo{text-align:center;margin-bottom:24px;}
+.auth-logo h1{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:900;
+  color:var(--navy);letter-spacing:2px;}
+.auth-logo h1 em{color:var(--orange);font-style:normal;}
+.auth-logo p{font-size:.78rem;color:var(--muted);margin-top:4px;}
+.form-group{margin-bottom:13px;}
+.form-group label{display:block;font-size:.72rem;font-weight:700;color:var(--muted);
+  margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px;}
+.form-input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:9px;
+  font-size:.875rem;outline:none;transition:border-color .2s;background:var(--cream);}
+.form-input:focus{border-color:var(--orange);background:#fff;}
+.btn-primary{width:100%;padding:13px;background:var(--orange);color:#fff;border:none;
+  border-radius:10px;font-size:.92rem;font-weight:700;cursor:pointer;transition:all .2s;margin-top:4px;}
+.btn-primary:hover{background:var(--orange2);}
+.btn-primary:disabled{opacity:.6;cursor:not-allowed;}
+.auth-err{background:var(--red2);color:var(--red);padding:9px 13px;border-radius:8px;
+  font-size:.8rem;margin-bottom:12px;display:none;}
+
+#appScreen{display:none;min-height:100vh;}
+.topbar{background:var(--navy);padding:0 24px;height:60px;display:flex;
+  align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;
+  box-shadow:0 2px 12px rgba(0,0,0,.15);}
+.tb-logo{display:flex;align-items:center;gap:10px;}
+.tb-logo-mark{width:34px;height:34px;background:var(--orange);border-radius:9px;
+  display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;
+  font-weight:900;color:#fff;font-size:.9rem;flex-shrink:0;}
+.tb-logo-text{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:900;
+  color:#fff;letter-spacing:1px;}
+.tb-logo-text em{color:var(--orange);font-style:normal;}
+.tb-badge{background:rgba(240,112,24,.18);border:1px solid rgba(240,112,24,.35);
+  color:var(--orange2);font-size:.68rem;font-weight:700;padding:3px 10px;border-radius:20px;
+  margin-left:10px;}
+.tb-right{display:flex;align-items:center;gap:12px;}
+.tb-email{font-size:.78rem;color:rgba(255,255,255,.6);}
+.logout-btn{background:rgba(192,57,43,.18);border:none;color:#ff8a80;padding:7px 14px;
+  border-radius:8px;font-size:.78rem;font-weight:600;cursor:pointer;}
+.logout-btn:hover{background:rgba(192,57,43,.32);}
+
+.content{padding:20px;max-width:1100px;margin:0 auto;}
+
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
+.stat-box{background:#fff;border-radius:14px;padding:16px;border:1px solid var(--border);text-align:center;}
+.stat-box strong{display:block;font-size:1.5rem;font-weight:800;color:var(--navy);font-family:'Playfair Display',serif;}
+.stat-box span{font-size:.72rem;color:var(--muted);margin-top:2px;display:block;}
+
+.sec-head{margin-bottom:14px;}
+.sec-title{font-size:1rem;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.sec-title small{font-weight:400;color:var(--muted);font-size:.76rem;}
+
+.rate-settings-bar{background:#fff;border:1.5px dashed var(--border);border-radius:12px;
+  padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+
+.toolbar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center;}
+.search-input{flex:1;min-width:200px;padding:10px 14px;border:1.5px solid var(--border);
+  border-radius:10px;font-size:.85rem;}
+.filter-pill{padding:7px 14px;border-radius:20px;border:1.5px solid var(--border);
+  background:#fff;font-size:.78rem;font-weight:600;cursor:pointer;color:var(--muted);white-space:nowrap;}
+.filter-pill.active{background:var(--navy);color:#fff;border-color:var(--navy);}
+
+.card-grid{display:flex;flex-direction:column;gap:10px;}
+.order-card{background:#fff;border-radius:14px;border:1px solid var(--border);padding:16px 18px;}
+.order-top{display:flex;justify-content:space-between;align-items:flex-start;
+  margin-bottom:10px;flex-wrap:wrap;gap:8px;}
+.order-id-text{font-size:.78rem;font-weight:700;color:var(--orange);}
+.order-shop-name{font-size:.92rem;font-weight:700;color:var(--charcoal);margin-top:2px;}
+.order-meta-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;font-size:.78rem;
+  color:var(--muted);margin-bottom:12px;}
+.order-meta-grid div strong{display:block;color:var(--charcoal);font-size:.82rem;font-weight:600;margin-top:2px;}
+.order-status-sel{padding:7px 12px;border:1.5px solid var(--border);border-radius:8px;
+  font-size:.78rem;font-weight:600;background:#fff;cursor:pointer;}
+.status-badge-pill{font-size:.68rem;font-weight:700;padding:3px 10px;border-radius:20px;white-space:nowrap;}
+.bp-pending{background:var(--yellow2);color:#7d5a00;}
+.bp-confirmed{background:#e8f4ff;color:#0984e3;}
+.bp-preparing{background:#f3e5f5;color:#7b1fa2;}
+.bp-out{background:var(--orange-light);color:var(--orange);}
+.bp-delivered{background:var(--green2);color:var(--green);}
+.bp-cancelled{background:var(--red2);color:var(--red);}
+.sc-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;}
+
+.btn-sm{padding:9px 16px;border-radius:9px;font-size:.8rem;font-weight:700;cursor:pointer;
+  border:none;transition:all .2s;display:inline-flex;align-items:center;gap:6px;}
+.btn-blue{background:var(--blue2);color:var(--blue);}
+.btn-blue:hover{background:var(--blue);color:#fff;}
+.btn-orange{background:var(--orange-light);color:var(--orange);}
+.btn-orange:hover{background:var(--orange);color:#fff;}
+.btn-red{background:var(--red2);color:var(--red);}
+.btn-red:hover{background:var(--red);color:#fff;}
+
+.rate-input{width:80px;padding:7px 10px;border:1.5px solid var(--border);border-radius:8px;
+  font-size:.82rem;font-weight:600;}
+
+.payout-box{background:var(--orange-light);border-radius:10px;padding:12px 14px;
+  margin-top:10px;border:1px solid rgba(240,112,24,.2);}
+.payout-box-title{font-size:.74rem;font-weight:700;color:var(--orange);margin-bottom:8px;}
+.maps-link-btn{display:inline-block;font-size:.76rem;font-weight:600;color:var(--blue);
+  text-decoration:none;margin-bottom:10px;background:var(--blue2);padding:6px 12px;border-radius:8px;}
+.maps-link-btn:hover{text-decoration:underline;}
+.payout-input-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+.payout-mini-label{display:block;font-size:.66rem;color:var(--muted);margin-bottom:3px;
+  text-transform:uppercase;letter-spacing:.3px;}
+.payout-input{width:100%;padding:7px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:.82rem;}
+.payout-rate-display, .payout-result{padding:7px 10px;background:#fff;border-radius:8px;
+  font-size:.85rem;font-weight:700;color:var(--navy);text-align:center;border:1px solid var(--border);}
+.payout-result{color:var(--orange);}
+.db-assigned-tag{background:var(--green2);color:var(--green);border-radius:8px;padding:7px 12px;
+  margin-top:8px;font-size:.78rem;font-weight:600;}
+
+.empty-state{text-align:center;padding:52px 20px;background:#fff;border-radius:16px;border:2px dashed var(--border);}
+.empty-icon{font-size:2.6rem;margin-bottom:12px;}
+.empty-state p{color:var(--muted);font-size:.88rem;}
+
+.loading-screen{position:fixed;inset:0;background:var(--navy3);display:flex;
+  align-items:center;justify-content:center;z-index:1000;}
+.loading-spinner{width:40px;height:40px;border:3px solid rgba(255,255,255,.15);
+  border-top-color:var(--orange);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{color:rgba(255,255,255,.5);font-size:.78rem;text-align:center;}
+
+.toast{position:fixed;bottom:24px;right:24px;background:var(--navy);color:#fff;
+  padding:12px 18px;border-radius:12px;font-size:.82rem;font-weight:500;
+  box-shadow:0 6px 24px rgba(0,0,0,.2);z-index:999;display:none;align-items:center;
+  gap:10px;border-left:3px solid var(--orange);max-width:320px;}
+.toast.show{display:flex;animation:toastIn .3s ease;}
+.toast.green{border-left-color:var(--green);}
+.toast.red{border-left-color:var(--red);}
+@keyframes toastIn{from{transform:translateX(80px);opacity:0}to{transform:translateX(0);opacity:1}}
+
+@media(max-width:768px){
+  .stats-row{grid-template-columns:1fr 1fr;}
+  .order-meta-grid{grid-template-columns:1fr 1fr;}
+  .payout-input-row{grid-template-columns:1fr;}
+  .content{padding:14px;}
+}
+</style>
+</head>
+<body>
+
+<div class="toast" id="toastEl"></div>
+
+<div class="loading-screen" id="loadingScreen">
+  <div>
+    <div class="loading-spinner"></div>
+    <div class="loading-text">DELTA Order Manager Panel লোড হচ্ছে...</div>
+  </div>
+</div>
+
+<!-- ═══ AUTH ═══ -->
+<div id="authScreen" style="display:none">
+  <div class="auth-box">
+    <div class="auth-logo">
+      <h1>△ DELT<em>A</em></h1>
+      <p>Order Manager Panel — শুধুমাত্র অনুমোদিত Order Manager দের জন্য</p>
+    </div>
+    <div class="auth-err" id="loginErr"></div>
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" class="form-input" id="aEmail" placeholder="ordermanager@deltaapp.in">
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" class="form-input" id="aPass" placeholder="••••••••">
+    </div>
+    <button class="btn-primary" id="loginBtn" onclick="doLogin()">🔐 লগইন করুন</button>
+  </div>
+</div>
+
+<!-- ═══ APP ═══ -->
+<div id="appScreen">
+  <header class="topbar">
+    <div class="tb-logo">
+      <div class="tb-logo-mark">D</div>
+      <div class="tb-logo-text">DELT<em>A</em></div>
+      <span class="tb-badge">🛍️ ORDER MANAGER</span>
+    </div>
+    <div class="tb-right">
+      <span class="tb-email" id="managerEmailLabel"></span>
+      <button class="logout-btn" onclick="doLogout()">লগআউট</button>
+    </div>
+  </header>
+
+  <div class="content">
+    <div class="stats-row">
+      <div class="stat-box"><strong id="statOrdersTotal">0</strong><span>সর্বমোট অর্ডার</span></div>
+      <div class="stat-box"><strong id="statOrdersPending">0</strong><span>Pending</span></div>
+      <div class="stat-box"><strong id="statOrdersDelivered">0</strong><span>Delivered</span></div>
+      <div class="stat-box"><strong id="statOrdersValue">₹0</strong><span>সর্বমোট মূল্য</span></div>
+    </div>
+
+    <div class="sec-head">
+      <div class="sec-title">🛍️ সব অর্ডার <small>order দেখা, status পরিবর্তন, cancel, ও rider payout নির্ধারণ — আপনার আওতাভুক্ত কাজ</small></div>
+    </div>
+
+    <div class="rate-settings-bar">
+      <span style="font-size:.8rem;font-weight:700;color:var(--navy)">🛵 Rider Per-KM Rate (শুধু Admin পরিবর্তন করতে পারে):</span>
+      <span style="font-size:.85rem;font-weight:700;color:var(--orange)" id="currentRateDisplay">₹0/km</span>
+    </div>
+
+    <div class="toolbar">
+      <input type="text" class="search-input" id="orderSearch" placeholder="🔍 Order ID, shop name, customer name দিয়ে খুঁজুন..." oninput="renderOrders()">
+      <button class="filter-pill active" data-f="all" onclick="setOrderFilter('all',this)">সব</button>
+      <button class="filter-pill" data-f="pending" onclick="setOrderFilter('pending',this)">⏳ Pending</button>
+      <button class="filter-pill" data-f="confirmed" onclick="setOrderFilter('confirmed',this)">✅ Confirmed</button>
+      <button class="filter-pill" data-f="preparing" onclick="setOrderFilter('preparing',this)">🔄 Preparing</button>
+      <button class="filter-pill" data-f="out" onclick="setOrderFilter('out',this)">🛵 Out for Delivery</button>
+      <button class="filter-pill" data-f="delivered" onclick="setOrderFilter('delivered',this)">📦 Delivered</button>
+      <button class="filter-pill" data-f="cancelled" onclick="setOrderFilter('cancelled',this)">❌ Cancelled</button>
+    </div>
+
+    <div class="card-grid" id="ordersListWrap"></div>
+  </div>
+</div>
+
+<script>
+var FB_CFG = {
+  apiKey:"AIzaSyA6TrrnCMwv1aa1WPqGvTVWlnieB2pVOEU",
+  authDomain:"delta-platform-82fc0.firebaseapp.com",
+  projectId:"delta-platform-82fc0",
+  storageBucket:"delta-platform-82fc0.firebasestorage.app",
+  messagingSenderId:"444904180433",
+  appId:"1:444904180433:web:6706eba4d73a30cd67d3f0"
+};
+var CITY = 'manteswar';
+var auth, db, managerCity = null;
+var allSellers = [], allOrders = [], orderFilter = 'all';
+
+(function(){
+  var scripts=[
+    'https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js',
+    'https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js',
+    'https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js'
+  ];
+  var n=0, done=false, hadErr=false;
+  function tryInit(){
+    if(done)return; done=true;
+    if(hadErr||typeof firebase==='undefined'){
+      hideLoading(); showAuth();
+      showToast('Internet সংযোগ সমস্যা — Page reload করুন','red');
+      return;
+    }
+    initFirebase();
+  }
+  scripts.forEach(function(src){
+    var s=document.createElement('script'); s.src=src;
+    s.onload=function(){ if(++n===scripts.length) tryInit(); };
+    s.onerror=function(){ hadErr=true; if(++n===scripts.length) tryInit(); };
+    document.head.appendChild(s);
+  });
+  setTimeout(tryInit, 8000);
+})();
+
+function initFirebase(){
+  try{
+    firebase.initializeApp(FB_CFG);
+    auth=firebase.auth(); db=firebase.firestore();
+    auth.onAuthStateChanged(function(u){
+      if(u){
+        db.collection('orderManagers').doc(u.uid).get().then(function(doc){
+          if(doc.exists){
+            managerCity = doc.data().city || CITY;
+            document.getElementById('managerEmailLabel').textContent = u.email;
+            hideLoading(); showApp();
+            loadPerKmRate();
+            loadAllOrders();
+          } else {
+            auth.signOut(); hideLoading(); showAuth();
+            var err=document.getElementById('loginErr');
+            err.textContent='এই account-এর Order Manager Panel access নেই।';
+            err.style.display='block';
+          }
+        }).catch(function(e){
+          auth.signOut(); hideLoading(); showAuth();
+          var err=document.getElementById('loginErr');
+          err.textContent='সমস্যা: '+e.message;
+          err.style.display='block';
+        });
+      } else {
+        hideLoading(); showAuth();
+      }
+    });
+  }catch(e){ hideLoading(); showAuth(); }
+}
+
+function hideLoading(){ document.getElementById('loadingScreen').style.display='none'; }
+function showAuth(){ document.getElementById('authScreen').style.display='flex'; document.getElementById('appScreen').style.display='none'; }
+function showApp(){ document.getElementById('authScreen').style.display='none'; document.getElementById('appScreen').style.display='block'; }
+function showToast(msg,type){
+  var e=document.getElementById('toastEl'); e.textContent=msg;
+  e.className='toast show '+(type||''); clearTimeout(e._t);
+  e._t=setTimeout(function(){e.className='toast';},3200);
+}
+
+function doLogin(){
+  var e=document.getElementById('aEmail').value.trim();
+  var p=document.getElementById('aPass').value;
+  var err=document.getElementById('loginErr'); err.style.display='none';
+  if(!e||!p){err.textContent='Email ও Password দিন।';err.style.display='block';return;}
+  var btn=document.getElementById('loginBtn'); btn.disabled=true; btn.textContent='লগইন হচ্ছে...';
+  auth.signInWithEmailAndPassword(e,p).catch(function(er){
+    var msgs={
+      'auth/user-not-found':'Account পাওয়া যায়নি',
+      'auth/wrong-password':'পাসওয়ার্ড ভুল',
+      'auth/invalid-credential':'Email বা পাসওয়ার্ড ভুল'
+    };
+    err.textContent=msgs[er.code]||er.message; err.style.display='block';
+    btn.disabled=false; btn.textContent='🔐 লগইন করুন';
+  }).then(function(){
+    btn.disabled=false; btn.textContent='🔐 লগইন করুন';
+  });
+}
+
+function doLogout(){
+  if(!confirm('লগআউট করবেন?'))return;
+  auth.signOut();
+}
+
+// ═══ DATA LOADING ═══
+function loadAllOrders(){
+  db.collection('cities').doc(managerCity).collection('sellers').get().then(function(snap){
+    allSellers = [];
+    snap.forEach(function(d){ allSellers.push(Object.assign({id:d.id}, d.data())); });
+    allOrders = [];
+    var proms = allSellers.map(function(s){
+      return db.collection('cities').doc(managerCity).collection('sellers').doc(s.id)
+        .collection('orders').get().then(function(oSnap){
+          oSnap.forEach(function(d){
+            allOrders.push(Object.assign({id:d.id, shopId:s.id, shopName:s.shopName}, d.data()));
+          });
+        }).catch(function(){});
+    });
+    Promise.all(proms).then(function(){
+      allOrders.sort(function(a,b){ return new Date(b.createdAt||0)-new Date(a.createdAt||0); });
+      renderOrders();
+      updateCounts();
+    });
+  }).catch(function(e){ showToast('লোড সমস্যা: '+e.message,'red'); });
+}
+
+function loadPerKmRate(){
+  db.collection('cities').doc(managerCity).collection('settings').doc('deliverySettings').get()
+    .then(function(doc){
+      var rate = doc.exists ? (doc.data().perKmRate||0) : 0;
+      window._perKmRate = rate;
+      document.getElementById('currentRateDisplay').textContent = '₹'+rate+'/km';
+    }).catch(function(){});
+}
+
+function updateCounts(){
+  var pendingOrders = allOrders.filter(function(o){return o.status==='pending';});
+  var deliveredOrders = allOrders.filter(function(o){return o.status==='delivered';});
+  var totalValue = allOrders.reduce(function(sum,o){return sum+(o.total||0);},0);
+  document.getElementById('statOrdersTotal').textContent = allOrders.length;
+  document.getElementById('statOrdersPending').textContent = pendingOrders.length;
+  document.getElementById('statOrdersDelivered').textContent = deliveredOrders.length;
+  document.getElementById('statOrdersValue').textContent = '₹'+totalValue.toLocaleString('en-IN');
+}
+
+// ═══ ORDER MANAGEMENT (same feature set as admin.html's Order Management tab) ═══
+var ORDER_STATUS_LABELS = {
+  pending:'⏳ Pending', confirmed:'✅ Confirmed', preparing:'🔄 Preparing',
+  out:'🛵 Out for Delivery', delivered:'📦 Delivered', cancelled:'❌ Cancelled'
+};
+var ORDER_STATUS_BADGE_CLASS = {
+  pending:'bp-pending', confirmed:'bp-confirmed', preparing:'bp-preparing',
+  out:'bp-out', delivered:'bp-delivered', cancelled:'bp-cancelled'
+};
+
+function setOrderFilter(f, btn){
+  orderFilter = f;
+  document.querySelectorAll('.filter-pill').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  renderOrders();
+}
+
+function orderCardHTML(o){
+  var status = o.status || 'pending';
+  var badgeClass = ORDER_STATUS_BADGE_CLASS[status] || 'bp-pending';
+  var badgeLabel = ORDER_STATUS_LABELS[status] || status;
+  var time = o.createdAt ? new Date(o.createdAt).toLocaleDateString('bn-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) : '—';
+  var statusOptions = Object.keys(ORDER_STATUS_LABELS).map(function(s){
+    return '<option value="'+s+'"'+(s===status?' selected':'')+'>'+ORDER_STATUS_LABELS[s]+'</option>';
+  }).join('');
+
+  var shopAddr = encodeURIComponent(o.shopAddress || o.shopName || '');
+  var custAddr = encodeURIComponent(o.deliveryAddress || '');
+  var mapsUrl = 'https://www.google.com/maps/dir/'+shopAddr+'/'+custAddr;
+
+  var currentDistance = o.deliveryDistance || '';
+  var currentPayout = o.riderPayout || 0;
+  var perKmRate = window._perKmRate || 0;
+
+  var payoutSection = '<div class="payout-box">'+
+    '<div class="payout-box-title">🛵 Rider Payout নির্ধারণ করুন</div>'+
+    '<a href="'+mapsUrl+'" target="_blank" class="maps-link-btn">📍 Google Maps-এ Route দেখুন →</a>'+
+    '<div class="payout-input-row">'+
+      '<div>'+
+        '<label class="payout-mini-label">দূরত্ব (km)</label>'+
+        '<input type="number" step="0.1" class="payout-input" id="dist-'+o.id+'" value="'+currentDistance+'" '+
+          'placeholder="যেমন: 3.5" oninput="calcPayout(\''+o.id+'\')">'+
+      '</div>'+
+      '<div>'+
+        '<label class="payout-mini-label">Rate/km</label>'+
+        '<div class="payout-rate-display">₹'+perKmRate+'</div>'+
+      '</div>'+
+      '<div>'+
+        '<label class="payout-mini-label">মোট Payout</label>'+
+        '<div class="payout-result" id="payoutResult-'+o.id+'">₹'+currentPayout+'</div>'+
+      '</div>'+
+    '</div>'+
+    '<button class="btn-sm btn-blue" style="width:100%;justify-content:center;margin-top:8px" '+
+      'onclick="saveRiderPayout(\''+o.shopId+'\',\''+o.id+'\')">💾 Payout সেভ করুন</button>'+
+  '</div>';
+
+  return '<div class="order-card">'+
+    '<div class="order-top">'+
+      '<div>'+
+        '<div class="order-id-text">#'+o.id.slice(-6).toUpperCase()+'</div>'+
+        '<div class="order-shop-name">🏪 '+(o.shopName||'—')+'</div>'+
+      '</div>'+
+      '<span class="status-badge-pill '+badgeClass+'">'+badgeLabel+'</span>'+
+    '</div>'+
+    '<div class="order-meta-grid">'+
+      '<div>গ্রাহক<strong>'+(o.customerName||'—')+'</strong></div>'+
+      '<div>পণ্য<strong>'+(o.items||'—')+'</strong></div>'+
+      '<div>মূল্য<strong>₹'+(o.total||0).toLocaleString('en-IN')+'</strong></div>'+
+      '<div>Payment<strong>'+(o.paymentMethod==='cod'?'Cash on Delivery':(o.paymentMethod||'—'))+'</strong></div>'+
+    '</div>'+
+    '<div class="order-meta-grid" style="margin-top:-4px">'+
+      '<div>ঠিকানা<strong style="font-size:.76rem">'+(o.deliveryAddress||'—')+'</strong></div>'+
+      '<div>অর্ডারের সময়<strong>'+time+'</strong></div>'+
+      '<div>Order ID<strong style="font-size:.7rem">'+o.id+'</strong></div>'+
+      '<div>Shop ID<strong style="font-size:.7rem">'+(o.shopId||'—')+'</strong></div>'+
+    '</div>'+
+    (o.deliveryBoyName?'<div class="db-assigned-tag">🛵 '+o.deliveryBoyName+' কে assign করা আছে'+(o.riderPayout?' · Payout: ₹'+o.riderPayout:'')+'</div>':'')+
+    payoutSection+
+    '<div class="sc-actions">'+
+      '<select class="order-status-sel" onchange="changeOrderStatus(\''+o.shopId+'\',\''+o.id+'\',this.value)">'+statusOptions+'</select>'+
+      (status!=='cancelled'?'<button class="btn-sm btn-red" onclick="cancelOrder(\''+o.shopId+'\',\''+o.id+'\')">❌ Order Cancel করুন</button>':'')+
+    '</div>'+
+  '</div>';
+}
+
+function calcPayout(orderId){
+  var distInput = document.getElementById('dist-'+orderId);
+  var resultEl = document.getElementById('payoutResult-'+orderId);
+  var dist = parseFloat(distInput.value) || 0;
+  var rate = window._perKmRate || 0;
+  var payout = Math.round(dist * rate);
+  resultEl.textContent = '₹'+payout;
+}
+
+function saveRiderPayout(shopId, orderId){
+  var distInput = document.getElementById('dist-'+orderId);
+  var dist = parseFloat(distInput.value) || 0;
+  var rate = window._perKmRate || 0;
+  var payout = Math.round(dist * rate);
+  if(!dist){ showToast('দূরত্ব লিখুন','red'); return; }
+  db.collection('cities').doc(managerCity).collection('sellers').doc(shopId)
+    .collection('orders').doc(orderId).update({
+      deliveryDistance: dist,
+      riderPayout: payout,
+      payoutSetAt: new Date().toISOString(),
+      payoutSetByOrderManager: true
+    }).then(function(){
+      var o = allOrders.find(function(x){return x.id===orderId && x.shopId===shopId;});
+      if(o){ o.deliveryDistance=dist; o.riderPayout=payout; }
+      showToast('Rider payout সেভ হয়েছে: ₹'+payout+' ✅','green');
+      renderOrders();
+    }).catch(function(e){
+      showToast('সেভ ব্যর্থ: '+e.message,'red');
+    });
+}
+
+function renderOrders(){
+  var wrap = document.getElementById('ordersListWrap');
+  var search = (document.getElementById('orderSearch').value||'').toLowerCase().trim();
+  var filtered = allOrders.filter(function(o){
+    var status = o.status || 'pending';
+    if(orderFilter!=='all' && status!==orderFilter) return false;
+    if(search){
+      var hay = [o.id, (o.shopName||''), (o.customerName||'')].join(' ').toLowerCase();
+      if(hay.indexOf(search)===-1) return false;
+    }
+    return true;
+  });
+  if(!filtered.length){
+    wrap.innerHTML = '<div class="empty-state"><div class="empty-icon">🛍️</div>'+
+      '<p>কোনো অর্ডার পাওয়া যায়নি</p></div>';
+    return;
+  }
+  wrap.innerHTML = filtered.map(orderCardHTML).join('');
+}
+
+function changeOrderStatus(shopId, orderId, newStatus){
+  if(!confirm('Order status "'+ORDER_STATUS_LABELS[newStatus]+'" এ পরিবর্তন করতে চান?')) return;
+  db.collection('cities').doc(managerCity).collection('sellers').doc(shopId)
+    .collection('orders').doc(orderId).update({
+      status: newStatus,
+      updatedAt: new Date().toISOString(),
+      statusChangedByOrderManager: true
+    }).then(function(){
+      var o = allOrders.find(function(x){return x.id===orderId && x.shopId===shopId;});
+      if(o) o.status = newStatus;
+      renderOrders();
+      updateCounts();
+      showToast('Order status আপডেট হয়েছে ✅','green');
+    }).catch(function(e){
+      showToast('আপডেট ব্যর্থ: '+e.message,'red');
+      renderOrders();
+    });
+}
+
+function cancelOrder(shopId, orderId){
+  if(!confirm('এই order সত্যিই Cancel করতে চান? এটা ফিরিয়ে আনা যাবে না।')) return;
+  db.collection('cities').doc(managerCity).collection('sellers').doc(shopId)
+    .collection('orders').doc(orderId).update({
+      status: 'cancelled',
+      updatedAt: new Date().toISOString(),
+      cancelledByOrderManager: true
+    }).then(function(){
+      var o = allOrders.find(function(x){return x.id===orderId && x.shopId===shopId;});
+      if(o) o.status = 'cancelled';
+      renderOrders();
+      updateCounts();
+      showToast('Order cancel করা হয়েছে','green');
+    }).catch(function(e){
+      showToast('Cancel ব্যর্থ: '+e.message,'red');
+    });
+}
+</script>
+</body>
+</html>
