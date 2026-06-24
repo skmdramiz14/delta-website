@@ -302,6 +302,9 @@ button,input,select{font-family:'DM Sans',sans-serif;}
     <button class="tab-btn" id="tab-citymanagers" onclick="goTab('citymanagers',this)">
       👤 City Managers <span class="tab-count zero" id="countCMgrs">0</span>
     </button>
+    <button class="tab-btn" id="tab-bazaar" onclick="goTab('bazaar',this)">
+      🛍️ Bazaar Requests <span class="tab-count zero" id="countBazaar">0</span>
+    </button>
   </nav>
 
   <div class="content">
@@ -501,6 +504,75 @@ button,input,select{font-family:'DM Sans',sans-serif;}
       <div id="cmgrsListWrap"></div>
     </div>
 
+    <!-- ═══ BAZAAR REQUESTS PAGE ═══ -->
+    <div class="page" id="page-bazaar">
+
+      <!-- CATALOG MANAGEMENT -->
+      <div class="sec-head" style="margin-bottom:10px">
+        <div class="sec-title">🗂️ Bazaar Catalog <small>bazaar.html-এ যে product cards দেখায় — এখান থেকে add, edit, delete করুন</small></div>
+      </div>
+      <div class="add-zone-card" style="margin-bottom:16px">
+        <div style="font-size:.82rem;font-weight:700;color:var(--navy);margin-bottom:12px">➕ নতুন Catalog Item যুক্ত করুন</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">
+          <div class="form-group" style="margin-bottom:0">
+            <label>পণ্যের নাম *</label>
+            <input type="text" class="form-input" id="catName" placeholder="যেমন: ব্র্যান্ডেড হেডফোন">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>Icon (emoji)</label>
+            <input type="text" class="form-input" id="catIcon" placeholder="যেমন: 🎧" maxlength="4">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>Category</label>
+            <input type="text" class="form-input" id="catCategory" placeholder="যেমন: Electronics">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>MSRP (₹) — Market দাম</label>
+            <input type="number" class="form-input" id="catMsrp" placeholder="যেমন: 2499">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>আনুমানিক দাম থেকে (₹)</label>
+            <input type="number" class="form-input" id="catEstMin" placeholder="যেমন: 1999">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>আনুমানিক দাম পর্যন্ত (₹)</label>
+            <input type="number" class="form-input" id="catEstMax" placeholder="যেমন: 2199">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>ডেলিভারি সময়</label>
+            <input type="text" class="form-input" id="catEta" placeholder="যেমন: 48-72 ঘণ্টা">
+          </div>
+        </div>
+        <button class="btn-sm btn-orange" onclick="addCatalogItem()">➕ Catalog-এ যুক্ত করুন</button>
+      </div>
+      <div id="catalogAdminWrap" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-bottom:28px"></div>
+
+      <!-- DIVIDER -->
+      <div style="border-top:2px solid var(--border);margin:10px 0 20px;"></div>
+
+      <!-- REQUESTS SECTION -->
+      <div class="stats-row">
+        <div class="stat-box"><strong id="statBazaarTotal">0</strong><span>সর্বমোট অনুরোধ</span></div>
+        <div class="stat-box"><strong id="statBazaarReceived">0</strong><span>নতুন</span></div>
+        <div class="stat-box"><strong id="statBazaarQuoted">0</strong><span>দাম দেওয়া হয়েছে</span></div>
+        <div class="stat-box"><strong id="statBazaarDelivered">0</strong><span>ডেলিভার হয়েছে</span></div>
+      </div>
+      <div class="sec-head">
+        <div class="sec-title">🛍️ DELTA Bazaar — পণ্যের অনুরোধ <small>গ্রাহকের পাঠানো custom request, দাম যাচাই করে status update করুন</small></div>
+      </div>
+      <div class="toolbar">
+        <input type="text" class="search-input" id="bazaarSearch" placeholder="🔍 পণ্যের নাম, গ্রাহকের নাম দিয়ে খুঁজুন..." oninput="renderBazaarRequests()">
+        <button class="filter-pill active" data-f="all" onclick="setBazaarFilter('all',this)">সব</button>
+        <button class="filter-pill" data-f="received" onclick="setBazaarFilter('received',this)">🟡 নতুন</button>
+        <button class="filter-pill" data-f="quoted" onclick="setBazaarFilter('quoted',this)">💬 দাম দেওয়া</button>
+        <button class="filter-pill" data-f="confirmed" onclick="setBazaarFilter('confirmed',this)">✅ নিশ্চিত</button>
+        <button class="filter-pill" data-f="in_transit" onclick="setBazaarFilter('in_transit',this)">🚚 আসছে</button>
+        <button class="filter-pill" data-f="delivered" onclick="setBazaarFilter('delivered',this)">📦 ডেলিভার</button>
+        <button class="filter-pill" data-f="cancelled" onclick="setBazaarFilter('cancelled',this)">❌ বাতিল</button>
+      </div>
+      <div class="card-grid" id="bazaarListWrap"></div>
+    </div>
+
   </div>
 </div>
 
@@ -610,6 +682,7 @@ function goTab(tab, btn){
   if(tab==='deliveryboys') loadDeliveryBoysAdmin();
   if(tab==='ordermanagers') loadOrderManagersAdmin();
   if(tab==='citymanagers') loadCityManagersAdmin();
+  if(tab==='bazaar') loadBazaarRequestsAdmin();
 }
 
 // ═══ DATA LOADING ═══
@@ -619,6 +692,8 @@ var allZones = [];
 var allDeliveryBoys = [];
 var allOrderManagers = [];
 var allCityManagers = [];
+var allBazaarRequests = [];
+var bazaarFilter = 'all';
 
 function loadAllData(){
   db.collection('cities').doc(CITY).collection('sellers').get().then(function(snap){
@@ -713,6 +788,8 @@ function updateCounts(){
   document.getElementById('countOMgrs').classList.toggle('zero', allOrderManagers.length===0);
   document.getElementById('countCMgrs').textContent = allCityManagers.length;
   document.getElementById('countCMgrs').classList.toggle('zero', allCityManagers.length===0);
+  document.getElementById('countBazaar').textContent = allBazaarRequests.filter(function(r){return r.status==='received';}).length;
+  document.getElementById('countBazaar').classList.toggle('zero', allBazaarRequests.filter(function(r){return r.status==='received';}).length===0);
 
   document.getElementById('statPendingCount').textContent = pending.length;
   document.getElementById('statApprovedCount').textContent = approved.length;
@@ -1408,6 +1485,298 @@ function deleteCityManager(id){
     renderCityManagers(); updateCounts();
     showToast('City Manager মুছে ফেলা হয়েছে','green');
   }).catch(function(e){ showToast('মুছতে সমস্যা: '+e.message,'red'); });
+}
+
+// ═══ DELTA BAZAAR REQUESTS MANAGEMENT ═══
+var BAZAAR_STATUS_LABELS_ADMIN = {
+  received:'🟡 নতুন', quoted:'💬 দাম দেওয়া হয়েছে', confirmed:'✅ নিশ্চিত হয়েছে',
+  in_transit:'🚚 শহর থেকে আসছে', delivered:'📦 ডেলিভার হয়েছে', cancelled:'❌ বাতিল'
+};
+var BAZAAR_BADGE_CLASS = {
+  received:'bp-pending', quoted:'bp-confirmed', confirmed:'bp-preparing',
+  in_transit:'bp-out', delivered:'bp-delivered', cancelled:'bp-cancelled'
+};
+
+function loadBazaarRequestsAdmin(){
+  // Load catalog items first
+  loadCatalogAdmin();
+  // Then load requests
+  db.collection('cities').doc(CITY).collection('bazaarRequests').get().then(function(snap){
+    allBazaarRequests = [];
+    snap.forEach(function(d){ allBazaarRequests.push(Object.assign({id:d.id}, d.data())); });
+    allBazaarRequests.sort(function(a,b){ return new Date(b.createdAt||0) - new Date(a.createdAt||0); });
+    renderBazaarRequests();
+    updateBazaarStats();
+    updateCounts();
+  }).catch(function(e){
+    showToast('Bazaar request লোড করতে সমস্যা: '+e.message,'red');
+  });
+}
+
+function updateBazaarStats(){
+  document.getElementById('statBazaarTotal').textContent = allBazaarRequests.length;
+  document.getElementById('statBazaarReceived').textContent = allBazaarRequests.filter(function(r){return r.status==='received';}).length;
+  document.getElementById('statBazaarQuoted').textContent = allBazaarRequests.filter(function(r){return r.status==='quoted';}).length;
+  document.getElementById('statBazaarDelivered').textContent = allBazaarRequests.filter(function(r){return r.status==='delivered';}).length;
+}
+
+function setBazaarFilter(f, btn){
+  bazaarFilter = f;
+  document.querySelectorAll('#page-bazaar .filter-pill').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  renderBazaarRequests();
+}
+
+function bazaarCardHTML(r){
+  var status = r.status || 'received';
+  var badgeClass = BAZAAR_BADGE_CLASS[status] || 'bp-pending';
+  var badgeLabel = BAZAAR_STATUS_LABELS_ADMIN[status] || status;
+  var time = r.createdAt ? new Date(r.createdAt).toLocaleDateString('bn-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) : '—';
+  var statusOptions = Object.keys(BAZAAR_STATUS_LABELS_ADMIN).map(function(s){
+    return '<option value="'+s+'"'+(s===status?' selected':'')+'>'+BAZAAR_STATUS_LABELS_ADMIN[s]+'</option>';
+  }).join('');
+  var imgBlock = r.imageUrl ? '<img src="'+r.imageUrl+'" style="width:100%;max-width:160px;border-radius:8px;margin-bottom:10px;display:block">' : '';
+  var budgetText = (r.budgetMin||r.budgetMax) ? '₹'+(r.budgetMin||0)+' - ₹'+(r.budgetMax||0) : '—';
+
+  return '<div class="order-card">'+
+    '<div class="order-top">'+
+      '<div>'+
+        '<div class="order-id-text">#'+r.id.slice(-6).toUpperCase()+'</div>'+
+        '<div class="order-shop-name">🛍️ '+r.itemName+'</div>'+
+      '</div>'+
+      '<span class="status-badge-pill '+badgeClass+'">'+badgeLabel+'</span>'+
+    '</div>'+
+    imgBlock+
+    (r.description ? '<div style="font-size:.82rem;color:var(--muted);margin-bottom:10px">'+r.description+'</div>' : '')+
+    '<div class="order-meta-grid">'+
+      '<div>গ্রাহক<strong>'+(r.customerName||'—')+'</strong></div>'+
+      '<div>ফোন<strong>'+(r.customerPhone||'—')+'</strong></div>'+
+      '<div>বাজেট<strong>'+budgetText+'</strong></div>'+
+      '<div>সময়<strong style="font-size:.76rem">'+time+'</strong></div>'+
+    '</div>'+
+    '<div style="background:var(--sand);border-radius:10px;padding:12px 14px;margin-top:8px">'+
+      '<div style="font-size:.72rem;font-weight:700;color:var(--muted);margin-bottom:8px">💵 চূড়ান্ত দাম ও নোট সেট করুন</div>'+
+      '<div style="display:grid;grid-template-columns:1fr 2fr;gap:8px;margin-bottom:8px">'+
+        '<input type="number" id="quote-'+r.id+'" class="form-input" placeholder="দাম (₹)" value="'+(r.quotedPrice||'')+'" style="padding:8px 10px;font-size:.8rem">'+
+        '<input type="text" id="notes-'+r.id+'" class="form-input" placeholder="নোট (যেমন: ডেলিভারি সময়)" value="'+(r.adminNotes||'')+'" style="padding:8px 10px;font-size:.8rem">'+
+      '</div>'+
+      '<button class="btn-sm btn-blue" style="width:100%;justify-content:center" onclick="saveBazaarQuote(\''+r.id+'\')">💾 দাম সেভ করুন</button>'+
+    '</div>'+
+    '<div class="sc-actions">'+
+      '<select class="order-status-sel" onchange="changeBazaarStatus(\''+r.id+'\',this.value)">'+statusOptions+'</select>'+
+    '</div>'+
+  '</div>';
+}
+
+function renderBazaarRequests(){
+  var wrap = document.getElementById('bazaarListWrap');
+  var search = (document.getElementById('bazaarSearch').value||'').toLowerCase().trim();
+  var filtered = allBazaarRequests.filter(function(r){
+    var status = r.status || 'received';
+    if(bazaarFilter!=='all' && status!==bazaarFilter) return false;
+    if(search){
+      var hay = [(r.itemName||''), (r.customerName||'')].join(' ').toLowerCase();
+      if(hay.indexOf(search)===-1) return false;
+    }
+    return true;
+  });
+  if(!filtered.length){
+    wrap.innerHTML = '<div class="empty-state"><div class="empty-icon">🛍️</div>'+
+      '<p>কোনো অনুরোধ পাওয়া যায়নি</p></div>';
+    return;
+  }
+  wrap.innerHTML = filtered.map(bazaarCardHTML).join('');
+}
+
+function saveBazaarQuote(id){
+  var price = parseFloat(document.getElementById('quote-'+id).value) || 0;
+  var notes = document.getElementById('notes-'+id).value.trim();
+  db.collection('cities').doc(CITY).collection('bazaarRequests').doc(id).update({
+    quotedPrice: price,
+    adminNotes: notes,
+    status: price > 0 ? 'quoted' : 'received',
+    updatedAt: new Date().toISOString()
+  }).then(function(){
+    var r = allBazaarRequests.find(function(x){return x.id===id;});
+    if(r){ r.quotedPrice = price; r.adminNotes = notes; if(price>0) r.status='quoted'; }
+    renderBazaarRequests();
+    updateBazaarStats();
+    updateCounts();
+    showToast('দাম সেভ হয়েছে ✅','green');
+  }).catch(function(e){
+    showToast('সেভ ব্যর্থ: '+e.message,'red');
+  });
+}
+
+function changeBazaarStatus(id, newStatus){
+  db.collection('cities').doc(CITY).collection('bazaarRequests').doc(id).update({
+    status: newStatus,
+    updatedAt: new Date().toISOString()
+  }).then(function(){
+    var r = allBazaarRequests.find(function(x){return x.id===id;});
+    if(r) r.status = newStatus;
+    renderBazaarRequests();
+    updateBazaarStats();
+    updateCounts();
+    showToast('Status আপডেট হয়েছে ✅','green');
+  }).catch(function(e){
+    showToast('আপডেট ব্যর্থ: '+e.message,'red');
+    renderBazaarRequests();
+  });
+}
+
+// ═══ BAZAAR CATALOG MANAGEMENT ═══
+var allCatalogItems = [];
+
+function loadCatalogAdmin(){
+  db.collection('cities').doc(CITY).collection('bazaarCatalog').get().then(function(snap){
+    allCatalogItems = [];
+    snap.forEach(function(d){ allCatalogItems.push(Object.assign({id:d.id}, d.data())); });
+    allCatalogItems.sort(function(a,b){ return new Date(a.createdAt||0) - new Date(b.createdAt||0); });
+    renderCatalogAdmin();
+  }).catch(function(e){
+    showToast('Catalog লোড করতে সমস্যা: '+e.message,'red');
+  });
+}
+
+function renderCatalogAdmin(){
+  var wrap = document.getElementById('catalogAdminWrap');
+  if(!wrap) return;
+  if(!allCatalogItems.length){
+    wrap.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">🗂️</div>'+
+      '<p>এখনো কোনো catalog item যুক্ত করা হয়নি</p></div>';
+    return;
+  }
+  wrap.innerHTML = allCatalogItems.map(function(item){
+    var activeClass = item.isActive !== false ? 'bp-delivered' : 'bp-cancelled';
+    var activeLabel = item.isActive !== false ? '✅ Active' : '❌ Inactive';
+    if(item._editing){
+      return '<div class="order-card" id="catcard-'+item.id+'" style="border:2px solid var(--orange)">'+
+        '<div style="font-size:.76rem;font-weight:700;color:var(--orange);margin-bottom:10px">✏️ সম্পাদনা করুন</div>'+
+        '<div class="form-group"><label>পণ্যের নাম *</label>'+
+          '<input type="text" class="form-input" id="edit-name-'+item.id+'" value="'+(item.name||'')+'" style="padding:8px 10px;font-size:.82rem"></div>'+
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'+
+          '<div class="form-group" style="margin-bottom:0"><label>Icon (emoji)</label>'+
+            '<input type="text" class="form-input" id="edit-icon-'+item.id+'" value="'+(item.icon||'')+'" maxlength="4" style="padding:8px 10px;font-size:.82rem"></div>'+
+          '<div class="form-group" style="margin-bottom:0"><label>MSRP (₹)</label>'+
+            '<input type="number" class="form-input" id="edit-msrp-'+item.id+'" value="'+(item.msrp||'')+'" style="padding:8px 10px;font-size:.82rem"></div>'+
+          '<div class="form-group" style="margin-bottom:0"><label>দাম থেকে (₹)</label>'+
+            '<input type="number" class="form-input" id="edit-estMin-'+item.id+'" value="'+(item.estMin||'')+'" style="padding:8px 10px;font-size:.82rem"></div>'+
+          '<div class="form-group" style="margin-bottom:0"><label>দাম পর্যন্ত (₹)</label>'+
+            '<input type="number" class="form-input" id="edit-estMax-'+item.id+'" value="'+(item.estMax||'')+'" style="padding:8px 10px;font-size:.82rem"></div>'+
+        '</div>'+
+        '<div class="form-group" style="margin-top:8px"><label>ডেলিভারি সময়</label>'+
+          '<input type="text" class="form-input" id="edit-eta-'+item.id+'" value="'+(item.eta||'')+'" style="padding:8px 10px;font-size:.82rem"></div>'+
+        '<div style="display:flex;gap:8px;margin-top:6px">'+
+          '<button class="btn-sm btn-orange" style="flex:1;justify-content:center" onclick="saveCatalogEdit(\''+item.id+'\')">💾 সেভ করুন</button>'+
+          '<button class="btn-sm" style="background:var(--sand);color:var(--muted)" onclick="cancelCatalogEdit(\''+item.id+'\')">বাতিল</button>'+
+        '</div>'+
+      '</div>';
+    }
+    return '<div class="order-card" id="catcard-'+item.id+'">'+
+      '<div class="order-top" style="margin-bottom:8px">'+
+        '<div style="font-size:2rem">'+(item.icon||'📦')+'</div>'+
+        '<span class="status-badge-pill '+activeClass+'">'+activeLabel+'</span>'+
+      '</div>'+
+      '<div style="font-size:.9rem;font-weight:700;color:var(--charcoal);margin-bottom:6px">'+item.name+'</div>'+
+      '<div style="font-size:.78rem;color:var(--muted);margin-bottom:4px">'+
+        'MSRP: ₹'+(item.msrp||0).toLocaleString('en-IN')+
+        ' · DELTA: ₹'+(item.estMin||0)+' – ₹'+(item.estMax||0)+
+      '</div>'+
+      '<div style="font-size:.74rem;color:var(--muted);margin-bottom:12px">⏳ '+(item.eta||'—')+'</div>'+
+      '<div style="display:flex;gap:6px;flex-wrap:wrap">'+
+        '<button class="btn-sm btn-blue" onclick="startCatalogEdit(\''+item.id+'\')">✏️ Edit</button>'+
+        '<button class="btn-sm '+(item.isActive!==false?'btn-orange':'btn-blue')+'" '+
+          'onclick="toggleCatalogActive(\''+item.id+'\','+(item.isActive!==false?'false':'true')+')">'+
+          (item.isActive!==false?'⏸ Deactivate':'▶ Activate')+
+        '</button>'+
+        '<button class="btn-sm btn-red" onclick="deleteCatalogItem(\''+item.id+'\')">🗑️</button>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+function addCatalogItem(){
+  var name = document.getElementById('catName').value.trim();
+  var icon = document.getElementById('catIcon').value.trim() || '📦';
+  var msrp = parseFloat(document.getElementById('catMsrp').value) || 0;
+  var estMin = parseFloat(document.getElementById('catEstMin').value) || 0;
+  var estMax = parseFloat(document.getElementById('catEstMax').value) || 0;
+  var eta = document.getElementById('catEta').value.trim() || '48-72 ঘণ্টা';
+  var category = document.getElementById('catCategory').value.trim();
+  if(!name){ showToast('পণ্যের নাম লিখুন','red'); return; }
+  db.collection('cities').doc(CITY).collection('bazaarCatalog').add({
+    name:name, icon:icon, msrp:msrp, estMin:estMin, estMax:estMax,
+    eta:eta, category:category, isActive:true,
+    createdAt: new Date().toISOString()
+  }).then(function(ref){
+    allCatalogItems.push({id:ref.id, name:name, icon:icon, msrp:msrp, estMin:estMin,
+      estMax:estMax, eta:eta, category:category, isActive:true,
+      createdAt: new Date().toISOString()});
+    renderCatalogAdmin();
+    document.getElementById('catName').value='';
+    document.getElementById('catIcon').value='';
+    document.getElementById('catMsrp').value='';
+    document.getElementById('catEstMin').value='';
+    document.getElementById('catEstMax').value='';
+    document.getElementById('catEta').value='';
+    document.getElementById('catCategory').value='';
+    showToast(name+' catalog-এ যুক্ত হয়েছে ✅','green');
+  }).catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
+}
+
+function startCatalogEdit(id){
+  var item = allCatalogItems.find(function(x){return x.id===id;});
+  if(item) item._editing = true;
+  renderCatalogAdmin();
+}
+
+function cancelCatalogEdit(id){
+  var item = allCatalogItems.find(function(x){return x.id===id;});
+  if(item) item._editing = false;
+  renderCatalogAdmin();
+}
+
+function saveCatalogEdit(id){
+  var name = document.getElementById('edit-name-'+id).value.trim();
+  var icon = document.getElementById('edit-icon-'+id).value.trim();
+  var msrp = parseFloat(document.getElementById('edit-msrp-'+id).value)||0;
+  var estMin = parseFloat(document.getElementById('edit-estMin-'+id).value)||0;
+  var estMax = parseFloat(document.getElementById('edit-estMax-'+id).value)||0;
+  var eta = document.getElementById('edit-eta-'+id).value.trim();
+  if(!name){ showToast('পণ্যের নাম লিখুন','red'); return; }
+  db.collection('cities').doc(CITY).collection('bazaarCatalog').doc(id).update({
+    name:name, icon:icon, msrp:msrp, estMin:estMin, estMax:estMax, eta:eta,
+    updatedAt: new Date().toISOString()
+  }).then(function(){
+    var item = allCatalogItems.find(function(x){return x.id===id;});
+    if(item){ item.name=name; item.icon=icon; item.msrp=msrp;
+      item.estMin=estMin; item.estMax=estMax; item.eta=eta; item._editing=false; }
+    renderCatalogAdmin();
+    showToast('Catalog item আপডেট হয়েছে ✅','green');
+  }).catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
+}
+
+function toggleCatalogActive(id, newState){
+  var active = newState === true || newState === 'true';
+  db.collection('cities').doc(CITY).collection('bazaarCatalog').doc(id).update({
+    isActive: active, updatedAt: new Date().toISOString()
+  }).then(function(){
+    var item = allCatalogItems.find(function(x){return x.id===id;});
+    if(item) item.isActive = active;
+    renderCatalogAdmin();
+    showToast(active ? 'Catalog item active হয়েছে ✅' : 'Catalog item inactive হয়েছে','green');
+  }).catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
+}
+
+function deleteCatalogItem(id){
+  var item = allCatalogItems.find(function(x){return x.id===id;});
+  if(!confirm((item?item.name:'এই item')+' catalog থেকে মুছবেন?')) return;
+  db.collection('cities').doc(CITY).collection('bazaarCatalog').doc(id).delete().then(function(){
+    allCatalogItems = allCatalogItems.filter(function(x){return x.id!==id;});
+    renderCatalogAdmin();
+    showToast('Catalog item মুছে ফেলা হয়েছে','green');
+  }).catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
 }
 </script>
 </body>
