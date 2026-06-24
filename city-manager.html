@@ -230,6 +230,9 @@ button,input,select,textarea{font-family:'DM Sans',sans-serif;}
     <button class="tab-btn" id="tab-directory" onclick="goTab('directory',this)">
       🏪 Seller Directory <span class="tab-count zero" id="countDirectory">0</span>
     </button>
+    <button class="tab-btn" id="tab-bazaar" onclick="goTab('bazaar',this)">
+      🛍️ Bazaar Requests <span class="tab-count zero" id="countBazaarCM">0</span>
+    </button>
   </nav>
 
   <div class="content">
@@ -296,6 +299,24 @@ button,input,select,textarea{font-family:'DM Sans',sans-serif;}
         <input type="text" class="search-input" id="dirSearch" placeholder="🔍 দোকানের নাম, owner, mobile দিয়ে খুঁজুন..." oninput="renderDirectory()">
       </div>
       <div id="directoryListWrap"></div>
+    </div>
+
+    <!-- ═══ BAZAAR REQUESTS PAGE (read-only) ═══ -->
+    <div class="page" id="page-bazaar">
+
+      <!-- Catalog overview (read-only) -->
+      <div class="sec-head" style="margin-bottom:10px">
+        <div class="sec-title">🗂️ Bazaar Catalog <small>Admin যা catalog-এ রেখেছে — শুধু দেখার জন্য</small></div>
+      </div>
+      <div id="catalogCMWrap" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:24px"></div>
+
+      <div style="border-top:2px solid var(--border);margin:10px 0 18px;"></div>
+
+      <!-- Requests -->
+      <div class="sec-head">
+        <div class="sec-title">🛍️ গ্রাহকের অনুরোধ <small>শুধু দেখার জন্য — দাম ও status পরিবর্তন শুধু Admin করতে পারে</small></div>
+      </div>
+      <div id="bazaarCMListWrap"></div>
     </div>
 
   </div>
@@ -411,6 +432,7 @@ function goTab(tab, btn){
   document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});
   document.getElementById('page-'+tab).classList.add('active');
   btn.classList.add('active');
+  if(tab==='bazaar') loadBazaarRequestsCM();
 }
 
 function loadAllData(){
@@ -520,9 +542,11 @@ function addZone(){
   if(!charge){ showToast('Delivery charge দিন','red'); return; }
   db.collection('cities').doc(managerCity).collection('zones').add({
     name: name, distance: distance, charge: charge,
+    createdBy: 'cityManager',
+    createdByUid: auth.currentUser ? auth.currentUser.uid : null,
     createdAt: new Date().toISOString()
   }).then(function(ref){
-    allZones.push({id:ref.id, name:name, distance:distance, charge:charge});
+    allZones.push({id:ref.id, name:name, distance:distance, charge:charge, createdBy:'cityManager'});
     renderZones(); updateOverviewStats();
     document.getElementById('zoneName').value='';
     document.getElementById('zoneDistance').value='';
@@ -617,6 +641,80 @@ function renderDirectory(){
       statusBadge+
     '</div>';
   }).join('');
+}
+
+// ═══ BAZAAR REQUESTS (read-only for City Manager) ═══
+var BAZAAR_STATUS_LABELS_CM = {
+  received:'🟡 নতুন', quoted:'💬 দাম দেওয়া হয়েছে', confirmed:'✅ নিশ্চিত হয়েছে',
+  in_transit:'🚚 শহর থেকে আসছে', delivered:'📦 ডেলিভার হয়েছে', cancelled:'❌ বাতিল'
+};
+
+function loadBazaarRequestsCM(){
+  if(!managerCity) return;
+  // Load catalog
+  loadCatalogCM();
+  // Load requests
+  var wrap = document.getElementById('bazaarCMListWrap');
+  wrap.innerHTML = '<div class="empty-state"><p>লোড হচ্ছে...</p></div>';
+  db.collection('cities').doc(managerCity).collection('bazaarRequests').get().then(function(snap){
+    var reqs = [];
+    snap.forEach(function(d){ reqs.push(Object.assign({id:d.id}, d.data())); });
+    reqs.sort(function(a,b){ return new Date(b.createdAt||0) - new Date(a.createdAt||0); });
+    document.getElementById('countBazaarCM').textContent = reqs.filter(function(r){return r.status==='received';}).length;
+    document.getElementById('countBazaarCM').classList.toggle('zero', reqs.filter(function(r){return r.status==='received';}).length===0);
+    if(!reqs.length){
+      wrap.innerHTML = '<div class="empty-state"><div class="empty-icon">🛍️</div><p>এখনো কোনো অনুরোধ আসেনি</p></div>';
+      return;
+    }
+    wrap.innerHTML = reqs.map(function(r){
+      var label = BAZAAR_STATUS_LABELS_CM[r.status] || r.status || '—';
+      var time = r.createdAt ? new Date(r.createdAt).toLocaleDateString('bn-IN',{day:'numeric',month:'short'}) : '—';
+      return '<div class="zone-card">'+
+        '<div class="zone-info">'+
+          '<div class="zone-name">🛍️ '+r.itemName+'</div>'+
+          '<div class="zone-meta">'+(r.customerName||'—')+' · '+(r.customerPhone||'—')+' · '+time+
+            (r.quotedPrice ? ' · ₹'+r.quotedPrice : '')+'</div>'+
+        '</div>'+
+        '<span class="zone-charge" style="font-size:.78rem">'+label+'</span>'+
+      '</div>';
+    }).join('');
+  }).catch(function(){
+    wrap.innerHTML = '<div class="empty-state"><p>লোড করতে সমস্যা হয়েছে</p></div>';
+  });
+}
+
+function loadCatalogCM(){
+  if(!managerCity) return;
+  var wrap = document.getElementById('catalogCMWrap');
+  if(!wrap) return;
+  db.collection('cities').doc(managerCity).collection('bazaarCatalog')
+    .where('isActive','==',true).get().then(function(snap){
+      var items = [];
+      snap.forEach(function(d){ items.push(Object.assign({id:d.id}, d.data())); });
+      if(!items.length){
+        wrap.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><p>এখনো কোনো catalog item নেই</p></div>';
+        return;
+      }
+      wrap.innerHTML = items.map(function(item){
+        var tags = '';
+        if(item.isTopPick) tags += '<span style="background:#fff3cd;color:#856404;font-size:.6rem;font-weight:700;padding:2px 7px;border-radius:20px">⭐ Top Pick</span> ';
+        if(item.isTrending) tags += '<span style="background:#fce8e8;color:#c0392b;font-size:.6rem;font-weight:700;padding:2px 7px;border-radius:20px">🔥 Trending</span> ';
+        if(item.salePrice) tags += '<span style="background:#d4edda;color:#155724;font-size:.6rem;font-weight:700;padding:2px 7px;border-radius:20px">🏷️ Sale: ₹'+item.salePrice+'</span> ';
+        var thumb = item.imageUrl
+          ? '<img src="'+item.imageUrl+'" style="width:44px;height:44px;object-fit:cover;border-radius:8px;flex-shrink:0">'
+          : '<div style="width:44px;height:44px;background:var(--sand);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0">'+(item.icon||'📦')+'</div>';
+        return '<div class="zone-card" style="align-items:flex-start;gap:10px">'+
+          thumb+
+          '<div style="flex:1;min-width:0">'+
+            '<div class="zone-name" style="font-size:.84rem">'+item.name+'</div>'+
+            '<div class="zone-meta">'+item.category+' · ₹'+(item.estMin||0)+' – ₹'+(item.estMax||0)+'</div>'+
+            (tags ? '<div style="margin-top:4px">'+tags+'</div>' : '')+
+          '</div>'+
+        '</div>';
+      }).join('');
+    }).catch(function(){
+      wrap.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><p>লোড করতে সমস্যা হয়েছে</p></div>';
+    });
 }
 </script>
 </body>
