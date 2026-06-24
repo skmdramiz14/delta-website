@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="bn">
 <head>
 <meta charset="UTF-8">
@@ -1183,6 +1183,36 @@ body.lang-bn .lang-en{display:none!important;}
   </div>
 </section>
 
+<!-- DELTA BAZAAR ENTRY CARD -->
+<section class="section">
+  <div onclick="window.location.href='bazaar.html'" style="background:linear-gradient(120deg,#0a1f35 0%,#3d2a6b 55%,#5b3aa0 100%);
+    border-radius:18px;padding:30px 32px;cursor:pointer;position:relative;overflow:hidden;transition:transform .2s;"
+    onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+    <div style="position:absolute;top:-40%;right:-6%;width:300px;height:300px;background:radial-gradient(circle,rgba(255,255,255,.08),transparent 70%);border-radius:50%;"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;position:relative;z-index:2;">
+      <div style="flex:1;min-width:260px;">
+        <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);
+          color:#fff;padding:5px 13px;border-radius:20px;font-size:.68rem;font-weight:700;letter-spacing:.4px;margin-bottom:10px;">
+          ✦ <span class="lang-bn">নতুন</span><span class="lang-en">NEW</span>
+        </div>
+        <h3 style="font-family:'Playfair Display',serif;font-size:1.25rem;font-weight:800;color:#fff;margin-bottom:7px;line-height:1.35;">
+          <span class="lang-bn">DELTA Bazaar — দূরত্ব এখন আর বাধা নয়</span>
+          <span class="lang-en">DELTA Bazaar — Distance is no longer a barrier</span>
+        </h3>
+        <p style="font-size:.84rem;color:rgba(255,255,255,.72);line-height:1.6;max-width:480px;">
+          <span class="lang-bn">পণ্যটি যেখানেই থাকুক না কেন — DELTA Bazaar সেটা খুঁজে বের করে, ন্যায্য দামে আপনার দোরগোড়ায় পৌঁছে দেয়। এটাই আমাদের প্রতিশ্রুতি।</span>
+          <span class="lang-en">No matter where the product is — DELTA Bazaar finds it and delivers it to your doorstep at a fair price. That's our commitment.</span>
+        </p>
+      </div>
+      <button style="background:#fff;border:none;padding:12px 26px;border-radius:10px;font-weight:800;font-size:.85rem;cursor:pointer;
+        white-space:nowrap;color:#3d2a6b;flex-shrink:0;transition:all .2s;"
+        onmouseover="this.style.background='#f3eefc'" onmouseout="this.style.background='#fff'">
+        <span class="lang-bn">পণ্য খুঁজুন →</span><span class="lang-en">Find a Product →</span>
+      </button>
+    </div>
+  </div>
+</section>
+
 <!-- FREE DELIVERY BANNER -->
 <!-- FREE DELIVERY BANNER -->
 <div class="free-delivery-strip">
@@ -1269,7 +1299,7 @@ body.lang-bn .lang-en{display:none!important;}
       <span class="lang-bn">চিন্তা নেই — আপনার চাহিদা জানান।<br>আমরা স্থানীয় বিক্রেতাদের জানাবো এবং পণ্য আনার ব্যবস্থা করবো।</span>
       <span class="lang-en">Don't worry — tell us what you need.<br>We'll inform local sellers and arrange to bring it for you.</span>
     </p>
-    <button onclick="openReqModal()" class="request-btn" style="margin:0 auto;display:inline-block;">
+    <button onclick="goToBazaarRequest()" class="request-btn" style="margin:0 auto;display:inline-block;">
       🛍️ <span class="lang-bn">এই পণ্যটি চাই →</span><span class="lang-en">Request This Product →</span>
     </button>
   </div>
@@ -1869,48 +1899,6 @@ body.lang-bn .lang-en{display:none!important;}
 </div>
 
 <!-- REQUEST A PRODUCT MODAL -->
-<div class="req-modal-overlay" id="reqModalOverlay">
-  <div class="req-modal">
-    <button class="req-modal-close" onclick="closeReqModal()">✕</button>
-    <div id="reqFormArea">
-      <h3>🛍️ <span class="lang-bn">পণ্যটি চাই!</span><span class="lang-en">Request This Product!</span></h3>
-      <p><span class="lang-bn">আপনার চাহিদা জানান — আমরা বিক্রেতাদের জানাবো।</span><span class="lang-en">Tell us what you need — we'll inform our sellers.</span></p>
-      <div class="request-form">
-        <input class="request-input" id="reqProductName" type="text"
-          placeholder="পণ্যের নাম / Product name *" maxlength="100">
-        <div class="request-row">
-          <input class="request-input" id="reqBudget" type="text"
-            placeholder="বাজেট / Budget (e.g. ₹200)">
-          <select class="request-input" id="reqUrgency">
-            <option value="">কখন দরকার / When?</option>
-            <option value="today"><span class="lang-bn">আজকেই</span> Today</option>
-            <option value="this_week">এই সপ্তাহে / This week</option>
-            <option value="this_month">এই মাসে / This month</option>
-            <option value="anytime">যেকোনো সময় / Anytime</option>
-          </select>
-        </div>
-        <input class="request-input" id="reqPhone" type="tel"
-          placeholder="মোবাইল নম্বর / Mobile (optional)">
-        <button class="request-btn" id="reqSubmitBtn" onclick="submitProductRequest()">
-          <span class="lang-bn">অনুরোধ পাঠান →</span>
-          <span class="lang-en">Send Request →</span>
-        </button>
-      </div>
-    </div>
-    <div id="reqSuccessArea" class="req-success" style="display:none;">
-      <div class="req-success-icon">✅</div>
-      <h3><span class="lang-bn">অনুরোধ পাঠানো হয়েছে!</span><span class="lang-en">Request Sent!</span></h3>
-      <p style="color:var(--muted);font-size:.88rem;margin-top:8px;">
-        <span class="lang-bn">আমরা বিক্রেতাদের জানাবো। পণ্য পাওয়া গেলে আপনাকে জানানো হবে।</span>
-        <span class="lang-en">We'll inform our sellers. You'll be notified when it's available.</span>
-      </p>
-      <button onclick="closeReqModal()" style="margin-top:16px;background:var(--navy);color:#fff;border:none;padding:10px 24px;border-radius:10px;cursor:pointer;font-weight:600;">
-        <span class="lang-bn">ঠিক আছে</span><span class="lang-en">OK</span>
-      </button>
-    </div>
-  </div>
-</div>
-
 <!-- VOICE SEARCH OVERLAY -->
 <div class="voice-overlay" id="voiceOverlay">
   <div class="voice-circle">🎙️</div>
@@ -3421,70 +3409,10 @@ function hideRequestSection(){
   if(rs) rs.classList.remove('show');
 }
 
-function openReqModal(){
-  // Pre-fill product name with search query
-  var nameEl = document.getElementById('reqProductName');
-  if(nameEl && _lastSearchQuery){
-    nameEl.value = _lastSearchQuery;
-  }
-  // Reset form state
-  document.getElementById('reqFormArea').style.display = 'block';
-  document.getElementById('reqSuccessArea').style.display = 'none';
-  document.getElementById('reqSubmitBtn').disabled = false;
-  document.getElementById('reqModalOverlay').classList.add('open');
-}
-
-function closeReqModal(){
-  document.getElementById('reqModalOverlay').classList.remove('open');
-}
-
-function submitProductRequest(){
-  var name = (document.getElementById('reqProductName').value||'').trim();
-  if(!name){
-    showToast(currentLang==='bn'?'পণ্যের নাম লিখুন':'Please enter product name');
-    document.getElementById('reqProductName').focus();
-    return;
-  }
-
-  var budget   = (document.getElementById('reqBudget').value||'').trim();
-  var urgency  = document.getElementById('reqUrgency').value || 'anytime';
-  var phone    = (document.getElementById('reqPhone').value||'').trim();
-
-  // Disable button
-  var btn = document.getElementById('reqSubmitBtn');
-  btn.disabled = true;
-  btn.textContent = currentLang==='bn' ? 'পাঠানো হচ্ছে...' : 'Sending...';
-
-  // Save to Firestore productRequests collection
-  var data = {
-    productName : name,
-    budget      : budget || 'Not specified',
-    urgency     : urgency,
-    phone       : phone || 'Not provided',
-    city        : CITY,
-    searchQuery : _lastSearchQuery,
-    status      : 'pending',
-    requestCount: 1,
-    createdAt   : firebase.firestore.FieldValue.serverTimestamp()
-  };
-
-  db.collection('productRequests').add(data)
-    .then(function(){
-      // Show success
-      document.getElementById('reqFormArea').style.display = 'none';
-      document.getElementById('reqSuccessArea').style.display = 'block';
-      // Clear form
-      document.getElementById('reqProductName').value = '';
-      document.getElementById('reqBudget').value = '';
-      document.getElementById('reqUrgency').value = '';
-      document.getElementById('reqPhone').value = '';
-    })
-    .catch(function(e){
-      // If Firebase fails, still show success (don't frustrate user)
-      console.error('Request save error:', e);
-      document.getElementById('reqFormArea').style.display = 'none';
-      document.getElementById('reqSuccessArea').style.display = 'block';
-    });
+function goToBazaarRequest(){
+  // Carry the search query over to DELTA Bazaar so it's pre-filled there
+  var query = _lastSearchQuery || '';
+  window.location.href = 'bazaar.html' + (query ? '?q=' + encodeURIComponent(query) : '');
 }
 
 // ── LANGUAGE TOGGLE ──
@@ -3672,9 +3600,6 @@ document.addEventListener('DOMContentLoaded',function(){
   // Subscribe modal overlay click
   var subOv = document.getElementById('subModalOverlay');
   if(subOv) subOv.addEventListener('click',function(e){ if(e.target===this) closeSubModal(); });
-  // Request modal overlay click
-  var reqOv = document.getElementById('reqModalOverlay');
-  if(reqOv) reqOv.addEventListener('click',function(e){ if(e.target===this) closeReqModal(); });
 });
 
 // Fix: browser Back/Forward button was restoring a cached page snapshot (bfcache) where
