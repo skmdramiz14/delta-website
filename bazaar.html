@@ -315,13 +315,6 @@ textarea.form-input{resize:vertical;min-height:70px;font-family:inherit;}
 <!-- ═══ CATEGORY FILTER BAR ═══ -->
 <div class="cat-filter-bar" id="catFilterBar">
   <button class="cat-filter-pill active" data-cat="all" onclick="setCatFilter('all',this)">🏪 সব</button>
-  <button class="cat-filter-pill" data-cat="Electronics" onclick="setCatFilter('Electronics',this)">📱 Electronics</button>
-  <button class="cat-filter-pill" data-cat="Clothing" onclick="setCatFilter('Clothing',this)">👗 Clothing</button>
-  <button class="cat-filter-pill" data-cat="Beauty & Skincare" onclick="setCatFilter('Beauty & Skincare',this)">💄 Beauty</button>
-  <button class="cat-filter-pill" data-cat="Footwear" onclick="setCatFilter('Footwear',this)">👟 Footwear</button>
-  <button class="cat-filter-pill" data-cat="Baby Care" onclick="setCatFilter('Baby Care',this)">👶 Baby Care</button>
-  <button class="cat-filter-pill" data-cat="Kitchen & Home" onclick="setCatFilter('Kitchen & Home',this)">🏠 Kitchen & Home</button>
-  <button class="cat-filter-pill" data-cat="Toys & Kids" onclick="setCatFilter('Toys & Kids',this)">🧩 Toys & Kids</button>
 </div>
 
 <!-- ═══ TOP PICKS ═══ -->
@@ -395,7 +388,7 @@ textarea.form-input{resize:vertical;min-height:70px;font-family:inherit;}
       <label>বিস্তারিত (ঐচ্ছিক)</label>
       <textarea class="form-input" id="reqDesc" placeholder="রং, সাইজ, ব্র্যান্ড, বা যেকোনো বিশেষ চাহিদা লিখুন..."></textarea>
     </div>
-    <div class="form-group">
+    <div class="form-group" id="budgetFieldGroup">
       <label>আনুমানিক বাজেট (₹)</label>
       <div class="budget-row">
         <input type="number" class="form-input" id="reqBudgetMin" placeholder="ন্যূনতম">
@@ -570,8 +563,11 @@ function buildDynamicFilters(items){
   items.forEach(function(item){
     if(item.category && cats.indexOf(item.category)===-1) cats.push(item.category);
   });
+  cats.sort();
   var bar = document.getElementById('catFilterBar');
   if(!bar) return;
+  if(!cats.length){ bar.style.display='none'; return; }
+  bar.style.display='flex';
   bar.innerHTML = '<button class="cat-filter-pill active" data-cat="all" onclick="setCatFilter(\'all\',this)">🏪 সব</button>'+
     cats.map(function(c){
       return '<button class="cat-filter-pill" data-cat="'+c+'" onclick="setCatFilter(\''+c+'\',this)">'+c+'</button>';
@@ -673,10 +669,24 @@ function buildCardHTML(item){
 }
 
 function requestCatalogItem(id, name){
+  var item = allCatalogData.find(function(x){ return x.id === id; });
   document.getElementById('reqItemName').value = name;
-  document.getElementById('reqDesc').value = '(সংগ্রহ থেকে নির্বাচিত — সঠিক মডেল/বিবরণ এখানে যোগ করুন)';
+
+  // Auto-fill description with item details
+  var desc = '';
+  if(item && item.category) desc += 'Category: '+item.category+'\n';
+  if(item && item.eta) desc += 'Delivery ETA: '+item.eta+'\n';
+  desc += '(সংগ্রহ থেকে নির্বাচিত — সঠিক মডেল/বিবরণ প্রয়োজনে যোগ করুন)';
+  document.getElementById('reqDesc').value = desc;
+
+  // Hide budget field — price is already shown on the catalog card
+  var budgetGroup = document.getElementById('budgetFieldGroup');
+  if(budgetGroup) budgetGroup.style.display = 'none';
+  document.getElementById('reqBudgetMin').value = item ? (item.salePrice || item.estMin || '') : '';
+  document.getElementById('reqBudgetMax').value = item ? (item.salePrice || item.estMax || '') : '';
+
   document.querySelector('.custom-block').scrollIntoView({behavior:'smooth', block:'center'});
-  showToast('নিচের ফর্মে বিবরণ যোগ করে পাঠান', 'green');
+  showToast('তথ্য auto-fill হয়েছে — "অনুরোধ পাঠান" click করুন ✅', 'green');
 }
 
 // ═══ IMAGE UPLOAD ═══
@@ -752,6 +762,9 @@ function submitBazaarRequest(){
     document.getElementById('reqDesc').value = '';
     document.getElementById('reqBudgetMin').value = '';
     document.getElementById('reqBudgetMax').value = '';
+    // Restore budget field for next custom request
+    var budgetGroup = document.getElementById('budgetFieldGroup');
+    if(budgetGroup) budgetGroup.style.display = 'block';
     document.getElementById('imgUploadBox').classList.remove('has-img');
     document.getElementById('imgUploadBox').innerHTML = '<div class="img-upload-hint" id="imgUploadHint">📷 ছবি আপলোড করতে এখানে ক্লিক করুন</div>';
     uploadedImageUrl = '';
