@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="bn">
 <head>
 <meta charset="UTF-8">
@@ -151,6 +151,35 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 
 .loading-screen{position:fixed;inset:0;background:var(--navy3);display:flex;
   align-items:center;justify-content:center;z-index:1000;}
+
+/* ── COD CASH MODAL ── */
+.cod-modal-overlay{position:fixed;inset:0;background:rgba(6,21,38,.65);z-index:600;
+  display:none;align-items:center;justify-content:center;padding:20px;}
+.cod-modal-overlay.open{display:flex;}
+.cod-modal{background:#fff;border-radius:20px;width:min(400px,100%);padding:28px 24px;}
+.cod-modal h3{font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--navy);
+  margin-bottom:6px;}
+.cod-modal p{font-size:.84rem;color:var(--muted);margin-bottom:18px;line-height:1.55;}
+.cod-amount-display{background:var(--green2);border-radius:12px;padding:16px;
+  text-align:center;margin-bottom:18px;}
+.cod-amount-display .label{font-size:.74rem;color:var(--green);font-weight:700;margin-bottom:4px;}
+.cod-amount-display .amount{font-size:2rem;font-weight:900;color:var(--green);}
+.cod-modal-btns{display:flex;gap:10px;}
+.cod-confirm-btn{flex:1;padding:13px;background:var(--green);color:#fff;border:none;
+  border-radius:10px;font-size:.92rem;font-weight:700;cursor:pointer;}
+.cod-cancel-btn{padding:13px 18px;background:var(--sand);color:var(--muted);border:none;
+  border-radius:10px;font-size:.88rem;cursor:pointer;}
+
+/* ── CASH SUMMARY STRIP ── */
+.cash-summary{background:linear-gradient(135deg,var(--navy),#1a3050);border-radius:14px;
+  padding:16px 18px;margin:0 0 16px;display:flex;justify-content:space-between;
+  align-items:center;flex-wrap:wrap;gap:10px;}
+.cash-summary-item{text-align:center;}
+.cash-summary-item .cs-label{font-size:.68rem;color:rgba(255,255,255,.55);font-weight:600;
+  text-transform:uppercase;letter-spacing:.3px;}
+.cash-summary-item .cs-value{font-size:1.1rem;font-weight:800;color:#fff;margin-top:2px;}
+.cash-summary-item .cs-value.green{color:#81c784;}
+.cash-summary-item .cs-value.orange{color:#ffb74d;}
 .loading-spinner{width:40px;height:40px;border:3px solid rgba(255,255,255,.15);
   border-top-color:var(--orange);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px;}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -174,6 +203,22 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 <body>
 
 <div class="toast" id="toastEl"></div>
+
+<!-- ═══ COD CASH CONFIRMATION MODAL ═══ -->
+<div class="cod-modal-overlay" id="codModal">
+  <div class="cod-modal">
+    <h3>💵 Cash সংগ্রহ নিশ্চিত করুন</h3>
+    <p>Delivery সম্পন্ন করার আগে নিশ্চিত করুন যে গ্রাহকের কাছ থেকে সঠিক পরিমাণ Cash সংগ্রহ করা হয়েছে।</p>
+    <div class="cod-amount-display">
+      <div class="label">সংগৃহীত Cash</div>
+      <div class="amount" id="codModalAmount">₹0</div>
+    </div>
+    <div class="cod-modal-btns">
+      <button class="cod-confirm-btn" onclick="confirmCodAndDeliver()">✅ Cash পেয়েছি, Deliver করলাম</button>
+      <button class="cod-cancel-btn" onclick="closeCodModal()">বাতিল</button>
+    </div>
+  </div>
+</div>
 
 <div class="loading-screen" id="loadingScreen">
   <div>
@@ -241,6 +286,21 @@ button,input,select{font-family:'DM Sans',sans-serif;}
         <div class="stat-box"><strong id="statTotal">0</strong><span>মোট ডেলিভারি</span></div>
         <div class="stat-box"><strong id="statToday">0</strong><span>আজকে</span></div>
         <div class="stat-box"><strong id="statEarned">₹0</strong><span>মোট আয়</span></div>
+      </div>
+      <!-- COD Cash Summary -->
+      <div class="cash-summary" id="cashSummaryStrip">
+        <div class="cash-summary-item">
+          <div class="cs-label">আজকের COD Cash</div>
+          <div class="cs-value orange" id="csTodayCash">₹0</div>
+        </div>
+        <div class="cash-summary-item">
+          <div class="cs-label">মোট COD Cash</div>
+          <div class="cs-value" id="csTotalCash">₹0</div>
+        </div>
+        <div class="cash-summary-item">
+          <div class="cs-label">Admin-কে জমা দিন</div>
+          <div class="cs-value green" id="csUnsettled">₹0</div>
+        </div>
       </div>
       <div id="historyWrap"></div>
     </div>
@@ -496,6 +556,13 @@ function orderCardHTML(o, showActions){
       '<span class="payment-tag">'+(o.paymentMethod==='cod'?'💵 Cash on Delivery':'💳 UPI')+'</span>'+
       '<span class="amount-val">₹'+(o.total||0)+'</span>'+
     '</div>'+
+    (o.riderPayout ?
+      '<div style="background:var(--green2);border-radius:8px;padding:8px 12px;margin-top:8px;'+
+      'font-size:.82rem;display:flex;justify-content:space-between;align-items:center;">'+
+      '<span style="color:var(--muted)">🛵 আপনার Payout</span>'+
+      '<strong style="color:var(--green)">₹'+o.riderPayout+'</strong></div>'
+      : '<div style="background:var(--yellow2);border-radius:8px;padding:8px 12px;margin-top:8px;'+
+        'font-size:.78rem;color:#7d5a00;">⏳ Payout এখনো নির্ধারণ করা হয়নি</div>')+
     (actionBtns?'<div class="oc-actions">'+actionBtns+'</div>':'')+
   '</div>';
 }
@@ -520,16 +587,47 @@ function renderHistory(){
   var todayCount = delivered.filter(function(o){
     return o.deliveryCompletedAt && new Date(o.deliveryCompletedAt).toDateString()===todayStr;
   }).length;
-  var totalEarned = delivered.length * DELIVERY_FEE_PER_ORDER;
+  var totalEarned = delivered.reduce(function(sum,o){ return sum + (o.riderPayout||0); }, 0);
   document.getElementById('statTotal').textContent = delivered.length;
   document.getElementById('statToday').textContent = todayCount;
   document.getElementById('statEarned').textContent = '₹'+totalEarned;
+
+  // COD Cash Summary
+  var codOrders = delivered.filter(function(o){ return o.paymentMethod==='cod' && o.codCashCollected; });
+  var todayCodCash = codOrders.filter(function(o){
+    return o.codCashCollectedAt && new Date(o.codCashCollectedAt).toDateString()===todayStr;
+  }).reduce(function(s,o){ return s+(o.codCashAmount||0); }, 0);
+  var totalCodCash = codOrders.reduce(function(s,o){ return s+(o.codCashAmount||0); }, 0);
+  var unsettledCash = codOrders.filter(function(o){ return !o.codSettled; })
+    .reduce(function(s,o){ return s+(o.codCashAmount||0); }, 0);
+  document.getElementById('csTodayCash').textContent = '₹'+todayCodCash.toLocaleString('en-IN');
+  document.getElementById('csTotalCash').textContent = '₹'+totalCodCash.toLocaleString('en-IN');
+  document.getElementById('csUnsettled').textContent = '₹'+unsettledCash.toLocaleString('en-IN');
+  // Hide cash summary if no COD orders
+  var strip = document.getElementById('cashSummaryStrip');
+  if(strip) strip.style.display = codOrders.length ? 'flex' : 'none';
+
   if(!delivered.length){
     wrap.innerHTML='<div class="empty-state"><div class="empty-icon">📦</div>'+
       '<p>এখনো কোনো ডেলিভারি সম্পন্ন হয়নি</p></div>';
     return;
   }
-  wrap.innerHTML = delivered.map(function(o){return orderCardHTML(o,false);}).join('');
+  wrap.innerHTML = delivered.map(function(o){
+    var isCod = o.paymentMethod==='cod';
+    var codBlock = isCod
+      ? '<div style="background:'+(o.codCashCollected?'var(--green2)':'var(--orange-light)')+
+          ';border-radius:8px;padding:8px 12px;margin-top:8px;font-size:.78rem;'+
+          'display:flex;justify-content:space-between;align-items:center;">'+
+          '<span>💵 COD Cash</span>'+
+          '<strong style="color:'+(o.codCashCollected?'var(--green)':'var(--orange)')+'">'+
+            (o.codCashCollected
+              ? '₹'+(o.codCashAmount||0).toLocaleString('en-IN')+' সংগৃহীত'+(o.codSettled?' · ✅ Settled':' · ⏳ জমা বাকি')
+              : 'Cash সংগ্রহ নিশ্চিত নয়')+
+          '</strong>'+
+        '</div>'
+      : '';
+    return orderCardHTML(o,false) + (codBlock ? codBlock.replace('</div>','') : '');
+  }).join('');
 }
 
 function renderEarnings(){
@@ -540,8 +638,9 @@ function renderEarnings(){
     var d = new Date(o.deliveryCompletedAt);
     return d.getMonth()===now.getMonth() && d.getFullYear()===now.getFullYear();
   });
-  var monthEarnings = thisMonth.length * DELIVERY_FEE_PER_ORDER;
-  var avg = delivered.length ? Math.round((delivered.length*DELIVERY_FEE_PER_ORDER)/delivered.length) : 0;
+  var monthEarnings = thisMonth.reduce(function(sum,o){ return sum + (o.riderPayout||0); }, 0);
+  var totalEarnedAll = delivered.reduce(function(sum,o){ return sum + (o.riderPayout||0); }, 0);
+  var avg = delivered.length ? Math.round(totalEarnedAll/delivered.length) : 0;
   document.getElementById('earningsMonth').textContent = '₹'+monthEarnings;
   document.getElementById('earningsTotalDel').textContent = delivered.length;
   document.getElementById('earningsAvg').textContent = '₹'+avg;
@@ -556,12 +655,47 @@ function renderEarnings(){
     return '<div class="delivery-row">'+
       '<div><strong>#'+o.id.slice(-6).toUpperCase()+'</strong> — '+(o.shopName||'—')+'<br>'+
       '<span style="font-size:.72rem;color:var(--muted)">'+t+'</span></div>'+
-      '<strong style="color:var(--green)">₹'+DELIVERY_FEE_PER_ORDER+'</strong>'+
+      '<strong style="color:var(--green)">₹'+(o.riderPayout||0)+'</strong>'+
     '</div>';
   }).join('');
 }
 
+// COD modal state
+var pendingCodUpdate = null;
+
 function updateDeliveryStatus(shopId, orderId, newStatus){
+  var o = myOrders.find(function(x){return x.id===orderId&&x.shopId===shopId;});
+  // If COD order being delivered — show cash confirmation modal first
+  if(newStatus==='delivered' && o && o.paymentMethod==='cod'){
+    pendingCodUpdate = {shopId:shopId, orderId:orderId, order:o};
+    document.getElementById('codModalAmount').textContent = '₹'+(o.total||0).toLocaleString('en-IN');
+    document.getElementById('codModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    return;
+  }
+  // Non-COD or non-delivered status — proceed directly
+  doUpdateStatus(shopId, orderId, newStatus, false);
+}
+
+function confirmCodAndDeliver(){
+  if(!pendingCodUpdate) return;
+  closeCodModal();
+  doUpdateStatus(
+    pendingCodUpdate.shopId,
+    pendingCodUpdate.orderId,
+    'delivered',
+    true // codCashCollected
+  );
+  pendingCodUpdate = null;
+}
+
+function closeCodModal(){
+  document.getElementById('codModal').classList.remove('open');
+  document.body.style.overflow = '';
+  pendingCodUpdate = null;
+}
+
+function doUpdateStatus(shopId, orderId, newStatus, codCashCollected){
   var statusLabels = {
     picked_up:'Picked Up', on_the_way:'On the Way', delivered:'Delivered'
   };
@@ -569,10 +703,15 @@ function updateDeliveryStatus(shopId, orderId, newStatus){
     deliveryStatus: newStatus,
     deliveryUpdatedAt: new Date().toISOString()
   };
-  // When delivered, also update the main order status and record completion time
   if(newStatus==='delivered'){
     updates.status = 'delivered';
     updates.deliveryCompletedAt = new Date().toISOString();
+    if(codCashCollected){
+      var o = myOrders.find(function(x){return x.id===orderId&&x.shopId===shopId;});
+      updates.codCashCollected = true;
+      updates.codCashAmount = o ? (o.total||0) : 0;
+      updates.codCashCollectedAt = new Date().toISOString();
+    }
   }
   db.collection('cities').doc(CITY).collection('sellers').doc(shopId)
     .collection('orders').doc(orderId).update(updates)
@@ -580,7 +719,12 @@ function updateDeliveryStatus(shopId, orderId, newStatus){
       var o = myOrders.find(function(x){return x.id===orderId&&x.shopId===shopId;});
       if(o){ Object.assign(o, updates); }
       renderActiveOrders(); renderHistory(); updateCounts();
-      showToast('Status আপডেট হয়েছে: '+statusLabels[newStatus]+' ✅','green');
+      showToast(
+        codCashCollected
+          ? 'Delivered ✅ · COD Cash ₹'+(updates.codCashAmount||0)+' সংগ্রহ করা হয়েছে'
+          : 'Status আপডেট হয়েছে: '+statusLabels[newStatus]+' ✅',
+        'green'
+      );
     }).catch(function(e){
       showToast('আপডেট ব্যর্থ: '+e.message,'red');
     });
