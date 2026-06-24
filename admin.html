@@ -305,6 +305,9 @@ button,input,select{font-family:'DM Sans',sans-serif;}
     <button class="tab-btn" id="tab-bazaar" onclick="goTab('bazaar',this)">
       🛍️ Bazaar Requests <span class="tab-count zero" id="countBazaar">0</span>
     </button>
+    <button class="tab-btn" id="tab-recon" onclick="goTab('recon',this)">
+      💰 COD Reconciliation <span class="tab-count zero" id="countRecon">0</span>
+    </button>
   </nav>
 
   <div class="content">
@@ -593,6 +596,51 @@ button,input,select{font-family:'DM Sans',sans-serif;}
       <div class="card-grid" id="bazaarListWrap"></div>
     </div>
 
+    <!-- ═══ COD RECONCILIATION PAGE ═══ -->
+    <div class="page" id="page-recon">
+
+      <!-- Summary Stats -->
+      <div class="stats-row" style="grid-template-columns:repeat(5,1fr)">
+        <div class="stat-box"><strong id="reconTotalOrders">0</strong><span>মোট COD Delivered</span></div>
+        <div class="stat-box"><strong id="reconTotalCash">₹0</strong><span>মোট Cash Collected</span></div>
+        <div class="stat-box"><strong id="reconTotalCommission">₹0</strong><span>DELTA Commission</span></div>
+        <div class="stat-box"><strong id="reconTotalSeller">₹0</strong><span>Seller-দের দিতে হবে</span></div>
+        <div class="stat-box"><strong id="reconPending">0</strong><span>Unsettled Orders</span></div>
+      </div>
+
+      <!-- Commission Settings -->
+      <div class="rate-settings-bar" style="margin-bottom:16px">
+        <span style="font-size:.8rem;font-weight:700;color:var(--navy)">💰 Commission Tiers:</span>
+        <span style="font-size:.78rem;color:var(--muted)">₹0-200 → <strong>8%</strong></span>
+        <span style="font-size:.78rem;color:var(--muted)">₹201-500 → <strong>6%</strong></span>
+        <span style="font-size:.78rem;color:var(--muted)">₹501-1000 → <strong>5%</strong></span>
+        <span style="font-size:.78rem;color:var(--muted)">₹1000+ → <strong>4%</strong></span>
+        <span style="font-size:.78rem;color:var(--muted)">·</span>
+        <span style="font-size:.78rem;color:var(--green);font-weight:700">🚚 Free Delivery: ₹499+</span>
+      </div>
+
+      <!-- Filters -->
+      <div class="sec-head">
+        <div class="sec-title">💰 COD Reconciliation <small>Delivered COD orders-এর cash settlement track করুন</small></div>
+      </div>
+      <div class="toolbar">
+        <input type="text" class="search-input" id="reconSearch"
+          placeholder="🔍 Order ID, shop name, customer দিয়ে খুঁজুন..." oninput="renderRecon()">
+        <button class="filter-pill active" data-f="all" onclick="setReconFilter('all',this)">সব</button>
+        <button class="filter-pill" data-f="unsettled" onclick="setReconFilter('unsettled',this)">⏳ Unsettled</button>
+        <button class="filter-pill" data-f="settled" onclick="setReconFilter('settled',this)">✅ Settled</button>
+      </div>
+
+      <!-- Bulk Actions -->
+      <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;align-items:center">
+        <button class="btn-sm btn-orange" onclick="markAllSettled()">✅ সব Unsettled → Settled করুন</button>
+        <button class="btn-sm btn-blue" onclick="exportRecon()">📊 CSV Export করুন</button>
+        <span style="font-size:.74rem;color:var(--muted)" id="reconSelectedInfo"></span>
+      </div>
+
+      <div class="card-grid" id="reconListWrap"></div>
+    </div>
+
   </div>
 </div>
 
@@ -703,6 +751,7 @@ function goTab(tab, btn){
   if(tab==='ordermanagers') loadOrderManagersAdmin();
   if(tab==='citymanagers') loadCityManagersAdmin();
   if(tab==='bazaar') loadBazaarRequestsAdmin();
+  if(tab==='recon') loadReconOrders();
 }
 
 // ═══ DATA LOADING ═══
@@ -713,6 +762,22 @@ var allDeliveryBoys = [];
 var allOrderManagers = [];
 var allCityManagers = [];
 var allBazaarRequests = [];
+var allReconOrders = [];
+var reconFilter = 'all';
+
+// Commission tiers
+var COMMISSION_TIERS = [
+  {max:200,  rate:0.08},
+  {max:500,  rate:0.06},
+  {max:1000, rate:0.05},
+  {max:Infinity, rate:0.04}
+];
+var FREE_DELIVERY_THRESHOLD = 499;
+
+function calcCommission(orderTotal){
+  var tier = COMMISSION_TIERS.find(function(t){ return orderTotal <= t.max; });
+  return Math.round((tier ? tier.rate : 0.04) * orderTotal);
+}
 var bazaarFilter = 'all';
 
 function loadAllData(){
@@ -810,6 +875,9 @@ function updateCounts(){
   document.getElementById('countCMgrs').classList.toggle('zero', allCityManagers.length===0);
   document.getElementById('countBazaar').textContent = allBazaarRequests.filter(function(r){return r.status==='received';}).length;
   document.getElementById('countBazaar').classList.toggle('zero', allBazaarRequests.filter(function(r){return r.status==='received';}).length===0);
+  var unsettled = allReconOrders.filter(function(o){return !o.codSettled;}).length;
+  document.getElementById('countRecon').textContent = unsettled;
+  document.getElementById('countRecon').classList.toggle('zero', unsettled===0);
 
   document.getElementById('statPendingCount').textContent = pending.length;
   document.getElementById('statApprovedCount').textContent = approved.length;
@@ -2168,6 +2236,179 @@ function saveFreshCategory(sellerId, prodId, cat){
     }).then(function(){
       showToast('Fresh category সেট: '+cat+' ✅','green');
     }).catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
+}
+
+// ═══ COD RECONCILIATION ═══
+function loadReconOrders(){
+  allReconOrders = [];
+  var proms = allSellers.map(function(s){
+    return db.collection('cities').doc(CITY).collection('sellers').doc(s.id)
+      .collection('orders')
+      .where('paymentMethod','==','cod')
+      .where('status','==','delivered')
+      .get().then(function(snap){
+        snap.forEach(function(d){
+          allReconOrders.push(Object.assign({
+            id:d.id, shopId:s.id, shopName:s.shopName
+          }, d.data()));
+        });
+      }).catch(function(){});
+  });
+  Promise.all(proms).then(function(){
+    allReconOrders.sort(function(a,b){ return new Date(b.createdAt||0)-new Date(a.createdAt||0); });
+    renderRecon();
+    updateReconStats();
+    updateCounts();
+  });
+}
+
+function updateReconStats(){
+  var totalCash = allReconOrders.reduce(function(s,o){return s+(o.total||0);},0);
+  var totalCommission = allReconOrders.reduce(function(s,o){return s+calcCommission(o.total||0);},0);
+  var unsettled = allReconOrders.filter(function(o){return !o.codSettled;}).length;
+  document.getElementById('reconTotalOrders').textContent = allReconOrders.length;
+  document.getElementById('reconTotalCash').textContent = '₹'+totalCash.toLocaleString('en-IN');
+  document.getElementById('reconTotalCommission').textContent = '₹'+totalCommission.toLocaleString('en-IN');
+  document.getElementById('reconTotalSeller').textContent = '₹'+(totalCash-totalCommission).toLocaleString('en-IN');
+  document.getElementById('reconPending').textContent = unsettled;
+}
+
+function setReconFilter(f, btn){
+  reconFilter = f;
+  document.querySelectorAll('#page-recon .filter-pill').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  renderRecon();
+}
+
+function reconCardHTML(o){
+  var commission = calcCommission(o.total||0);
+  var sellerAmount = (o.total||0) - commission;
+  var isSettled = o.codSettled || false;
+  var settledDate = o.codSettledAt ? new Date(o.codSettledAt).toLocaleDateString('bn-IN',{day:'numeric',month:'short'}) : '';
+  var commPct = COMMISSION_TIERS.find(function(t){return (o.total||0)<=t.max;});
+  var pct = commPct ? Math.round(commPct.rate*100) : 4;
+  var isFreeDelivery = (o.total||0) >= FREE_DELIVERY_THRESHOLD;
+
+  return '<div class="order-card" style="border-left:3px solid '+(isSettled?'var(--green)':'var(--orange)')+'">'+
+    '<div class="order-top">'+
+      '<div>'+
+        '<div class="order-id-text">#'+o.id.slice(-6).toUpperCase()+'</div>'+
+        '<div class="order-shop-name">🏪 '+(o.shopName||'—')+'</div>'+
+      '</div>'+
+      '<span class="status-badge-pill '+(isSettled?'bp-delivered':'bp-pending')+'">'+
+        (isSettled?'✅ Settled'+(settledDate?' · '+settledDate:''):'⏳ Unsettled')+
+      '</span>'+
+    '</div>'+
+    '<div class="order-meta-grid">'+
+      '<div>গ্রাহক<strong>'+(o.customerName||'—')+'</strong></div>'+
+      '<div>Order মূল্য<strong style="color:var(--navy)">₹'+(o.total||0).toLocaleString('en-IN')+'</strong></div>'+
+      '<div>Delivery<strong>'+(isFreeDelivery?'<span style="color:var(--green)">Free 🎉</span>':'₹'+(o.deliveryCharge||0))+'</strong></div>'+
+      '<div>তারিখ<strong style="font-size:.76rem">'+(o.createdAt?new Date(o.createdAt).toLocaleDateString('bn-IN',{day:'numeric',month:'short'}):'—')+'</strong></div>'+
+    '</div>'+
+    '<div style="background:var(--sand);border-radius:10px;padding:12px 14px;margin-top:10px">'+
+      '<div style="font-size:.72rem;font-weight:700;color:var(--muted);margin-bottom:8px">💰 Settlement Breakdown</div>'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center">'+
+        '<div style="background:#fff;border-radius:8px;padding:8px">'+
+          '<div style="font-size:.68rem;color:var(--muted)">Cash Collected</div>'+
+          '<div style="font-size:.92rem;font-weight:800;color:var(--navy)">₹'+(o.total||0).toLocaleString('en-IN')+'</div>'+
+        '</div>'+
+        '<div style="background:var(--orange-light);border-radius:8px;padding:8px">'+
+          '<div style="font-size:.68rem;color:var(--orange)">Commission ('+pct+'%)</div>'+
+          '<div style="font-size:.92rem;font-weight:800;color:var(--orange)">₹'+commission.toLocaleString('en-IN')+'</div>'+
+        '</div>'+
+        '<div style="background:var(--green2);border-radius:8px;padding:8px">'+
+          '<div style="font-size:.68rem;color:var(--green)">Seller পাবে</div>'+
+          '<div style="font-size:.92rem;font-weight:800;color:var(--green)">₹'+sellerAmount.toLocaleString('en-IN')+'</div>'+
+        '</div>'+
+      '</div>'+
+    '</div>'+
+    (o.riderPayout?'<div style="background:var(--blue2);border-radius:8px;padding:8px 12px;margin-top:8px;'+
+      'font-size:.78rem;display:flex;justify-content:space-between">'+
+      '<span>🛵 Rider Payout</span><strong style="color:var(--blue)">₹'+o.riderPayout+'</strong></div>':'')+
+    (!isSettled
+      ?'<button class="btn-sm btn-green" style="width:100%;justify-content:center;margin-top:8px" '+
+        'onclick="markSettled(\''+o.shopId+'\',\''+o.id+'\')">✅ Settled হিসেবে mark করুন</button>'
+      :'<div style="font-size:.74rem;color:var(--green);text-align:center;margin-top:8px;padding:6px">✅ Settlement সম্পন্ন</div>')+
+  '</div>';
+}
+
+function renderRecon(){
+  var wrap = document.getElementById('reconListWrap');
+  var search = (document.getElementById('reconSearch').value||'').toLowerCase().trim();
+  var filtered = allReconOrders.filter(function(o){
+    if(reconFilter==='unsettled' && o.codSettled) return false;
+    if(reconFilter==='settled' && !o.codSettled) return false;
+    if(search){
+      var hay = [o.id,(o.shopName||''),(o.customerName||'')].join(' ').toLowerCase();
+      if(hay.indexOf(search)===-1) return false;
+    }
+    return true;
+  });
+  if(!filtered.length){
+    wrap.innerHTML = '<div class="empty-state"><div class="empty-icon">💰</div>'+
+      '<p>'+(reconFilter==='unsettled'?'সব COD order settled ✅':'কোনো COD delivered order নেই')+'</p></div>';
+    return;
+  }
+  wrap.innerHTML = filtered.map(reconCardHTML).join('');
+  document.getElementById('reconSelectedInfo').textContent =
+    filtered.length+' টি order · মোট: ₹'+filtered.reduce(function(s,o){return s+(o.total||0);},0).toLocaleString('en-IN');
+}
+
+function markSettled(shopId, orderId){
+  db.collection('cities').doc(CITY).collection('sellers').doc(shopId)
+    .collection('orders').doc(orderId).update({
+      codSettled:true, codSettledAt:new Date().toISOString(), codSettledBy:'admin'
+    }).then(function(){
+      var o = allReconOrders.find(function(x){return x.id===orderId&&x.shopId===shopId;});
+      if(o){ o.codSettled=true; o.codSettledAt=new Date().toISOString(); }
+      renderRecon(); updateReconStats(); updateCounts();
+      showToast('Settlement সম্পন্ন ✅','green');
+    }).catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
+}
+
+function markAllSettled(){
+  var unsettled = allReconOrders.filter(function(o){return !o.codSettled;});
+  if(!unsettled.length){ showToast('কোনো unsettled order নেই','red'); return; }
+  if(!confirm(unsettled.length+' টি order settled করবেন?')) return;
+  var now = new Date().toISOString();
+  var proms = unsettled.map(function(o){
+    return db.collection('cities').doc(CITY).collection('sellers').doc(o.shopId)
+      .collection('orders').doc(o.id).update({
+        codSettled:true, codSettledAt:now, codSettledBy:'admin'
+      }).then(function(){ o.codSettled=true; o.codSettledAt=now; }).catch(function(){});
+  });
+  Promise.all(proms).then(function(){
+    renderRecon(); updateReconStats(); updateCounts();
+    showToast(unsettled.length+' টি order settled হয়েছে ✅','green');
+  });
+}
+
+function exportRecon(){
+  var rows = [['Order ID','Shop','Customer','Order Value','Commission %','Commission','Seller Amount','Rider Payout','Free Delivery','Settled','Date']];
+  allReconOrders.forEach(function(o){
+    var commission = calcCommission(o.total||0);
+    var pct = (COMMISSION_TIERS.find(function(t){return (o.total||0)<=t.max;})||{rate:0.04}).rate;
+    rows.push([
+      '#'+o.id.slice(-6).toUpperCase(),
+      o.shopName||'',
+      o.customerName||'',
+      o.total||0,
+      Math.round(pct*100)+'%',
+      commission,
+      (o.total||0)-commission,
+      o.riderPayout||0,
+      (o.total||0)>=FREE_DELIVERY_THRESHOLD?'Yes':'No',
+      o.codSettled?'Yes':'No',
+      o.createdAt?new Date(o.createdAt).toLocaleDateString('en-IN'):''
+    ]);
+  });
+  var csv = rows.map(function(r){return r.join(',');}).join('\n');
+  var blob = new Blob([csv],{type:'text/csv'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'DELTA-COD-Reconciliation-'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();
+  showToast('CSV export হয়েছে ✅','green');
 }
 </script>
 </body>
