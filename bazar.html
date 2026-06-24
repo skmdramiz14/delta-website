@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DELTA Bazaar — শহরের যেকোনো পণ্য, আপনার দোরগোড়ায় | DELTA</title>
+<meta name="description" content="DELTA Bazaar — শহরের যেকোনো পণ্য খুঁজে না পেলে অনুরোধ করুন, আমরা শহরের পাইকারি বাজার থেকে এনে দেব।">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600;700&family=Tiro+Bangla&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --navy:#0a1f35;--navy2:#122840;--navy3:#061526;
+  --orange:#f07018;--orange2:#ff8c3a;--orange-light:#fff4ec;
+  --cream:#f7f9fc;--sand:#eef2f7;--white:#fff;
+  --border:#dde5ef;--muted:#6b7b8d;--charcoal:#1a2535;
+  --green:#1a8a4a;--green2:#e8f7ef;--red:#c0392b;--red2:#ffeaea;
+  --bazaar:#5b3aa0;--bazaar2:#7c4fd8;--bazaar-light:#f3eefc;
+}
+html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charcoal);overflow-x:hidden;}
+.bn{font-family:'Tiro Bangla',serif;}
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-thumb{background:#c0cdd8;border-radius:3px;}
+button,input,select,textarea{font-family:'DM Sans',sans-serif;}
+a{text-decoration:none;color:inherit;}
+
+/* ── NAV (matches index.html) ── */
+#nav{background:var(--navy);padding:0 5%;position:sticky;top:0;z-index:1000;box-shadow:0 2px 20px rgba(0,0,0,.3);}
+.nav-top{display:flex;align-items:center;gap:14px;padding:13px 0;}
+.logo{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:900;color:#fff;cursor:pointer;white-space:nowrap;letter-spacing:1px;}
+.logo em{color:var(--orange);font-style:normal;}
+.back-link{color:rgba(255,255,255,.6);font-size:.82rem;font-weight:600;display:flex;align-items:center;gap:6px;}
+.back-link:hover{color:#fff;}
+.nav-right{margin-left:auto;display:flex;align-items:center;gap:14px;}
+.nav-user-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);color:#fff;
+  padding:8px 16px;border-radius:8px;font-size:.82rem;font-weight:600;cursor:pointer;}
+.nav-user-btn:hover{background:rgba(255,255,255,.18);}
+
+/* ── HERO ── */
+.bazaar-hero{background:linear-gradient(135deg,var(--navy3) 0%,var(--bazaar) 55%,var(--bazaar2) 100%);
+  padding:54px 5% 60px;position:relative;overflow:hidden;}
+.bazaar-hero::before{content:'';position:absolute;top:-30%;right:-8%;width:480px;height:480px;
+  background:radial-gradient(circle,rgba(255,255,255,.08),transparent 70%);border-radius:50%;}
+.hero-inner{max-width:760px;margin:0 auto;text-align:center;position:relative;z-index:2;}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.12);
+  border:1px solid rgba(255,255,255,.25);color:#fff;padding:6px 16px;border-radius:30px;
+  font-size:.75rem;font-weight:700;letter-spacing:.5px;margin-bottom:18px;}
+.hero-title{font-family:'Playfair Display',serif;font-size:2.3rem;font-weight:900;color:#fff;
+  line-height:1.25;margin-bottom:14px;}
+.hero-title em{color:#ffd9a8;font-style:normal;}
+.hero-sub{font-size:1rem;color:rgba(255,255,255,.82);line-height:1.6;max-width:560px;margin:0 auto 28px;}
+.hero-how{display:flex;justify-content:center;gap:0;flex-wrap:wrap;max-width:640px;margin:0 auto;}
+.how-step{flex:1;min-width:140px;padding:0 12px;position:relative;}
+.how-step:not(:last-child)::after{content:'→';position:absolute;right:-4px;top:14px;color:rgba(255,255,255,.35);
+  font-size:1.1rem;}
+.how-icon{font-size:1.6rem;margin-bottom:6px;}
+.how-label{font-size:.78rem;color:rgba(255,255,255,.9);font-weight:600;line-height:1.4;}
+
+/* ── SECTION SHELL ── */
+.bz-section{padding:46px 5%;max-width:1240px;margin:0 auto;}
+.bz-section.gray{background:var(--sand);}
+.bz-section-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:22px;flex-wrap:wrap;gap:10px;}
+.bz-label{font-size:.72rem;font-weight:700;color:var(--bazaar);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:4px;}
+.bz-title{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:800;color:var(--navy);}
+
+/* ── CATALOG GRID ── */
+.catalog-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:18px;}
+.cat-card{background:#fff;border-radius:16px;border:1px solid var(--border);overflow:hidden;
+  transition:transform .2s,box-shadow .2s;display:flex;flex-direction:column;}
+.cat-card:hover{transform:translateY(-3px);box-shadow:0 12px 30px rgba(91,58,160,.14);}
+.cat-img{width:100%;aspect-ratio:1/1;background:var(--sand);display:flex;align-items:center;
+  justify-content:center;font-size:3rem;position:relative;}
+.cat-badge{position:absolute;top:10px;left:10px;background:rgba(91,58,160,.92);color:#fff;
+  font-size:.62rem;font-weight:700;padding:3px 9px;border-radius:20px;letter-spacing:.3px;}
+.cat-body{padding:14px 16px 16px;display:flex;flex-direction:column;flex:1;}
+.cat-name{font-size:.92rem;font-weight:700;color:var(--charcoal);margin-bottom:4px;line-height:1.3;}
+.cat-price-row{display:flex;align-items:baseline;gap:6px;margin-bottom:6px;}
+.cat-msrp{font-size:.74rem;color:var(--muted);text-decoration:line-through;}
+.cat-est{font-size:.92rem;font-weight:800;color:var(--bazaar);}
+.cat-eta{font-size:.7rem;color:var(--muted);margin-bottom:12px;display:flex;align-items:center;gap:4px;}
+.cat-btn{margin-top:auto;background:var(--bazaar-light);color:var(--bazaar);border:1.5px solid transparent;
+  padding:9px;border-radius:9px;font-size:.8rem;font-weight:700;cursor:pointer;transition:all .2s;}
+.cat-btn:hover{background:var(--bazaar);color:#fff;}
+
+/* ── CUSTOM REQUEST BLOCK ── */
+.custom-block{background:linear-gradient(135deg,var(--navy3),var(--navy));border-radius:22px;
+  padding:38px 5%;margin:50px 5%;max-width:1240px;margin-left:auto;margin-right:auto;
+  display:grid;grid-template-columns:1fr 1.3fr;gap:36px;align-items:center;}
+.custom-left h2{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:800;color:#fff;
+  line-height:1.3;margin-bottom:12px;}
+.custom-left h2 em{color:var(--orange2);font-style:normal;}
+.custom-left p{font-size:.88rem;color:rgba(255,255,255,.7);line-height:1.65;}
+.custom-form{background:#fff;border-radius:16px;padding:24px;}
+.form-group{margin-bottom:14px;}
+.form-group label{display:block;font-size:.72rem;font-weight:700;color:var(--muted);
+  margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px;}
+.form-input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:9px;
+  font-size:.875rem;outline:none;transition:border-color .2s;background:var(--cream);}
+.form-input:focus{border-color:var(--bazaar);background:#fff;}
+textarea.form-input{resize:vertical;min-height:70px;font-family:inherit;}
+.budget-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.img-upload-box{border:1.5px dashed var(--border);border-radius:10px;padding:16px;text-align:center;
+  cursor:pointer;background:var(--cream);transition:border-color .2s;}
+.img-upload-box:hover{border-color:var(--bazaar);}
+.img-upload-box.has-img{padding:0;border-style:solid;overflow:hidden;}
+.img-upload-box img{width:100%;max-height:140px;object-fit:cover;display:block;}
+.img-upload-hint{font-size:.78rem;color:var(--muted);}
+.guest-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.submit-btn{width:100%;padding:13px;background:var(--bazaar);color:#fff;border:none;
+  border-radius:10px;font-size:.92rem;font-weight:700;cursor:pointer;transition:all .2s;margin-top:6px;}
+.submit-btn:hover{background:var(--bazaar2);}
+.submit-btn:disabled{opacity:.6;cursor:not-allowed;}
+.logged-in-tag{background:var(--green2);color:var(--green);font-size:.76rem;font-weight:600;
+  padding:8px 12px;border-radius:8px;margin-bottom:14px;display:flex;align-items:center;gap:6px;}
+
+/* ── MY REQUESTS ── */
+.my-requests-wrap{max-width:1240px;margin:0 auto;padding:0 5% 50px;}
+.req-card{background:#fff;border-radius:14px;border:1px solid var(--border);padding:16px 18px;margin-bottom:10px;}
+.req-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;margin-bottom:6px;}
+.req-name{font-size:.9rem;font-weight:700;color:var(--charcoal);}
+.req-time{font-size:.74rem;color:var(--muted);margin-top:2px;}
+.status-pill{font-size:.68rem;font-weight:700;padding:3px 11px;border-radius:20px;white-space:nowrap;}
+.sp-received{background:#fff8e8;color:#7d5a00;}
+.sp-quoted{background:#e8f4ff;color:#0984e3;}
+.sp-confirmed{background:var(--bazaar-light);color:var(--bazaar);}
+.sp-in_transit{background:var(--orange-light);color:var(--orange);}
+.sp-delivered{background:var(--green2);color:var(--green);}
+.sp-cancelled{background:var(--red2);color:var(--red);}
+.req-quote{background:var(--sand);border-radius:8px;padding:9px 12px;font-size:.82rem;margin-top:8px;}
+
+.empty-state{text-align:center;padding:40px 20px;color:var(--muted);font-size:.85rem;}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--navy);color:#fff;
+  padding:12px 18px;border-radius:12px;font-size:.82rem;font-weight:500;
+  box-shadow:0 6px 24px rgba(0,0,0,.2);z-index:999;display:none;align-items:center;
+  gap:10px;border-left:3px solid var(--bazaar);max-width:300px;}
+.toast.show{display:flex;animation:toastIn .3s ease;}
+.toast.green{border-left-color:var(--green);}
+.toast.red{border-left-color:var(--red);}
+@keyframes toastIn{from{transform:translateX(80px);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* ── MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(6,21,38,.6);z-index:500;display:none;
+  align-items:center;justify-content:center;padding:16px;}
+.modal-overlay.open{display:flex;}
+.modal-box{background:#fff;border-radius:18px;width:min(420px,100%);padding:26px;}
+.modal-box h3{font-family:'Playfair Display',serif;font-size:1.15rem;color:var(--navy);margin-bottom:14px;}
+
+@media(max-width:780px){
+  .custom-block{grid-template-columns:1fr;padding:28px 6%;}
+  .hero-title{font-size:1.7rem;}
+  .hero-how{justify-content:flex-start;overflow-x:auto;}
+  .how-step:not(:last-child)::after{display:none;}
+  .guest-row,.budget-row{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<div class="toast" id="toastEl"></div>
+
+<!-- ═══ NAV ═══ -->
+<nav id="nav">
+  <div class="nav-top">
+    <a href="index.html" class="logo">△ DELT<em>A</em></a>
+    <a href="index.html" class="back-link">← হোমপেজে ফিরুন</a>
+    <div class="nav-right">
+      <button class="nav-user-btn" id="navUserBtn" onclick="handleUserBtn()">লগইন</button>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══ HERO ═══ -->
+<section class="bazaar-hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">✦ DELTA Bazaar</div>
+    <h1 class="hero-title">দূরত্ব এখন আর <em>বাধা নয়</em></h1>
+    <p class="hero-sub">
+      একসময় কিছু জিনিস পেতে শহরে যেতে হতো। এখন সেটা আর দরকার নেই। পণ্যটি যেখানেই থাকুক না কেন — DELTA Bazaar সেটা খুঁজে বের করে, ন্যায্য দামে, আপনার দোরগোড়ায় পৌঁছে দেওয়াই আমাদের প্রতিশ্রুতি।
+    </p>
+    <div class="hero-how">
+      <div class="how-step"><div class="how-icon">✦</div><div class="how-label">আপনার পছন্দ জানান</div></div>
+      <div class="how-step"><div class="how-icon">◈</div><div class="how-label">আমরা খুঁজে বের করি, দাম জানাই</div></div>
+      <div class="how-step"><div class="how-icon">◆</div><div class="how-label">পৌঁছে যায় আপনার দোরগোড়ায়</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ VISUAL CATALOG ═══ -->
+<section class="bz-section">
+  <div class="bz-section-head">
+    <div>
+      <div class="bz-label">কিউরেটেড সংগ্রহ</div>
+      <div class="bz-title">যা স্থানীয় দোকানে নেই, কিন্তু আপনার প্রয়োজন</div>
+    </div>
+  </div>
+  <div class="catalog-grid" id="catalogGrid"></div>
+</section>
+
+<!-- ═══ CUSTOM REQUEST ═══ -->
+<div class="custom-block">
+  <div class="custom-left">
+    <h2>যা চান, <em>তাই আনব</em></h2>
+    <p>তালিকায় নেই? কোনো সমস্যা নেই। পণ্যটি যেখানেই পাওয়া যাক — আমরা খুঁজে বের করব, ন্যায্য দাম নিশ্চিত করব, এবং আপনার কাছে পৌঁছে দেব। এটাই DELTA Bazaar-এর প্রতিশ্রুতি।</p>
+  </div>
+  <div class="custom-form">
+    <div id="loggedInTag" style="display:none" class="logged-in-tag">✅ <span id="loggedInName"></span> হিসেবে অনুরোধ পাঠানো হবে</div>
+    <div class="form-group">
+      <label>পণ্যের নাম / মডেল *</label>
+      <input type="text" class="form-input" id="reqItemName" placeholder="যেমন: Sony Wireless Trimmer Model X">
+    </div>
+    <div class="form-group">
+      <label>বিস্তারিত (ঐচ্ছিক)</label>
+      <textarea class="form-input" id="reqDesc" placeholder="রং, সাইজ, ব্র্যান্ড, বা যেকোনো বিশেষ চাহিদা লিখুন..."></textarea>
+    </div>
+    <div class="form-group">
+      <label>আনুমানিক বাজেট (₹)</label>
+      <div class="budget-row">
+        <input type="number" class="form-input" id="reqBudgetMin" placeholder="ন্যূনতম">
+        <input type="number" class="form-input" id="reqBudgetMax" placeholder="সর্বোচ্চ">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>ছবি যুক্ত করুন (ঐচ্ছিক)</label>
+      <div class="img-upload-box" id="imgUploadBox" onclick="document.getElementById('imgFileInput').click()">
+        <div class="img-upload-hint" id="imgUploadHint">📷 ছবি আপলোড করতে এখানে ক্লিক করুন</div>
+      </div>
+      <input type="file" id="imgFileInput" accept="image/*" style="display:none" onchange="uploadRequestImage(this)">
+    </div>
+    <div class="form-group guest-row" id="guestFields">
+      <div>
+        <label>আপনার নাম *</label>
+        <input type="text" class="form-input" id="reqGuestName" placeholder="আপনার নাম">
+      </div>
+      <div>
+        <label>মোবাইল নম্বর *</label>
+        <input type="tel" class="form-input" id="reqGuestPhone" placeholder="98XXXXXXXX">
+      </div>
+    </div>
+    <button class="submit-btn" id="submitReqBtn" onclick="submitBazaarRequest()">📤 অনুরোধ পাঠান</button>
+  </div>
+</div>
+
+<!-- ═══ MY REQUESTS (logged-in only) ═══ -->
+<div class="my-requests-wrap" id="myRequestsSection" style="display:none">
+  <div class="bz-section-head">
+    <div>
+      <div class="bz-label">আপনার ইতিহাস</div>
+      <div class="bz-title">আমার পাঠানো অনুরোধ</div>
+    </div>
+  </div>
+  <div id="myReqListWrap"></div>
+</div>
+
+<!-- ═══ LOGIN MODAL ═══ -->
+<div class="modal-overlay" id="authModal">
+  <div class="modal-box">
+    <h3>লগইন করুন</h3>
+    <div class="form-group">
+      <label>মোবাইল নম্বর</label>
+      <input type="tel" class="form-input" id="authPhone" placeholder="98XXXXXXXX">
+    </div>
+    <div class="form-group">
+      <label>আপনার নাম</label>
+      <input type="text" class="form-input" id="authName" placeholder="আপনার নাম">
+    </div>
+    <button class="submit-btn" onclick="quickLogin()">লগইন করুন</button>
+    <button onclick="closeAuthModal()" style="width:100%;background:transparent;border:none;color:var(--muted);
+      padding:10px;margin-top:6px;font-size:.82rem;cursor:pointer;">বাতিল করুন</button>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script>
+var FB_CFG = {
+  apiKey:"AIzaSyA6TrrnCMwv1aa1WPqGvTVWlnieB2pVOEU",
+  authDomain:"delta-platform-82fc0.firebaseapp.com",
+  projectId:"delta-platform-82fc0",
+  storageBucket:"delta-platform-82fc0.firebasestorage.app",
+  messagingSenderId:"444904180433",
+  appId:"1:444904180433:web:6706eba4d73a30cd67d3f0"
+};
+var CITY = 'manteswar';
+var CLOUD = 'djthojcmy', PRESET = 'delta_products';
+var auth, db, currentUser = null;
+var uploadedImageUrl = '';
+
+try{
+  firebase.initializeApp(FB_CFG);
+  auth = firebase.auth();
+  db = firebase.firestore();
+  auth.onAuthStateChanged(function(u){
+    currentUser = u;
+    updateAuthUI();
+    if(u) loadMyRequests();
+  });
+  // Load catalog from Firestore
+  loadAndRenderCatalog();
+  // Auto-fill if arriving from homepage "not found" search
+  (function(){
+    var params = new URLSearchParams(window.location.search);
+    var q = params.get('q');
+    if(q){
+      document.getElementById('reqItemName').value = q;
+      setTimeout(function(){
+        document.querySelector('.custom-block').scrollIntoView({behavior:'smooth', block:'center'});
+      }, 500);
+    }
+  })();
+}catch(e){ console.log('Firebase init error:', e); }
+
+function showToast(msg, type){
+  var e = document.getElementById('toastEl');
+  e.textContent = msg; e.className = 'toast show ' + (type||'');
+  clearTimeout(e._t);
+  e._t = setTimeout(function(){ e.className = 'toast'; }, 3200);
+}
+
+function updateAuthUI(){
+  var btn = document.getElementById('navUserBtn');
+  var tag = document.getElementById('loggedInTag');
+  var guestFields = document.getElementById('guestFields');
+  var myReqSection = document.getElementById('myRequestsSection');
+  if(currentUser){
+    btn.textContent = (currentUser.displayName||'আমার অ্যাকাউন্ট');
+    tag.style.display = 'flex';
+    document.getElementById('loggedInName').textContent = currentUser.displayName || 'আপনি';
+    guestFields.style.display = 'none';
+    myReqSection.style.display = 'block';
+  } else {
+    btn.textContent = 'লগইন';
+    tag.style.display = 'none';
+    guestFields.style.display = 'grid';
+    myReqSection.style.display = 'none';
+  }
+}
+
+function handleUserBtn(){
+  if(currentUser){
+    if(confirm('লগআউট করবেন?')) auth.signOut();
+  } else {
+    document.getElementById('authModal').classList.add('open');
+  }
+}
+function closeAuthModal(){ document.getElementById('authModal').classList.remove('open'); }
+
+function quickLogin(){
+  var phone = document.getElementById('authPhone').value.trim();
+  var name = document.getElementById('authName').value.trim();
+  if(!phone || !name){ showToast('নাম ও মোবাইল নম্বর দিন', 'red'); return; }
+  // Lightweight anonymous auth + profile attached locally (full phone-OTP is Phase 2)
+  auth.signInAnonymously().then(function(cred){
+    currentUser = cred.user;
+    currentUser.updateProfile({displayName: name}).then(function(){
+      currentUser.displayName = name;
+      window._guestPhone = phone;
+      updateAuthUI();
+      closeAuthModal();
+      showToast('লগইন সফল ✅', 'green');
+    });
+  }).catch(function(e){ showToast('লগইন ব্যর্থ: '+e.message, 'red'); });
+}
+
+// ═══ VISUAL ANCHOR CATALOG (live from Firestore) ═══
+function loadAndRenderCatalog(){
+  var wrap = document.getElementById('catalogGrid');
+  wrap.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);font-size:.85rem">লোড হচ্ছে...</div>';
+  db.collection('cities').doc(CITY).collection('bazaarCatalog')
+    .where('isActive','==',true).get().then(function(snap){
+      var items = [];
+      snap.forEach(function(d){ items.push(Object.assign({id:d.id}, d.data())); });
+      items.sort(function(a,b){ return new Date(a.createdAt||0) - new Date(b.createdAt||0); });
+      if(!items.length){
+        wrap.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);'+
+          'font-size:.88rem;grid-column:1/-1">শীঘ্রই এখানে পণ্যের তালিকা আসছে...</div>';
+        return;
+      }
+      wrap.innerHTML = items.map(function(item, idx){
+        return '<div class="cat-card">'+
+          '<div class="cat-img"><span class="cat-badge">সংগ্রহ থেকে</span>'+(item.icon||'📦')+'</div>'+
+          '<div class="cat-body">'+
+            '<div class="cat-name">'+item.name+'</div>'+
+            '<div class="cat-price-row">'+
+              '<span class="cat-msrp">₹'+(item.msrp||0).toLocaleString('en-IN')+'</span>'+
+              '<span class="cat-est">₹'+(item.estMin||0)+' - '+(item.estMax||0)+'</span>'+
+            '</div>'+
+            '<div class="cat-eta">⏳ আনুমানিক ডেলিভারি: '+(item.eta||'48-72 ঘণ্টা')+'</div>'+
+            '<button class="cat-btn" onclick="requestCatalogItem(\''+item.id+'\',\''+
+              (item.name||'').replace(/'/g,'')+ '\')">এই পণ্যটি চাই →</button>'+
+          '</div>'+
+        '</div>';
+      }).join('');
+    }).catch(function(){
+      wrap.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);font-size:.85rem;grid-column:1/-1">লোড করতে সমস্যা হয়েছে</div>';
+    });
+}
+
+function requestCatalogItem(id, name){
+  document.getElementById('reqItemName').value = name;
+  document.getElementById('reqDesc').value = '(সংগ্রহ থেকে নির্বাচিত — সঠিক মডেল/বিবরণ এখানে যোগ করুন)';
+  document.querySelector('.custom-block').scrollIntoView({behavior:'smooth', block:'center'});
+  showToast('নিচের ফর্মে বিবরণ যোগ করে পাঠান', 'green');
+}
+
+// ═══ IMAGE UPLOAD ═══
+async function uploadRequestImage(input){
+  var file = input.files[0];
+  if(!file) return;
+  var box = document.getElementById('imgUploadBox');
+  var hint = document.getElementById('imgUploadHint');
+  hint.textContent = '⏳ আপলোড হচ্ছে...';
+  var fd = new FormData();
+  fd.append('file', file);
+  fd.append('upload_preset', PRESET);
+  fd.append('cloud_name', CLOUD);
+  fd.append('folder', 'delta/bazaar-requests');
+  try{
+    var res = await fetch('https://api.cloudinary.com/v1_1/'+CLOUD+'/image/upload', {method:'POST', body:fd});
+    var data = await res.json();
+    if(data.secure_url){
+      uploadedImageUrl = data.secure_url;
+      box.classList.add('has-img');
+      box.innerHTML = '<img src="'+data.secure_url+'">';
+    } else {
+      hint.textContent = '📷 আপলোড ব্যর্থ, আবার চেষ্টা করুন';
+    }
+  }catch(e){
+    hint.textContent = '📷 আপলোড ব্যর্থ, আবার চেষ্টা করুন';
+  }
+}
+
+// ═══ SUBMIT REQUEST ═══
+function submitBazaarRequest(){
+  var itemName = document.getElementById('reqItemName').value.trim();
+  var desc = document.getElementById('reqDesc').value.trim();
+  var budgetMin = parseFloat(document.getElementById('reqBudgetMin').value) || 0;
+  var budgetMax = parseFloat(document.getElementById('reqBudgetMax').value) || 0;
+
+  if(!itemName){ showToast('পণ্যের নাম লিখুন', 'red'); return; }
+
+  var customerName, customerPhone, customerId;
+  if(currentUser){
+    customerName = currentUser.displayName || 'গ্রাহক';
+    customerPhone = window._guestPhone || '';
+    customerId = currentUser.uid;
+  } else {
+    customerName = document.getElementById('reqGuestName').value.trim();
+    customerPhone = document.getElementById('reqGuestPhone').value.trim();
+    customerId = null;
+    if(!customerName || !customerPhone){
+      showToast('নাম ও মোবাইল নম্বর দিন', 'red'); return;
+    }
+  }
+
+  var btn = document.getElementById('submitReqBtn');
+  btn.disabled = true; btn.textContent = 'পাঠানো হচ্ছে...';
+
+  db.collection('cities').doc(CITY).collection('bazaarRequests').add({
+    itemName: itemName,
+    description: desc,
+    budgetMin: budgetMin,
+    budgetMax: budgetMax,
+    imageUrl: uploadedImageUrl,
+    customerName: customerName,
+    customerPhone: customerPhone,
+    customerId: customerId,
+    status: 'received',
+    quotedPrice: 0,
+    adminNotes: '',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  }).then(function(){
+    showToast('আপনার অনুরোধ পাঠানো হয়েছে ✅ আমরা শীঘ্রই যোগাযোগ করব', 'green');
+    document.getElementById('reqItemName').value = '';
+    document.getElementById('reqDesc').value = '';
+    document.getElementById('reqBudgetMin').value = '';
+    document.getElementById('reqBudgetMax').value = '';
+    document.getElementById('imgUploadBox').classList.remove('has-img');
+    document.getElementById('imgUploadBox').innerHTML = '<div class="img-upload-hint" id="imgUploadHint">📷 ছবি আপলোড করতে এখানে ক্লিক করুন</div>';
+    uploadedImageUrl = '';
+    if(currentUser) loadMyRequests();
+  }).catch(function(e){
+    showToast('পাঠাতে সমস্যা হয়েছে: '+e.message, 'red');
+  }).then(function(){
+    btn.disabled = false; btn.textContent = '📤 অনুরোধ পাঠান';
+  });
+}
+
+// ═══ MY REQUESTS (logged-in users) ═══
+var BAZAAR_STATUS_LABELS = {
+  received:'🟡 গৃহীত হয়েছে', quoted:'💬 দাম পাওয়া গেছে', confirmed:'✅ নিশ্চিত হয়েছে',
+  in_transit:'🚚 শহর থেকে আসছে', delivered:'📦 ডেলিভার হয়েছে', cancelled:'❌ বাতিল হয়েছে'
+};
+
+function loadMyRequests(){
+  if(!currentUser) return;
+  var wrap = document.getElementById('myReqListWrap');
+  db.collection('cities').doc(CITY).collection('bazaarRequests')
+    .where('customerId','==',currentUser.uid).get().then(function(snap){
+      var reqs = [];
+      snap.forEach(function(d){ reqs.push(Object.assign({id:d.id}, d.data())); });
+      reqs.sort(function(a,b){ return new Date(b.createdAt||0) - new Date(a.createdAt||0); });
+      if(!reqs.length){
+        wrap.innerHTML = '<div class="empty-state">এখনো কোনো অনুরোধ পাঠাননি</div>';
+        return;
+      }
+      wrap.innerHTML = reqs.map(function(r){
+        var statusClass = 'sp-' + (r.status||'received');
+        var statusLabel = BAZAAR_STATUS_LABELS[r.status] || r.status;
+        var time = r.createdAt ? new Date(r.createdAt).toLocaleDateString('bn-IN',{day:'numeric',month:'short'}) : '';
+        var quoteBlock = (r.status==='quoted' || r.status==='confirmed' || r.status==='in_transit' || r.status==='delivered') && r.quotedPrice
+          ? '<div class="req-quote">💵 চূড়ান্ত দাম: ₹'+r.quotedPrice.toLocaleString('en-IN')+(r.adminNotes?' · '+r.adminNotes:'')+'</div>'
+          : '';
+        return '<div class="req-card">'+
+          '<div class="req-top">'+
+            '<div><div class="req-name">'+r.itemName+'</div><div class="req-time">'+time+'</div></div>'+
+            '<span class="status-pill '+statusClass+'">'+statusLabel+'</span>'+
+          '</div>'+
+          quoteBlock+
+        '</div>';
+      }).join('');
+    }).catch(function(){
+      wrap.innerHTML = '<div class="empty-state">লোড করতে সমস্যা হয়েছে</div>';
+    });
+}
+</script>
+</body>
+</html>
