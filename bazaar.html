@@ -886,11 +886,21 @@ var BAZAAR_STATUS_LABELS = {
   in_transit:'🚚 শহর থেকে আসছে', delivered:'📦 ডেলিভার হয়েছে', cancelled:'❌ বাতিল হয়েছে'
 };
 
+var bazaarUnsubscribe = null; // track listener to unsubscribe when needed
+
 function loadMyRequests(){
   if(!currentUser) return;
   var wrap = document.getElementById('myReqListWrap');
-  db.collection('cities').doc(CITY).collection('bazaarRequests')
-    .where('customerId','==',currentUser.uid).get().then(function(snap){
+
+  // Unsubscribe previous listener if any
+  if(bazaarUnsubscribe) { bazaarUnsubscribe(); bazaarUnsubscribe = null; }
+
+  wrap.innerHTML = '<div class="empty-state"><p>লোড হচ্ছে...</p></div>';
+
+  // Real-time listener — auto-updates when Admin changes anything
+  bazaarUnsubscribe = db.collection('cities').doc(CITY).collection('bazaarRequests')
+    .where('customerId','==',currentUser.uid)
+    .onSnapshot(function(snap){
       var reqs = [];
       snap.forEach(function(d){ reqs.push(Object.assign({id:d.id}, d.data())); });
       reqs.sort(function(a,b){ return new Date(b.createdAt||0) - new Date(a.createdAt||0); });
@@ -903,38 +913,38 @@ function loadMyRequests(){
         var statusLabel = BAZAAR_STATUS_LABELS[r.status] || r.status;
         var time = r.createdAt ? new Date(r.createdAt).toLocaleDateString('bn-IN',{day:'numeric',month:'short'}) : '';
 
-        var actionBlock = '';
+        // Admin notification message (if set)
+        var notifBlock = r.adminNotification
+          ? '<div style="background:var(--bazaar-light);border-left:3px solid var(--bazaar);'+
+            'border-radius:0 8px 8px 0;padding:9px 12px;margin-top:8px;font-size:.82rem;color:var(--charcoal)">'+
+            '💬 '+r.adminNotification+'</div>'
+          : '';
 
+        var actionBlock = '';
         if(r.status === 'quoted' && r.quotedPrice){
-          // Customer sees quote and can confirm or decline
           actionBlock = '<div class="req-quote-confirm">'+
             '<div style="font-size:.74rem;font-weight:700;color:var(--bazaar);margin-bottom:6px">💬 আপনার অনুরোধের দাম নির্ধারণ হয়েছে</div>'+
             '<div class="req-quote-price">₹'+r.quotedPrice.toLocaleString('en-IN')+'</div>'+
             (r.adminNotes ? '<div class="req-quote-note">📝 '+r.adminNotes+'</div>' : '')+
-            '<div class="req-quote-note">এই দামে অর্ডারটি নিশ্চিত করতে চান? নিশ্চিত করলে আমরা শহর থেকে পণ্যটি আনার প্রক্রিয়া শুরু করব।</div>'+
+            '<div class="req-quote-note">এই দামে অর্ডারটি নিশ্চিত করতে চান?</div>'+
             '<div class="req-confirm-actions">'+
               '<button class="btn-confirm" onclick="confirmBazaarOrder(\''+r.id+'\')">✅ নিশ্চিত করুন</button>'+
               '<button class="btn-decline" onclick="declineBazaarOrder(\''+r.id+'\')">❌ বাতিল করুন</button>'+
             '</div>'+
           '</div>';
-
         } else if(r.status === 'confirmed'){
           actionBlock = '<div class="req-quote-done">✅ অর্ডার নিশ্চিত হয়েছে'+
             (r.quotedPrice ? ' · দাম: ₹'+r.quotedPrice.toLocaleString('en-IN') : '')+
-            ' — আমরা শহর থেকে পণ্যটি আনছি</div>';
-
+            ' — আমরা পণ্যটি আনছি</div>';
         } else if(r.status === 'in_transit'){
           actionBlock = '<div class="req-quote-done" style="background:var(--orange-light);color:var(--orange)">'+
             '🚚 পণ্যটি শহর থেকে রওনা হয়েছে'+
             (r.quotedPrice ? ' · দাম: ₹'+r.quotedPrice.toLocaleString('en-IN') : '')+'</div>';
-
         } else if(r.status === 'delivered'){
           actionBlock = '<div class="req-quote-done">📦 ডেলিভারি সম্পন্ন হয়েছে'+
             (r.quotedPrice ? ' · ₹'+r.quotedPrice.toLocaleString('en-IN') : '')+'</div>';
-
         } else if(r.status === 'cancelled'){
           actionBlock = '<div class="req-quote-cancelled">❌ অনুরোধটি বাতিল হয়েছে</div>';
-
         } else if(r.status === 'received'){
           actionBlock = '<div style="font-size:.78rem;color:var(--muted);margin-top:8px;'+
             'padding:8px 12px;background:var(--sand);border-radius:8px">'+
@@ -946,10 +956,11 @@ function loadMyRequests(){
             '<div><div class="req-name">'+r.itemName+'</div><div class="req-time">'+time+'</div></div>'+
             '<span class="status-pill '+statusClass+'">'+statusLabel+'</span>'+
           '</div>'+
+          notifBlock+
           actionBlock+
         '</div>';
       }).join('');
-    }).catch(function(){
+    }, function(){
       wrap.innerHTML = '<div class="empty-state">লোড করতে সমস্যা হয়েছে</div>';
     });
 }
