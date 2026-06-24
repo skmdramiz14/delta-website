@@ -99,13 +99,84 @@ a{text-decoration:none;color:inherit;}
 
 .cat-body{padding:14px 16px 16px;display:flex;flex-direction:column;flex:1;}
 .cat-name{font-size:.92rem;font-weight:700;color:var(--charcoal);margin-bottom:4px;line-height:1.3;}
-.cat-price-row{display:flex;align-items:baseline;gap:6px;margin-bottom:6px;}
+.cat-price-row{display:flex;align-items:baseline;gap:6px;margin-bottom:6px;flex-wrap:wrap;}
 .cat-msrp{font-size:.74rem;color:var(--muted);text-decoration:line-through;}
 .cat-est{font-size:.92rem;font-weight:800;color:var(--bazaar);}
+.cat-discount{background:#e8f5e9;color:#2e7d32;font-size:.7rem;font-weight:800;
+  padding:2px 7px;border-radius:20px;white-space:nowrap;}
+.cat-discount.sale{background:#d4edda;color:#155724;}
+
+/* ── PRODUCT DETAIL MODAL ── */
+.prod-modal-overlay{position:fixed;inset:0;background:rgba(6,21,38,.65);z-index:600;
+  display:none;align-items:center;justify-content:center;padding:16px;overflow-y:auto;}
+.prod-modal-overlay.open{display:flex;}
+.prod-modal{background:#fff;border-radius:20px;width:min(860px,100%);max-height:90vh;
+  overflow-y:auto;display:grid;grid-template-columns:1fr 1fr;position:relative;}
+.prod-modal-close{position:absolute;top:14px;right:14px;background:var(--sand);border:none;
+  border-radius:50%;width:32px;height:32px;font-size:1rem;cursor:pointer;z-index:10;
+  display:flex;align-items:center;justify-content:center;color:var(--muted);}
+.prod-modal-close:hover{background:var(--border);}
+.prod-modal-gallery{position:relative;border-radius:20px 0 0 20px;overflow:hidden;background:var(--sand);}
+.prod-modal-slides{display:flex;height:360px;transition:transform .35s cubic-bezier(.4,0,.2,1);}
+.prod-modal-slide{min-width:100%;height:360px;display:flex;align-items:center;justify-content:center;
+  font-size:5rem;flex-shrink:0;background:var(--sand);}
+.prod-modal-slide img{width:100%;height:100%;object-fit:contain;}
+.prod-modal-nav{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.92);
+  border:none;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;
+  justify-content:center;cursor:pointer;font-size:.9rem;box-shadow:0 2px 8px rgba(0,0,0,.15);}
+.prod-modal-nav.prev{left:10px;}
+.prod-modal-nav.next{right:10px;}
+.prod-modal-dots{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);
+  display:flex;gap:5px;}
+.prod-modal-dot{width:6px;height:6px;border-radius:50%;background:rgba(0,0,0,.25);
+  border:none;cursor:pointer;padding:0;transition:all .2s;}
+.prod-modal-dot.active{background:var(--bazaar);width:18px;border-radius:3px;}
+.prod-modal-thumbs{display:flex;gap:6px;padding:10px 14px;background:#fff;overflow-x:auto;
+  scrollbar-width:none;border-top:1px solid var(--border);}
+.prod-modal-thumbs::-webkit-scrollbar{display:none;}
+.prod-modal-thumb{width:52px;height:52px;object-fit:cover;border-radius:8px;cursor:pointer;
+  border:2px solid transparent;transition:border-color .2s;flex-shrink:0;}
+.prod-modal-thumb.active{border-color:var(--bazaar);}
+.prod-modal-info{padding:28px 24px;display:flex;flex-direction:column;overflow-y:auto;}
+.prod-modal-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;}
+.prod-modal-name{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:800;
+  color:var(--navy);line-height:1.3;margin-bottom:8px;}
+.prod-modal-cat{font-size:.74rem;color:var(--muted);margin-bottom:12px;}
+.prod-modal-price-block{background:var(--bazaar-light);border-radius:12px;padding:14px 16px;margin-bottom:14px;}
+.prod-modal-price-main{font-size:1.4rem;font-weight:900;color:var(--bazaar);margin-bottom:4px;}
+.prod-modal-price-main.sale{color:var(--green);}
+.prod-modal-price-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.prod-modal-msrp{font-size:.8rem;color:var(--muted);text-decoration:line-through;}
+.prod-modal-discount{background:var(--green);color:#fff;font-size:.72rem;font-weight:800;
+  padding:3px 9px;border-radius:20px;}
+.prod-modal-eta{font-size:.8rem;color:var(--muted);margin-bottom:16px;
+  display:flex;align-items:center;gap:6px;}
+.prod-modal-desc{font-size:.84rem;color:var(--muted);line-height:1.65;margin-bottom:18px;
+  padding:12px 14px;background:var(--cream);border-radius:10px;}
+.prod-modal-btn{width:100%;padding:14px;background:var(--bazaar);color:#fff;border:none;
+  border-radius:12px;font-size:.95rem;font-weight:700;cursor:pointer;transition:all .2s;margin-top:auto;}
+.prod-modal-btn:hover{background:var(--bazaar2);}
+
+@media(max-width:640px){
+  .prod-modal{grid-template-columns:1fr;}
+  .prod-modal-gallery{border-radius:20px 20px 0 0;}
+  .prod-modal-slides,.prod-modal-slide{height:260px;}
+}
 .cat-eta{font-size:.7rem;color:var(--muted);margin-bottom:12px;display:flex;align-items:center;gap:4px;}
 .cat-btn{margin-top:auto;background:var(--bazaar-light);color:var(--bazaar);border:1.5px solid transparent;
   padding:9px;border-radius:9px;font-size:.8rem;font-weight:700;cursor:pointer;transition:all .2s;}
 .cat-btn:hover{background:var(--bazaar);color:#fff;}
+
+/* ── CATEGORY FILTER BAR ── */
+.cat-filter-bar{display:flex;gap:8px;padding:16px 5%;overflow-x:auto;
+  scrollbar-width:none;background:#fff;border-bottom:1px solid var(--border);
+  position:sticky;top:58px;z-index:40;}
+.cat-filter-bar::-webkit-scrollbar{display:none;}
+.cat-filter-pill{padding:8px 16px;border-radius:20px;border:1.5px solid var(--border);
+  background:#fff;font-size:.8rem;font-weight:600;cursor:pointer;color:var(--muted);
+  white-space:nowrap;transition:all .2s;flex-shrink:0;}
+.cat-filter-pill.active{background:var(--bazaar);color:#fff;border-color:var(--bazaar);}
+.cat-filter-pill:hover:not(.active){border-color:var(--bazaar);color:var(--bazaar);}
 
 /* ── CUSTOM REQUEST BLOCK ── */
 .custom-block{background:linear-gradient(135deg,var(--navy3),var(--navy));border-radius:22px;
@@ -185,6 +256,35 @@ textarea.form-input{resize:vertical;min-height:70px;font-family:inherit;}
 
 <div class="toast" id="toastEl"></div>
 
+<!-- ═══ PRODUCT DETAIL MODAL ═══ -->
+<div class="prod-modal-overlay" id="prodModal">
+  <div class="prod-modal" id="prodModalInner">
+    <button class="prod-modal-close" onclick="closeProdModal()">✕</button>
+    <div class="prod-modal-gallery">
+      <div class="prod-modal-slides" id="modalSlides"></div>
+      <button class="prod-modal-nav prev" id="modalPrev" onclick="modalSlide(-1)" style="display:none">‹</button>
+      <button class="prod-modal-nav next" id="modalNext" onclick="modalSlide(1)" style="display:none">›</button>
+      <div class="prod-modal-dots" id="modalDots"></div>
+      <div class="prod-modal-thumbs" id="modalThumbs"></div>
+    </div>
+    <div class="prod-modal-info">
+      <div class="prod-modal-tags" id="modalTags"></div>
+      <div class="prod-modal-name" id="modalName"></div>
+      <div class="prod-modal-cat" id="modalCat"></div>
+      <div class="prod-modal-price-block">
+        <div class="prod-modal-price-main" id="modalPriceMain"></div>
+        <div class="prod-modal-price-row">
+          <span class="prod-modal-msrp" id="modalMsrp"></span>
+          <span class="prod-modal-discount" id="modalDiscount" style="display:none"></span>
+        </div>
+      </div>
+      <div class="prod-modal-eta" id="modalEta"></div>
+      <div class="prod-modal-desc" id="modalDesc" style="display:none"></div>
+      <button class="prod-modal-btn" id="modalReqBtn">📤 এই পণ্যটি চাই →</button>
+    </div>
+  </div>
+</div>
+
 <!-- ═══ NAV ═══ -->
 <nav id="nav">
   <div class="nav-top">
@@ -212,12 +312,68 @@ textarea.form-input{resize:vertical;min-height:70px;font-family:inherit;}
   </div>
 </section>
 
-<!-- ═══ VISUAL CATALOG ═══ -->
-<section class="bz-section">
+<!-- ═══ CATEGORY FILTER BAR ═══ -->
+<div class="cat-filter-bar" id="catFilterBar">
+  <button class="cat-filter-pill active" data-cat="all" onclick="setCatFilter('all',this)">🏪 সব</button>
+  <button class="cat-filter-pill" data-cat="Electronics" onclick="setCatFilter('Electronics',this)">📱 Electronics</button>
+  <button class="cat-filter-pill" data-cat="Clothing" onclick="setCatFilter('Clothing',this)">👗 Clothing</button>
+  <button class="cat-filter-pill" data-cat="Beauty & Skincare" onclick="setCatFilter('Beauty & Skincare',this)">💄 Beauty</button>
+  <button class="cat-filter-pill" data-cat="Footwear" onclick="setCatFilter('Footwear',this)">👟 Footwear</button>
+  <button class="cat-filter-pill" data-cat="Baby Care" onclick="setCatFilter('Baby Care',this)">👶 Baby Care</button>
+  <button class="cat-filter-pill" data-cat="Kitchen & Home" onclick="setCatFilter('Kitchen & Home',this)">🏠 Kitchen & Home</button>
+  <button class="cat-filter-pill" data-cat="Toys & Kids" onclick="setCatFilter('Toys & Kids',this)">🧩 Toys & Kids</button>
+</div>
+
+<!-- ═══ TOP PICKS ═══ -->
+<section class="bz-section" id="sectionTopPicks" style="display:none">
+  <div class="bz-section-head">
+    <div>
+      <div class="bz-label">⭐ কিউরেটেড</div>
+      <div class="bz-title">Top Picks</div>
+    </div>
+  </div>
+  <div class="catalog-grid" id="gridTopPicks"></div>
+</section>
+
+<!-- ═══ TRENDING ═══ -->
+<section class="bz-section" id="sectionTrending" style="display:none">
+  <div class="bz-section-head">
+    <div>
+      <div class="bz-label">🔥 জনপ্রিয়</div>
+      <div class="bz-title">Trending</div>
+    </div>
+  </div>
+  <div class="catalog-grid" id="gridTrending"></div>
+</section>
+
+<!-- ═══ SALE ═══ -->
+<section class="bz-section" id="sectionSale" style="display:none">
+  <div class="bz-section-head">
+    <div>
+      <div class="bz-label">🏷️ বিশেষ ছাড়</div>
+      <div class="bz-title">Sale</div>
+    </div>
+  </div>
+  <div class="catalog-grid" id="gridSale"></div>
+</section>
+
+<!-- ═══ NEW RELEASE ═══ -->
+<section class="bz-section" id="sectionNew" style="display:none">
+  <div class="bz-section-head">
+    <div>
+      <div class="bz-label">✨ সদ্য যুক্ত</div>
+      <div class="bz-title">New Release</div>
+    </div>
+  </div>
+  <div class="catalog-grid" id="gridNew"></div>
+</section>
+
+<!-- ═══ ALL PRODUCTS ═══ -->
+<section class="bz-section" id="sectionAll">
   <div class="bz-section-head">
     <div>
       <div class="bz-label">কিউরেটেড সংগ্রহ</div>
-      <div class="bz-title">যা স্থানীয় দোকানে নেই, কিন্তু আপনার প্রয়োজন</div>
+      <div class="bz-title" id="allSectionTitle">যা স্থানীয় দোকানে নেই, কিন্তু আপনার প্রয়োজন</div>
     </div>
   </div>
   <div class="catalog-grid" id="catalogGrid"></div>
@@ -390,79 +546,130 @@ function quickLogin(){
 }
 
 // ═══ VISUAL ANCHOR CATALOG (live from Firestore) ═══
+var allCatalogData = [];
+var activeCatFilter = 'all';
+
 function loadAndRenderCatalog(){
   var wrap = document.getElementById('catalogGrid');
-  wrap.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);font-size:.85rem">লোড হচ্ছে...</div>';
+  if(wrap) wrap.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);font-size:.85rem;grid-column:1/-1">লোড হচ্ছে...</div>';
   db.collection('cities').doc(CITY).collection('bazaarCatalog')
     .where('isActive','==',true).get().then(function(snap){
       var items = [];
       snap.forEach(function(d){ items.push(Object.assign({id:d.id}, d.data())); });
-      items.sort(function(a,b){ return new Date(a.createdAt||0) - new Date(b.createdAt||0); });
-      if(!items.length){
-        wrap.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);'+
-          'font-size:.88rem;grid-column:1/-1">শীঘ্রই এখানে পণ্যের তালিকা আসছে...</div>';
-        return;
-      }
-      wrap.innerHTML = items.map(function(item){
-        var imgs = item.images && item.images.length ? item.images : (item.imageUrl ? [item.imageUrl] : []);
-        var hasImgs = imgs.length > 0;
-        var cardId = 'cat-'+item.id;
-
-        // Build slides
-        var slidesHtml = hasImgs
-          ? imgs.map(function(u){
-              return '<div class="cat-slide"><img src="'+u+'" loading="lazy"></div>';
-            }).join('')
-          : '<div class="cat-slide"><span>'+(item.icon||'📦')+'</span></div>';
-
-        // Prev/Next buttons (only if more than 1 image)
-        var navBtns = imgs.length > 1
-          ? '<button class="cat-slide-btn prev" onclick="catSlide(\''+cardId+'\',-1)">‹</button>'+
-            '<button class="cat-slide-btn next" onclick="catSlide(\''+cardId+'\',1)">›</button>'
-          : '';
-
-        // Dots
-        var dotsHtml = imgs.length > 1
-          ? '<div class="cat-dots">'+
-              imgs.map(function(_,i){
-                return '<button class="cat-dot'+(i===0?' active':'')+'" '+
-                  'onclick="catGoTo(\''+cardId+'\','+i+')"></button>';
-              }).join('')+
-            '</div>'
-          : '';
-
-        // Thumbnails (only if 2+ images)
-        var thumbHtml = imgs.length > 1
-          ? '<div class="cat-thumbs">'+
-              imgs.map(function(u,i){
-                return '<img src="'+u+'" class="cat-thumb'+(i===0?' active':'')+'" loading="lazy" '+
-                  'onclick="catGoTo(\''+cardId+'\','+i+')">';
-              }).join('')+
-            '</div>'
-          : '';
-
-        return '<div class="cat-card" id="'+cardId+'">'+
-          '<div class="cat-slider">'+
-            '<span class="cat-badge">সংগ্রহ থেকে</span>'+
-            '<div class="cat-slides" id="'+cardId+'-slides">'+slidesHtml+'</div>'+
-            navBtns+dotsHtml+
-          '</div>'+
-          thumbHtml+
-          '<div class="cat-body">'+
-            '<div class="cat-name">'+item.name+'</div>'+
-            '<div class="cat-price-row">'+
-              '<span class="cat-msrp">₹'+(item.msrp||0).toLocaleString('en-IN')+'</span>'+
-              '<span class="cat-est">₹'+(item.estMin||0)+' – ₹'+(item.estMax||0)+'</span>'+
-            '</div>'+
-            '<div class="cat-eta">⏳ আনুমানিক ডেলিভারি: '+(item.eta||'48-72 ঘণ্টা')+'</div>'+
-            '<button class="cat-btn" onclick="requestCatalogItem(\''+item.id+'\',\''+
-              (item.name||'').replace(/'/g,'\\\'')+ '\')">এই পণ্যটি চাই →</button>'+
-          '</div>'+
-        '</div>';
-      }).join('');
+      items.sort(function(a,b){ return new Date(b.createdAt||0) - new Date(a.createdAt||0); });
+      allCatalogData = items;
+      renderAllSections();
+      buildDynamicFilters(items);
     }).catch(function(){
-      wrap.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);font-size:.85rem;grid-column:1/-1">লোড করতে সমস্যা হয়েছে</div>';
+      if(wrap) wrap.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);font-size:.85rem;grid-column:1/-1">লোড করতে সমস্যা হয়েছে</div>';
     });
+}
+
+function buildDynamicFilters(items){
+  var cats = [];
+  items.forEach(function(item){
+    if(item.category && cats.indexOf(item.category)===-1) cats.push(item.category);
+  });
+  var bar = document.getElementById('catFilterBar');
+  if(!bar) return;
+  bar.innerHTML = '<button class="cat-filter-pill active" data-cat="all" onclick="setCatFilter(\'all\',this)">🏪 সব</button>'+
+    cats.map(function(c){
+      return '<button class="cat-filter-pill" data-cat="'+c+'" onclick="setCatFilter(\''+c+'\',this)">'+c+'</button>';
+    }).join('');
+}
+
+function setCatFilter(cat, btn){
+  activeCatFilter = cat;
+  document.querySelectorAll('.cat-filter-pill').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  renderAllSections();
+}
+
+function renderAllSections(){
+  var items = activeCatFilter === 'all'
+    ? allCatalogData
+    : allCatalogData.filter(function(i){ return i.category === activeCatFilter; });
+  var now = Date.now();
+  var sevenDays = 7*24*60*60*1000;
+  var topPicks = items.filter(function(i){ return i.isTopPick; });
+  var trending  = items.filter(function(i){ return i.isTrending; });
+  var onSale    = items.filter(function(i){ return i.salePrice && i.salePrice < (i.msrp||9999); });
+  var newItems  = items.filter(function(i){ return i.createdAt && (now - new Date(i.createdAt).getTime()) < sevenDays; });
+  renderSection('sectionTopPicks','gridTopPicks', topPicks);
+  renderSection('sectionTrending','gridTrending', trending);
+  renderSection('sectionSale',    'gridSale',     onSale);
+  renderSection('sectionNew',     'gridNew',      newItems);
+  var allTitle = document.getElementById('allSectionTitle');
+  if(allTitle) allTitle.textContent = activeCatFilter !== 'all' ? activeCatFilter+' — সব পণ্য' : 'যা স্থানীয় দোকানে নেই, কিন্তু আপনার প্রয়োজন';
+  var grid = document.getElementById('catalogGrid');
+  if(grid) grid.innerHTML = items.length
+    ? items.map(buildCardHTML).join('')
+    : '<div style="text-align:center;padding:40px;color:var(--muted);font-size:.88rem;grid-column:1/-1">এই category-তে এখনো কোনো পণ্য নেই</div>';
+}
+
+function renderSection(secId, gridId, items){
+  var sec = document.getElementById(secId);
+  var grid = document.getElementById(gridId);
+  if(!sec||!grid) return;
+  if(!items.length){ sec.style.display='none'; return; }
+  sec.style.display='block';
+  grid.innerHTML = items.map(buildCardHTML).join('');
+}
+
+function buildCardHTML(item){
+  var imgs = item.images && item.images.length ? item.images : (item.imageUrl ? [item.imageUrl] : []);
+  var cardId = 'cat-'+item.id;
+  var slidesHtml = imgs.length
+    ? imgs.map(function(u){ return '<div class="cat-slide"><img src="'+u+'" loading="lazy"></div>'; }).join('')
+    : '<div class="cat-slide"><span>'+(item.icon||'📦')+'</span></div>';
+  var navBtns = imgs.length > 1
+    ? '<button class="cat-slide-btn prev" onclick="event.stopPropagation();catSlide(\''+cardId+'\',-1)">‹</button>'+
+      '<button class="cat-slide-btn next" onclick="event.stopPropagation();catSlide(\''+cardId+'\',1)">›</button>' : '';
+  var dotsHtml = imgs.length > 1
+    ? '<div class="cat-dots">'+imgs.map(function(_,i){
+        return '<button class="cat-dot'+(i===0?' active':'')+'" onclick="event.stopPropagation();catGoTo(\''+cardId+'\','+i+')"></button>';
+      }).join('')+'</div>' : '';
+  var thumbHtml = imgs.length > 1
+    ? '<div class="cat-thumbs">'+imgs.map(function(u,i){
+        return '<img src="'+u+'" class="cat-thumb'+(i===0?' active':'')+'" loading="lazy" onclick="event.stopPropagation();catGoTo(\''+cardId+'\','+i+')">';
+      }).join('')+'</div>' : '';
+  var now = Date.now();
+  var isNew = item.createdAt && (now - new Date(item.createdAt).getTime()) < 7*24*60*60*1000;
+
+  // Discount calculation
+  var comparePrice = item.salePrice || item.estMin;
+  var discPct = (item.msrp && comparePrice && comparePrice < item.msrp)
+    ? Math.round(((item.msrp - comparePrice) / item.msrp) * 100) : 0;
+
+  var tags = '';
+  if(item.isTopPick) tags += '<span style="background:#fff3cd;color:#856404;font-size:.6rem;font-weight:700;padding:2px 7px;border-radius:20px">⭐ Top Pick</span> ';
+  if(item.isTrending) tags += '<span style="background:#fce8e8;color:#c0392b;font-size:.6rem;font-weight:700;padding:2px 7px;border-radius:20px">🔥 Trending</span> ';
+  if(item.salePrice) tags += '<span style="background:#d4edda;color:#155724;font-size:.6rem;font-weight:700;padding:2px 7px;border-radius:20px">🏷️ Sale</span> ';
+  if(isNew) tags += '<span style="background:var(--bazaar-light);color:var(--bazaar);font-size:.6rem;font-weight:700;padding:2px 7px;border-radius:20px">✨ New</span>';
+
+  var priceRow = item.salePrice
+    ? '<span class="cat-msrp">₹'+(item.msrp||0).toLocaleString('en-IN')+'</span>'+
+      '<span class="cat-est" style="color:var(--green)">₹'+item.salePrice.toLocaleString('en-IN')+'</span>'
+    : '<span class="cat-msrp">₹'+(item.msrp||0).toLocaleString('en-IN')+'</span>'+
+      '<span class="cat-est">₹'+(item.estMin||0)+' – ₹'+(item.estMax||0)+'</span>';
+
+  var discBadge = discPct >= 5
+    ? '<span class="cat-discount'+(item.salePrice?' sale':'')+'">'+discPct+'% off</span>' : '';
+
+  var safeId = item.id.replace(/'/g,'');
+
+  return '<div class="cat-card" id="'+cardId+'" onclick="openProdModal(\''+safeId+'\')" style="cursor:pointer">'+
+    '<div class="cat-slider"><span class="cat-badge">সংগ্রহ থেকে</span>'+
+    (discPct>=5?'<span style="position:absolute;top:10px;right:10px;background:#e53935;color:#fff;font-size:.65rem;font-weight:800;padding:3px 8px;border-radius:20px;z-index:3">'+discPct+'% OFF</span>':'')+
+    '<div class="cat-slides" id="'+cardId+'-slides">'+slidesHtml+'</div>'+navBtns+dotsHtml+'</div>'+
+    thumbHtml+'<div class="cat-body">'+
+    (tags?'<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px">'+tags+'</div>':'')+
+    '<div class="cat-name">'+item.name+'</div>'+
+    '<div class="cat-price-row">'+priceRow+discBadge+'</div>'+
+    '<div class="cat-eta">⏳ '+(item.eta||'48-72 ঘণ্টা')+'</div>'+
+    '<button class="cat-btn" onclick="event.stopPropagation();requestCatalogItem(\''+safeId+'\',\''+
+      (item.name||'').replace(/'/g,'\\\'')+ '\')">এই পণ্যটি চাই →</button>'+
+    '</div></div>';
 }
 
 function requestCatalogItem(id, name){
@@ -595,7 +802,7 @@ function loadMyRequests(){
 }
 
 // ═══ CATALOG IMAGE SLIDER ═══
-var catSlideIndex = {}; // tracks current slide per card
+var catSlideIndex = {};
 
 function catGoTo(cardId, index){
   var card = document.getElementById(cardId);
@@ -616,9 +823,105 @@ function catSlide(cardId, dir){
   var card = document.getElementById(cardId);
   if(!card) return;
   var total = card.querySelectorAll('.cat-slide').length;
-  var next = (current + dir + total) % total;
-  catGoTo(cardId, next);
+  catGoTo(cardId, (current + dir + total) % total);
 }
+
+// ═══ PRODUCT DETAIL MODAL ═══
+var modalCurrentIndex = 0;
+var modalImgs = [];
+
+function openProdModal(itemId){
+  var item = allCatalogData.find(function(x){ return x.id === itemId; });
+  if(!item) return;
+  modalImgs = item.images && item.images.length ? item.images : (item.imageUrl ? [item.imageUrl] : []);
+  modalCurrentIndex = 0;
+
+  // Gallery slides
+  document.getElementById('modalSlides').innerHTML = modalImgs.length
+    ? modalImgs.map(function(u){ return '<div class="prod-modal-slide"><img src="'+u+'"></div>'; }).join('')
+    : '<div class="prod-modal-slide"><span>'+(item.icon||'📦')+'</span></div>';
+  document.getElementById('modalSlides').style.transform = 'translateX(0)';
+
+  var hasMulti = modalImgs.length > 1;
+  document.getElementById('modalPrev').style.display = hasMulti ? 'flex' : 'none';
+  document.getElementById('modalNext').style.display = hasMulti ? 'flex' : 'none';
+  document.getElementById('modalDots').innerHTML = hasMulti
+    ? modalImgs.map(function(_,i){ return '<button class="prod-modal-dot'+(i===0?' active':'')+'" onclick="modalGoTo('+i+')"></button>'; }).join('') : '';
+  document.getElementById('modalThumbs').innerHTML = hasMulti
+    ? modalImgs.map(function(u,i){ return '<img src="'+u+'" class="prod-modal-thumb'+(i===0?' active':'')+'" onclick="modalGoTo('+i+')">'; }).join('') : '';
+
+  // Tags
+  var now = Date.now();
+  var isNew = item.createdAt && (now - new Date(item.createdAt).getTime()) < 7*24*60*60*1000;
+  var tags = '';
+  if(item.isTopPick) tags += '<span style="background:#fff3cd;color:#856404;font-size:.7rem;font-weight:700;padding:3px 9px;border-radius:20px">⭐ Top Pick</span>';
+  if(item.isTrending) tags += '<span style="background:#fce8e8;color:#c0392b;font-size:.7rem;font-weight:700;padding:3px 9px;border-radius:20px">🔥 Trending</span>';
+  if(item.salePrice) tags += '<span style="background:#d4edda;color:#155724;font-size:.7rem;font-weight:700;padding:3px 9px;border-radius:20px">🏷️ Sale</span>';
+  if(isNew) tags += '<span style="background:var(--bazaar-light);color:var(--bazaar);font-size:.7rem;font-weight:700;padding:3px 9px;border-radius:20px">✨ New</span>';
+  document.getElementById('modalTags').innerHTML = tags;
+
+  // Name + category
+  document.getElementById('modalName').textContent = item.name || '';
+  document.getElementById('modalCat').textContent = item.category || '';
+
+  // Price + discount
+  var comparePrice = item.salePrice || item.estMin || 0;
+  var discPct = (item.msrp && comparePrice && comparePrice < item.msrp)
+    ? Math.round(((item.msrp - comparePrice) / item.msrp) * 100) : 0;
+  var priceMain = document.getElementById('modalPriceMain');
+  if(item.salePrice){
+    priceMain.textContent = '₹'+item.salePrice.toLocaleString('en-IN');
+    priceMain.className = 'prod-modal-price-main sale';
+  } else {
+    priceMain.textContent = '₹'+(item.estMin||0).toLocaleString('en-IN')+' – ₹'+(item.estMax||0).toLocaleString('en-IN');
+    priceMain.className = 'prod-modal-price-main';
+  }
+  document.getElementById('modalMsrp').textContent = item.msrp ? 'MRP ₹'+item.msrp.toLocaleString('en-IN') : '';
+  var discEl = document.getElementById('modalDiscount');
+  if(discPct >= 5){ discEl.textContent = discPct+'% off'; discEl.style.display = 'inline-block'; }
+  else { discEl.style.display = 'none'; }
+
+  // ETA
+  document.getElementById('modalEta').innerHTML = '⏳ আনুমানিক ডেলিভারি: <strong>'+(item.eta||'48-72 ঘণ্টা')+'</strong>';
+
+  // Description
+  var descEl = document.getElementById('modalDesc');
+  if(item.description){ descEl.textContent = item.description; descEl.style.display = 'block'; }
+  else { descEl.style.display = 'none'; }
+
+  // Request button
+  document.getElementById('modalReqBtn').onclick = function(){
+    closeProdModal();
+    requestCatalogItem(item.id, item.name);
+  };
+
+  document.getElementById('prodModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeProdModal(){
+  document.getElementById('prodModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function modalGoTo(index){
+  modalCurrentIndex = index;
+  document.getElementById('modalSlides').style.transform = 'translateX(-'+index*100+'%)';
+  document.querySelectorAll('.prod-modal-dot').forEach(function(d,i){ d.classList.toggle('active', i===index); });
+  document.querySelectorAll('.prod-modal-thumb').forEach(function(t,i){ t.classList.toggle('active', i===index); });
+}
+
+function modalSlide(dir){
+  if(!modalImgs.length) return;
+  modalGoTo((modalCurrentIndex + dir + modalImgs.length) % modalImgs.length);
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  var overlay = document.getElementById('prodModal');
+  if(overlay) overlay.addEventListener('click', function(e){
+    if(e.target === overlay) closeProdModal();
+  });
+});
 </script>
 </body>
 </html>
