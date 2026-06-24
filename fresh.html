@@ -433,10 +433,21 @@ function freshnessLabel(createdAt){
 
 // ── LOAD ALL FRESH PRODUCTS ──
 function loadFreshProducts(){
-  db.collection('cities').doc(CITY).collection('sellers')
-    .where('isApproved','==',true).get().then(function(sellerSnap){
+  // Load all sellers (both approved status formats)
+  db.collection('cities').doc(CITY).collection('sellers').get()
+    .then(function(sellerSnap){
       var sellers = [];
-      sellerSnap.forEach(function(d){ sellers.push(Object.assign({id:d.id}, d.data())); });
+      sellerSnap.forEach(function(d){
+        var s = Object.assign({id:d.id}, d.data());
+        // Support both isApproved:true and status:'approved'
+        if(s.isApproved === true || s.status === 'approved') sellers.push(s);
+      });
+
+      if(!sellers.length){
+        document.getElementById('gridAll').innerHTML =
+          '<div class="empty-wrap"><div class="empty-icon">🌿</div><p>কোনো approved seller নেই</p></div>';
+        return;
+      }
 
       var promises = sellers.map(function(s){
         return db.collection('cities').doc(CITY).collection('sellers')
@@ -461,7 +472,7 @@ function loadFreshProducts(){
       });
     }).catch(function(e){
       document.getElementById('gridAll').innerHTML =
-        '<div class="empty-wrap"><div class="empty-icon">🌿</div><p>লোড করতে সমস্যা হয়েছে</p></div>';
+        '<div class="empty-wrap"><div class="empty-icon">🌿</div><p>লোড করতে সমস্যা হয়েছে: '+e.message+'</p></div>';
     });
 }
 
