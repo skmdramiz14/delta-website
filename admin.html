@@ -528,19 +528,32 @@ button,input,select{font-family:'DM Sans',sans-serif;}
           </div>
           <div class="form-group" style="margin-bottom:0">
             <label>MSRP (₹) — Market দাম</label>
-            <input type="number" class="form-input" id="catMsrp" placeholder="যেমন: 2499">
+            <input type="number" class="form-input" id="catMsrp" placeholder="যেমন: 2499" oninput="calcCatDiscount()">
           </div>
           <div class="form-group" style="margin-bottom:0">
             <label>আনুমানিক দাম থেকে (₹)</label>
-            <input type="number" class="form-input" id="catEstMin" placeholder="যেমন: 1999">
+            <input type="number" class="form-input" id="catEstMin" placeholder="যেমন: 1999" oninput="calcCatDiscount()">
           </div>
           <div class="form-group" style="margin-bottom:0">
             <label>আনুমানিক দাম পর্যন্ত (₹)</label>
-            <input type="number" class="form-input" id="catEstMax" placeholder="যেমন: 2199">
+            <input type="number" class="form-input" id="catEstMax" placeholder="যেমন: 2199" oninput="calcCatDiscount()">
           </div>
           <div class="form-group" style="margin-bottom:0">
             <label>ডেলিভারি সময়</label>
             <input type="text" class="form-input" id="catEta" placeholder="যেমন: 48-72 ঘণ্টা">
+          </div>
+          <div class="form-group" style="margin-bottom:0;grid-column:1/-1">
+            <label>পণ্যের বিবরণ (ঐচ্ছিক) — Product Modal-এ দেখাবে</label>
+            <textarea class="form-input" id="catDescription" placeholder="পণ্যটি সম্পর্কে বিস্তারিত লিখুন — features, specifications, ব্র্যান্ড ইত্যাদি..." style="min-height:70px;resize:vertical"></textarea>
+          </div>
+          <div class="form-group" style="margin-bottom:0;grid-column:1/-1">
+            <div id="catDiscountPreview" style="display:none;background:var(--green2);border-radius:10px;
+              padding:10px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+              <span style="font-size:.8rem;color:var(--muted)">Discount Preview:</span>
+              <span id="catDiscountBadge" style="background:var(--green);color:#fff;font-size:.82rem;
+                font-weight:800;padding:4px 12px;border-radius:20px"></span>
+              <span id="catDiscountNote" style="font-size:.78rem;color:var(--muted)"></span>
+            </div>
           </div>
           <div class="form-group" style="margin-bottom:0;grid-column:1/-1">
             <label>Product ছবি আপলোড করুন — সর্বোচ্চ ৪টা (প্রথমটা main ছবি)</label>
@@ -1697,6 +1710,47 @@ function resetCatImgSlots(){
   initCatImgSlots();
 }
 
+// ═══ DISCOUNT AUTO-CALCULATE ═══
+function calcCatDiscount(){
+  var msrp = parseFloat(document.getElementById('catMsrp').value) || 0;
+  var estMin = parseFloat(document.getElementById('catEstMin').value) || 0;
+  var preview = document.getElementById('catDiscountPreview');
+  var badge = document.getElementById('catDiscountBadge');
+  var note = document.getElementById('catDiscountNote');
+  if(!preview) return;
+  if(msrp && estMin && estMin < msrp){
+    var pct = Math.round(((msrp - estMin) / msrp) * 100);
+    var saving = (msrp - estMin).toLocaleString('en-IN');
+    if(pct >= 5){
+      preview.style.display = 'flex';
+      badge.textContent = pct+'% off';
+      note.textContent = 'Customer saves ₹'+saving+' compared to market price';
+      return;
+    }
+  }
+  preview.style.display = 'none';
+}
+
+function calcEditDiscount(itemId){
+  var msrp = parseFloat(document.getElementById('edit-msrp-'+itemId).value) || 0;
+  var estMin = parseFloat(document.getElementById('edit-estMin-'+itemId).value) || 0;
+  var preview = document.getElementById('editDiscPreview-'+itemId);
+  var badge = document.getElementById('editDiscBadge-'+itemId);
+  var save = document.getElementById('editDiscSave-'+itemId);
+  if(!preview) return;
+  if(msrp && estMin && estMin < msrp){
+    var pct = Math.round(((msrp - estMin) / msrp) * 100);
+    var saving = (msrp - estMin).toLocaleString('en-IN');
+    if(pct >= 5){
+      preview.style.display = 'flex';
+      badge.textContent = pct+'% off';
+      save.textContent = '(customer saves ₹'+saving+')';
+      return;
+    }
+  }
+  preview.style.display = 'none';
+}
+
 function loadCatalogAdmin(){
   initCatImgSlots();
   db.collection('cities').doc(CITY).collection('bazaarCatalog').get().then(function(snap){
@@ -1729,14 +1783,38 @@ function renderCatalogAdmin(){
           '<div class="form-group" style="margin-bottom:0"><label>Icon (emoji)</label>'+
             '<input type="text" class="form-input" id="edit-icon-'+item.id+'" value="'+(item.icon||'')+'" maxlength="4" style="padding:8px 10px;font-size:.82rem"></div>'+
           '<div class="form-group" style="margin-bottom:0"><label>MSRP (₹)</label>'+
-            '<input type="number" class="form-input" id="edit-msrp-'+item.id+'" value="'+(item.msrp||'')+'" style="padding:8px 10px;font-size:.82rem"></div>'+
+            '<input type="number" class="form-input" id="edit-msrp-'+item.id+'" value="'+(item.msrp||'')+'" oninput="calcEditDiscount(\''+item.id+'\')" style="padding:8px 10px;font-size:.82rem"></div>'+
           '<div class="form-group" style="margin-bottom:0"><label>দাম থেকে (₹)</label>'+
-            '<input type="number" class="form-input" id="edit-estMin-'+item.id+'" value="'+(item.estMin||'')+'" style="padding:8px 10px;font-size:.82rem"></div>'+
+            '<input type="number" class="form-input" id="edit-estMin-'+item.id+'" value="'+(item.estMin||'')+'" oninput="calcEditDiscount(\''+item.id+'\')" style="padding:8px 10px;font-size:.82rem"></div>'+
           '<div class="form-group" style="margin-bottom:0"><label>দাম পর্যন্ত (₹)</label>'+
-            '<input type="number" class="form-input" id="edit-estMax-'+item.id+'" value="'+(item.estMax||'')+'" style="padding:8px 10px;font-size:.82rem"></div>'+
+            '<input type="number" class="form-input" id="edit-estMax-'+item.id+'" value="'+(item.estMax||'')+'" oninput="calcEditDiscount(\''+item.id+'\')" style="padding:8px 10px;font-size:.82rem"></div>'+
+        '</div>'+
+        '<div id="editDiscPreview-'+item.id+'" style="margin-top:8px;'+(function(){
+          var msrp = item.msrp||0, estMin = item.estMin||0;
+          var pct = msrp && estMin && estMin < msrp ? Math.round(((msrp-estMin)/msrp)*100) : 0;
+          return pct>=5 ? '' : 'display:none;';
+        }())+
+        'background:var(--green2);border-radius:8px;padding:8px 12px;display:flex;align-items:center;gap:8px">'+
+          '<span style="font-size:.74rem;color:var(--muted)">Discount:</span>'+
+          '<span id="editDiscBadge-'+item.id+'" style="background:var(--green);color:#fff;font-size:.78rem;font-weight:800;padding:3px 10px;border-radius:20px">'+
+            (function(){
+              var msrp = item.msrp||0, estMin = item.estMin||0;
+              return msrp && estMin ? Math.round(((msrp-estMin)/msrp)*100)+'% off' : '';
+            }())+
+          '</span>'+
+          '<span id="editDiscSave-'+item.id+'" style="font-size:.74rem;color:var(--muted)">'+
+            (function(){
+              var msrp = item.msrp||0, estMin = item.estMin||0;
+              return msrp && estMin ? '(customer saves ₹'+(msrp-estMin).toLocaleString('en-IN')+')' : '';
+            }())+
+          '</span>'+
         '</div>'+
         '<div class="form-group" style="margin-top:8px"><label>ডেলিভারি সময়</label>'+
           '<input type="text" class="form-input" id="edit-eta-'+item.id+'" value="'+(item.eta||'')+'" style="padding:8px 10px;font-size:.82rem"></div>'+
+        '<div class="form-group" style="margin-top:8px"><label>পণ্যের বিবরণ (ঐচ্ছিক)</label>'+
+          '<textarea class="form-input" id="edit-desc-'+item.id+'" style="padding:8px 10px;font-size:.82rem;min-height:60px;resize:vertical">'+
+            (item.description||'')+
+          '</textarea></div>'+
         '<div style="display:flex;gap:8px;margin-top:6px">'+
           '<button class="btn-sm btn-orange" style="flex:1;justify-content:center" onclick="saveCatalogEdit(\''+item.id+'\')">💾 সেভ করুন</button>'+
           '<button class="btn-sm" style="background:var(--sand);color:var(--muted)" onclick="cancelCatalogEdit(\''+item.id+'\')">বাতিল</button>'+
@@ -1758,8 +1836,22 @@ function renderCatalogAdmin(){
         'MSRP: ₹'+(item.msrp||0).toLocaleString('en-IN')+
         ' · DELTA: ₹'+(item.estMin||0)+' – ₹'+(item.estMax||0)+
       '</div>'+
-      '<div style="font-size:.74rem;color:var(--muted);margin-bottom:12px">⏳ '+(item.eta||'—')+'</div>'+
-      '<div style="display:flex;gap:6px;flex-wrap:wrap">'+
+      '<div style="font-size:.74rem;color:var(--muted);margin-bottom:8px">⏳ '+(item.eta||'—')+'</div>'+
+      '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px">'+
+        '<button class="btn-sm '+(item.isTopPick?'btn-orange':'')+'\" style="'+(item.isTopPick?'':'background:var(--sand);color:var(--muted)')+'" '+
+          'onclick="toggleCatalogTag(\''+item.id+'\',\'isTopPick\','+(item.isTopPick?'false':'true')+')">'+
+          '⭐ Top Pick</button>'+
+        '<button class="btn-sm '+(item.isTrending?'btn-red':'')+'\" style="'+(item.isTrending?'':'background:var(--sand);color:var(--muted)')+'" '+
+          'onclick="toggleCatalogTag(\''+item.id+'\',\'isTrending\','+(item.isTrending?'false':'true')+')">'+
+          '🔥 Trending</button>'+
+      '</div>'+
+      '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:4px;align-items:center">'+
+        '<span style="font-size:.72rem;color:var(--muted)">🏷️ Sale Price (₹):</span>'+
+        '<input type="number" id="sale-'+item.id+'" value="'+(item.salePrice||'')+'" placeholder="0 = no sale" '+
+          'style="width:100px;padding:5px 8px;border:1.5px solid var(--border);border-radius:7px;font-size:.78rem" '+
+          'onchange="saveSalePrice(\''+item.id+'\',this.value)">'+
+      '</div>'+
+      '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">'+
         '<button class="btn-sm btn-blue" onclick="startCatalogEdit(\''+item.id+'\')">✏️ Edit</button>'+
         '<button class="btn-sm '+(item.isActive!==false?'btn-orange':'btn-blue')+'" '+
           'onclick="toggleCatalogActive(\''+item.id+'\','+(item.isActive!==false?'false':'true')+')">'+
@@ -1779,21 +1871,21 @@ function addCatalogItem(){
   var estMax = parseFloat(document.getElementById('catEstMax').value) || 0;
   var eta = document.getElementById('catEta').value.trim() || '48-72 ঘণ্টা';
   var category = document.getElementById('catCategory').value.trim();
-  // Use catImages array — filter out empty slots
+  var description = document.getElementById('catDescription').value.trim();
   var images = catImages.filter(function(u){ return u; });
-  var imageUrl = images[0] || ''; // main image
+  var imageUrl = images[0] || '';
   if(!name){ showToast('পণ্যের নাম লিখুন','red'); return; }
   var btn = document.getElementById('addCatBtn');
   btn.disabled = true; btn.textContent = 'যুক্ত হচ্ছে...';
   db.collection('cities').doc(CITY).collection('bazaarCatalog').add({
     name:name, icon:icon, imageUrl:imageUrl, images:images,
     msrp:msrp, estMin:estMin, estMax:estMax,
-    eta:eta, category:category, isActive:true,
+    eta:eta, category:category, description:description, isActive:true,
     createdAt: new Date().toISOString()
   }).then(function(ref){
     allCatalogItems.push({id:ref.id, name:name, icon:icon, imageUrl:imageUrl, images:images,
-      msrp:msrp, estMin:estMin, estMax:estMax, eta:eta, category:category, isActive:true,
-      createdAt: new Date().toISOString()});
+      msrp:msrp, estMin:estMin, estMax:estMax, eta:eta, category:category,
+      description:description, isActive:true, createdAt: new Date().toISOString()});
     renderCatalogAdmin();
     document.getElementById('catName').value='';
     document.getElementById('catIcon').value='';
@@ -1802,6 +1894,7 @@ function addCatalogItem(){
     document.getElementById('catEstMax').value='';
     document.getElementById('catEta').value='';
     document.getElementById('catCategory').value='';
+    document.getElementById('catDescription').value='';
     resetCatImgSlots();
     showToast(name+' catalog-এ যুক্ত হয়েছে ✅','green');
   }).catch(function(e){ showToast('সমস্যা: '+e.message,'red'); })
@@ -1827,14 +1920,16 @@ function saveCatalogEdit(id){
   var estMin = parseFloat(document.getElementById('edit-estMin-'+id).value)||0;
   var estMax = parseFloat(document.getElementById('edit-estMax-'+id).value)||0;
   var eta = document.getElementById('edit-eta-'+id).value.trim();
+  var description = document.getElementById('edit-desc-'+id).value.trim();
   if(!name){ showToast('পণ্যের নাম লিখুন','red'); return; }
   db.collection('cities').doc(CITY).collection('bazaarCatalog').doc(id).update({
-    name:name, icon:icon, msrp:msrp, estMin:estMin, estMax:estMax, eta:eta,
-    updatedAt: new Date().toISOString()
+    name:name, icon:icon, msrp:msrp, estMin:estMin, estMax:estMax,
+    eta:eta, description:description, updatedAt: new Date().toISOString()
   }).then(function(){
     var item = allCatalogItems.find(function(x){return x.id===id;});
     if(item){ item.name=name; item.icon=icon; item.msrp=msrp;
-      item.estMin=estMin; item.estMax=estMax; item.eta=eta; item._editing=false; }
+      item.estMin=estMin; item.estMax=estMax; item.eta=eta;
+      item.description=description; item._editing=false; }
     renderCatalogAdmin();
     showToast('Catalog item আপডেট হয়েছে ✅','green');
   }).catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
@@ -1849,6 +1944,30 @@ function toggleCatalogActive(id, newState){
     if(item) item.isActive = active;
     renderCatalogAdmin();
     showToast(active ? 'Catalog item active হয়েছে ✅' : 'Catalog item inactive হয়েছে','green');
+  }).catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
+}
+
+function toggleCatalogTag(id, tag, value){
+  var update = {}; update[tag] = value;
+  update.updatedAt = new Date().toISOString();
+  db.collection('cities').doc(CITY).collection('bazaarCatalog').doc(id).update(update).then(function(){
+    var item = allCatalogItems.find(function(x){return x.id===id;});
+    if(item) item[tag] = value;
+    renderCatalogAdmin();
+    var labels = {isTopPick:'Top Pick', isTrending:'Trending'};
+    showToast(labels[tag]+' '+(value?'on ✅':'off'),'green');
+  }).catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
+}
+
+function saveSalePrice(id, val){
+  var price = parseFloat(val) || 0;
+  db.collection('cities').doc(CITY).collection('bazaarCatalog').doc(id).update({
+    salePrice: price > 0 ? price : firebase.firestore.FieldValue.delete(),
+    updatedAt: new Date().toISOString()
+  }).then(function(){
+    var item = allCatalogItems.find(function(x){return x.id===id;});
+    if(item) item.salePrice = price > 0 ? price : null;
+    showToast(price > 0 ? 'Sale price সেট: ₹'+price+' ✅' : 'Sale price সরিয়ে দেওয়া হয়েছে','green');
   }).catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
 }
 
