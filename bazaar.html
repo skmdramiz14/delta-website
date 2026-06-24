@@ -168,15 +168,35 @@ a{text-decoration:none;color:inherit;}
 .cat-btn:hover{background:var(--bazaar);color:#fff;}
 
 /* ── CATEGORY FILTER BAR ── */
-.cat-filter-bar{display:flex;gap:8px;padding:16px 5%;overflow-x:auto;
-  scrollbar-width:none;background:#fff;border-bottom:1px solid var(--border);
+.cat-filter-bar{display:flex;align-items:center;gap:10px;padding:12px 5%;
+  background:#fff;border-bottom:1px solid var(--border);
   position:sticky;top:58px;z-index:40;}
-.cat-filter-bar::-webkit-scrollbar{display:none;}
-.cat-filter-pill{padding:8px 16px;border-radius:20px;border:1.5px solid var(--border);
-  background:#fff;font-size:.8rem;font-weight:600;cursor:pointer;color:var(--muted);
+.cat-all-pill{padding:8px 18px;border-radius:20px;border:1.5px solid var(--border);
+  background:#fff;font-size:.82rem;font-weight:700;cursor:pointer;color:var(--muted);
   white-space:nowrap;transition:all .2s;flex-shrink:0;}
-.cat-filter-pill.active{background:var(--bazaar);color:#fff;border-color:var(--bazaar);}
-.cat-filter-pill:hover:not(.active){border-color:var(--bazaar);color:var(--bazaar);}
+.cat-all-pill.active{background:var(--bazaar);color:#fff;border-color:var(--bazaar);}
+.cat-dropdown-wrap{position:relative;flex-shrink:0;}
+.cat-dropdown-btn{padding:8px 18px;border-radius:20px;border:1.5px solid var(--border);
+  background:#fff;font-size:.82rem;font-weight:700;cursor:pointer;color:var(--muted);
+  white-space:nowrap;transition:all .2s;display:flex;align-items:center;gap:6px;}
+.cat-dropdown-btn.active{background:var(--bazaar);color:#fff;border-color:var(--bazaar);}
+.cat-dropdown-btn:hover:not(.active){border-color:var(--bazaar);color:var(--bazaar);}
+.cat-dropdown-btn .arrow{font-size:.65rem;transition:transform .2s;}
+.cat-dropdown-btn.open .arrow{transform:rotate(180deg);}
+.cat-dropdown-list{position:absolute;top:calc(100% + 8px);left:0;background:#fff;
+  border:1.5px solid var(--border);border-radius:14px;min-width:220px;max-height:320px;
+  overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.12);z-index:100;display:none;
+  scrollbar-width:thin;}
+.cat-dropdown-list.open{display:block;animation:dropIn .18s ease;}
+@keyframes dropIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.cat-dropdown-item{padding:11px 16px;font-size:.84rem;font-weight:600;cursor:pointer;
+  color:var(--charcoal);transition:background .15s;border-radius:0;}
+.cat-dropdown-item:first-child{border-radius:12px 12px 0 0;}
+.cat-dropdown-item:last-child{border-radius:0 0 12px 12px;}
+.cat-dropdown-item:hover{background:var(--bazaar-light);color:var(--bazaar);}
+.cat-dropdown-item.active{background:var(--bazaar-light);color:var(--bazaar);font-weight:800;}
+.cat-active-label{font-size:.78rem;color:var(--bazaar);font-weight:700;
+  background:var(--bazaar-light);padding:5px 12px;border-radius:20px;white-space:nowrap;}
 
 /* ── CUSTOM REQUEST BLOCK ── */
 .custom-block{background:linear-gradient(135deg,var(--navy3),var(--navy));border-radius:22px;
@@ -314,7 +334,15 @@ textarea.form-input{resize:vertical;min-height:70px;font-family:inherit;}
 
 <!-- ═══ CATEGORY FILTER BAR ═══ -->
 <div class="cat-filter-bar" id="catFilterBar">
-  <button class="cat-filter-pill active" data-cat="all" onclick="setCatFilter('all',this)">🏪 সব</button>
+  <button class="cat-all-pill active" id="catAllPill" onclick="setCatFilter('all',null)">🏪 সব</button>
+  <div class="cat-dropdown-wrap" id="catDropdownWrap" style="display:none">
+    <button class="cat-dropdown-btn" id="catDropdownBtn" onclick="toggleCatDropdown()">
+      <span id="catDropdownLabel">Category</span>
+      <span class="arrow">▾</span>
+    </button>
+    <div class="cat-dropdown-list" id="catDropdownList"></div>
+  </div>
+  <span class="cat-active-label" id="catActiveLabel" style="display:none"></span>
 </div>
 
 <!-- ═══ TOP PICKS ═══ -->
@@ -564,20 +592,52 @@ function buildDynamicFilters(items){
     if(item.category && cats.indexOf(item.category)===-1) cats.push(item.category);
   });
   cats.sort();
-  var bar = document.getElementById('catFilterBar');
-  if(!bar) return;
-  if(!cats.length){ bar.style.display='none'; return; }
-  bar.style.display='flex';
-  bar.innerHTML = '<button class="cat-filter-pill active" data-cat="all" onclick="setCatFilter(\'all\',this)">🏪 সব</button>'+
-    cats.map(function(c){
-      return '<button class="cat-filter-pill" data-cat="'+c+'" onclick="setCatFilter(\''+c+'\',this)">'+c+'</button>';
-    }).join('');
+  var dropWrap = document.getElementById('catDropdownWrap');
+  var dropList = document.getElementById('catDropdownList');
+  if(!dropWrap || !dropList) return;
+  if(!cats.length){ dropWrap.style.display='none'; return; }
+  dropWrap.style.display='block';
+  dropList.innerHTML = cats.map(function(c){
+    return '<div class="cat-dropdown-item" data-cat="'+c+'" onclick="setCatFilter(\''+c+'\',null)">'+c+'</div>';
+  }).join('');
+}
+
+function toggleCatDropdown(){
+  var btn = document.getElementById('catDropdownBtn');
+  var list = document.getElementById('catDropdownList');
+  var isOpen = list.classList.contains('open');
+  list.classList.toggle('open', !isOpen);
+  btn.classList.toggle('open', !isOpen);
+}
+
+function closeCatDropdown(){
+  document.getElementById('catDropdownList').classList.remove('open');
+  document.getElementById('catDropdownBtn').classList.remove('open');
 }
 
 function setCatFilter(cat, btn){
   activeCatFilter = cat;
-  document.querySelectorAll('.cat-filter-pill').forEach(function(b){b.classList.remove('active');});
-  btn.classList.add('active');
+  var allPill = document.getElementById('catAllPill');
+  var dropBtn = document.getElementById('catDropdownBtn');
+  var dropLabel = document.getElementById('catDropdownLabel');
+  var activeLabel = document.getElementById('catActiveLabel');
+  // Update dropdown item active state
+  document.querySelectorAll('.cat-dropdown-item').forEach(function(el){
+    el.classList.toggle('active', el.getAttribute('data-cat')===cat);
+  });
+  if(cat === 'all'){
+    allPill.classList.add('active');
+    dropBtn.classList.remove('active');
+    dropLabel.textContent = 'Category';
+    activeLabel.style.display = 'none';
+  } else {
+    allPill.classList.remove('active');
+    dropBtn.classList.add('active');
+    dropLabel.textContent = 'Category';
+    activeLabel.textContent = cat;
+    activeLabel.style.display = 'inline-block';
+  }
+  closeCatDropdown();
   renderAllSections();
 }
 
@@ -933,6 +993,11 @@ document.addEventListener('DOMContentLoaded', function(){
   var overlay = document.getElementById('prodModal');
   if(overlay) overlay.addEventListener('click', function(e){
     if(e.target === overlay) closeProdModal();
+  });
+  // Close category dropdown on outside click
+  document.addEventListener('click', function(e){
+    var wrap = document.getElementById('catDropdownWrap');
+    if(wrap && !wrap.contains(e.target)) closeCatDropdown();
   });
 });
 </script>
