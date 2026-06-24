@@ -519,7 +519,7 @@ button,input,select{font-family:'DM Sans',sans-serif;}
             <input type="text" class="form-input" id="catName" placeholder="যেমন: ব্র্যান্ডেড হেডফোন">
           </div>
           <div class="form-group" style="margin-bottom:0">
-            <label>Icon (emoji)</label>
+            <label>Icon (emoji) — ছবি না থাকলে</label>
             <input type="text" class="form-input" id="catIcon" placeholder="যেমন: 🎧" maxlength="4">
           </div>
           <div class="form-group" style="margin-bottom:0">
@@ -542,8 +542,26 @@ button,input,select{font-family:'DM Sans',sans-serif;}
             <label>ডেলিভারি সময়</label>
             <input type="text" class="form-input" id="catEta" placeholder="যেমন: 48-72 ঘণ্টা">
           </div>
+          <div class="form-group" style="margin-bottom:0;grid-column:1/-1">
+            <label>Product ছবি আপলোড করুন (ঐচ্ছিক)</label>
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+              <div id="catImgPreview" style="width:80px;height:80px;border-radius:10px;border:2px dashed var(--border);
+                display:flex;align-items:center;justify-content:center;font-size:1.6rem;background:var(--cream);flex-shrink:0;overflow:hidden;">
+                📷
+              </div>
+              <div>
+                <input type="file" id="catImgFile" accept="image/*" style="display:none" onchange="uploadCatalogImage(this)">
+                <button class="btn-sm btn-blue" type="button" onclick="document.getElementById('catImgFile').click()" id="catImgBtn">
+                  📤 ছবি বেছে নিন
+                </button>
+                <div style="font-size:.72rem;color:var(--muted);margin-top:4px">JPG, PNG, WEBP — সর্বোচ্চ 5MB</div>
+                <div id="catImgStatus" style="font-size:.72rem;margin-top:2px"></div>
+              </div>
+              <input type="hidden" id="catImgUrl" value="">
+            </div>
+          </div>
         </div>
-        <button class="btn-sm btn-orange" onclick="addCatalogItem()">➕ Catalog-এ যুক্ত করুন</button>
+        <button class="btn-sm btn-orange" onclick="addCatalogItem()" id="addCatBtn">➕ Catalog-এ যুক্ত করুন</button>
       </div>
       <div id="catalogAdminWrap" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-bottom:28px"></div>
 
@@ -1627,6 +1645,40 @@ function changeBazaarStatus(id, newStatus){
 
 // ═══ BAZAAR CATALOG MANAGEMENT ═══
 var allCatalogItems = [];
+var CLOUD = 'djthojcmy', PRESET = 'delta_products';
+
+async function uploadCatalogImage(input){
+  var file = input.files[0];
+  if(!file) return;
+  var status = document.getElementById('catImgStatus');
+  var btn = document.getElementById('catImgBtn');
+  var preview = document.getElementById('catImgPreview');
+  status.textContent = '⏳ আপলোড হচ্ছে...';
+  status.style.color = 'var(--muted)';
+  btn.disabled = true;
+  var fd = new FormData();
+  fd.append('file', file);
+  fd.append('upload_preset', PRESET);
+  fd.append('cloud_name', CLOUD);
+  fd.append('folder', 'delta/bazaar-catalog');
+  try {
+    var res = await fetch('https://api.cloudinary.com/v1_1/'+CLOUD+'/image/upload', {method:'POST', body:fd});
+    var data = await res.json();
+    if(data.secure_url){
+      document.getElementById('catImgUrl').value = data.secure_url;
+      preview.innerHTML = '<img src="'+data.secure_url+'" style="width:100%;height:100%;object-fit:cover">';
+      status.textContent = '✅ আপলোড সফল';
+      status.style.color = 'var(--green)';
+    } else {
+      status.textContent = '❌ আপলোড ব্যর্থ';
+      status.style.color = 'var(--red)';
+    }
+  } catch(e) {
+    status.textContent = '❌ সমস্যা হয়েছে';
+    status.style.color = 'var(--red)';
+  }
+  btn.disabled = false;
+}
 
 function loadCatalogAdmin(){
   db.collection('cities').doc(CITY).collection('bazaarCatalog').get().then(function(snap){
@@ -1675,7 +1727,12 @@ function renderCatalogAdmin(){
     }
     return '<div class="order-card" id="catcard-'+item.id+'">'+
       '<div class="order-top" style="margin-bottom:8px">'+
-        '<div style="font-size:2rem">'+(item.icon||'📦')+'</div>'+
+        '<div style="width:60px;height:60px;border-radius:10px;overflow:hidden;background:var(--sand);'+
+          'display:flex;align-items:center;justify-content:center;font-size:1.8rem;flex-shrink:0">'+
+          (item.imageUrl
+            ? '<img src="'+item.imageUrl+'" style="width:100%;height:100%;object-fit:cover">'
+            : (item.icon||'📦'))+
+        '</div>'+
         '<span class="status-badge-pill '+activeClass+'">'+activeLabel+'</span>'+
       '</div>'+
       '<div style="font-size:.9rem;font-weight:700;color:var(--charcoal);margin-bottom:6px">'+item.name+'</div>'+
@@ -1704,16 +1761,20 @@ function addCatalogItem(){
   var estMax = parseFloat(document.getElementById('catEstMax').value) || 0;
   var eta = document.getElementById('catEta').value.trim() || '48-72 ঘণ্টা';
   var category = document.getElementById('catCategory').value.trim();
+  var imageUrl = document.getElementById('catImgUrl').value.trim();
   if(!name){ showToast('পণ্যের নাম লিখুন','red'); return; }
+  var btn = document.getElementById('addCatBtn');
+  btn.disabled = true; btn.textContent = 'যুক্ত হচ্ছে...';
   db.collection('cities').doc(CITY).collection('bazaarCatalog').add({
-    name:name, icon:icon, msrp:msrp, estMin:estMin, estMax:estMax,
+    name:name, icon:icon, imageUrl:imageUrl, msrp:msrp, estMin:estMin, estMax:estMax,
     eta:eta, category:category, isActive:true,
     createdAt: new Date().toISOString()
   }).then(function(ref){
-    allCatalogItems.push({id:ref.id, name:name, icon:icon, msrp:msrp, estMin:estMin,
-      estMax:estMax, eta:eta, category:category, isActive:true,
+    allCatalogItems.push({id:ref.id, name:name, icon:icon, imageUrl:imageUrl, msrp:msrp,
+      estMin:estMin, estMax:estMax, eta:eta, category:category, isActive:true,
       createdAt: new Date().toISOString()});
     renderCatalogAdmin();
+    // Reset form
     document.getElementById('catName').value='';
     document.getElementById('catIcon').value='';
     document.getElementById('catMsrp').value='';
@@ -1721,8 +1782,13 @@ function addCatalogItem(){
     document.getElementById('catEstMax').value='';
     document.getElementById('catEta').value='';
     document.getElementById('catCategory').value='';
+    document.getElementById('catImgUrl').value='';
+    document.getElementById('catImgFile').value='';
+    document.getElementById('catImgPreview').innerHTML='📷';
+    document.getElementById('catImgStatus').textContent='';
     showToast(name+' catalog-এ যুক্ত হয়েছে ✅','green');
-  }).catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
+  }).catch(function(e){ showToast('সমস্যা: '+e.message,'red'); })
+  .then(function(){ btn.disabled=false; btn.textContent='➕ Catalog-এ যুক্ত করুন'; });
 }
 
 function startCatalogEdit(id){
