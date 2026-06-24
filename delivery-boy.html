@@ -614,19 +614,22 @@ function renderHistory(){
   }
   wrap.innerHTML = delivered.map(function(o){
     var isCod = o.paymentMethod==='cod';
-    var codBlock = isCod
-      ? '<div style="background:'+(o.codCashCollected?'var(--green2)':'var(--orange-light)')+
-          ';border-radius:8px;padding:8px 12px;margin-top:8px;font-size:.78rem;'+
-          'display:flex;justify-content:space-between;align-items:center;">'+
-          '<span>💵 COD Cash</span>'+
-          '<strong style="color:'+(o.codCashCollected?'var(--green)':'var(--orange)')+'">'+
-            (o.codCashCollected
-              ? '₹'+(o.codCashAmount||0).toLocaleString('en-IN')+' সংগৃহীত'+(o.codSettled?' · ✅ Settled':' · ⏳ জমা বাকি')
-              : 'Cash সংগ্রহ নিশ্চিত নয়')+
-          '</strong>'+
-        '</div>'
-      : '';
-    return orderCardHTML(o,false) + (codBlock ? codBlock.replace('</div>','') : '');
+    var codBlock = '';
+    if(isCod){
+      var collected = o.codCashCollected;
+      var settled = o.codSettled;
+      codBlock = '<div style="background:'+(collected?'var(--green2)':'var(--orange-light)')+
+        ';border-radius:8px;padding:8px 12px;margin-top:6px;font-size:.78rem;'+
+        'display:flex;justify-content:space-between;align-items:center;">'+
+        '<span>💵 COD Cash</span>'+
+        '<strong style="color:'+(collected?'var(--green)':'var(--orange)')+'">'+
+          (collected
+            ? '₹'+(o.codCashAmount||0).toLocaleString('en-IN')+' সংগৃহীত'+(settled?' · ✅ Settled':' · ⏳ Admin-কে জমা দিন')
+            : 'Cash সংগ্রহ নিশ্চিত হয়নি')+
+        '</strong>'+
+      '</div>';
+    }
+    return '<div>'+orderCardHTML(o,false)+codBlock+'</div>';
   }).join('');
 }
 
@@ -652,9 +655,19 @@ function renderEarnings(){
   }
   listWrap.innerHTML = recent.map(function(o){
     var t = o.deliveryCompletedAt ? new Date(o.deliveryCompletedAt).toLocaleDateString('bn-IN',{day:'numeric',month:'short'}) : '—';
+    var codTag = o.paymentMethod==='cod'
+      ? '<span style="font-size:.68rem;background:'+(o.codSettled?'var(--green2)':'var(--orange-light)')+
+          ';color:'+(o.codSettled?'var(--green)':'var(--orange)')+
+          ';padding:2px 7px;border-radius:10px;margin-left:4px">'+
+          '💵 '+(o.codSettled?'Settled':'Cash জমা বাকি')+'</span>'
+      : '';
     return '<div class="delivery-row">'+
-      '<div><strong>#'+o.id.slice(-6).toUpperCase()+'</strong> — '+(o.shopName||'—')+'<br>'+
-      '<span style="font-size:.72rem;color:var(--muted)">'+t+'</span></div>'+
+      '<div>'+
+        '<strong>#'+o.id.slice(-6).toUpperCase()+'</strong> — '+(o.shopName||'—')+codTag+'<br>'+
+        '<span style="font-size:.72rem;color:var(--muted)">'+t+
+          (o.paymentMethod==='cod'&&o.codCashAmount?' · Cash: ₹'+o.codCashAmount:'')+
+        '</span>'+
+      '</div>'+
       '<strong style="color:var(--green)">₹'+(o.riderPayout||0)+'</strong>'+
     '</div>';
   }).join('');
