@@ -851,7 +851,7 @@ function sellerCardHTML(s){
 
   var createdStr = s.createdAt ? new Date(s.createdAt).toLocaleDateString('bn-IN',{day:'numeric',month:'short',year:'numeric'}) : '—';
 
-  return '<div class="seller-card '+status+'">'+
+  return '<div class="seller-card '+status+'" id="sellercard-'+s.id+'">'+
     '<div class="sc-top">'+
       '<div class="sc-name"><span class="type-icon">'+icon+'</span>'+(s.shopName||'নাম নেই')+'</div>'+
       statusBadge+
@@ -868,7 +868,19 @@ function sellerCardHTML(s){
       '<div class="sc-meta-item">শহর<strong>'+(s.city||CITY)+'</strong></div>'+
       '<div class="sc-meta-item">Type<strong>'+(s.shopType||'shop')+'</strong></div>'+
     '</div>'+
-    '<div class="sc-actions">'+actions+'</div>'+
+    '<div class="sc-actions">'+
+      actions+
+      '<button class="btn-sm" style="background:var(--paddy-light,#eef5e8);color:#3d6b28;border:1.5px solid #c5ddb8" '+
+        'onclick="toggleFreshPanel(\''+s.id+'\')">🌿 Fresh Products</button>'+
+    '</div>'+
+    // Fresh products expandable panel
+    '<div id="freshpanel-'+s.id+'" style="display:none;margin-top:12px;border-top:1.5px dashed var(--border);padding-top:12px">'+
+      '<div style="font-size:.72rem;font-weight:700;color:#3d6b28;margin-bottom:8px">'+
+        '🌿 পণ্যগুলো Fresh Page-এ দেখানোর জন্য tag করুন</div>'+
+      '<div id="freshprodlist-'+s.id+'" style="display:grid;gap:6px">'+
+        '<div style="font-size:.8rem;color:var(--muted)">লোড হচ্ছে...</div>'+
+      '</div>'+
+    '</div>'+
   '</div>';
 }
 
@@ -2065,6 +2077,97 @@ function deleteCatalogItem(id){
     renderCatalogAdmin();
     showToast('Catalog item মুছে ফেলা হয়েছে','green');
   }).catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
+}
+
+// ═══ FRESH PRODUCTS TAGGING ═══
+var FRESH_CAT_OPTIONS = [
+  {val:'fish',     label:'🐟 মাছ'},
+  {val:'vegetable',label:'🥦 সবজি'},
+  {val:'fruit',    label:'🍎 ফল'},
+  {val:'dairy',    label:'🥛 দুগ্ধজাত'},
+  {val:'farm',     label:'🌾 কৃষি পণ্য'},
+  {val:'meat',     label:'🥩 মাংস ও মুরগি'},
+  {val:'flower',   label:'🌸 ফুল'},
+];
+
+function toggleFreshPanel(sellerId){
+  var panel = document.getElementById('freshpanel-'+sellerId);
+  if(!panel) return;
+  var isOpen = panel.style.display !== 'none';
+  if(isOpen){ panel.style.display='none'; return; }
+  panel.style.display = 'block';
+  loadFreshProducts(sellerId);
+}
+
+function loadFreshProducts(sellerId){
+  var listWrap = document.getElementById('freshprodlist-'+sellerId);
+  if(!listWrap) return;
+  listWrap.innerHTML = '<div style="font-size:.8rem;color:var(--muted)">লোড হচ্ছে...</div>';
+  db.collection('cities').doc(CITY).collection('sellers').doc(sellerId)
+    .collection('products').get().then(function(snap){
+      var prods = [];
+      snap.forEach(function(d){ prods.push(Object.assign({id:d.id}, d.data())); });
+      if(!prods.length){
+        listWrap.innerHTML = '<div style="font-size:.8rem;color:var(--muted)">এই seller-এর কোনো product নেই</div>';
+        return;
+      }
+      listWrap.innerHTML = prods.map(function(p){
+        var isFresh = p.isFresh || false;
+        var freshCat = p.freshCategory || '';
+        var catOptions = FRESH_CAT_OPTIONS.map(function(c){
+          return '<option value="'+c.val+'"'+(freshCat===c.val?' selected':'')+'>'+c.label+'</option>';
+        }).join('');
+        return '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;'+
+          'padding:8px 12px;border-radius:10px;background:'+(isFresh?'#eef5e8':'var(--cream)')+';">'+
+          // Toggle
+          '<label style="display:flex;align-items:center;gap:6px;cursor:pointer;flex-shrink:0">'+
+            '<input type="checkbox" id="fresh-'+sellerId+'-'+p.id+'" '+(isFresh?'checked':'')+' '+
+              'onchange="toggleFreshTag(\''+sellerId+'\',\''+p.id+'\',this.checked)" '+
+              'style="width:16px;height:16px;accent-color:#3d6b28;cursor:pointer">'+
+            '<span style="font-size:.82rem;font-weight:'+(isFresh?'700':'400')+';color:'+(isFresh?'#3d6b28':'var(--muted)')+'">'+
+              (isFresh?'🌿 ':'')+(p.name||'—')+'</span>'+
+          '</label>'+
+          // Category dropdown (only show if fresh)
+          (isFresh
+            ? '<select id="freshcat-'+sellerId+'-'+p.id+'" onchange="saveFreshCategory(\''+sellerId+'\',\''+p.id+'\',this.value)" '+
+                'style="padding:5px 8px;border:1.5px solid #c5ddb8;border-radius:7px;font-size:.76rem;'+
+                'background:#fff;color:#3d6b28;cursor:pointer">'+
+                '<option value="">-- Category বেছে নিন --</option>'+catOptions+
+              '</select>'
+            : '')+
+          // Price hint
+          '<span style="margin-left:auto;font-size:.74rem;color:var(--muted)">'+
+            (p.price?'₹'+p.price:'দাম নেই')+
+          '</span>'+
+        '</div>';
+      }).join('');
+    }).catch(function(e){
+      listWrap.innerHTML = '<div style="font-size:.8rem;color:var(--red)">লোড ব্যর্থ: '+e.message+'</div>';
+    });
+}
+
+function toggleFreshTag(sellerId, prodId, isFresh){
+  db.collection('cities').doc(CITY).collection('sellers').doc(sellerId)
+    .collection('products').doc(prodId).update({
+      isFresh: isFresh,
+      freshTaggedAt: isFresh ? new Date().toISOString() : null,
+      updatedAt: new Date().toISOString()
+    }).then(function(){
+      showToast(isFresh ? '🌿 Fresh tag যুক্ত হয়েছে ✅' : 'Fresh tag সরানো হয়েছে', 'green');
+      // Reload the panel to show/hide category dropdown
+      loadFreshProducts(sellerId);
+    }).catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
+}
+
+function saveFreshCategory(sellerId, prodId, cat){
+  if(!cat) return;
+  db.collection('cities').doc(CITY).collection('sellers').doc(sellerId)
+    .collection('products').doc(prodId).update({
+      freshCategory: cat,
+      updatedAt: new Date().toISOString()
+    }).then(function(){
+      showToast('Fresh category সেট: '+cat+' ✅','green');
+    }).catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
 }
 </script>
 </body>
