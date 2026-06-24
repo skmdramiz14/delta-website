@@ -1558,6 +1558,13 @@ function bazaarCardHTML(r){
   var imgBlock = r.imageUrl ? '<img src="'+r.imageUrl+'" style="width:100%;max-width:160px;border-radius:8px;margin-bottom:10px;display:block">' : '';
   var budgetText = (r.budgetMin||r.budgetMax) ? '₹'+(r.budgetMin||0)+' - ₹'+(r.budgetMax||0) : '—';
 
+  // Phone WhatsApp link
+  var phoneBlock = r.customerPhone
+    ? '<div>ফোন<strong><a href="https://wa.me/91'+r.customerPhone.replace(/\D/g,'')+
+        '?text=নমস্কার%20'+encodeURIComponent(r.customerName||'')+'%2C%20আপনার%20DELTA%20Bazaar%20অনুরোধ%20সম্পর্কে%20জানাতে%20চাইছিলাম।" '+
+        'target="_blank" style="color:var(--green);text-decoration:none">📱 '+r.customerPhone+'</a></strong></div>'
+    : '<div>ফোন<strong>—</strong></div>';
+
   return '<div class="order-card">'+
     '<div class="order-top">'+
       '<div>'+
@@ -1570,10 +1577,11 @@ function bazaarCardHTML(r){
     (r.description ? '<div style="font-size:.82rem;color:var(--muted);margin-bottom:10px">'+r.description+'</div>' : '')+
     '<div class="order-meta-grid">'+
       '<div>গ্রাহক<strong>'+(r.customerName||'—')+'</strong></div>'+
-      '<div>ফোন<strong>'+(r.customerPhone||'—')+'</strong></div>'+
+      phoneBlock+
       '<div>বাজেট<strong>'+budgetText+'</strong></div>'+
       '<div>সময়<strong style="font-size:.76rem">'+time+'</strong></div>'+
     '</div>'+
+    // Quote section
     '<div style="background:var(--sand);border-radius:10px;padding:12px 14px;margin-top:8px">'+
       '<div style="font-size:.72rem;font-weight:700;color:var(--muted);margin-bottom:8px">💵 চূড়ান্ত দাম ও নোট সেট করুন</div>'+
       '<div style="display:grid;grid-template-columns:1fr 2fr;gap:8px;margin-bottom:8px">'+
@@ -1581,6 +1589,24 @@ function bazaarCardHTML(r){
         '<input type="text" id="notes-'+r.id+'" class="form-input" placeholder="নোট (যেমন: ডেলিভারি সময়)" value="'+(r.adminNotes||'')+'" style="padding:8px 10px;font-size:.8rem">'+
       '</div>'+
       '<button class="btn-sm btn-blue" style="width:100%;justify-content:center" onclick="saveBazaarQuote(\''+r.id+'\')">💾 দাম সেভ করুন</button>'+
+    '</div>'+
+    // Manual notification section
+    '<div style="background:var(--bazaar-light);border-radius:10px;padding:12px 14px;margin-top:8px">'+
+      '<div style="font-size:.72rem;font-weight:700;color:var(--bazaar);margin-bottom:8px">📢 Customer-কে Message পাঠান</div>'+
+      '<div style="font-size:.7rem;color:var(--muted);margin-bottom:8px">Customer-এর "আমার অনুরোধ" section-এ সাথে সাথে দেখাবে</div>'+
+      '<div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap">'+
+        '<button class="btn-sm btn-blue" style="font-size:.72rem" onclick="setNotifTemplate(\''+r.id+'\',\'আপনার পণ্যটি পাওয়া গেছে! দাম শীঘ্রই জানানো হবে।\')">✅ পণ্য পাওয়া গেছে</button>'+
+        '<button class="btn-sm btn-blue" style="font-size:.72rem" onclick="setNotifTemplate(\''+r.id+'\',\'আপনার পণ্যটি শহর থেকে রওনা হয়েছে। শীঘ্রই পৌঁছে যাবে।\')">🚚 রওনা হয়েছে</button>'+
+        '<button class="btn-sm btn-blue" style="font-size:.72rem" onclick="setNotifTemplate(\''+r.id+'\',\'দুঃখিত, এই মুহূর্তে পণ্যটি পাওয়া যাচ্ছে না।\')">❌ পণ্য নেই</button>'+
+      '</div>'+
+      '<div style="display:flex;gap:8px">'+
+        '<input type="text" id="notif-'+r.id+'" class="form-input" '+
+          'placeholder="নিজে লিখুন বা উপরের template বেছে নিন..." '+
+          'value="'+(r.adminNotification||'')+'" style="padding:8px 10px;font-size:.8rem;flex:1">'+
+        '<button class="btn-sm btn-orange" onclick="sendBazaarNotification(\''+r.id+'\')">📤 পাঠান</button>'+
+        (r.adminNotification ? '<button class="btn-sm btn-red" onclick="clearBazaarNotification(\''+r.id+'\')">🗑️</button>' : '')+
+      '</div>'+
+      (r.adminNotification ? '<div style="font-size:.72rem;color:var(--bazaar);margin-top:6px">✅ বর্তমান message: "'+r.adminNotification+'"</div>' : '')+
     '</div>'+
     '<div class="sc-actions">'+
       '<select class="order-status-sel" onchange="changeBazaarStatus(\''+r.id+'\',this.value)">'+statusOptions+'</select>'+
@@ -1643,6 +1669,40 @@ function changeBazaarStatus(id, newStatus){
     showToast('আপডেট ব্যর্থ: '+e.message,'red');
     renderBazaarRequests();
   });
+}
+
+// ═══ BAZAAR NOTIFICATION FUNCTIONS ═══
+function setNotifTemplate(id, text){
+  var input = document.getElementById('notif-'+id);
+  if(input) input.value = text;
+}
+
+function sendBazaarNotification(id){
+  var input = document.getElementById('notif-'+id);
+  var msg = input ? input.value.trim() : '';
+  if(!msg){ showToast('Message লিখুন','red'); return; }
+  db.collection('cities').doc(CITY).collection('bazaarRequests').doc(id).update({
+    adminNotification: msg,
+    notificationSentAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  }).then(function(){
+    var r = allBazaarRequests.find(function(x){return x.id===id;});
+    if(r) r.adminNotification = msg;
+    renderBazaarRequests();
+    showToast('Message পাঠানো হয়েছে ✅ Customer এখনই দেখতে পাবে','green');
+  }).catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
+}
+
+function clearBazaarNotification(id){
+  db.collection('cities').doc(CITY).collection('bazaarRequests').doc(id).update({
+    adminNotification: firebase.firestore.FieldValue.delete(),
+    updatedAt: new Date().toISOString()
+  }).then(function(){
+    var r = allBazaarRequests.find(function(x){return x.id===id;});
+    if(r) r.adminNotification = null;
+    renderBazaarRequests();
+    showToast('Message সরিয়ে দেওয়া হয়েছে','green');
+  }).catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
 }
 
 // ═══ BAZAAR CATALOG MANAGEMENT ═══
