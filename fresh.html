@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DELTA Fresh — মাঠ থেকে আপনার থালায় | DELTA</title>
+<meta name="description" content="মন্তেশ্বরের স্থানীয় কৃষক ও বিক্রেতাদের কাছ থেকে সরাসরি তাজা মাছ, সবজি, ফল ও ফার্ম পণ্য।">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600;700&family=Tiro+Bangla&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  /* Delta Fresh palette — Bengal farm earth tones */
+  --soil:#2d1b0e;
+  --paddy:#3d6b28;
+  --paddy2:#5d8a3c;
+  --paddy-light:#eef5e8;
+  --gold:#c8912a;
+  --gold-light:#fdf3e0;
+  --sky:#b8d4e8;
+  --cream:#f8f5ef;
+  --white:#fff;
+  --charcoal:#1a2535;
+  --muted:#6b7b8d;
+  --border:#dde5ef;
+  --red:#c0392b;--red2:#ffeaea;
+  --green:#2e7d32;--green2:#e8f5e9;
+  --navy:#0a1f35;
+  --orange:#f07018;
+}
+html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charcoal);overflow-x:hidden;}
+.bn{font-family:'Tiro Bangla',serif;}
+button,input,select{font-family:'DM Sans',sans-serif;}
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-thumb{background:#c0cdd8;border-radius:3px;}
+a{text-decoration:none;color:inherit;}
+
+/* ── NAV ── */
+#nav{background:var(--soil);padding:0 5%;position:sticky;top:0;z-index:100;
+  box-shadow:0 2px 20px rgba(0,0,0,.3);}
+.nav-top{display:flex;align-items:center;gap:14px;padding:13px 0;}
+.logo{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:900;color:#fff;
+  cursor:pointer;letter-spacing:1px;}
+.logo em{color:var(--gold);font-style:normal;}
+.fresh-badge{background:var(--paddy2);color:#fff;font-size:.68rem;font-weight:700;
+  padding:3px 12px;border-radius:20px;letter-spacing:.4px;margin-left:4px;}
+.back-link{color:rgba(255,255,255,.55);font-size:.82rem;font-weight:600;
+  display:flex;align-items:center;gap:5px;transition:color .2s;}
+.back-link:hover{color:#fff;}
+.nav-right{margin-left:auto;}
+.nav-user-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);
+  color:#fff;padding:7px 16px;border-radius:8px;font-size:.82rem;font-weight:600;cursor:pointer;}
+.nav-user-btn:hover{background:rgba(255,255,255,.18);}
+
+/* ── HERO ── */
+.fresh-hero{background:linear-gradient(160deg,var(--soil) 0%,#3a2510 40%,var(--paddy) 100%);
+  padding:56px 5% 64px;position:relative;overflow:hidden;}
+.fresh-hero::before{content:'';position:absolute;bottom:0;left:0;right:0;height:80px;
+  background:var(--cream);clip-path:ellipse(55% 100% at 50% 100%);}
+.fresh-hero::after{content:'🌾';position:absolute;right:5%;top:20%;font-size:8rem;
+  opacity:.08;pointer-events:none;}
+.hero-inner{max-width:720px;position:relative;z-index:2;}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(93,138,60,.25);
+  border:1px solid rgba(93,138,60,.4);color:#a8d080;padding:5px 14px;border-radius:30px;
+  font-size:.72rem;font-weight:700;letter-spacing:.6px;margin-bottom:16px;}
+.hero-title{font-family:'Playfair Display',serif;font-size:2.6rem;font-weight:900;
+  color:#fff;line-height:1.2;margin-bottom:14px;}
+.hero-title em{color:var(--gold);font-style:normal;}
+.hero-sub{font-size:.95rem;color:rgba(255,255,255,.72);line-height:1.7;
+  max-width:520px;margin-bottom:28px;}
+.freshness-bar{display:flex;align-items:center;gap:20px;flex-wrap:wrap;}
+.freshness-tag{display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.1);
+  border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:8px 14px;}
+.freshness-dot{width:8px;height:8px;border-radius:50%;background:#4caf50;
+  animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.5;transform:scale(1.3);}}
+.freshness-tag span{color:#fff;font-size:.8rem;font-weight:600;}
+
+/* ── CATEGORY FILTER ── */
+.cat-bar{background:#fff;border-bottom:1px solid var(--border);
+  position:sticky;top:58px;z-index:50;padding:0 5%;}
+.cat-bar-inner{display:flex;gap:0;overflow-x:auto;scrollbar-width:none;padding:0;}
+.cat-bar-inner::-webkit-scrollbar{display:none;}
+.cat-tab{padding:14px 18px;border:none;background:transparent;font-size:.82rem;
+  font-weight:600;cursor:pointer;color:var(--muted);white-space:nowrap;
+  border-bottom:2.5px solid transparent;transition:all .2s;flex-shrink:0;}
+.cat-tab.active{color:var(--paddy);border-bottom-color:var(--paddy);}
+.cat-tab:hover:not(.active){color:var(--charcoal);}
+
+/* ── STATS STRIP ── */
+.stats-strip{background:var(--paddy-light);border-bottom:1px solid rgba(93,138,60,.2);
+  padding:10px 5%;display:flex;gap:20px;align-items:center;flex-wrap:wrap;}
+.stat-item{font-size:.78rem;color:var(--paddy);font-weight:600;display:flex;
+  align-items:center;gap:5px;}
+
+/* ── SECTIONS ── */
+.fresh-section{padding:32px 5%;max-width:1240px;margin:0 auto;}
+.section-head{display:flex;align-items:flex-end;justify-content:space-between;
+  margin-bottom:18px;flex-wrap:wrap;gap:8px;}
+.section-eyebrow{font-size:.68rem;font-weight:700;color:var(--paddy2);
+  text-transform:uppercase;letter-spacing:1.2px;margin-bottom:4px;}
+.section-title{font-family:'Playfair Display',serif;font-size:1.4rem;
+  font-weight:800;color:var(--soil);}
+
+/* ── PRODUCT GRID ── */
+.prod-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:14px;}
+.prod-card{background:#fff;border-radius:14px;border:1px solid var(--border);
+  overflow:hidden;transition:transform .2s,box-shadow .2s;cursor:pointer;display:flex;flex-direction:column;}
+.prod-card:hover{transform:translateY(-3px);box-shadow:0 10px 28px rgba(45,27,14,.1);}
+.prod-img{width:100%;aspect-ratio:1/1;background:var(--paddy-light);display:flex;
+  align-items:center;justify-content:center;font-size:3rem;position:relative;overflow:hidden;}
+.prod-img img{width:100%;height:100%;object-fit:cover;}
+.freshness-badge{position:absolute;bottom:8px;left:8px;background:rgba(45,27,14,.82);
+  color:#fff;font-size:.62rem;font-weight:700;padding:3px 8px;border-radius:20px;
+  backdrop-filter:blur(4px);}
+.freshness-badge.today{background:rgba(46,125,50,.9);}
+.freshness-badge.fresh{background:rgba(200,145,42,.9);}
+.prod-body{padding:12px 14px 14px;display:flex;flex-direction:column;flex:1;}
+.prod-shop{font-size:.68rem;color:var(--paddy2);font-weight:700;margin-bottom:3px;
+  text-transform:uppercase;letter-spacing:.3px;}
+.prod-name{font-size:.9rem;font-weight:700;color:var(--soil);margin-bottom:6px;line-height:1.3;}
+.prod-price{font-size:1rem;font-weight:800;color:var(--paddy);margin-bottom:8px;}
+.prod-price .unit{font-size:.72rem;font-weight:500;color:var(--muted);}
+.prod-btn{margin-top:auto;background:var(--paddy-light);color:var(--paddy);border:none;
+  padding:9px;border-radius:9px;font-size:.8rem;font-weight:700;cursor:pointer;transition:all .2s;}
+.prod-btn:hover{background:var(--paddy);color:#fff;}
+
+/* ── EMPTY / LOADING ── */
+.empty-wrap{text-align:center;padding:60px 20px;grid-column:1/-1;}
+.empty-icon{font-size:3rem;margin-bottom:12px;}
+.empty-wrap p{color:var(--muted);font-size:.88rem;max-width:280px;margin:0 auto;}
+.skel{background:linear-gradient(90deg,#f0f0f0 25%,#e0e8dc 50%,#f0f0f0 75%);
+  background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:14px;
+  aspect-ratio:1/1;}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--soil);color:#fff;
+  padding:12px 18px;border-radius:12px;font-size:.82rem;font-weight:500;
+  box-shadow:0 6px 24px rgba(0,0,0,.2);z-index:999;display:none;align-items:center;
+  gap:10px;border-left:3px solid var(--paddy2);max-width:300px;}
+.toast.show{display:flex;animation:toastIn .3s ease;}
+.toast.green{border-left-color:var(--green);}
+.toast.red{border-left-color:var(--red);}
+@keyframes toastIn{from{transform:translateX(80px);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* ── PRODUCT MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(45,27,14,.6);z-index:600;
+  display:none;align-items:center;justify-content:center;padding:16px;overflow-y:auto;}
+.modal-overlay.open{display:flex;}
+.modal-box{background:#fff;border-radius:18px;width:min(480px,100%);padding:0;overflow:hidden;}
+.modal-img{width:100%;aspect-ratio:4/3;background:var(--paddy-light);display:flex;
+  align-items:center;justify-content:center;font-size:5rem;position:relative;overflow:hidden;}
+.modal-img img{width:100%;height:100%;object-fit:cover;}
+.modal-body{padding:22px 24px 26px;}
+.modal-shop{font-size:.72rem;font-weight:700;color:var(--paddy2);text-transform:uppercase;
+  letter-spacing:.4px;margin-bottom:4px;}
+.modal-name{font-family:'Playfair Display',serif;font-size:1.25rem;font-weight:800;
+  color:var(--soil);margin-bottom:8px;line-height:1.3;}
+.modal-freshness{display:inline-flex;align-items:center;gap:5px;background:var(--green2);
+  color:var(--green);font-size:.74rem;font-weight:700;padding:4px 10px;border-radius:20px;
+  margin-bottom:12px;}
+.modal-price{font-size:1.4rem;font-weight:900;color:var(--paddy);margin-bottom:14px;}
+.modal-desc{font-size:.84rem;color:var(--muted);line-height:1.65;margin-bottom:18px;
+  padding:12px 14px;background:var(--cream);border-radius:10px;}
+.modal-btn{width:100%;padding:14px;background:var(--paddy);color:#fff;border:none;
+  border-radius:12px;font-size:.95rem;font-weight:700;cursor:pointer;transition:all .2s;}
+.modal-btn:hover{background:var(--paddy2);}
+.modal-close{position:absolute;top:12px;right:12px;background:rgba(255,255,255,.9);
+  border:none;border-radius:50%;width:32px;height:32px;font-size:1rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;color:var(--muted);}
+
+/* ── FARM PLEDGE ── */
+.pledge-section{background:var(--soil);padding:40px 5%;text-align:center;margin-top:20px;}
+.pledge-title{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:800;
+  color:#fff;margin-bottom:8px;}
+.pledge-sub{font-size:.85rem;color:rgba(255,255,255,.65);max-width:460px;
+  margin:0 auto 22px;line-height:1.7;}
+.pledge-items{display:flex;justify-content:center;gap:32px;flex-wrap:wrap;}
+.pledge-item{color:rgba(255,255,255,.85);font-size:.8rem;font-weight:600;
+  display:flex;align-items:center;gap:6px;}
+
+@media(max-width:768px){
+  .hero-title{font-size:1.9rem;}
+  .prod-grid{grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:10px;}
+  .fresh-section{padding:24px 4%;}
+}
+</style>
+</head>
+<body>
+<div class="toast" id="toastEl"></div>
+
+<!-- ═══ PRODUCT MODAL ═══ -->
+<div class="modal-overlay" id="prodModal">
+  <div class="modal-box" style="position:relative">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-img" id="modalImg"></div>
+    <div class="modal-body">
+      <div class="modal-shop" id="modalShop"></div>
+      <div class="modal-name" id="modalName"></div>
+      <div class="modal-freshness" id="modalFreshness"></div>
+      <div class="modal-price" id="modalPrice"></div>
+      <div class="modal-desc" id="modalDesc" style="display:none"></div>
+      <button class="modal-btn" onclick="goToCart()">🛒 কার্টে যুক্ত করুন</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ NAV ═══ -->
+<nav id="nav">
+  <div class="nav-top">
+    <a href="index.html" class="logo">△ DELT<em>A</em></a>
+    <span class="fresh-badge">🌿 FRESH</span>
+    <a href="index.html" class="back-link">← হোমপেজ</a>
+    <div class="nav-right">
+      <button class="nav-user-btn" id="navUserBtn">লগইন</button>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══ HERO ═══ -->
+<section class="fresh-hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">🌱 DELTA Fresh</div>
+    <h1 class="hero-title">মাঠ থেকে<br><em>আপনার থালায়</em></h1>
+    <p class="hero-sub">
+      মন্তেশ্বরের স্থানীয় কৃষক ও বিক্রেতাদের কাছ থেকে সরাসরি তাজা মাছ, সবজি, ফল ও ডেয়ারি পণ্য। কোনো মধ্যস্থতাকারী নেই, তাজা পণ্যের নিশ্চয়তা আছে।
+    </p>
+    <div class="freshness-bar">
+      <div class="freshness-tag">
+        <div class="freshness-dot"></div>
+        <span id="liveTime">আজকের তাজা পণ্য লোড হচ্ছে...</span>
+      </div>
+      <div class="freshness-tag">
+        <span id="heroLocation">📍 লোড হচ্ছে...</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ STATS STRIP ═══ -->
+<div class="stats-strip">
+  <div class="stat-item">🌾 <span id="statTotal">0</span> টি তাজা পণ্য</div>
+  <div class="stat-item">🏪 <span id="statSellers">0</span> জন বিক্রেতা</div>
+  <div class="stat-item">⏰ আজকের: <span id="statToday">0</span> টি</div>
+</div>
+
+<!-- ═══ CATEGORY FILTER ═══ -->
+<div class="cat-bar">
+  <div class="cat-bar-inner" id="catBar">
+    <button class="cat-tab active" data-cat="all" onclick="setFreshCat('all',this)">🌿 সব</button>
+    <button class="cat-tab" data-cat="fish" onclick="setFreshCat('fish',this)">🐟 মাছ</button>
+    <button class="cat-tab" data-cat="vegetable" onclick="setFreshCat('vegetable',this)">🥦 সবজি</button>
+    <button class="cat-tab" data-cat="fruit" onclick="setFreshCat('fruit',this)">🍎 ফল</button>
+    <button class="cat-tab" data-cat="dairy" onclick="setFreshCat('dairy',this)">🥛 দুগ্ধজাত</button>
+    <button class="cat-tab" data-cat="farm" onclick="setFreshCat('farm',this)">🌾 কৃষি পণ্য</button>
+    <button class="cat-tab" data-cat="meat" onclick="setFreshCat('meat',this)">🥩 মাংস ও মুরগি</button>
+    <button class="cat-tab" data-cat="flower" onclick="setFreshCat('flower',this)">🌸 ফুল</button>
+  </div>
+</div>
+
+<!-- ═══ TODAY'S FRESH ═══ -->
+<div class="fresh-section" id="sectionToday" style="display:none">
+  <div class="section-head">
+    <div>
+      <div class="section-eyebrow">⚡ আজকেই যোগ হয়েছে</div>
+      <div class="section-title">আজকের তাজা</div>
+    </div>
+  </div>
+  <div class="prod-grid" id="gridToday"></div>
+</div>
+
+<!-- ═══ ALL FRESH ═══ -->
+<div class="fresh-section">
+  <div class="section-head">
+    <div>
+      <div class="section-eyebrow" id="allEyebrow">স্থানীয় বিক্রেতাদের কাছ থেকে</div>
+      <div class="section-title" id="allTitle">সব তাজা পণ্য</div>
+    </div>
+    <span id="productCount" style="font-size:.78rem;color:var(--muted)"></span>
+  </div>
+  <div class="prod-grid" id="gridAll">
+    <div class="skel"></div><div class="skel"></div>
+    <div class="skel"></div><div class="skel"></div>
+    <div class="skel"></div><div class="skel"></div>
+  </div>
+</div>
+
+<!-- ═══ FARM PLEDGE ═══ -->
+<div class="pledge-section">
+  <div class="pledge-title">DELTA Fresh-এর প্রতিশ্রুতি</div>
+  <div class="pledge-sub">আমরা বিশ্বাস করি তাজা খাবার মানুষের অধিকার। স্থানীয় কৃষকদের সাথে সরাসরি সংযোগ রেখে আমরা নিশ্চিত করি আপনি সবচেয়ে তাজা পণ্য পাচ্ছেন।</div>
+  <div class="pledge-items">
+    <div class="pledge-item">🌱 সরাসরি কৃষক থেকে</div>
+    <div class="pledge-item">🚚 একই দিনে ডেলিভারি</div>
+    <div class="pledge-item">✅ তাজার নিশ্চয়তা</div>
+    <div class="pledge-item">💚 কোনো প্রিজার্ভেটিভ নেই</div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script>
+var FB_CFG = {
+  apiKey:"AIzaSyA6TrrnCMwv1aa1WPqGvTVWlnieB2pVOEU",
+  authDomain:"delta-platform-82fc0.firebaseapp.com",
+  projectId:"delta-platform-82fc0",
+  storageBucket:"delta-platform-82fc0.firebasestorage.app",
+  messagingSenderId:"444904180433",
+  appId:"1:444904180433:web:6706eba4d73a30cd67d3f0"
+};
+var auth, db, currentUser = null;
+var allFreshProducts = [];
+var activeCat = 'all';
+
+// Fresh category keyword mapping
+var FRESH_CATS = {
+  fish:     ['মাছ','fish','ফিশ','ilish','ইলিশ','rohu','রুই','catfish','শিং','magur','কৈ','chingri','চিংড়ি'],
+  vegetable:['সবজি','vegetable','veggie','আলু','potato','টমেটো','tomato','পেঁয়াজ','onion','বেগুন','brinjal','শিম','bean','মুলো','radish','লাউ','gourd','কুমড়া','pumpkin','ঢেঁড়স','okra','কপি','cabbage','cauliflower','ফুলকপি','বাঁধাকপি','করলা','bitter'],
+  fruit:    ['ফল','fruit','আম','mango','কলা','banana','পেঁপে','papaya','কাঁঠাল','jackfruit','লিচু','lychee','পেয়ারা','guava','নারকেল','coconut','আনারস','pineapple','বেল','wood apple'],
+  dairy:    ['দুধ','milk','dairy','দই','yogurt','curd','ঘি','ghee','মাখন','butter','পনির','cheese','ছানা','chhana'],
+  farm:     ['কৃষি','farm','agriculture','ধান','rice','চাল','গম','wheat','ডাল','lentil','সরিষা','mustard','তেল','oil','জৈব','organic','হলুদ','turmeric','মশলা','spice'],
+  meat:     ['মাংস','meat','মুরগি','chicken','poultry','ডিম','egg','খাসি','mutton','গরু','beef','cattle'],
+  flower:   ['ফুল','flower','গোলাপ','rose','গাঁদা','marigold','বেলি','jasmine']
+};
+
+(function(){
+  var scripts=[
+    'https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js',
+    'https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js',
+    'https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js'
+  ];
+  var loaded = 0;
+  function tryInit(){
+    if(++loaded < 3) return;
+    try{
+      firebase.initializeApp(FB_CFG);
+      auth = firebase.auth();
+      db = firebase.firestore();
+      auth.onAuthStateChanged(function(u){
+        currentUser = u;
+        document.getElementById('navUserBtn').textContent = u ? (u.displayName||'অ্যাকাউন্ট') : 'লগইন';
+      });
+      loadFreshProducts();
+    }catch(e){ console.error(e); }
+  }
+  document.querySelectorAll('script[src*="firebase"]').forEach(function(s){
+    s.addEventListener('load', tryInit);
+  });
+  // Fallback — if already loaded
+  setTimeout(function(){
+    if(typeof firebase !== 'undefined' && !db){
+      try{
+        firebase.initializeApp(FB_CFG);
+        auth = firebase.auth();
+        db = firebase.firestore();
+        loadFreshProducts();
+      }catch(e){}
+    }
+  }, 2000);
+})();
+
+// Update live time
+var CITY_DISPLAY = {
+  manteswar: 'মন্তেশ্বর ব্লক',
+  kusumgram: 'কুসুমগ্রাম',
+  burdwan: 'বর্ধমান'
+};
+// Auto-detect city from URL ?city=xxx, default to manteswar
+var CITY = new URLSearchParams(window.location.search).get('city') || 'manteswar';
+
+function updateLiveTime(){
+  var now = new Date();
+  var time = now.toLocaleTimeString('bn-IN',{hour:'2-digit',minute:'2-digit'});
+  var el = document.getElementById('liveTime');
+  if(el) el.textContent = time+' — তাজা পণ্য সরাসরি আপডেট হচ্ছে';
+  var loc = document.getElementById('heroLocation');
+  if(loc) loc.textContent = '📍 '+(CITY_DISPLAY[CITY] || CITY);
+}
+updateLiveTime();
+setInterval(updateLiveTime, 60000);
+
+function showToast(msg,type){
+  var e=document.getElementById('toastEl'); e.textContent=msg;
+  e.className='toast show '+(type||''); clearTimeout(e._t);
+  e._t=setTimeout(function(){e.className='toast';},3200);
+}
+
+// ── FRESH CATEGORY FILTER ──
+function isFreshProduct(p){
+  // Primary: Admin has explicitly tagged this product as fresh
+  if(p.isFresh === true) return true;
+  // Fallback: keyword matching
+  var text = [(p.name||''),(p.category||''),(p.description||'')].join(' ').toLowerCase();
+  for(var cat in FRESH_CATS){
+    var kws = FRESH_CATS[cat];
+    for(var i=0;i<kws.length;i++){
+      if(text.includes(kws[i].toLowerCase())) return true;
+    }
+  }
+  return false;
+}
+
+function matchesCat(p, cat){
+  if(cat==='all') return true;
+  // Primary: Admin-set freshCategory field
+  if(p.freshCategory && p.freshCategory === cat) return true;
+  // Fallback: keyword matching
+  var text = [(p.name||''),(p.category||''),(p.description||'')].join(' ').toLowerCase();
+  var kws = FRESH_CATS[cat] || [];
+  return kws.some(function(k){ return text.includes(k.toLowerCase()); });
+}
+
+function setFreshCat(cat, btn){
+  activeCat = cat;
+  document.querySelectorAll('.cat-tab').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  renderFreshProducts();
+}
+
+// ── FRESHNESS LABEL ──
+function freshnessLabel(createdAt){
+  if(!createdAt) return null;
+  var now = Date.now();
+  var age = now - new Date(createdAt).getTime();
+  var hours = Math.floor(age / (1000*60*60));
+  if(hours < 6) return {label:'সবে এসেছে', cls:'today'};
+  if(hours < 24) return {label:'আজকের', cls:'today'};
+  if(hours < 48) return {label:'গতকালের', cls:'fresh'};
+  return null;
+}
+
+// ── LOAD ALL FRESH PRODUCTS ──
+function loadFreshProducts(){
+  db.collection('cities').doc(CITY).collection('sellers')
+    .where('isApproved','==',true).get().then(function(sellerSnap){
+      var sellers = [];
+      sellerSnap.forEach(function(d){ sellers.push(Object.assign({id:d.id}, d.data())); });
+
+      var promises = sellers.map(function(s){
+        return db.collection('cities').doc(CITY).collection('sellers')
+          .doc(s.id).collection('products').get()
+          .then(function(pSnap){
+            var prods = [];
+            pSnap.forEach(function(d){
+              var p = Object.assign({id:d.id, shopId:s.id, shopName:s.shopName, shopArea:s.area}, d.data());
+              if(isFreshProduct(p)) prods.push(p);
+            });
+            return prods;
+          }).catch(function(){ return []; });
+      });
+
+      Promise.all(promises).then(function(results){
+        allFreshProducts = [].concat.apply([], results);
+        allFreshProducts.sort(function(a,b){
+          return new Date(b.createdAt||0) - new Date(a.createdAt||0);
+        });
+        renderFreshProducts();
+        updateStats();
+      });
+    }).catch(function(e){
+      document.getElementById('gridAll').innerHTML =
+        '<div class="empty-wrap"><div class="empty-icon">🌿</div><p>লোড করতে সমস্যা হয়েছে</p></div>';
+    });
+}
+
+function updateStats(){
+  var now = Date.now();
+  var todayCount = allFreshProducts.filter(function(p){
+    return p.createdAt && (now - new Date(p.createdAt).getTime()) < 24*60*60*1000;
+  }).length;
+  var sellers = [...new Set(allFreshProducts.map(function(p){return p.shopId;}))];
+  document.getElementById('statTotal').textContent = allFreshProducts.length;
+  document.getElementById('statSellers').textContent = sellers.length;
+  document.getElementById('statToday').textContent = todayCount;
+}
+
+function renderFreshProducts(){
+  var filtered = allFreshProducts.filter(function(p){ return matchesCat(p, activeCat); });
+  var now = Date.now();
+  var today = filtered.filter(function(p){
+    return p.createdAt && (now - new Date(p.createdAt).getTime()) < 24*60*60*1000;
+  });
+
+  // Today section
+  var todaySec = document.getElementById('sectionToday');
+  var gridToday = document.getElementById('gridToday');
+  if(today.length && activeCat === 'all'){
+    todaySec.style.display = 'block';
+    gridToday.innerHTML = today.map(prodCardHTML).join('');
+  } else {
+    todaySec.style.display = 'none';
+  }
+
+  // All section
+  var grid = document.getElementById('gridAll');
+  var title = document.getElementById('allTitle');
+  var eyebrow = document.getElementById('allEyebrow');
+  var count = document.getElementById('productCount');
+  count.textContent = filtered.length + 'টি পণ্য';
+
+  var catNames = {fish:'মাছ',vegetable:'সবজি',fruit:'ফল',dairy:'দুগ্ধজাত',
+    farm:'কৃষি পণ্য',meat:'মাংস ও মুরগি',flower:'ফুল'};
+  if(activeCat !== 'all'){
+    title.textContent = catNames[activeCat] || activeCat;
+    eyebrow.textContent = 'বিভাগ অনুযায়ী';
+  } else {
+    title.textContent = 'সব তাজা পণ্য';
+    eyebrow.textContent = 'স্থানীয় বিক্রেতাদের কাছ থেকে';
+  }
+
+  if(!filtered.length){
+    grid.innerHTML = '<div class="empty-wrap"><div class="empty-icon">🌿</div>'+
+      '<p>এই বিভাগে এখন কোনো পণ্য নেই — শীঘ্রই আসছে</p></div>';
+    return;
+  }
+  grid.innerHTML = filtered.map(prodCardHTML).join('');
+}
+
+function prodCardHTML(p){
+  var fresh = freshnessLabel(p.createdAt);
+  var imgContent = p.imageUrl
+    ? '<img src="'+p.imageUrl+'" loading="lazy">'
+    : '<span style="font-size:3rem">'+prodEmoji(p)+'</span>';
+  var badge = fresh
+    ? '<div class="freshness-badge '+fresh.cls+'">⏱ '+fresh.label+'</div>' : '';
+  var price = p.price ? '₹'+parseFloat(p.price).toLocaleString('en-IN') : '—';
+  var unit = p.unit ? ' / '+p.unit : '';
+  return '<div class="prod-card" onclick="openModal(\''+p.id+'\',\''+p.shopId+'\')">'+
+    '<div class="prod-img">'+imgContent+badge+'</div>'+
+    '<div class="prod-body">'+
+      '<div class="prod-shop">🏪 '+(p.shopName||'—')+'</div>'+
+      '<div class="prod-name">'+(p.name||'—')+'</div>'+
+      '<div class="prod-price">'+price+'<span class="unit">'+unit+'</span></div>'+
+      '<button class="prod-btn">🛒 কার্টে যুক্ত করুন</button>'+
+    '</div>'+
+  '</div>';
+}
+
+function prodEmoji(p){
+  var text = [(p.name||''),(p.category||'')].join(' ').toLowerCase();
+  if(text.match(/মাছ|fish|ilish|ইলিশ|chingri|চিংড়ি/)) return '🐟';
+  if(text.match(/সবজি|vegetable|আলু|potato|টমেটো|tomato/)) return '🥦';
+  if(text.match(/ফল|fruit|আম|mango|কলা|banana/)) return '🍎';
+  if(text.match(/দুধ|milk|dairy|দই|yogurt/)) return '🥛';
+  if(text.match(/মুরগি|chicken|ডিম|egg/)) return '🍳';
+  if(text.match(/মাংস|meat|খাসি|mutton/)) return '🥩';
+  if(text.match(/ফুল|flower|rose|গোলাপ/)) return '🌸';
+  if(text.match(/ধান|চাল|rice|গম|wheat/)) return '🌾';
+  return '🌿';
+}
+
+// ── MODAL ──
+var modalProduct = null;
+
+function openModal(prodId, shopId){
+  var p = allFreshProducts.find(function(x){ return x.id===prodId && x.shopId===shopId; });
+  if(!p) return;
+  modalProduct = p;
+  var fresh = freshnessLabel(p.createdAt);
+  var imgEl = document.getElementById('modalImg');
+  imgEl.innerHTML = p.imageUrl
+    ? '<img src="'+p.imageUrl+'" style="width:100%;height:100%;object-fit:cover">'
+    : '<span style="font-size:5rem">'+prodEmoji(p)+'</span>';
+  document.getElementById('modalShop').textContent = '🏪 '+(p.shopName||'');
+  document.getElementById('modalName').textContent = p.name||'';
+  var freshEl = document.getElementById('modalFreshness');
+  if(fresh){ freshEl.textContent = '⏱ '+fresh.label; freshEl.style.display='inline-flex'; }
+  else { freshEl.style.display='none'; }
+  var price = p.price ? '₹'+parseFloat(p.price).toLocaleString('en-IN')+(p.unit?' / '+p.unit:'') : '—';
+  document.getElementById('modalPrice').textContent = price;
+  var descEl = document.getElementById('modalDesc');
+  if(p.description){ descEl.textContent=p.description; descEl.style.display='block'; }
+  else { descEl.style.display='none'; }
+  document.getElementById('prodModal').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+
+function closeModal(){
+  document.getElementById('prodModal').classList.remove('open');
+  document.body.style.overflow='';
+}
+
+function goToCart(){
+  closeModal();
+  showToast('কার্টে যুক্ত করতে হোমপেজ থেকে অর্ডার করুন','green');
+  setTimeout(function(){ window.location.href='index.html'; }, 1200);
+}
+
+document.addEventListener('DOMContentLoaded',function(){
+  var overlay = document.getElementById('prodModal');
+  if(overlay) overlay.addEventListener('click',function(e){ if(e.target===overlay) closeModal(); });
+});
+</script>
+</body>
+</html>
