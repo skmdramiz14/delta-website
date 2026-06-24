@@ -69,9 +69,34 @@ a{text-decoration:none;color:inherit;}
   transition:transform .2s,box-shadow .2s;display:flex;flex-direction:column;}
 .cat-card:hover{transform:translateY(-3px);box-shadow:0 12px 30px rgba(91,58,160,.14);}
 .cat-img{width:100%;aspect-ratio:1/1;background:var(--sand);display:flex;align-items:center;
-  justify-content:center;font-size:3rem;position:relative;}
+  justify-content:center;font-size:3rem;position:relative;overflow:hidden;}
 .cat-badge{position:absolute;top:10px;left:10px;background:rgba(91,58,160,.92);color:#fff;
-  font-size:.62rem;font-weight:700;padding:3px 9px;border-radius:20px;letter-spacing:.3px;}
+  font-size:.62rem;font-weight:700;padding:3px 9px;border-radius:20px;letter-spacing:.3px;z-index:3;}
+
+/* ── IMAGE SLIDER ── */
+.cat-slider{width:100%;aspect-ratio:1/1;position:relative;overflow:hidden;background:var(--sand);}
+.cat-slides{display:flex;height:100%;transition:transform .35s cubic-bezier(.4,0,.2,1);}
+.cat-slide{min-width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+  font-size:3rem;flex-shrink:0;}
+.cat-slide img{width:100%;height:100%;object-fit:cover;display:block;}
+.cat-slide-btn{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.92);
+  border:none;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-size:.75rem;z-index:4;box-shadow:0 2px 8px rgba(0,0,0,.15);transition:all .2s;}
+.cat-slide-btn:hover{background:#fff;box-shadow:0 3px 12px rgba(0,0,0,.2);}
+.cat-slide-btn.prev{left:8px;}
+.cat-slide-btn.next{right:8px;}
+.cat-dots{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);
+  display:flex;gap:5px;z-index:4;}
+.cat-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.55);
+  border:none;cursor:pointer;padding:0;transition:all .2s;}
+.cat-dot.active{background:#fff;width:18px;border-radius:3px;}
+.cat-thumbs{display:flex;gap:5px;padding:7px 10px;background:var(--cream);overflow-x:auto;
+  scrollbar-width:none;}
+.cat-thumbs::-webkit-scrollbar{display:none;}
+.cat-thumb{width:44px;height:44px;border-radius:7px;object-fit:cover;cursor:pointer;
+  border:2px solid transparent;transition:border-color .2s;flex-shrink:0;}
+.cat-thumb.active{border-color:var(--bazaar);}
+
 .cat-body{padding:14px 16px 16px;display:flex;flex-direction:column;flex:1;}
 .cat-name{font-size:.92rem;font-weight:700;color:var(--charcoal);margin-bottom:4px;line-height:1.3;}
 .cat-price-row{display:flex;align-items:baseline;gap:6px;margin-bottom:6px;}
@@ -378,17 +403,56 @@ function loadAndRenderCatalog(){
           'font-size:.88rem;grid-column:1/-1">শীঘ্রই এখানে পণ্যের তালিকা আসছে...</div>';
         return;
       }
-      wrap.innerHTML = items.map(function(item, idx){
-        var imgContent = item.imageUrl
-          ? '<img src="'+item.imageUrl+'" style="width:100%;height:100%;object-fit:cover;display:block" loading="lazy">'
-          : '<span style="font-size:3rem">'+(item.icon||'📦')+'</span>';
-        return '<div class="cat-card">'+
-          '<div class="cat-img"><span class="cat-badge">সংগ্রহ থেকে</span>'+imgContent+'</div>'+
+      wrap.innerHTML = items.map(function(item){
+        var imgs = item.images && item.images.length ? item.images : (item.imageUrl ? [item.imageUrl] : []);
+        var hasImgs = imgs.length > 0;
+        var cardId = 'cat-'+item.id;
+
+        // Build slides
+        var slidesHtml = hasImgs
+          ? imgs.map(function(u){
+              return '<div class="cat-slide"><img src="'+u+'" loading="lazy"></div>';
+            }).join('')
+          : '<div class="cat-slide"><span>'+(item.icon||'📦')+'</span></div>';
+
+        // Prev/Next buttons (only if more than 1 image)
+        var navBtns = imgs.length > 1
+          ? '<button class="cat-slide-btn prev" onclick="catSlide(\''+cardId+'\',-1)">‹</button>'+
+            '<button class="cat-slide-btn next" onclick="catSlide(\''+cardId+'\',1)">›</button>'
+          : '';
+
+        // Dots
+        var dotsHtml = imgs.length > 1
+          ? '<div class="cat-dots">'+
+              imgs.map(function(_,i){
+                return '<button class="cat-dot'+(i===0?' active':'')+'" '+
+                  'onclick="catGoTo(\''+cardId+'\','+i+')"></button>';
+              }).join('')+
+            '</div>'
+          : '';
+
+        // Thumbnails (only if 2+ images)
+        var thumbHtml = imgs.length > 1
+          ? '<div class="cat-thumbs">'+
+              imgs.map(function(u,i){
+                return '<img src="'+u+'" class="cat-thumb'+(i===0?' active':'')+'" loading="lazy" '+
+                  'onclick="catGoTo(\''+cardId+'\','+i+')">';
+              }).join('')+
+            '</div>'
+          : '';
+
+        return '<div class="cat-card" id="'+cardId+'">'+
+          '<div class="cat-slider">'+
+            '<span class="cat-badge">সংগ্রহ থেকে</span>'+
+            '<div class="cat-slides" id="'+cardId+'-slides">'+slidesHtml+'</div>'+
+            navBtns+dotsHtml+
+          '</div>'+
+          thumbHtml+
           '<div class="cat-body">'+
             '<div class="cat-name">'+item.name+'</div>'+
             '<div class="cat-price-row">'+
               '<span class="cat-msrp">₹'+(item.msrp||0).toLocaleString('en-IN')+'</span>'+
-              '<span class="cat-est">₹'+(item.estMin||0)+' - '+(item.estMax||0)+'</span>'+
+              '<span class="cat-est">₹'+(item.estMin||0)+' – ₹'+(item.estMax||0)+'</span>'+
             '</div>'+
             '<div class="cat-eta">⏳ আনুমানিক ডেলিভারি: '+(item.eta||'48-72 ঘণ্টা')+'</div>'+
             '<button class="cat-btn" onclick="requestCatalogItem(\''+item.id+'\',\''+
@@ -528,6 +592,32 @@ function loadMyRequests(){
     }).catch(function(){
       wrap.innerHTML = '<div class="empty-state">লোড করতে সমস্যা হয়েছে</div>';
     });
+}
+
+// ═══ CATALOG IMAGE SLIDER ═══
+var catSlideIndex = {}; // tracks current slide per card
+
+function catGoTo(cardId, index){
+  var card = document.getElementById(cardId);
+  if(!card) return;
+  var slides = card.querySelector('.cat-slides');
+  var dots = card.querySelectorAll('.cat-dot');
+  var thumbs = card.querySelectorAll('.cat-thumb');
+  var total = card.querySelectorAll('.cat-slide').length;
+  index = Math.max(0, Math.min(index, total-1));
+  catSlideIndex[cardId] = index;
+  slides.style.transform = 'translateX(-'+index*100+'%)';
+  dots.forEach(function(d,i){ d.classList.toggle('active', i===index); });
+  thumbs.forEach(function(t,i){ t.classList.toggle('active', i===index); });
+}
+
+function catSlide(cardId, dir){
+  var current = catSlideIndex[cardId] || 0;
+  var card = document.getElementById(cardId);
+  if(!card) return;
+  var total = card.querySelectorAll('.cat-slide').length;
+  var next = (current + dir + total) % total;
+  catGoTo(cardId, next);
 }
 </script>
 </body>
