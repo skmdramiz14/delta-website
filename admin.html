@@ -543,22 +543,11 @@ button,input,select{font-family:'DM Sans',sans-serif;}
             <input type="text" class="form-input" id="catEta" placeholder="যেমন: 48-72 ঘণ্টা">
           </div>
           <div class="form-group" style="margin-bottom:0;grid-column:1/-1">
-            <label>Product ছবি আপলোড করুন (ঐচ্ছিক)</label>
-            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-              <div id="catImgPreview" style="width:80px;height:80px;border-radius:10px;border:2px dashed var(--border);
-                display:flex;align-items:center;justify-content:center;font-size:1.6rem;background:var(--cream);flex-shrink:0;overflow:hidden;">
-                📷
-              </div>
-              <div>
-                <input type="file" id="catImgFile" accept="image/*" style="display:none" onchange="uploadCatalogImage(this)">
-                <button class="btn-sm btn-blue" type="button" onclick="document.getElementById('catImgFile').click()" id="catImgBtn">
-                  📤 ছবি বেছে নিন
-                </button>
-                <div style="font-size:.72rem;color:var(--muted);margin-top:4px">JPG, PNG, WEBP — সর্বোচ্চ 5MB</div>
-                <div id="catImgStatus" style="font-size:.72rem;margin-top:2px"></div>
-              </div>
-              <input type="hidden" id="catImgUrl" value="">
+            <label>Product ছবি আপলোড করুন — সর্বোচ্চ ৪টা (প্রথমটা main ছবি)</label>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px" id="catImgSlots">
+              <!-- 4 upload slots rendered by JS -->
             </div>
+            <div style="font-size:.72rem;color:var(--muted);margin-top:6px">JPG, PNG, WEBP · সর্বোচ্চ 5MB প্রতিটা · প্রথম ছবিটা catalog card-এ main হিসেবে দেখাবে</div>
           </div>
         </div>
         <button class="btn-sm btn-orange" onclick="addCatalogItem()" id="addCatBtn">➕ Catalog-এ যুক্ত করুন</button>
@@ -1647,40 +1636,69 @@ function changeBazaarStatus(id, newStatus){
 var allCatalogItems = [];
 var CLOUD = 'djthojcmy', PRESET = 'delta_products';
 
-async function uploadCatalogImage(input){
+// Multi-image upload state — array of 4 slots
+var catImages = ['','','',''];
+
+function initCatImgSlots(){
+  var wrap = document.getElementById('catImgSlots');
+  if(!wrap) return;
+  wrap.innerHTML = catImages.map(function(url, i){
+    return '<div id="catSlot-'+i+'" onclick="document.getElementById(\'catSlotFile-'+i+'\').click()" '+
+      'style="width:90px;height:90px;border-radius:10px;border:2px dashed var(--border);'+
+      'display:flex;flex-direction:column;align-items:center;justify-content:center;'+
+      'background:var(--cream);cursor:pointer;overflow:hidden;position:relative;flex-shrink:0;transition:border-color .2s;"'+
+      'onmouseover="this.style.borderColor=\'var(--orange)\'" onmouseout="this.style.borderColor=\'var(--border)\'">'+
+      (url
+        ? '<img src="'+url+'" style="width:100%;height:100%;object-fit:cover">'+
+          '<div onclick="event.stopPropagation();removeCatImg('+i+')" style="position:absolute;top:3px;right:3px;'+
+          'background:rgba(192,57,43,.85);color:#fff;border-radius:50%;width:18px;height:18px;'+
+          'display:flex;align-items:center;justify-content:center;font-size:.65rem;cursor:pointer;">✕</div>'
+        : '<span style="font-size:1.4rem;margin-bottom:2px">📷</span>'+
+          '<span style="font-size:.58rem;color:var(--muted)">'+(i===0?'Main':'Photo '+(i+1))+'</span>')+
+      '</div>'+
+      '<input type="file" id="catSlotFile-'+i+'" accept="image/*" style="display:none" onchange="uploadCatSlot(this,'+i+')">';
+  }).join('');
+}
+
+async function uploadCatSlot(input, slotIndex){
   var file = input.files[0];
   if(!file) return;
-  var status = document.getElementById('catImgStatus');
-  var btn = document.getElementById('catImgBtn');
-  var preview = document.getElementById('catImgPreview');
-  status.textContent = '⏳ আপলোড হচ্ছে...';
-  status.style.color = 'var(--muted)';
-  btn.disabled = true;
+  var slot = document.getElementById('catSlot-'+slotIndex);
+  slot.innerHTML = '<div style="font-size:.7rem;color:var(--muted)">⏳ হচ্ছে...</div>';
   var fd = new FormData();
   fd.append('file', file);
   fd.append('upload_preset', PRESET);
   fd.append('cloud_name', CLOUD);
   fd.append('folder', 'delta/bazaar-catalog');
   try {
-    var res = await fetch('https://api.cloudinary.com/v1_1/'+CLOUD+'/image/upload', {method:'POST', body:fd});
+    var res = await fetch('https://api.cloudinary.com/v1_1/'+CLOUD+'/image/upload', {method:'POST',body:fd});
     var data = await res.json();
     if(data.secure_url){
-      document.getElementById('catImgUrl').value = data.secure_url;
-      preview.innerHTML = '<img src="'+data.secure_url+'" style="width:100%;height:100%;object-fit:cover">';
-      status.textContent = '✅ আপলোড সফল';
-      status.style.color = 'var(--green)';
+      catImages[slotIndex] = data.secure_url;
+      initCatImgSlots();
+      showToast('ছবি '+(slotIndex+1)+' আপলোড হয়েছে ✅','green');
     } else {
-      status.textContent = '❌ আপলোড ব্যর্থ';
-      status.style.color = 'var(--red)';
+      initCatImgSlots();
+      showToast('ছবি '+(slotIndex+1)+' আপলোড ব্যর্থ','red');
     }
   } catch(e) {
-    status.textContent = '❌ সমস্যা হয়েছে';
-    status.style.color = 'var(--red)';
+    initCatImgSlots();
+    showToast('আপলোড সমস্যা: '+e.message,'red');
   }
-  btn.disabled = false;
+}
+
+function removeCatImg(slotIndex){
+  catImages[slotIndex] = '';
+  initCatImgSlots();
+}
+
+function resetCatImgSlots(){
+  catImages = ['','','',''];
+  initCatImgSlots();
 }
 
 function loadCatalogAdmin(){
+  initCatImgSlots();
   db.collection('cities').doc(CITY).collection('bazaarCatalog').get().then(function(snap){
     allCatalogItems = [];
     snap.forEach(function(d){ allCatalogItems.push(Object.assign({id:d.id}, d.data())); });
@@ -1761,20 +1779,22 @@ function addCatalogItem(){
   var estMax = parseFloat(document.getElementById('catEstMax').value) || 0;
   var eta = document.getElementById('catEta').value.trim() || '48-72 ঘণ্টা';
   var category = document.getElementById('catCategory').value.trim();
-  var imageUrl = document.getElementById('catImgUrl').value.trim();
+  // Use catImages array — filter out empty slots
+  var images = catImages.filter(function(u){ return u; });
+  var imageUrl = images[0] || ''; // main image
   if(!name){ showToast('পণ্যের নাম লিখুন','red'); return; }
   var btn = document.getElementById('addCatBtn');
   btn.disabled = true; btn.textContent = 'যুক্ত হচ্ছে...';
   db.collection('cities').doc(CITY).collection('bazaarCatalog').add({
-    name:name, icon:icon, imageUrl:imageUrl, msrp:msrp, estMin:estMin, estMax:estMax,
+    name:name, icon:icon, imageUrl:imageUrl, images:images,
+    msrp:msrp, estMin:estMin, estMax:estMax,
     eta:eta, category:category, isActive:true,
     createdAt: new Date().toISOString()
   }).then(function(ref){
-    allCatalogItems.push({id:ref.id, name:name, icon:icon, imageUrl:imageUrl, msrp:msrp,
-      estMin:estMin, estMax:estMax, eta:eta, category:category, isActive:true,
+    allCatalogItems.push({id:ref.id, name:name, icon:icon, imageUrl:imageUrl, images:images,
+      msrp:msrp, estMin:estMin, estMax:estMax, eta:eta, category:category, isActive:true,
       createdAt: new Date().toISOString()});
     renderCatalogAdmin();
-    // Reset form
     document.getElementById('catName').value='';
     document.getElementById('catIcon').value='';
     document.getElementById('catMsrp').value='';
@@ -1782,10 +1802,7 @@ function addCatalogItem(){
     document.getElementById('catEstMax').value='';
     document.getElementById('catEta').value='';
     document.getElementById('catCategory').value='';
-    document.getElementById('catImgUrl').value='';
-    document.getElementById('catImgFile').value='';
-    document.getElementById('catImgPreview').innerHTML='📷';
-    document.getElementById('catImgStatus').textContent='';
+    resetCatImgSlots();
     showToast(name+' catalog-এ যুক্ত হয়েছে ✅','green');
   }).catch(function(e){ showToast('সমস্যা: '+e.message,'red'); })
   .then(function(){ btn.disabled=false; btn.textContent='➕ Catalog-এ যুক্ত করুন'; });
