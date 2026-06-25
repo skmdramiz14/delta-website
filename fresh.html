@@ -243,9 +243,7 @@ a{text-decoration:none;color:inherit;}
   <div class="stat-item">🌾 <span id="statTotal">0</span> টি তাজা পণ্য</div>
   <div class="stat-item">🏪 <span id="statSellers">0</span> জন বিক্রেতা</div>
   <div class="stat-item">⏰ আজকের: <span id="statToday">0</span> টি</div>
-  <button onclick="debugFresh()" style="margin-left:auto;padding:5px 12px;background:var(--soil);color:#fff;border:none;border-radius:8px;font-size:.72rem;cursor:pointer">🔍 Debug</button>
 </div>
-<pre id="debugOut" style="display:none;background:#1a1a2e;color:#00ff00;font-size:.7rem;padding:14px;margin:0;overflow-x:auto;white-space:pre-wrap;max-height:300px;overflow-y:auto"></pre>
 
 <!-- ═══ CATEGORY FILTER ═══ -->
 <div class="cat-bar">
@@ -431,38 +429,6 @@ function freshnessLabel(createdAt){
   if(hours < 24) return {label:'আজকের', cls:'today'};
   if(hours < 48) return {label:'গতকালের', cls:'fresh'};
   return null;
-}
-
-// ── DEBUG ──
-function debugFresh(){
-  var out = document.getElementById('debugOut');
-  out.style.display='block';
-  out.textContent = 'allFreshProducts count: '+allFreshProducts.length+'\n';
-  out.textContent += 'Loading from cities/'+CITY+'/sellers...\n';
-  db.collection('cities').doc(CITY).collection('sellers').get().then(function(snap){
-    out.textContent += 'Sellers found: '+snap.size+'\n';
-    var promises = [];
-    snap.forEach(function(d){
-      var s = d.data();
-      out.textContent += '• '+d.id+' | '+s.shopName+' | status:'+s.status+'\n';
-      promises.push(
-        db.collection('cities').doc(CITY).collection('sellers')
-          .doc(d.id).collection('products').get()
-          .then(function(pSnap){
-            pSnap.forEach(function(pd){
-              var p = pd.data();
-              out.textContent += '  → '+p.name+
-                ' | isFresh:'+p.isFresh+
-                ' | typeof:'+typeof p.isFresh+
-                ' | pass:'+isFreshProduct(p)+'\n';
-            });
-          })
-      );
-    });
-    return Promise.all(promises);
-  }).catch(function(e){
-    out.textContent += 'ERROR: '+e.message;
-  });
 }
 
 // ── LOAD ALL FRESH PRODUCTS ──
