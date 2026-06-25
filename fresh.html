@@ -437,37 +437,38 @@ function freshnessLabel(createdAt){
 function debugFresh(){
   var out = document.getElementById('debugOut');
   out.style.display='block';
-  out.textContent = 'Loading sellers...';
-  db.collection('sellers').get().then(function(snap){
-    out.textContent = 'Sellers found: '+snap.size+'\n';
+  out.textContent = 'Loading from cities/'+CITY+'/sellers...\n';
+  db.collection('cities').doc(CITY).collection('sellers').get().then(function(snap){
+    out.textContent += 'Sellers found: '+snap.size+'\n';
     var promises = [];
     snap.forEach(function(d){
       var s = d.data();
-      out.textContent += '• '+d.id+' | '+s.shopName+' | status:'+s.status+' | isApproved:'+s.isApproved+'\n';
+      out.textContent += '• '+d.id+' | '+s.shopName+' | status:'+s.status+'\n';
       promises.push(
-        db.collection('sellers').doc(d.id).collection('products').get()
+        db.collection('cities').doc(CITY).collection('sellers')
+          .doc(d.id).collection('products').get()
           .then(function(pSnap){
             pSnap.forEach(function(pd){
               var p = pd.data();
-              out.textContent += '  → '+pd.id+' | '+p.name+' | isFresh:'+p.isFresh+' | freshCategory:'+p.freshCategory+'\n';
+              out.textContent += '  → '+p.name+' | isFresh:'+p.isFresh+' | freshCategory:'+p.freshCategory+'\n';
             });
           })
       );
     });
     return Promise.all(promises);
   }).catch(function(e){
-    out.textContent = 'ERROR: '+e.message;
+    out.textContent += 'ERROR: '+e.message;
   });
 }
 
 // ── LOAD ALL FRESH PRODUCTS ──
 function loadFreshProducts(){
-  // Sellers are in root-level /sellers/ collection
-  db.collection('sellers').get()
+  db.collection('cities').doc(CITY).collection('sellers').get()
     .then(function(sellerSnap){
       var sellers = [];
       sellerSnap.forEach(function(d){
-        sellers.push(Object.assign({id:d.id}, d.data()));
+        var s = Object.assign({id:d.id}, d.data());
+        if(s.status !== 'rejected') sellers.push(s);
       });
 
       if(!sellers.length){
@@ -479,7 +480,8 @@ function loadFreshProducts(){
       }
 
       var promises = sellers.map(function(s){
-        return db.collection('sellers').doc(s.id).collection('products').get()
+        return db.collection('cities').doc(CITY).collection('sellers')
+          .doc(s.id).collection('products').get()
           .then(function(pSnap){
             var prods = [];
             pSnap.forEach(function(d){
