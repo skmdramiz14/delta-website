@@ -2229,7 +2229,7 @@ function loadFreshProducts(sellerId){
   var listWrap = document.getElementById('freshprodlist-'+sellerId);
   if(!listWrap) return;
   listWrap.innerHTML = '<div style="font-size:.8rem;color:var(--muted)">লোড হচ্ছে...</div>';
-  db.collection('sellers').doc(sellerId).collection('products').get().then(function(snap){
+  db.collection('cities').doc(CITY).collection('sellers').doc(sellerId).collection('products').get().then(function(snap){
       var prods = [];
       snap.forEach(function(d){ prods.push(Object.assign({id:d.id}, d.data())); });
       if(!prods.length){
@@ -2272,7 +2272,7 @@ function loadFreshProducts(sellerId){
 }
 
 function toggleFreshTag(sellerId, prodId, isFresh){
-  db.collection('sellers').doc(sellerId)
+  db.collection('cities').doc(CITY).collection('sellers').doc(sellerId)
     .collection('products').doc(prodId).update({
       isFresh: isFresh,
       freshTaggedAt: isFresh ? new Date().toISOString() : null,
@@ -2286,7 +2286,7 @@ function toggleFreshTag(sellerId, prodId, isFresh){
 
 function saveFreshCategory(sellerId, prodId, cat){
   if(!cat) return;
-  db.collection('sellers').doc(sellerId)
+  db.collection('cities').doc(CITY).collection('sellers').doc(sellerId)
     .collection('products').doc(prodId).update({
       freshCategory: cat,
       updatedAt: new Date().toISOString()
