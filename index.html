@@ -1,4 +1,4 @@
-<!DOCTYPE html>     
+<!DOCTYPE html>
 <html lang="bn">
 <head>
 <meta charset="UTF-8">
@@ -3213,12 +3213,27 @@ function toggleOpenNow(){
 
 // ══ FEATURE 8: FESTIVAL BANNER ══
 function initFestivalBanner(){
+  // First check Firestore for manual override
+  if(db){
+    db.collection('cities').doc(CITY).collection('settings').doc('festivalBanner').get()
+      .then(function(doc){
+        var overrideKey = doc.exists ? doc.data().activeFestival : null;
+        renderFestivalBanner(overrideKey);
+      }).catch(function(){
+        renderFestivalBanner(null);
+      });
+  } else {
+    renderFestivalBanner(null);
+  }
+}
+
+function renderFestivalBanner(overrideKey){
   var now = new Date();
   var festivals = [
     {
       name_bn: '🎊 দুর্গাপূজা স্পেশাল',
       name_en: '🎊 Durga Puja Special',
-      date: new Date('2026-06-25'), // TEST DATE — change back to 2026-10-02 after testing
+      date: new Date('2026-10-20'),
       festivalKey: 'durga_puja',
       bg: 'linear-gradient(135deg,#b5451b,#e8863a)',
       desc_bn: 'মন্তেশ্বরের সেরা দোকান থেকে পূজার কেনাকাটা। বিশেষ ছাড় ও উপহার।',
@@ -3250,18 +3265,28 @@ function initFestivalBanner(){
     }
   ];
 
-  // Find next upcoming festival
-  var upcoming = festivals
-    .filter(function(f){ return f.date > now; })
-    .sort(function(a,b){ return a.date - b.date; })[0];
+  var upcoming;
+
+  // If Admin has set override — use that festival
+  if(overrideKey){
+    upcoming = festivals.find(function(f){ return f.festivalKey === overrideKey; });
+  }
+
+  // Otherwise auto-detect next upcoming within 90 days
+  if(!upcoming){
+    upcoming = festivals
+      .filter(function(f){ return f.date > now; })
+      .sort(function(a,b){ return a.date - b.date; })[0];
+    if(upcoming){
+      var diff = Math.ceil((upcoming.date - now) / (1000*60*60*24));
+      if(diff > 90) upcoming = null;
+    }
+  }
 
   if(!upcoming) return;
 
-  // Calculate days remaining
   var diff = Math.ceil((upcoming.date - now) / (1000*60*60*24));
-  if(diff > 999) return; // TEST MODE — change back to 90 after testing
-
-  var days  = Math.floor(diff);
+  var days  = Math.max(0, Math.floor(diff));
   var hours = Math.floor((diff % 1) * 24) || 0;
 
   var wrap = document.getElementById('festivalBannerWrap');
