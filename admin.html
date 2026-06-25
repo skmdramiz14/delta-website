@@ -366,6 +366,26 @@ button,input,select{font-family:'DM Sans',sans-serif;}
         <button class="btn-sm btn-orange" onclick="savePerKmRate()">💾 Rate সেভ করুন</button>
         <span style="font-size:.74rem;color:var(--muted)" id="currentRateDisplay">বর্তমান rate: ₹0/km</span>
       </div>
+
+      <!-- FESTIVAL BANNER CONTROL -->
+      <div class="add-zone-card" style="margin-bottom:16px">
+        <div style="font-size:.82rem;font-weight:700;color:var(--navy);margin-bottom:10px">🎊 Festival Banner Control — Homepage-এ কোন banner দেখাবে</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+          <select id="festivalSelect" class="form-input" style="max-width:260px;padding:8px 12px">
+            <option value="">🤖 Auto (date অনুযায়ী)</option>
+            <option value="durga_puja">🎊 দুর্গাপূজা স্পেশাল</option>
+            <option value="eid">🌙 ঈদ স্পেশাল</option>
+            <option value="poila_boishakh">🌸 পহেলা বৈশাখ</option>
+            <option value="kali_puja">🪔 কালীপূজা স্পেশাল</option>
+            <option value="hidden">🚫 Banner লুকান</option>
+          </select>
+          <button class="btn-sm btn-orange" onclick="saveFestivalBanner()">💾 সেভ করুন</button>
+          <span style="font-size:.74rem;color:var(--muted)" id="festivalStatusDisplay">লোড হচ্ছে...</span>
+        </div>
+        <div style="font-size:.72rem;color:var(--muted);margin-top:8px">
+          💡 "Auto" রাখলে date অনুযায়ী automatically সঠিক banner দেখাবে। Manual select করলে সেই banner সবসময় দেখাবে।
+        </div>
+      </div>
       <div class="toolbar">
         <input type="text" class="search-input" id="orderSearch" placeholder="🔍 Order ID, shop name, customer name দিয়ে খুঁজুন..." oninput="renderOrders()">
         <button class="filter-pill active" data-f="all" onclick="setOrderFilter('all',this)">সব</button>
@@ -793,6 +813,7 @@ function loadAllData(){
   });
 
   loadPerKmRate();
+  loadFestivalBannerSetting();
 
   db.collection('categoryRequests').get().then(function(snap){
     allRequests = [];
@@ -1439,6 +1460,43 @@ function savePerKmRate(){
   }).catch(function(e){
     showToast('সেভ ব্যর্থ: '+e.message,'red');
   });
+}
+
+// ═══ FESTIVAL BANNER CONTROL ═══
+function loadFestivalBannerSetting(){
+  db.collection('cities').doc(CITY).collection('settings').doc('festivalBanner').get()
+    .then(function(doc){
+      var sel = document.getElementById('festivalSelect');
+      var display = document.getElementById('festivalStatusDisplay');
+      if(!sel) return;
+      if(doc.exists && doc.data().activeFestival){
+        sel.value = doc.data().activeFestival;
+        var labels = {
+          durga_puja:'🎊 দুর্গাপূজা',eid:'🌙 ঈদ',
+          poila_boishakh:'🌸 পহেলা বৈশাখ',kali_puja:'🪔 কালীপূজা',hidden:'🚫 লুকানো'
+        };
+        if(display) display.textContent = 'বর্তমান: '+(labels[doc.data().activeFestival]||'Auto');
+      } else {
+        sel.value = '';
+        if(display) display.textContent = 'বর্তমান: 🤖 Auto';
+      }
+    }).catch(function(){});
+}
+
+function saveFestivalBanner(){
+  var val = document.getElementById('festivalSelect').value;
+  var data = val
+    ? {activeFestival: val, updatedAt: new Date().toISOString()}
+    : {activeFestival: firebase.firestore.FieldValue.delete(), updatedAt: new Date().toISOString()};
+  db.collection('cities').doc(CITY).collection('settings').doc('festivalBanner')
+    .set(data, {merge:true}).then(function(){
+      loadFestivalBannerSetting();
+      var labels = {
+        durga_puja:'দুর্গাপূজা',eid:'ঈদ',
+        poila_boishakh:'পহেলা বৈশাখ',kali_puja:'কালীপূজা',hidden:'লুকানো','':"Auto"
+      };
+      showToast('Festival banner: '+(labels[val]||'Auto')+' সেট হয়েছে ✅','green');
+    }).catch(function(e){ showToast('সেভ ব্যর্থ: '+e.message,'red'); });
 }
 
 // ═══ ORDER MANAGERS MANAGEMENT ═══
