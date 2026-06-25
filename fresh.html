@@ -437,7 +437,8 @@ function freshnessLabel(createdAt){
 function debugFresh(){
   var out = document.getElementById('debugOut');
   out.style.display='block';
-  out.textContent = 'Loading from cities/'+CITY+'/sellers...\n';
+  out.textContent = 'allFreshProducts count: '+allFreshProducts.length+'\n';
+  out.textContent += 'Loading from cities/'+CITY+'/sellers...\n';
   db.collection('cities').doc(CITY).collection('sellers').get().then(function(snap){
     out.textContent += 'Sellers found: '+snap.size+'\n';
     var promises = [];
@@ -450,7 +451,10 @@ function debugFresh(){
           .then(function(pSnap){
             pSnap.forEach(function(pd){
               var p = pd.data();
-              out.textContent += '  → '+p.name+' | isFresh:'+p.isFresh+' | freshCategory:'+p.freshCategory+'\n';
+              out.textContent += '  → '+p.name+
+                ' | isFresh:'+p.isFresh+
+                ' | typeof:'+typeof p.isFresh+
+                ' | pass:'+isFreshProduct(p)+'\n';
             });
           })
       );
