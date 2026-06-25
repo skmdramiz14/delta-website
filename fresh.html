@@ -438,18 +438,13 @@ function loadFreshProducts(){
     .then(function(sellerSnap){
       var sellers = [];
       sellerSnap.forEach(function(d){
-        var s = Object.assign({id:d.id}, d.data());
-        // Only approved sellers in this city
-        var sellerCity = s.city || 'manteswar';
-        if(sellerCity === CITY && (s.isApproved === true || s.status === 'approved')){
-          sellers.push(s);
-        }
+        sellers.push(Object.assign({id:d.id}, d.data()));
       });
 
       if(!sellers.length){
         document.getElementById('gridAll').innerHTML =
           '<div class="empty-wrap"><div class="empty-icon">🌿</div>'+
-          '<p>এই শহরে কোনো approved seller নেই</p></div>';
+          '<p>কোনো seller নেই</p></div>';
         updateStats();
         return;
       }
