@@ -433,60 +433,55 @@ function freshnessLabel(createdAt){
 
 // ── LOAD ALL FRESH PRODUCTS ──
 function loadFreshProducts(){
-  db.collection('cities').doc(CITY).collection('sellers').get()
+  // Sellers are in root-level /sellers/ collection
+  db.collection('sellers').get()
     .then(function(sellerSnap){
       var sellers = [];
       sellerSnap.forEach(function(d){
         var s = Object.assign({id:d.id}, d.data());
-        if(s.isApproved === true || s.status === 'approved') sellers.push(s);
+        // Only approved sellers in this city
+        var sellerCity = s.city || 'manteswar';
+        if(sellerCity === CITY && (s.isApproved === true || s.status === 'approved')){
+          sellers.push(s);
+        }
       });
 
       if(!sellers.length){
         document.getElementById('gridAll').innerHTML =
-          '<div class="empty-wrap"><div class="empty-icon">🌿</div><p>কোনো approved seller নেই ('+sellerSnap.size+' total)</p></div>';
+          '<div class="empty-wrap"><div class="empty-icon">🌿</div>'+
+          '<p>এই শহরে কোনো approved seller নেই</p></div>';
+        updateStats();
         return;
       }
 
       var promises = sellers.map(function(s){
-        return db.collection('cities').doc(CITY).collection('sellers')
-          .doc(s.id).collection('products').get()
+        return db.collection('sellers').doc(s.id).collection('products').get()
           .then(function(pSnap){
             var prods = [];
             pSnap.forEach(function(d){
-              var p = Object.assign({id:d.id, shopId:s.id, shopName:s.shopName||s.ownerName, shopArea:s.area}, d.data());
-              prods.push(p); // DEBUG: show ALL products first
+              var p = Object.assign({
+                id:d.id, shopId:s.id,
+                shopName:s.shopName||s.ownerName||'—',
+                shopArea:s.area||''
+              }, d.data());
+              if(isFreshProduct(p)) prods.push(p);
             });
             return prods;
-          }).catch(function(e){ console.log('products error',e); return []; });
+          }).catch(function(){ return []; });
       });
 
       Promise.all(promises).then(function(results){
-        var allProds = [].concat.apply([], results);
-        // DEBUG: show counts
-        var freshTagged = allProds.filter(function(p){return p.isFresh===true;}).length;
-        document.getElementById('statTotal').textContent = allProds.length+' ('+freshTagged+' tagged)';
-
-        // Filter fresh
-        allFreshProducts = allProds.filter(function(p){ return isFreshProduct(p); });
+        allFreshProducts = [].concat.apply([], results);
         allFreshProducts.sort(function(a,b){
           return new Date(b.createdAt||0) - new Date(a.createdAt||0);
         });
-
-        if(!allFreshProducts.length){
-          document.getElementById('gridAll').innerHTML =
-            '<div class="empty-wrap"><div class="empty-icon">🌿</div>'+
-            '<p>'+allProds.length+' টি product আছে কিন্তু কোনোটাই fresh-tagged বা keyword-matched নয়।<br>'+
-            'Admin Panel থেকে Fresh tag করুন।</p></div>';
-          updateStats();
-          return;
-        }
-
         renderFreshProducts();
         updateStats();
       });
     }).catch(function(e){
       document.getElementById('gridAll').innerHTML =
-        '<div class="empty-wrap"><div class="empty-icon">🌿</div><p>লোড সমস্যা: '+e.message+'</p></div>';
+        '<div class="empty-wrap"><div class="empty-icon">🌿</div>'+
+        '<p>লোড সমস্যা: '+e.message+'</p></div>';
     });
 }
 
