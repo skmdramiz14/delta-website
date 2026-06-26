@@ -1,5 +1,5 @@
-<!DOCTYPE html>  
-<html lang="bn"> 
+<!DOCTYPE html>
+<html lang="bn">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -1956,7 +1956,8 @@ body.lang-bn .lang-en{display:none!important;}
   <div id="cartFooterWrap" style="display:none;">
     <div class="cart-footer-wrap">
       <div class="cart-total-row"><span><span class="lang-bn">উপমোট</span><span class="lang-en">Subtotal</span></span><span id="cartSubtotal">₹0</span></div>
-      <div class="cart-total-row"><span><span class="lang-bn">ডেলিভারি</span><span class="lang-en">Delivery</span></span><span style="color:var(--green)"><span class="lang-bn">বিনামূল্যে ✓</span><span class="lang-en">Free ✓</span></span></div>
+      <div class="cart-total-row"><span><span class="lang-bn">ডেলিভারি</span><span class="lang-en">Delivery</span></span><span id="cartDeliveryInfo" style="color:var(--green)">—</span></div>
+      <div id="freeDeliveryProgress" style="display:none;margin-bottom:6px;font-size:.72rem;color:var(--orange)"></div>
       <div class="cart-grand-row"><strong><span class="lang-bn">মোট</span><span class="lang-en">Total</span></strong><span class="amount" id="cartTotal">₹0</span></div>
       <button class="cart-checkout-btn" onclick="openCheckout()"><span class="lang-bn">অর্ডার করুন →</span><span class="lang-en">Place Order →</span></button>
     </div>
@@ -2014,11 +2015,11 @@ body.lang-bn .lang-en{display:none!important;}
           </div>
         </div>
       </div>
-      <div class="co-summary">
-        <div class="co-row"><span>পণ্য মূল্য</span><span id="co-subtotal">₹0</span></div>
-        <div class="co-row"><span>ডেলিভারি চার্জ</span><span style="color:var(--green)">বিনামূল্যে</span></div>
-        <div class="co-total-row"><span>মোট পরিমাণ</span><span id="co-total">₹0</span></div>
-      </div>
+        <div class="co-summary">
+          <div class="co-row"><span>পণ্য মূল্য</span><span id="co-subtotal">₹0</span></div>
+          <div class="co-row"><span>ডেলিভারি চার্জ</span><span id="co-delivery" style="color:var(--green)">বিনামূল্যে</span></div>
+          <div class="co-total-row"><span>মোট পরিমাণ</span><span id="co-total">₹0</span></div>
+        </div>
       <button class="place-btn" onclick="placeOrder()" id="placeOrderBtn">✅ অর্ডার দিন</button>
     </div>
   </div>
@@ -4122,8 +4123,36 @@ function renderCart(){
       '</div></div></div>';
   }).join('');
   var sub=cart.reduce(function(s,c){return s+(c.price||c.sellPrice||0)*c.qty;},0);
+  var FREE_DELIVERY_MIN = 399;
+  var MIN_ORDER = 50;
+  var deliveryCharge = sub >= FREE_DELIVERY_MIN ? 0 : 30;
+  var total = sub + deliveryCharge;
   document.getElementById('cartSubtotal').textContent='₹'+sub;
-  document.getElementById('cartTotal').textContent='₹'+sub;
+  document.getElementById('cartTotal').textContent='₹'+total;
+  var delivEl = document.getElementById('cartDeliveryInfo');
+  var progEl = document.getElementById('freeDeliveryProgress');
+  if(delivEl){
+    if(deliveryCharge === 0){
+      delivEl.textContent = 'বিনামূল্যে 🎉';
+      delivEl.style.color = 'var(--green)';
+    } else {
+      delivEl.textContent = '₹'+deliveryCharge;
+      delivEl.style.color = 'var(--charcoal)';
+    }
+  }
+  if(progEl){
+    if(sub < FREE_DELIVERY_MIN && sub >= MIN_ORDER){
+      var need = FREE_DELIVERY_MIN - sub;
+      progEl.style.display = 'block';
+      progEl.textContent = '🚚 আরও ₹'+need+' যোগ করলে বিনামূল্যে ডেলিভারি পাবেন!';
+    } else if(sub < MIN_ORDER){
+      progEl.style.display = 'block';
+      progEl.style.color = 'var(--red)';
+      progEl.textContent = '⚠️ ন্যূনতম অর্ডার ₹'+MIN_ORDER+' — আরও ₹'+(MIN_ORDER-sub)+' যোগ করুন';
+    } else {
+      progEl.style.display = 'none';
+    }
+  }
 }
 function changeQty(i,d){cart[i].qty+=d;if(cart[i].qty<=0)cart.splice(i,1);updateCartBadge();renderCart();}
 function removeCart(i){cart.splice(i,1);updateCartBadge();renderCart();}
@@ -4132,10 +4161,24 @@ function removeCart(i){cart.splice(i,1);updateCartBadge();renderCart();}
 function openCheckout(){
   if(!cart.length){showToast('কার্ট খালি আছে ⚠️');return;}
   if(!currentUser){closeCart();openAuth();showToast('অর্ডার করতে আগে লগইন করুন');return;}
-  var sub=cart.reduce(function(s,c){return s+(c.price||c.sellPrice||0)*c.qty;},0);
-  document.getElementById('co-subtotal').textContent='₹'+sub;
-  document.getElementById('co-total').textContent='₹'+sub;
-  document.getElementById('checkoutModal').classList.add('open');closeCart();
+  var sub = cart.reduce(function(s,c){return s+(c.price||c.sellPrice||0)*c.qty;},0);
+  var MIN_ORDER = 50;
+  var FREE_DELIVERY_MIN = 399;
+  if(sub < MIN_ORDER){
+    showToast('ন্যূনতম অর্ডার ₹'+MIN_ORDER+' — আরও ₹'+(MIN_ORDER-sub)+' যোগ করুন ⚠️');
+    return;
+  }
+  var deliveryCharge = sub >= FREE_DELIVERY_MIN ? 0 : 30;
+  var total = sub + deliveryCharge;
+  document.getElementById('co-subtotal').textContent = '₹'+sub;
+  var delivEl = document.getElementById('co-delivery');
+  if(delivEl){
+    delivEl.textContent = deliveryCharge === 0 ? 'বিনামূল্যে 🎉' : '₹'+deliveryCharge;
+    delivEl.style.color = deliveryCharge === 0 ? 'var(--green)' : 'var(--charcoal)';
+  }
+  document.getElementById('co-total').textContent = '₹'+total;
+  document.getElementById('checkoutModal').classList.add('open');
+  closeCart();
 }
 function closeCheckout(){document.getElementById('checkoutModal').classList.remove('open');}
 function selectPay(m){
@@ -4149,6 +4192,7 @@ async function placeOrder(){
   var mobile=document.getElementById('deliveryMobile').value.trim();
   if(!addr||!mobile){showToast('ঠিকানা ও মোবাইল নম্বর দিন ⚠️');return;}
   var btn=document.getElementById('placeOrderBtn');btn.disabled=true;btn.textContent='অর্ডার হচ্ছে...';
+  var FREE_DELIVERY_MIN = 399;
   var byShop={};
   cart.forEach(function(c){
     if(!byShop[c.shopId])byShop[c.shopId]={shopId:c.shopId,shopName:c.shopName,items:[],total:0};
@@ -4159,11 +4203,16 @@ async function placeOrder(){
     var oids=[];
     for(var sid in byShop){
       var od=byShop[sid];
+      var deliveryCharge = od.total >= FREE_DELIVERY_MIN ? 0 : 30;
       var ref=await db.collection('cities').doc(CITY).collection('sellers').doc(sid).collection('orders').add({
         customerId:currentUser.uid,customerName:currentUser.displayName||'Customer',
         customerEmail:currentUser.email,customerMobile:mobile,deliveryAddress:addr,
         items:od.items.map(function(i){return i.name+' ×'+i.qty;}).join(', '),
-        itemsDetail:od.items,total:od.total,paymentMethod:selectedPay,
+        itemsDetail:od.items,
+        total:od.total,
+        deliveryCharge:deliveryCharge,
+        grandTotal:od.total+deliveryCharge,
+        paymentMethod:selectedPay,
         status:'pending',createdAt:new Date().toISOString()
       });
       oids.push(ref.id);
