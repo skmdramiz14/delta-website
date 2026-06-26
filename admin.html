@@ -792,7 +792,7 @@ var COMMISSION_TIERS = [
   {max:1000, rate:0.05},
   {max:Infinity, rate:0.04}
 ];
-var FREE_DELIVERY_THRESHOLD = 499;
+var FREE_DELIVERY_THRESHOLD = 399;
 
 function calcCommission(orderTotal){
   var tier = COMMISSION_TIERS.find(function(t){ return orderTotal <= t.max; });
