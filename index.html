@@ -1277,6 +1277,20 @@ img{max-width:100%;height:auto;}
 }
 .smd-logo em{color:var(--orange);font-style:normal;}
 .smd-tagline{font-size:.75rem;color:var(--muted);margin-top:3px;}
+/* ── CATEGORY MORE/LESS (mobile) ── */
+.cat-more-wrap{display:none;text-align:center;margin-top:12px;}
+.cat-more-btn{
+  background:#fff;border:1.5px solid var(--border);
+  color:var(--navy);padding:10px 24px;border-radius:20px;
+  font-size:.82rem;font-weight:700;cursor:pointer;
+  transition:all .2s;width:100%;
+}
+.cat-more-btn:hover{border-color:var(--orange);color:var(--orange);}
+@media(max-width:768px){
+  .cat-extra{display:none;}
+  .cat-extra.show{display:block;}
+  .cat-more-wrap{display:block;}
+}
 
 </style>
 </head>
@@ -1500,26 +1514,36 @@ img{max-width:100%;height:auto;}
       <div class="section-title">সব ক্যাটাগরি / All Categories</div>
     </div>
   </div>
-  <div class="cat-grid">
-    <div class="cat-card active" id="cat-all" onclick="filterCat('all',null)"><div class="cat-emoji">🏪</div><div class="cat-name">সব</div><div class="cat-name-en">All</div></div>
-    <div class="cat-card" id="cat-food" onclick="filterCat('food',null)"><div class="cat-emoji">🍛</div><div class="cat-name">খাবার</div><div class="cat-name-en">Food</div></div>
-    <div class="cat-card" id="cat-grocery" onclick="filterCat('grocery',null)"><div class="cat-emoji">🛒</div><div class="cat-name">মুদিখানা</div><div class="cat-name-en">Grocery</div></div>
-    <div class="cat-card" id="cat-farm" onclick="filterCat('farm',null)"><div class="cat-emoji">🌾</div><div class="cat-name">কৃষি</div><div class="cat-name-en">Farm</div></div>
-    <div class="cat-card" id="cat-farmtools" onclick="filterCat('farmtools',null)"><div class="cat-emoji">🌿</div><div class="cat-name">কৃষি সরঞ্জাম</div><div class="cat-name-en">Farm Tools</div></div>
-    <div class="cat-card" id="cat-livestock" onclick="filterCat('livestock',null)"><div class="cat-emoji">🐄</div><div class="cat-name">পশুপালন</div><div class="cat-name-en">Livestock</div></div>
-    <div class="cat-card" id="cat-medicine" onclick="filterCat('medicine',null)"><div class="cat-emoji">💊</div><div class="cat-name">ওষুধ</div><div class="cat-name-en">Medicine</div></div>
-    <div class="cat-card" id="cat-clothing" onclick="filterCat('clothing',null)"><div class="cat-emoji">👗</div><div class="cat-name">পোশাক</div><div class="cat-name-en">Clothing</div></div>
-    <div class="cat-card" id="cat-electronics" onclick="filterCat('electronics',null)"><div class="cat-emoji">📱</div><div class="cat-name">ইলেকট্রনিক্স</div><div class="cat-name-en">Electronics</div></div>
-    <div class="cat-card" id="cat-home" onclick="filterCat('home',null)"><div class="cat-emoji">🏠</div><div class="cat-name">বাড়ি / হোম</div><div class="cat-name-en">Home & Living</div></div>
-    <div class="cat-card" id="cat-construction" onclick="filterCat('construction',null)"><div class="cat-emoji">🏗️</div><div class="cat-name">নির্মাণ</div><div class="cat-name-en">Construction</div></div>
-    <div class="cat-card" id="cat-automotive" onclick="filterCat('automotive',null)"><div class="cat-emoji">🚗</div><div class="cat-name">যানবাহন</div><div class="cat-name-en">Automotive</div></div>
-    <div class="cat-card" id="cat-arts" onclick="filterCat('arts',null)"><div class="cat-emoji">🎨</div><div class="cat-name">শিল্প</div><div class="cat-name-en">Arts & Crafts</div></div>
-    <div class="cat-card" id="cat-education" onclick="filterCat('education',null)"><div class="cat-emoji">📚</div><div class="cat-name">শিক্ষা</div><div class="cat-name-en">Education</div></div>
-    <div class="cat-card" id="cat-services" onclick="filterCat('services',null)"><div class="cat-emoji">🔧</div><div class="cat-name">সেবা</div><div class="cat-name-en">Services</div></div>
-    <div class="cat-card" id="cat-health" onclick="filterCat('health',null)"><div class="cat-emoji">🏥</div><div class="cat-name">স্বাস্থ্য</div><div class="cat-name-en">Healthcare</div></div>
-    <div class="cat-card" id="cat-events" onclick="filterCat('events',null)"><div class="cat-emoji">🎉</div><div class="cat-name">ইভেন্ট</div><div class="cat-name-en">Events</div></div>
-    <div class="cat-card" id="cat-rental" onclick="filterCat('rental',null)"><div class="cat-emoji">🔑</div><div class="cat-name">ভাড়া</div><div class="cat-name-en">Rental</div></div>
-    <div class="cat-card" id="cat-remarket" onclick="filterCat('remarket',null)"><div class="cat-emoji">♻️</div><div class="cat-name">রিমার্কেট</div><div class="cat-name-en">ReMarket</div></div>
+  <div class="cat-grid" id="catGrid">
+    <!-- সবসময় দেখাবে — প্রথম ৮টা -->
+    <div class="cat-card active" id="cat-all" onclick="filterCat('all',this)"><div class="cat-emoji">🏪</div><div class="cat-name"><span class="lang-bn">সব</span><span class="lang-en">All</span></div></div>
+    <div class="cat-card" id="cat-food" onclick="filterCat('food',this)"><div class="cat-emoji">🍛</div><div class="cat-name"><span class="lang-bn">খাবার</span><span class="lang-en">Food</span></div></div>
+    <div class="cat-card" id="cat-grocery" onclick="filterCat('grocery',this)"><div class="cat-emoji">🛒</div><div class="cat-name"><span class="lang-bn">মুদিখানা</span><span class="lang-en">Grocery</span></div></div>
+    <div class="cat-card" id="cat-farm" onclick="filterCat('farm',this)"><div class="cat-emoji">🌾</div><div class="cat-name"><span class="lang-bn">কৃষি</span><span class="lang-en">Farm</span></div></div>
+    <div class="cat-card" id="cat-farmtools" onclick="filterCat('farmtools',this)"><div class="cat-emoji">🌿</div><div class="cat-name"><span class="lang-bn">কৃষি সরঞ্জাম</span><span class="lang-en">Farm Tools</span></div></div>
+    <div class="cat-card" id="cat-livestock" onclick="filterCat('livestock',this)"><div class="cat-emoji">🐄</div><div class="cat-name"><span class="lang-bn">পশুপালন</span><span class="lang-en">Livestock</span></div></div>
+    <div class="cat-card" id="cat-medicine" onclick="filterCat('medicine',this)"><div class="cat-emoji">💊</div><div class="cat-name"><span class="lang-bn">ওষুধ</span><span class="lang-en">Medicine</span></div></div>
+    <div class="cat-card" id="cat-clothing" onclick="filterCat('clothing',this)"><div class="cat-emoji">👗</div><div class="cat-name"><span class="lang-bn">পোশাক</span><span class="lang-en">Clothing</span></div></div>
+
+    <!-- বাকি ১১টা — mobile এ লুকানো -->
+    <div class="cat-card cat-extra" id="cat-electronics" onclick="filterCat('electronics',this)"><div class="cat-emoji">📱</div><div class="cat-name"><span class="lang-bn">ইলেকট্রনিক্স</span><span class="lang-en">Electronics</span></div></div>
+    <div class="cat-card cat-extra" id="cat-home" onclick="filterCat('home',this)"><div class="cat-emoji">🏠</div><div class="cat-name"><span class="lang-bn">বাড়ি / হোম</span><span class="lang-en">Home</span></div></div>
+    <div class="cat-card cat-extra" id="cat-construction" onclick="filterCat('construction',this)"><div class="cat-emoji">🏗️</div><div class="cat-name"><span class="lang-bn">নির্মাণ</span><span class="lang-en">Construction</span></div></div>
+    <div class="cat-card cat-extra" id="cat-automotive" onclick="filterCat('automotive',this)"><div class="cat-emoji">🚗</div><div class="cat-name"><span class="lang-bn">যানবাহন</span><span class="lang-en">Automotive</span></div></div>
+    <div class="cat-card cat-extra" id="cat-arts" onclick="filterCat('arts',this)"><div class="cat-emoji">🎨</div><div class="cat-name"><span class="lang-bn">শিল্প</span><span class="lang-en">Arts</span></div></div>
+    <div class="cat-card cat-extra" id="cat-education" onclick="filterCat('education',this)"><div class="cat-emoji">📚</div><div class="cat-name"><span class="lang-bn">শিক্ষা</span><span class="lang-en">Education</span></div></div>
+    <div class="cat-card cat-extra" id="cat-services" onclick="filterCat('services',this)"><div class="cat-emoji">🔧</div><div class="cat-name"><span class="lang-bn">সেবা</span><span class="lang-en">Services</span></div></div>
+    <div class="cat-card cat-extra" id="cat-health" onclick="filterCat('health',this)"><div class="cat-emoji">🏥</div><div class="cat-name"><span class="lang-bn">স্বাস্থ্য</span><span class="lang-en">Health</span></div></div>
+    <div class="cat-card cat-extra" id="cat-events" onclick="filterCat('events',this)"><div class="cat-emoji">🎉</div><div class="cat-name"><span class="lang-bn">ইভেন্ট</span><span class="lang-en">Events</span></div></div>
+    <div class="cat-card cat-extra" id="cat-rental" onclick="filterCat('rental',this)"><div class="cat-emoji">🔑</div><div class="cat-name"><span class="lang-bn">ভাড়া</span><span class="lang-en">Rental</span></div></div>
+    <div class="cat-card cat-extra" id="cat-remarket" onclick="filterCat('remarket',this)"><div class="cat-emoji">♻️</div><div class="cat-name"><span class="lang-bn">রিমার্কেট</span><span class="lang-en">ReMarket</span></div></div>
+  </div>
+
+  <!-- আরও দেখুন button — শুধু mobile এ -->
+  <div class="cat-more-wrap" id="catMoreWrap">
+    <button class="cat-more-btn" id="catMoreBtn" onclick="toggleMoreCats()">
+      <span id="catMoreBtnText">আরও ১১টি ক্যাটাগরি দেখুন ▾</span>
+    </button>
   </div>
 </section>
 
@@ -4747,6 +4771,18 @@ function showToast(msg,type){
   var e=document.getElementById('toastEl');e.textContent=msg;e.className='toast show '+(type||'');
   clearTimeout(e._t);e._t=setTimeout(function(){e.className='toast';},3200);
 }
+// ── CATEGORY MORE/LESS ──
+var catExpanded = false;
+function toggleMoreCats(){
+  catExpanded = !catExpanded;
+  document.querySelectorAll('.cat-extra').forEach(function(el){
+    el.classList.toggle('show', catExpanded);
+  });
+  document.getElementById('catMoreBtnText').textContent = catExpanded
+    ? 'কম দেখুন ▴'
+    : 'আরও ১১টি ক্যাটাগরি দেখুন ▾';
+}
+
 // ── SIDE MENU DRAWER ──
 function openSideMenu(){
   document.getElementById('sideMenuDrawer').classList.add('open');
