@@ -724,6 +724,30 @@ button,input,select{font-family:'DM Sans',sans-serif;}
         <div class="sec-title">🏷️ Category Management <small>Homepage এ কোন categories দেখাবে, কোন order এ, কোন image দিয়ে</small></div>
       </div>
 
+      <!-- Add new category -->
+      <div class="add-zone-card" style="margin-bottom:16px">
+        <div style="font-size:.82rem;font-weight:700;color:var(--navy);margin-bottom:12px">➕ নতুন Category যোগ করুন</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+          <div>
+            <label style="font-size:.72rem;font-weight:600;color:var(--muted)">বাংলা নাম *</label>
+            <input type="text" class="form-input" id="newCatBn" placeholder="যেমন: মৎস্য চাষ">
+          </div>
+          <div>
+            <label style="font-size:.72rem;font-weight:600;color:var(--muted)">English Name *</label>
+            <input type="text" class="form-input" id="newCatEn" placeholder="e.g. Fish Farming">
+          </div>
+          <div>
+            <label style="font-size:.72rem;font-weight:600;color:var(--muted)">Emoji (fallback)</label>
+            <input type="text" class="form-input" id="newCatEmoji" placeholder="🐟" maxlength="4">
+          </div>
+          <div>
+            <label style="font-size:.72rem;font-weight:600;color:var(--muted)">Image URL (optional)</label>
+            <input type="text" class="form-input" id="newCatImg" placeholder="https://res.cloudinary.com/...">
+          </div>
+        </div>
+        <button class="btn-sm btn-orange" onclick="addNewCategory()">➕ যোগ করুন</button>
+      </div>
+
       <!-- Info strip -->
       <div style="background:var(--orange-light);border:1px solid rgba(240,112,24,.2);border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:.78rem;color:var(--navy);">
         💡 Image URL দিন (Cloudinary বা যেকোনো public URL) অথবা emoji রাখুন। Order number ছোট হলে আগে দেখাবে। Hide করলে homepage এ দেখাবে না।
@@ -1753,6 +1777,7 @@ function renderCatConfigList(){
       '</div>'+
       '<input class="cat-cfg-order" type="number" min="1" max="99" value="'+(cat.order||i+1)+'" title="Order" oninput="updateCatField(\''+cat.key+'\',\'order\',parseInt(this.value)||1)">'+
       '<label class="cat-cfg-toggle"><input type="checkbox" '+(cat.visible!==false?'checked':'')+' onchange="updateCatField(\''+cat.key+'\',\'visible\',this.checked)"> দেখাও</label>'+
+      '<button onclick="deleteCatConfig(\''+cat.key+'\')" style="background:none;border:none;color:#c0392b;cursor:pointer;font-size:1rem;padding:4px" title="মুছুন">🗑️</button>'+
     '</div>';
   }).join('');
 }
@@ -1785,6 +1810,47 @@ function saveCategoryConfig(){
       if(status) status.textContent = '❌ সমস্যা';
       showToast('সেভ ব্যর্থ: '+e.message,'red');
     });
+}
+
+function addNewCategory(){
+  var bn = document.getElementById('newCatBn').value.trim();
+  var en = document.getElementById('newCatEn').value.trim();
+  var emoji = document.getElementById('newCatEmoji').value.trim() || '🏪';
+  var img = document.getElementById('newCatImg').value.trim();
+
+  if(!bn || !en){ showToast('বাংলা ও English নাম দিন','red'); return; }
+
+  // key generate — English name থেকে lowercase, space → underscore
+  var key = en.toLowerCase().replace(/[^a-z0-9]/g,'_').replace(/_+/g,'_').replace(/^_|_$/g,'');
+  if(catConfigData.find(function(c){ return c.key === key; })){
+    key = key + '_' + Date.now().toString().slice(-4);
+  }
+
+  var maxOrder = catConfigData.reduce(function(m,c){ return Math.max(m, c.order||0); }, 0);
+  catConfigData.push({
+    key: key,
+    nameBn: bn,
+    nameEn: en,
+    emoji: emoji,
+    imageUrl: img || '',
+    order: maxOrder + 1,
+    visible: true
+  });
+
+  // Clear inputs
+  ['newCatBn','newCatEn','newCatEmoji','newCatImg'].forEach(function(id){
+    document.getElementById(id).value = '';
+  });
+
+  renderCatConfigList();
+  showToast('"'+bn+'" category যোগ হয়েছে — Save করুন ✅','green');
+}
+
+function deleteCatConfig(key){
+  if(!confirm('এই category মুছবেন?')) return;
+  catConfigData = catConfigData.filter(function(c){ return c.key !== key; });
+  renderCatConfigList();
+  showToast('Category মুছে গেছে — Save করুন','green');
 }
 
 function resetCategoryDefaults(){
