@@ -1148,6 +1148,128 @@ img{max-width:100%;height:auto;}
 .festival-cd-label{font-size:.6rem;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.5px;margin-top:2px;}
 .festival-btn{background:#fff;color:var(--navy);border:none;padding:10px 20px;border-radius:10px;font-weight:700;cursor:pointer;font-size:.85rem;transition:all .2s;white-space:nowrap;}
 .festival-btn:hover{background:var(--orange);color:#fff;}
+/* ══ SIDE MENU DRAWER ══ */
+.side-menu-overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(6,21,38,.6);z-index:3000;
+  transition:opacity .25s;
+}
+.side-menu-overlay.open{display:block;}
+.side-menu-drawer{
+  position:fixed;left:0;top:0;bottom:0;
+  width:min(300px,85vw);
+  background:#fff;z-index:3001;
+  transform:translateX(-100%);
+  transition:transform .28s cubic-bezier(.4,0,.2,1);
+  display:flex;flex-direction:column;
+  overflow-y:auto;
+  box-shadow:4px 0 24px rgba(0,0,0,.18);
+}
+.side-menu-drawer.open{transform:translateX(0);}
+
+/* Header */
+.smd-header{
+  background:linear-gradient(135deg,var(--navy3),var(--navy));
+  padding:20px 16px 16px;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;
+}
+.smd-user-area{display:flex;align-items:center;gap:12px;flex:1;}
+.smd-avatar{
+  width:46px;height:46px;border-radius:50%;
+  background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.25);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.4rem;flex-shrink:0;
+}
+.smd-user-name{font-size:.9rem;font-weight:700;color:#fff;}
+.smd-user-sub{font-size:.72rem;color:rgba(255,255,255,.6);margin-top:2px;}
+.smd-close{
+  background:rgba(255,255,255,.12);border:none;color:#fff;
+  width:32px;height:32px;border-radius:8px;cursor:pointer;
+  font-size:1rem;display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+
+/* Location strip */
+.smd-loc-strip{
+  background:var(--orange-light);
+  border-bottom:1px solid rgba(240,112,24,.2);
+  padding:10px 16px;
+  display:flex;align-items:center;gap:8px;
+  font-size:.8rem;color:var(--navy);font-weight:600;
+  cursor:pointer;flex-shrink:0;
+}
+.smd-loc-change{
+  margin-left:auto;color:var(--orange);
+  font-size:.72rem;font-weight:700;
+}
+
+/* Section titles */
+.smd-section-title{
+  padding:12px 16px 6px;
+  font-size:.68rem;font-weight:800;
+  color:var(--muted);letter-spacing:1.2px;
+  text-transform:uppercase;flex-shrink:0;
+  background:var(--cream);
+  border-top:1px solid var(--border);
+}
+
+/* Category items */
+.smd-cats{flex-shrink:0;}
+.smd-cat-item{
+  padding:12px 16px;
+  font-size:.88rem;font-weight:500;color:var(--charcoal);
+  cursor:pointer;border-bottom:1px solid var(--sand);
+  display:flex;align-items:center;gap:4px;
+  transition:background .15s;
+  -webkit-tap-highlight-color:transparent;
+}
+.smd-cat-item:hover,.smd-cat-item:active{
+  background:var(--orange-light);color:var(--orange);
+}
+
+/* Links */
+.smd-links{flex-shrink:0;}
+.smd-link{
+  display:block;padding:12px 16px;
+  font-size:.88rem;font-weight:500;color:var(--charcoal);
+  text-decoration:none;border-bottom:1px solid var(--sand);
+  cursor:pointer;transition:background .15s;
+  -webkit-tap-highlight-color:transparent;
+}
+.smd-link:hover,.smd-link:active{
+  background:var(--orange-light);color:var(--orange);
+}
+
+/* Divider */
+.smd-divider{height:6px;background:var(--cream);border-top:1px solid var(--border);border-bottom:1px solid var(--border);flex-shrink:0;}
+
+/* Language toggle */
+.smd-lang-row{
+  display:flex;gap:10px;padding:12px 16px;flex-shrink:0;
+}
+.smd-lang-btn{
+  flex:1;padding:9px;border-radius:8px;
+  border:1.5px solid var(--border);background:#fff;
+  font-size:.82rem;font-weight:700;color:var(--muted);
+  cursor:pointer;transition:all .2s;
+}
+.smd-lang-btn.active{
+  background:var(--navy);border-color:var(--navy);color:#fff;
+}
+
+/* Footer */
+.smd-footer{
+  padding:20px 16px;flex-shrink:0;
+  border-top:2px solid var(--border);
+  margin-top:auto;background:var(--cream);
+}
+.smd-logo{
+  font-family:'Playfair Display',serif;
+  font-size:1.3rem;font-weight:900;color:var(--navy);
+}
+.smd-logo em{color:var(--orange);font-style:normal;}
+.smd-tagline{font-size:.75rem;color:var(--muted);margin-top:3px;}
 
 </style>
 </head>
@@ -2257,6 +2379,90 @@ img{max-width:100%;height:auto;}
   </div>
 </div>
 
+<!-- SIDE MENU DRAWER (Amazon/Flipkart style) -->
+<div class="side-menu-overlay" id="sideMenuOverlay" onclick="closeSideMenu()"></div>
+<div class="side-menu-drawer" id="sideMenuDrawer">
+
+  <!-- Header -->
+  <div class="smd-header">
+    <div class="smd-user-area" id="smdUserArea">
+      <div class="smd-avatar">👤</div>
+      <div class="smd-user-info">
+        <div class="smd-user-name" id="smdUserName">লগইন করুন</div>
+        <div class="smd-user-sub" id="smdUserSub">DELTA তে স্বাগতম</div>
+      </div>
+    </div>
+    <button class="smd-close" onclick="closeSideMenu()">✕</button>
+  </div>
+
+  <!-- Location strip -->
+  <div class="smd-loc-strip" onclick="closeSideMenu();openPinModal()">
+    <span>📍</span>
+    <span>Manteswar, Purba Bardhaman</span>
+    <span class="smd-loc-change">পরিবর্তন করুন</span>
+  </div>
+
+  <!-- Categories -->
+  <div class="smd-section-title">সব বিভাগ</div>
+  <div class="smd-cats">
+    <div class="smd-cat-item" onclick="closeSideMenu();filterCat('all',document.querySelector('.nav-cat'))">🏪 সব দোকান / All</div>
+    <div class="smd-cat-item" onclick="closeSideMenu();filterCatByKey('food')">🍛 খাবার ও রেস্তোরাঁ</div>
+    <div class="smd-cat-item" onclick="closeSideMenu();filterCatByKey('grocery')">🛒 মুদিখানা ও কিরানা</div>
+    <div class="smd-cat-item" onclick="closeSideMenu();filterCatByKey('farm')">🌾 কৃষি ও ফার্ম</div>
+    <div class="smd-cat-item" onclick="closeSideMenu();filterCatByKey('farmtools')">🌿 কৃষি সরঞ্জাম</div>
+    <div class="smd-cat-item" onclick="closeSideMenu();filterCatByKey('livestock')">🐄 পশুপালন</div>
+    <div class="smd-cat-item" onclick="closeSideMenu();filterCatByKey('medicine')">💊 ওষুধ ও স্বাস্থ্য</div>
+    <div class="smd-cat-item" onclick="closeSideMenu();filterCatByKey('clothing')">👗 পোশাক ও ফ্যাশন</div>
+    <div class="smd-cat-item" onclick="closeSideMenu();filterCatByKey('electronics')">📱 ইলেকট্রনিক্স</div>
+    <div class="smd-cat-item" onclick="closeSideMenu();filterCatByKey('home')">🏠 গৃহস্থালি</div>
+    <div class="smd-cat-item" onclick="closeSideMenu();filterCatByKey('construction')">🏗️ নির্মাণ সামগ্রী</div>
+    <div class="smd-cat-item" onclick="closeSideMenu();filterCatByKey('automotive')">🚗 যানবাহন</div>
+    <div class="smd-cat-item" onclick="closeSideMenu();filterCatByKey('arts')">🎨 শিল্প ও হস্তশিল্প</div>
+    <div class="smd-cat-item" onclick="closeSideMenu();filterCatByKey('education')">📚 শিক্ষা</div>
+    <div class="smd-cat-item" onclick="closeSideMenu();filterCatByKey('services')">🔧 সেবা</div>
+    <div class="smd-cat-item" onclick="closeSideMenu();filterCatByKey('events')">🎉 ইভেন্ট</div>
+    <div class="smd-cat-item" onclick="closeSideMenu();filterCatByKey('rental')">🔑 ভাড়া</div>
+    <div class="smd-cat-item" onclick="closeSideMenu();filterCatByKey('remarket')">♻️ রিমার্কেট</div>
+  </div>
+
+  <div class="smd-divider"></div>
+
+  <!-- Special sections -->
+  <div class="smd-section-title">বিশেষ বিভাগ</div>
+  <div class="smd-links">
+    <a class="smd-link" href="fresh.html">🌿 DELTA Fresh — টাটকা পণ্য</a>
+    <a class="smd-link" href="bazaar.html">🏮 DELTA Bazaar</a>
+    <a class="smd-link" href="hampers.html">🎁 Hampers ও Gift Box</a>
+  </div>
+
+  <div class="smd-divider"></div>
+
+  <!-- Account -->
+  <div class="smd-section-title">আমার অ্যাকাউন্ট</div>
+  <div class="smd-links">
+    <div class="smd-link" onclick="closeSideMenu();handleUserBtn()">👤 লগইন / রেজিস্ট্রেশন</div>
+    <div class="smd-link" onclick="closeSideMenu();openCart()">🛒 আমার কার্ট</div>
+    <div class="smd-link" onclick="closeSideMenu();openRequestModal()">📦 পণ্য রিকোয়েস্ট</div>
+  </div>
+
+  <div class="smd-divider"></div>
+
+  <!-- Language toggle -->
+  <div class="smd-section-title">ভাষা / Language</div>
+  <div class="smd-lang-row">
+    <button class="smd-lang-btn" id="smdLangBn" onclick="setLang('bn');updateSmdLang()">বাংলা</button>
+    <button class="smd-lang-btn" id="smdLangEn" onclick="setLang('en');updateSmdLang()">English</button>
+  </div>
+
+  <!-- Footer -->
+  <div class="smd-footer">
+    <div class="smd-logo">△ DELT<em>A</em></div>
+    <div class="smd-tagline">পরিবর্তনের ব-দ্বীপ</div>
+    <a class="smd-link" href="seller.html" style="margin-top:10px;display:block;">🏪 আপনার দোকান যোগ করুন</a>
+  </div>
+
+</div>
+
 <!-- BOTTOM NAV (Mobile) -->
 <div class="bottom-nav" id="bottomNav">
   <div class="bn-item active" id="bn-home" onclick="bottomNavClick('home',this);window.scrollTo({top:0,behavior:'smooth'})">
@@ -2269,8 +2475,8 @@ img{max-width:100%;height:auto;}
     <span class="bn-icon">🛒</span><span class="bn">কার্ট</span>
     <span class="bn-cart-badge" id="bnCartBadge">0</span>
   </div>
-  <div class="bn-item" id="bn-search" onclick="bottomNavClick('search',this);document.getElementById('navSearch').focus()">
-    <span class="bn-icon">🔍</span><span class="bn">খুঁজুন</span>
+  <div class="bn-item" id="bn-menu" onclick="bottomNavClick('menu',this);openSideMenu()">
+    <span class="bn-icon">☰</span><span class="bn">মেনু</span>
   </div>
   <div class="bn-item" id="bn-account" onclick="bottomNavClick('account',this);handleUserBtn()">
     <span class="bn-icon">👤</span><span class="bn">আমার</span>
@@ -4527,6 +4733,45 @@ function updateBnCartBadge(){
 function showToast(msg,type){
   var e=document.getElementById('toastEl');e.textContent=msg;e.className='toast show '+(type||'');
   clearTimeout(e._t);e._t=setTimeout(function(){e.className='toast';},3200);
+}
+// ── SIDE MENU DRAWER ──
+function openSideMenu(){
+  document.getElementById('sideMenuDrawer').classList.add('open');
+  document.getElementById('sideMenuOverlay').classList.add('open');
+  document.body.style.overflow='hidden';
+  // User info update
+  if(currentUser){
+    document.getElementById('smdUserName').textContent = currentUser.displayName || currentUser.email;
+    document.getElementById('smdUserSub').textContent = 'আপনার অ্যাকাউন্ট';
+    document.querySelector('.smd-avatar').textContent = '😊';
+  } else {
+    document.getElementById('smdUserName').textContent = 'লগইন করুন';
+    document.getElementById('smdUserSub').textContent = 'DELTA তে স্বাগতম';
+    document.querySelector('.smd-avatar').textContent = '👤';
+  }
+  updateSmdLang();
+}
+function closeSideMenu(){
+  document.getElementById('sideMenuDrawer').classList.remove('open');
+  document.getElementById('sideMenuOverlay').classList.remove('open');
+  document.body.style.overflow='';
+}
+function filterCatByKey(key){
+  // nav-cats এ matching cat খুঁজে click করা
+  var cats = document.querySelectorAll('.nav-cat');
+  var matched = null;
+  cats.forEach(function(c){ if(c.getAttribute('onclick') && c.getAttribute('onclick').includes("'"+key+"'")) matched=c; });
+  if(matched) filterCat(key, matched);
+  // scroll to shops
+  setTimeout(function(){
+    var s=document.getElementById('shopsSection');
+    if(s) s.scrollIntoView({behavior:'smooth'});
+  },200);
+}
+function updateSmdLang(){
+  var isBn = document.body.classList.contains('lang-bn');
+  document.getElementById('smdLangBn').classList.toggle('active', isBn);
+  document.getElementById('smdLangEn').classList.toggle('active', !isBn);
 }
 </script>
 </body>
