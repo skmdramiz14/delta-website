@@ -657,6 +657,9 @@ body.lang-bn .lang-en{display:none!important;}
   .nav-cats{padding-bottom:2px;-webkit-overflow-scrolling:touch;}
   .nav-cat{padding:9px 13px;font-size:.75rem;}
 
+  /* Hero search — mobile এ hide */
+  .hero-search-big{display:none;}
+
   /* ── HERO ── */
   .hero{padding:22px 4% 28px;}
   .hero h1{font-size:1.85rem;line-height:1.2;}
@@ -3914,10 +3917,16 @@ function goToBazaarRequest(){
 var currentLang='bn';
 function setLang(l){
   currentLang=l;
-  document.body.className='lang-'+l;
+  document.body.classList.remove('lang-bn','lang-en');
+  document.body.classList.add('lang-'+l);
   document.getElementById('langBn').classList.toggle('active',l==='bn');
   document.getElementById('langEn').classList.toggle('active',l==='en');
   document.documentElement.lang=l==='bn'?'bn':'en';
+  // Side menu lang buttons update
+  var sbn=document.getElementById('smdLangBn');
+  var sen=document.getElementById('smdLangEn');
+  if(sbn) sbn.classList.toggle('active',l==='bn');
+  if(sen) sen.classList.toggle('active',l==='en');
   // Re-render dynamic sections
   if(allShops.length) renderShops(allShops);
   if(allProducts.length){renderProducts(allProducts);buildFarmersStrip();}
@@ -4769,9 +4778,11 @@ function filterCatByKey(key){
   },200);
 }
 function updateSmdLang(){
-  var isBn = document.body.classList.contains('lang-bn');
-  document.getElementById('smdLangBn').classList.toggle('active', isBn);
-  document.getElementById('smdLangEn').classList.toggle('active', !isBn);
+  var isBn = (typeof currentLang !== 'undefined' ? currentLang : 'bn') === 'bn';
+  var sbn=document.getElementById('smdLangBn');
+  var sen=document.getElementById('smdLangEn');
+  if(sbn) sbn.classList.toggle('active', isBn);
+  if(sen) sen.classList.toggle('active', !isBn);
 }
 </script>
 </body>
