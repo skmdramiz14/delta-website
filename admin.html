@@ -91,6 +91,28 @@ button,input,select{font-family:'DM Sans',sans-serif;}
   border-radius:9px;font-size:.85rem;background:#fff;}
 .search-input:focus{outline:none;border-color:var(--orange);}
 .filter-pill{padding:7px 15px;border-radius:20px;font-size:.78rem;font-weight:600;
+/* ── CATEGORY CONFIG ── */
+.cat-config-row{
+  background:#fff;border:1px solid var(--border);border-radius:12px;
+  padding:14px 16px;margin-bottom:10px;
+  display:grid;grid-template-columns:auto 1fr 1fr auto auto auto;
+  gap:10px;align-items:center;
+}
+@media(max-width:700px){
+  .cat-config-row{grid-template-columns:auto 1fr auto;gap:8px;}
+  .cat-config-row .cat-cfg-name-en,.cat-cfg-order{display:none;}
+}
+.cat-cfg-drag{cursor:grab;color:var(--muted);font-size:1.1rem;user-select:none;}
+.cat-cfg-preview{width:40px;height:40px;border-radius:10px;background:var(--sand);display:flex;align-items:center;justify-content:center;font-size:1.4rem;overflow:hidden;flex-shrink:0;}
+.cat-cfg-preview img{width:100%;height:100%;object-fit:cover;border-radius:10px;}
+.cat-cfg-inputs{display:flex;flex-direction:column;gap:6px;}
+.cat-cfg-input{border:1px solid var(--border);border-radius:7px;padding:6px 10px;font-size:.78rem;width:100%;font-family:inherit;}
+.cat-cfg-input:focus{outline:none;border-color:var(--orange);}
+.cat-cfg-order{width:60px;text-align:center;border:1px solid var(--border);border-radius:7px;padding:6px 8px;font-size:.78rem;}
+.cat-cfg-toggle{display:flex;align-items:center;gap:6px;font-size:.72rem;color:var(--muted);white-space:nowrap;}
+.cat-cfg-toggle input{accent-color:var(--orange);width:16px;height:16px;cursor:pointer;}
+.cat-cfg-url-wrap{display:flex;align-items:center;gap:6px;}
+
   cursor:pointer;border:1.5px solid var(--border);background:#fff;color:var(--muted);
   transition:all .2s;white-space:nowrap;}
 .filter-pill.active{background:var(--navy);color:#fff;border-color:var(--navy);}
@@ -307,6 +329,9 @@ button,input,select{font-family:'DM Sans',sans-serif;}
     </button>
     <button class="tab-btn" id="tab-recon" onclick="goTab('recon',this)">
       💰 COD Reconciliation <span class="tab-count zero" id="countRecon">0</span>
+    </button>
+    <button class="tab-btn" id="tab-categories" onclick="goTab('categories',this)">
+      🏷️ Category Management
     </button>
   </nav>
 
@@ -693,6 +718,28 @@ button,input,select{font-family:'DM Sans',sans-serif;}
       <div class="card-grid" id="reconListWrap"></div>
     </div>
 
+    <!-- ═══ CATEGORY MANAGEMENT PAGE ═══ -->
+    <div class="page" id="page-categories">
+      <div class="sec-head">
+        <div class="sec-title">🏷️ Category Management <small>Homepage এ কোন categories দেখাবে, কোন order এ, কোন image দিয়ে</small></div>
+      </div>
+
+      <!-- Info strip -->
+      <div style="background:var(--orange-light);border:1px solid rgba(240,112,24,.2);border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:.78rem;color:var(--navy);">
+        💡 Image URL দিন (Cloudinary বা যেকোনো public URL) অথবা emoji রাখুন। Order number ছোট হলে আগে দেখাবে। Hide করলে homepage এ দেখাবে না।
+      </div>
+
+      <!-- Save button -->
+      <div style="display:flex;gap:10px;margin-bottom:16px;align-items:center;flex-wrap:wrap;">
+        <button class="btn-sm btn-orange" onclick="saveCategoryConfig()">💾 সব Save করুন</button>
+        <button class="btn-sm" style="background:var(--sand);color:var(--navy)" onclick="resetCategoryDefaults()">↺ Default এ ফিরুন</button>
+        <span id="catConfigStatus" style="font-size:.72rem;color:var(--muted)"></span>
+      </div>
+
+      <!-- Category list -->
+      <div id="catConfigList"></div>
+    </div>
+
   </div>
 </div>
 
@@ -804,6 +851,7 @@ function goTab(tab, btn){
   if(tab==='citymanagers') loadCityManagersAdmin();
   if(tab==='bazaar') loadBazaarRequestsAdmin();
   if(tab==='recon') loadReconOrders();
+  if(tab==='categories') loadCategoryConfig();
 }
 
 // ═══ DATA LOADING ═══
@@ -1641,6 +1689,109 @@ function saveMarqueeMessages(){
       if(statusEl) statusEl.textContent = '❌ সমস্যা হয়েছে';
       showToast('সেভ ব্যর্থ: '+e.message,'red');
     });
+}
+
+
+// ═══ CATEGORY MANAGEMENT ═══
+var DEFAULT_CATEGORIES = [
+  {key:'all',    nameBn:'সব',           nameEn:'All',          emoji:'🏪', order:1,  visible:true},
+  {key:'food',   nameBn:'খাবার',        nameEn:'Food',         emoji:'🍛', order:2,  visible:true},
+  {key:'grocery',nameBn:'মুদিখানা',     nameEn:'Grocery',      emoji:'🛒', order:3,  visible:true},
+  {key:'farm',   nameBn:'কৃষি',         nameEn:'Farm',         emoji:'🌾', order:4,  visible:true},
+  {key:'farmtools',nameBn:'কৃষি সরঞ্জাম',nameEn:'Farm Tools',  emoji:'🌿', order:5,  visible:true},
+  {key:'livestock',nameBn:'পশুপালন',    nameEn:'Livestock',    emoji:'🐄', order:6,  visible:true},
+  {key:'medicine',nameBn:'ওষুধ',        nameEn:'Medicine',     emoji:'💊', order:7,  visible:true},
+  {key:'clothing',nameBn:'পোশাক',       nameEn:'Clothing',     emoji:'👗', order:8,  visible:true},
+  {key:'electronics',nameBn:'ইলেকট্রনিক্স',nameEn:'Electronics',emoji:'📱',order:9, visible:true},
+  {key:'home',   nameBn:'বাড়ি / হোম',  nameEn:'Home',         emoji:'🏠', order:10, visible:true},
+  {key:'construction',nameBn:'নির্মাণ', nameEn:'Construction', emoji:'🏗️', order:11, visible:true},
+  {key:'automotive',nameBn:'যানবাহন',   nameEn:'Automotive',   emoji:'🚗', order:12, visible:true},
+  {key:'arts',   nameBn:'শিল্প',        nameEn:'Arts',         emoji:'🎨', order:13, visible:true},
+  {key:'education',nameBn:'শিক্ষা',     nameEn:'Education',    emoji:'📚', order:14, visible:true},
+  {key:'services',nameBn:'সেবা',        nameEn:'Services',     emoji:'🔧', order:15, visible:true},
+  {key:'health', nameBn:'স্বাস্থ্য',    nameEn:'Health',       emoji:'🏥', order:16, visible:true},
+  {key:'events', nameBn:'ইভেন্ট',       nameEn:'Events',       emoji:'🎉', order:17, visible:true},
+  {key:'rental', nameBn:'ভাড়া',        nameEn:'Rental',       emoji:'🔑', order:18, visible:true},
+  {key:'remarket',nameBn:'রিমার্কেট',   nameEn:'ReMarket',     emoji:'♻️', order:19, visible:true},
+];
+
+var catConfigData = [];
+
+function loadCategoryConfig(){
+  db.collection('cities').doc(CITY).collection('settings').doc('categoryConfig')
+    .get().then(function(doc){
+      if(doc.exists && doc.data().categories && doc.data().categories.length){
+        catConfigData = doc.data().categories;
+      } else {
+        catConfigData = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
+      }
+      renderCatConfigList();
+    }).catch(function(){
+      catConfigData = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
+      renderCatConfigList();
+    });
+}
+
+function renderCatConfigList(){
+  var wrap = document.getElementById('catConfigList');
+  if(!wrap) return;
+  var sorted = catConfigData.slice().sort(function(a,b){ return (a.order||99)-(b.order||99); });
+  wrap.innerHTML = sorted.map(function(cat, i){
+    var imgOrEmoji = cat.imageUrl
+      ? '<img src="'+cat.imageUrl+'" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'block\'">'+'<span style="display:none">'+cat.emoji+'</span>'
+      : cat.emoji;
+    return '<div class="cat-config-row" data-key="'+cat.key+'">'+
+      '<span class="cat-cfg-drag">⠿</span>'+
+      '<div class="cat-cfg-preview" id="preview-'+cat.key+'">'+imgOrEmoji+'</div>'+
+      '<div class="cat-cfg-inputs">'+
+        '<input class="cat-cfg-input" placeholder="বাংলা নাম" value="'+cat.nameBn+'" oninput="updateCatField(\''+cat.key+'\',\'nameBn\',this.value)">'+
+        '<input class="cat-cfg-input" placeholder="English name" value="'+cat.nameEn+'" oninput="updateCatField(\''+cat.key+'\',\'nameEn\',this.value)">'+
+        '<div class="cat-cfg-url-wrap">'+
+          '<input class="cat-cfg-input" placeholder="Image URL (Cloudinary) বা খালি রাখুন emoji এর জন্য" value="'+(cat.imageUrl||'')+'" oninput="updateCatField(\''+cat.key+'\',\'imageUrl\',this.value);updateCatPreview(\''+cat.key+'\',this.value,\''+cat.emoji+'\')">'+
+        '</div>'+
+        '<input class="cat-cfg-input" placeholder="Emoji (fallback)" value="'+cat.emoji+'" oninput="updateCatField(\''+cat.key+'\',\'emoji\',this.value)">'+
+      '</div>'+
+      '<input class="cat-cfg-order" type="number" min="1" max="99" value="'+(cat.order||i+1)+'" title="Order" oninput="updateCatField(\''+cat.key+'\',\'order\',parseInt(this.value)||1)">'+
+      '<label class="cat-cfg-toggle"><input type="checkbox" '+(cat.visible!==false?'checked':'')+' onchange="updateCatField(\''+cat.key+'\',\'visible\',this.checked)"> দেখাও</label>'+
+    '</div>';
+  }).join('');
+}
+
+function updateCatField(key, field, value){
+  var cat = catConfigData.find(function(c){ return c.key === key; });
+  if(cat) cat[field] = value;
+}
+
+function updateCatPreview(key, url, fallbackEmoji){
+  var preview = document.getElementById('preview-'+key);
+  if(!preview) return;
+  if(url && url.trim()){
+    preview.innerHTML = '<img src="'+url.trim()+'" style="width:100%;height:100%;object-fit:cover;border-radius:10px" onerror="this.parentNode.innerHTML=\''+fallbackEmoji+'\'">';
+  } else {
+    preview.innerHTML = fallbackEmoji;
+  }
+}
+
+function saveCategoryConfig(){
+  var status = document.getElementById('catConfigStatus');
+  if(status) status.textContent = 'সেভ হচ্ছে...';
+  db.collection('cities').doc(CITY).collection('settings').doc('categoryConfig')
+    .set({categories: catConfigData, updatedAt: new Date().toISOString()})
+    .then(function(){
+      if(status) status.textContent = '✅ সেভ হয়েছে';
+      setTimeout(function(){ if(status) status.textContent = ''; }, 3000);
+      showToast('Category config সেভ হয়েছে ✅','green');
+    }).catch(function(e){
+      if(status) status.textContent = '❌ সমস্যা';
+      showToast('সেভ ব্যর্থ: '+e.message,'red');
+    });
+}
+
+function resetCategoryDefaults(){
+  if(!confirm('সব category default এ ফিরাবেন? কাস্টম images ও নাম মুছে যাবে।')) return;
+  catConfigData = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
+  renderCatConfigList();
+  showToast('Default categories লোড হয়েছে','green');
 }
 
 // ═══ ORDER MANAGERS MANAGEMENT ═══
