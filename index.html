@@ -214,6 +214,27 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 .why-card h3{font-weight:800;margin-bottom:8px;font-size:1rem;color:var(--charcoal);}
 .why-card p{color:var(--muted);font-size:.86rem;line-height:1.7;}
 
+/* ── FLASH CARD COMPACT ── */
+.flash-card{background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden;position:relative;flex-shrink:0;width:160px;}
+.flash-card-img{height:110px;background:var(--sand);display:flex;align-items:center;justify-content:center;font-size:2.4rem;position:relative;overflow:hidden;}
+.flash-card-img img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;}
+.flash-card-badges{position:absolute;top:6px;left:6px;display:flex;gap:4px;}
+.flash-card-timer{background:linear-gradient(135deg,#B71C1C,#E53935);padding:4px 10px;display:flex;align-items:center;justify-content:space-between;}
+.flash-card-timer-label{color:rgba(255,255,255,.85);font-size:.58rem;font-weight:600;}
+.flash-card-timer-digits{font-family:monospace;font-size:.78rem;font-weight:800;color:#fff;letter-spacing:1px;}
+.flash-card-body{padding:9px 10px;}
+.flash-card-name{font-weight:700;font-size:.78rem;color:var(--charcoal);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px;}
+.flash-card-price{display:flex;align-items:center;gap:5px;margin-bottom:7px;}
+.flash-card-price-now{font-size:.9rem;font-weight:800;color:var(--orange);}
+.flash-card-price-old{font-size:.68rem;color:var(--muted);text-decoration:line-through;}
+.flash-card-btn{width:100%;background:var(--navy);color:#fff;border:none;padding:7px 6px;border-radius:7px;font-weight:700;font-size:.72rem;cursor:pointer;}
+.flash-card-btn:active{background:var(--orange);}
+.flash-card-qty{display:flex;align-items:center;justify-content:space-between;background:var(--sand);border-radius:7px;}
+.flash-card-qty button{background:none;border:none;padding:6px 10px;font-size:.9rem;font-weight:700;cursor:pointer;color:var(--navy);}
+.flash-card-qty span{font-size:.82rem;font-weight:700;}
+.flash-hscroll{display:flex;gap:12px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
+.flash-hscroll::-webkit-scrollbar{display:none;}
+
 /* ── FLASH TIMER BAR (inside product card) ── */
 .flash-timer-bar{background:linear-gradient(135deg,#B71C1C,#E53935);border-radius:0 0 0 0;padding:6px 12px;display:flex;align-items:center;justify-content:space-between;margin:0;}
 .flash-timer-label{color:rgba(255,255,255,.85);font-size:.68rem;font-weight:600;letter-spacing:.3px;display:flex;align-items:center;gap:4px;}
@@ -1475,7 +1496,8 @@ img{max-width:100%;height:auto;}
 <div class="mobile-search-bar" id="mobileSearchBar">
   <div class="msb-inner">
     <input type="text" id="mobileSearch" placeholder="দোকান বা পণ্য খুঁজুন..." oninput="handleSearch(this.value)" onkeydown="if(event.key==='Enter')doSearch();" autocomplete="off">
-    <button onclick="doSearch()">🔍</button>
+    <button onclick="startVoiceSearch()" id="mobileVoiceBtn" style="background:transparent;border:none;color:rgba(255,255,255,.7);padding:0 12px;font-size:1.1rem;cursor:pointer;flex-shrink:0;" title="Voice Search">🎙️</button>
+    <button onclick="doSearch()" style="background:var(--orange);border:none;color:#fff;padding:10px 16px;font-size:1rem;cursor:pointer;flex-shrink:0;">🔍</button>
   </div>
 </div>
 
@@ -1660,7 +1682,7 @@ img{max-width:100%;height:auto;}
     </div>
     <button class="view-all" onclick="filterCat('all',null);document.getElementById('productsSection').scrollIntoView({behavior:'smooth'})">সব দেখুন →</button>
   </div>
-  <div class="products-grid" id="flashGrid"></div>
+  <div class="flash-hscroll" id="flashGrid"></div>
 </section>
 
 <!-- SHOPS (Nearby Shops) -->
@@ -3266,6 +3288,8 @@ function startVoiceSearch(){
 
   document.getElementById('voiceOverlay').classList.add('active');
   document.getElementById('voiceBtn').classList.add('listening');
+  var mvb=document.getElementById('mobileVoiceBtn');
+  if(mvb){mvb.textContent='🔴';mvb.style.animation='pulse 1s infinite';}
   document.getElementById('voiceResult').textContent = '';
   voiceActive = true;
 
@@ -3286,8 +3310,10 @@ function startVoiceSearch(){
       // Fill search box with exact spoken text
       var heroSearch = document.getElementById('heroSearch');
       var navSearch = document.querySelector('.nav-search input');
+      var mobileSearch = document.getElementById('mobileSearch');
       if(heroSearch) heroSearch.value = transcript;
       if(navSearch) navSearch.value = transcript;
+      if(mobileSearch) mobileSearch.value = transcript;
 
       // Search — handleSearch checks both nameBn and nameEn fields
       handleSearch(transcript.toLowerCase());
@@ -3334,6 +3360,8 @@ function stopVoiceSearch(){
   voiceActive = false;
   document.getElementById('voiceOverlay').classList.remove('active');
   document.getElementById('voiceBtn').classList.remove('listening');
+  var mvb=document.getElementById('mobileVoiceBtn');
+  if(mvb){mvb.textContent='🎙️';mvb.style.animation='';}
   if(recognition){
     try{ recognition.stop(); }catch(e){}
     recognition = null;
@@ -4233,18 +4261,49 @@ function buildFeatured(prods){
 }
 
 // ── FLASH SALE ──
+function flashCardHTML(p){
+  var img=p.imageUrl||(p.images&&p.images[0])||'';
+  var name=p.nameBn||p.nameEn||p.name||'পণ্য';
+  var price=p.price||p.sellPrice||0;
+  var inCart=cart.find(function(c){return c.id===p.id&&c.shopId===p.shopId;});
+  var qty=inCart?inCart.qty:0;
+  var timerId='ftimer_'+p.id;
+  var disc=p.discount||0;
+  return '<div class="flash-card">'+
+    '<div class="flash-card-img">'+
+      (img?'<img src="'+img+'" alt="'+name+'" loading="lazy">':prodEmoji(p.category))+
+      '<div class="flash-card-badges">'+
+        '<span class="badge badge-flash">⚡ Flash</span>'+
+        (disc?'<span class="badge badge-disc">'+disc+'% OFF</span>':'')+
+      '</div>'+
+    '</div>'+
+    '<div class="flash-card-timer">'+
+      '<span class="flash-card-timer-label">⏱ শেষ হচ্ছে</span>'+
+      '<span class="flash-card-timer-digits" id="'+timerId+'">--:--</span>'+
+    '</div>'+
+    '<div class="flash-card-body">'+
+      '<div class="flash-card-name">'+name+'</div>'+
+      '<div class="flash-card-price">'+
+        '<span class="flash-card-price-now">₹'+price+'</span>'+
+        (p.mrp&&p.mrp!==price?'<span class="flash-card-price-old">₹'+p.mrp+'</span>':'')+
+      '</div>'+
+      (qty>0
+        ?'<div class="flash-card-qty" id="pqc-'+p.id+'"><button onclick="prodQtyChange(\''+p.id+'\',\''+p.shopId+'\',-1)">−</button><span>'+qty+'</span><button onclick="prodQtyChange(\''+p.id+'\',\''+p.shopId+'\',1)">+</button></div>'
+        :'<button class="flash-card-btn" onclick="addToCartCard(event,\''+p.id+'\',\''+p.shopId+'\',this)">+ কার্টে যোগ করুন</button>')+
+    '</div></div>';
+}
+
 function buildFlashSale(prods){
   if(!prods||!prods.length)return;
-  var flash=prods.filter(function(p){return p.discount>=10;}).slice(0,4);
+  var flash=prods.filter(function(p){return p.discount>=10;}).slice(0,6);
   if(!flash.length)return;
   var sec=document.getElementById('flashSection');
   var grid=document.getElementById('flashGrid');
   if(!sec||!grid)return;
-  // Assign end times to flash products
   flash.forEach(function(p,i){
     p._flashEnd=Date.now()+(2+i)*3600000+Math.floor(Math.random()*60)*60000;
   });
-  grid.innerHTML=flash.map(function(p){return productCardHTML(p,true);}).join('');
+  grid.innerHTML=flash.map(function(p){return flashCardHTML(p);}).join('');
   sec.style.display='block';
   startFlashCountdown();
   startFlashCardTimers(flash);
