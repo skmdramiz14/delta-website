@@ -56,13 +56,29 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 .marquee-dot{width:5px;height:5px;background:rgba(255,255,255,.5);border-radius:50%;}
 
 /* ── HERO ── */
-.hero{background:linear-gradient(135deg,var(--navy3) 0%,var(--navy) 55%,#1a3050 100%);padding:60px 5% 52px;position:relative;overflow:hidden;}
+.hero{
+  background:linear-gradient(135deg,#020c18 0%,#0a1f35 40%,#0d2d4a 70%,#1a1a3e 100%);
+  padding:60px 5% 52px;position:relative;overflow:hidden;
+}
+/* Ambient glow orbs */
+.hero::before{
+  content:'';position:absolute;
+  width:420px;height:420px;border-radius:50%;
+  background:radial-gradient(circle,rgba(240,112,24,.18) 0%,transparent 70%);
+  top:-80px;right:-80px;pointer-events:none;
+}
+.hero::after{
+  content:'';position:absolute;
+  width:300px;height:300px;border-radius:50%;
+  background:radial-gradient(circle,rgba(99,102,241,.15) 0%,transparent 70%);
+  bottom:-60px;left:-60px;pointer-events:none;
+}
 .hero::before{content:'';position:absolute;top:-120px;right:-80px;width:520px;height:520px;background:radial-gradient(circle,rgba(240,112,24,.14) 0%,transparent 68%);border-radius:50%;}
 .hero::after{content:'△';position:absolute;right:6%;bottom:-20px;font-size:220px;font-weight:900;color:rgba(255,255,255,.03);line-height:1;pointer-events:none;}
 .hero-inner{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center;max-width:1200px;margin:0 auto;position:relative;z-index:2;}
 .hero-tag{display:inline-flex;align-items:center;gap:7px;background:rgba(240,112,24,.18);border:1px solid rgba(240,112,24,.35);color:#ffb07a;padding:6px 14px;border-radius:20px;font-size:.75rem;font-weight:600;letter-spacing:.8px;text-transform:uppercase;margin-bottom:18px;}
-.hero h1{font-family:'Playfair Display',serif;font-size:clamp(2rem,4.5vw,3.2rem);font-weight:900;color:#fff;line-height:1.15;margin-bottom:10px;}
-.hero h1 em{color:var(--orange);font-style:normal;}
+.hero h1{font-family:'Playfair Display',serif;font-size:clamp(2rem,4.5vw,3.2rem);font-weight:900;color:#fff;line-height:1.15;margin-bottom:10px;text-shadow:0 2px 20px rgba(0,0,0,.3);}
+.hero h1 em{color:var(--orange);font-style:normal;filter:drop-shadow(0 0 12px rgba(240,112,24,.4));}
 .hero-bn{font-family:'Tiro Bangla',serif;font-size:1.1rem;color:rgba(255,255,255,.7);margin-bottom:10px;}
 .hero p{color:rgba(255,255,255,.65);font-size:.95rem;line-height:1.75;margin-bottom:28px;max-width:460px;}
 .hero-search-big{display:flex;background:#fff;border-radius:12px;overflow:visible;box-shadow:0 8px 32px rgba(0,0,0,.25);margin-bottom:20px;position:relative;}
@@ -323,22 +339,41 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 
 /* ── HERO BUTTONS ── */
 .hero-btns{display:flex;flex-direction:column;gap:10px;margin-bottom:20px;}
-.hero-btn-primary{background:var(--orange);color:#fff;border:none;padding:14px 28px;border-radius:12px;font-size:.95rem;font-weight:700;cursor:pointer;transition:all .2s;box-shadow:0 4px 16px rgba(240,112,24,.4);}
-.hero-btn-primary:hover{background:var(--orange2);transform:translateY(-1px);}
+.hero-btn-primary{
+  background:linear-gradient(135deg,#f07018,#ff8c3a);
+  color:#fff;border:none;padding:14px 28px;border-radius:12px;
+  font-size:.95rem;font-weight:800;cursor:pointer;transition:all .25s;
+  box-shadow:0 4px 20px rgba(240,112,24,.45), 0 1px 0 rgba(255,255,255,.15) inset;
+  letter-spacing:.3px;
+}
+.hero-btn-primary:hover{
+  background:linear-gradient(135deg,#ff8c3a,#f07018);
+  transform:translateY(-2px);
+  box-shadow:0 8px 28px rgba(240,112,24,.5);
+}
 .hero-btn-outline{background:transparent;color:#fff;border:2px solid rgba(255,255,255,.35);padding:13px 28px;border-radius:9px;font-size:.95rem;cursor:pointer;transition:all .2s;}
 .hero-btn-outline:hover{border-color:#fff;background:rgba(255,255,255,.1);}
 .hero-btn-full{width:100%;text-align:center;}
 .hero-pill-row{display:flex;gap:10px;}
 .hero-pill{
-  flex:1;padding:10px 14px;border-radius:30px;
-  background:rgba(255,255,255,.1);
-  border:1.5px solid rgba(255,255,255,.25);
+  flex:1;padding:11px 14px;border-radius:30px;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.18);
   color:#fff;font-size:.82rem;font-weight:700;
-  cursor:pointer;transition:all .2s;
-  display:flex;align-items:center;justify-content:center;gap:5px;
+  cursor:pointer;transition:all .25s;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  box-shadow:0 2px 12px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.1);
+  letter-spacing:.2px;
 }
-.hero-pill:hover{background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.5);}
-.hero-pill:active{background:rgba(255,255,255,.22);}
+.hero-pill:hover{
+  background:rgba(255,255,255,.14);
+  border-color:rgba(255,255,255,.35);
+  transform:translateY(-1px);
+  box-shadow:0 4px 20px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.15);
+}
+.hero-pill:active{transform:translateY(0);}
 @media(max-width:480px){
   .hero-pill{font-size:.76rem;padding:9px 10px;}
 }
@@ -1548,7 +1583,9 @@ img{max-width:100%;height:auto;}
 
 <!-- HERO -->
 <section class="hero">
-  <div class="hero-inner">
+  <!-- Subtle grid pattern -->
+  <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;"></div>
+  <div class="hero-inner" style="position:relative;z-index:1;">
     <div class="hero-content">
       <div class="hero-tag">🌟 <span class="lang-bn">পশ্চিমবঙ্গের প্রথম লোকাল সুপার অ্যাপ</span><span class="lang-en">West Bengal's First Local Super App</span></div>
       <h1>△ DELT<em>A</em></h1>
@@ -3009,6 +3046,7 @@ async function loadData(retryCount){
     initEcoCounter(allShops, allProducts);
     initFestivalBanner();
     loadMarqueeFromFirebase();
+    loadCategoryConfigFromFirebase();
     updateSubCount();
     initAllFeatures(allShops, allProducts);
   }catch(e){
@@ -4226,6 +4264,53 @@ function setLang(l){
   showToast(l==='bn'?'বাংলা মোড সক্রিয় ✅':'English mode active ✅','green');
 }
 
+
+// ── CATEGORY CONFIG — Firebase থেকে load ──
+function loadCategoryConfigFromFirebase(){
+  if(!db) return;
+  db.collection('cities').doc(CITY).collection('settings').doc('categoryConfig')
+    .get().then(function(doc){
+      if(doc.exists && doc.data().categories && doc.data().categories.length){
+        renderCategoryGrid(doc.data().categories);
+      }
+    }).catch(function(){ /* fallback — hardcoded HTML থাকবে */ });
+}
+
+function renderCategoryGrid(cats){
+  var grid = document.getElementById('catGrid');
+  if(!grid) return;
+
+  // order অনুযায়ী sort, hidden গুলো বাদ
+  var sorted = cats
+    .filter(function(c){ return c.visible !== false; })
+    .sort(function(a,b){ return (a.order||99)-(b.order||99); });
+
+  // প্রথম ৮টা visible, বাকিগুলো cat-extra
+  var html = sorted.map(function(cat, i){
+    var isExtra = i >= 8;
+    var imgHtml = cat.imageUrl
+      ? '<img src="'+cat.imageUrl+'" style="width:100%;height:100%;object-fit:cover;border-radius:8px" onerror="this.style.display=\'none\'">'
+      : '';
+    return '<div class="cat-card'+(isExtra?' cat-extra':'')+'" id="cat-'+cat.key+'" onclick="filterCat(\''+cat.key+'\',this)">'+
+      '<div class="cat-emoji">'+(imgHtml||cat.emoji||'🏪')+'</div>'+
+      '<div class="cat-name">'+
+        '<span class="lang-bn">'+(cat.nameBn||cat.key)+'</span>'+
+        '<span class="lang-en">'+(cat.nameEn||cat.key)+'</span>'+
+      '</div></div>';
+  }).join('');
+
+  // "আরও দেখুন" button
+  var extraCount = Math.max(0, sorted.length - 8);
+  grid.innerHTML = html;
+
+  // More button text update
+  var moreBtn = document.getElementById('catMoreBtnText');
+  if(moreBtn && extraCount > 0){
+    moreBtn.textContent = 'আরও '+extraCount+'টি ক্যাটাগরি দেখুন ▾';
+  }
+  var moreWrap = document.getElementById('catMoreWrap');
+  if(moreWrap) moreWrap.style.display = extraCount > 0 ? 'block' : 'none';
+}
 
 // ── MARQUEE — Firebase থেকে load ──
 function loadMarqueeFromFirebase(){
