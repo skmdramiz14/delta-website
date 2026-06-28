@@ -1543,7 +1543,8 @@ img{max-width:100%;height:auto;}
       <p><span class="lang-bn">আপনার শহরের প্রতিটি দোকান, কৃষক ও শিল্পী — এক প্ল্যাটফর্মে। Local Roots. Global Wings.</span><span class="lang-en">Every shop, farmer and artisan in your town — one platform. Local Roots. Global Wings.</span></p>
       <div class="hero-search-big" style="position:relative;">
         <input type="text" id="heroSearch" placeholder="আজ কী দরকার? যেমন: ইলিশ মাছ, রসগোল্লা, ইলেকট্রিশিয়ান..." oninput="handleSearch(this.value)" onkeydown="handleSearchKey(event,'hero')" onfocus="showSuggestions(this.value)" autocomplete="off">
-        <button onclick="doSearch()">🔍</button>
+        <button onclick="startVoiceSearch()" id="heroVoiceBtn" style="background:transparent;border:none;color:var(--muted);padding:0 12px;font-size:1.1rem;cursor:pointer;min-height:48px;flex-shrink:0;" title="Voice Search">🎙️</button>
+        <button onclick="doSearch()" style="border-radius:0 12px 12px 0;">🔍</button>
         <div class="search-suggestions" id="heroSuggestions" style="border-radius:0 0 12px 12px;"></div>
       </div>
       <div class="hero-btns">
@@ -3290,6 +3291,8 @@ function startVoiceSearch(){
   document.getElementById('voiceBtn').classList.add('listening');
   var mvb=document.getElementById('mobileVoiceBtn');
   if(mvb){mvb.textContent='🔴';mvb.style.animation='pulse 1s infinite';}
+  var hvb=document.getElementById('heroVoiceBtn');
+  if(hvb){hvb.textContent='🔴';hvb.style.animation='pulse 1s infinite';}
   document.getElementById('voiceResult').textContent = '';
   voiceActive = true;
 
@@ -3362,6 +3365,8 @@ function stopVoiceSearch(){
   document.getElementById('voiceBtn').classList.remove('listening');
   var mvb=document.getElementById('mobileVoiceBtn');
   if(mvb){mvb.textContent='🎙️';mvb.style.animation='';}
+  var hvb=document.getElementById('heroVoiceBtn');
+  if(hvb){hvb.textContent='🎙️';hvb.style.animation='';}
   if(recognition){
     try{ recognition.stop(); }catch(e){}
     recognition = null;
