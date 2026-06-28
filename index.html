@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="bn">
 <head>
 <meta charset="UTF-8">
@@ -66,8 +66,8 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 .hero-bn{font-family:'Tiro Bangla',serif;font-size:1.1rem;color:rgba(255,255,255,.7);margin-bottom:10px;}
 .hero p{color:rgba(255,255,255,.65);font-size:.95rem;line-height:1.75;margin-bottom:28px;max-width:460px;}
 .hero-search-big{display:flex;background:#fff;border-radius:12px;overflow:visible;box-shadow:0 8px 32px rgba(0,0,0,.25);margin-bottom:20px;position:relative;}
-.hero-search-big input{flex:1;padding:14px 18px;border:none;outline:none;font-size:.9rem;color:var(--charcoal);border-radius:12px 0 0 12px;}
-.hero-search-big button{background:var(--orange);color:#fff;border:none;padding:0 24px;font-size:1rem;cursor:pointer;font-weight:700;transition:background .2s;}
+.hero-search-big input{flex:1;padding:14px 18px;border:none;outline:none;font-size:.9rem;color:var(--charcoal);border-radius:12px 0 0 12px;min-width:0;}
+.hero-search-big button{background:var(--orange);color:#fff;border:none;padding:0 20px;font-size:1rem;cursor:pointer;font-weight:700;transition:background .2s;border-radius:0 12px 12px 0;min-width:52px;min-height:48px;-webkit-tap-highlight-color:transparent;}
 .hero-search-big button:hover{background:var(--orange2);}
 .hero-tags{display:flex;gap:8px;flex-wrap:wrap;}
 .hero-tag-pill{background:rgba(255,255,255,.1);color:rgba(255,255,255,.8);border:1px solid rgba(255,255,255,.15);border-radius:20px;padding:5px 13px;font-size:.78rem;cursor:pointer;transition:all .2s;}
@@ -4041,7 +4041,13 @@ function handleSearch(v){
   clearTimeout(_st);
   _st=setTimeout(function(){doSearchWith(v, false);}, 380);
 }
-function doSearch(){doSearchWith(document.getElementById('heroSearch').value||document.getElementById('navSearch').value,true);}
+function doSearch(){
+  var q = document.getElementById('heroSearch').value || document.getElementById('navSearch').value;
+  // Hide keyboard on mobile
+  document.getElementById('heroSearch').blur();
+  document.getElementById('navSearch').blur();
+  doSearchWith(q, true);
+}
 function doSearchWith(q,shouldScroll){
   q=(q||'').toLowerCase().trim();
   if(!q){resetFilters();hideRequestSection();return;}
