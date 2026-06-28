@@ -4380,6 +4380,16 @@ function buildBestsellers(prods){
   sec.style.display='block';
 }
 
+function openShopFromFresh(shopId, productId){
+  // Shop section এ scroll করো
+  var shopsSection = document.getElementById('shopsSection');
+  if(shopsSection) shopsSection.scrollIntoView({behavior:'smooth'});
+  // Shop modal খোলো
+  setTimeout(function(){
+    openShopModal(shopId);
+  }, 400);
+}
+
 // ── FRESH TODAY STRIP — Firebase থেকে real products ──
 function buildFreshStrip(freshProds){
   var track = document.getElementById('freshTrack');
@@ -4422,7 +4432,7 @@ function buildFreshStrip(freshProds){
       var meta = p.description || p.unit || p.area || '';
       var emoji = prodEmoji ? prodEmoji(p.category) : '🌿';
       var img = p.imageUrl || (p.images && p.images[0]) || '';
-      html += '<div class="fresh-item" onclick="openProductModal(\''+p.id+'\',\''+p.shopId+'\')">' +
+      html += '<div class="fresh-item" onclick="openShopFromFresh(\''+p.shopId+'\',\''+p.id+'\')">' +
         (img
           ? '<img class="fresh-item-emoji" src="'+img+'" style="width:36px;height:36px;object-fit:cover;border-radius:8px;" loading="lazy">'
           : '<div class="fresh-item-emoji">'+emoji+'</div>') +
