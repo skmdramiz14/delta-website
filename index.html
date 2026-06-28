@@ -1238,8 +1238,8 @@ img{max-width:100%;height:auto;}
 <!-- MOBILE SEARCH BAR (shown below nav on mobile) -->
 <div class="mobile-search-bar" id="mobileSearchBar">
   <div class="msb-inner">
-    <input type="text" id="mobileSearch" placeholder="দোকান বা পণ্য খুঁজুন..." oninput="handleSearch(this.value)" onkeydown="if(event.key==='Enter'){document.getElementById('navSearch').value=this.value;doSearch();}" autocomplete="off">
-    <button onclick="document.getElementById('navSearch').value=document.getElementById('mobileSearch').value;doSearch();">🔍</button>
+    <input type="text" id="mobileSearch" placeholder="দোকান বা পণ্য খুঁজুন..." oninput="handleSearch(this.value)" onkeydown="if(event.key==='Enter')doSearch();" autocomplete="off">
+    <button onclick="doSearch()">🔍</button>
   </div>
 </div>
 
@@ -4191,10 +4191,13 @@ function handleSearch(v){
   _st=setTimeout(function(){doSearchWith(v, false);}, 380);
 }
 function doSearch(){
-  var q = document.getElementById('heroSearch').value || document.getElementById('navSearch').value;
+  var q = document.getElementById('heroSearch').value 
+       || document.getElementById('navSearch').value
+       || document.getElementById('mobileSearch').value;
   // Hide keyboard on mobile
   document.getElementById('heroSearch').blur();
   document.getElementById('navSearch').blur();
+  document.getElementById('mobileSearch').blur();
   doSearchWith(q, true);
 }
 function doSearchWith(q,shouldScroll){
@@ -4528,4 +4531,3 @@ function showToast(msg,type){
 </script>
 </body>
 </html>
-
