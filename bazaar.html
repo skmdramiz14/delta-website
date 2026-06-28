@@ -285,6 +285,62 @@ textarea.form-input{resize:vertical;min-height:70px;font-family:inherit;}
   .how-step:not(:last-child)::after{display:none;}
   .guest-row,.budget-row{grid-template-columns:1fr;}
 }
+
+/* ── COMPREHENSIVE MOBILE FIX ── */
+@media(max-width:768px){
+  html,body{overflow-x:hidden;max-width:100vw;}
+  *{max-width:100%;}
+
+  /* Nav */
+  .bazaar-nav .nav-top{padding:10px 4%;}
+
+  /* Hero */
+  .bazaar-hero{padding:36px 4% 48px;}
+  .hero-title{font-size:1.6rem!important;}
+  .hero-sub{font-size:.84rem;}
+  .hero-how{gap:12px;}
+  .how-step{flex-direction:column;gap:4px;font-size:.72rem;}
+
+  /* Category filter */
+  .cat-filter-bar{padding:10px 4%;}
+
+  /* Catalog grid — 2 column */
+  .catalog-grid{grid-template-columns:1fr 1fr!important;gap:10px!important;}
+
+  /* Section */
+  .bz-section{padding:20px 4%;}
+  .bz-title{font-size:1.2rem;}
+
+  /* Custom request block */
+  .custom-block{padding:24px 4%!important;}
+  .custom-left h2{font-size:1.2rem;}
+
+  /* My requests */
+  .my-requests-wrap{padding:20px 4%;}
+  .req-confirm-actions{flex-direction:column;}
+  .btn-confirm,.btn-decline{width:100%;}
+}
+
+@media(max-width:480px){
+  /* Hero compact */
+  .bazaar-hero{padding:28px 4% 40px;}
+  .hero-title{font-size:1.4rem!important;}
+  .hero-eyebrow{font-size:.64rem;}
+
+  /* Catalog — 1 column on very small screens */
+  .catalog-grid{grid-template-columns:1fr!important;}
+
+  /* Product modal — full screen */
+  .prod-modal{width:98vw!important;max-height:95vh;}
+  .prod-modal-info{padding:16px!important;}
+  .prod-modal-name{font-size:1rem!important;}
+
+  /* Dropdown */
+  .cat-dropdown-list{min-width:180px;}
+
+  /* WhatsApp button */
+  #waFloatBtn{bottom:80px!important;right:14px!important;}
+}
 </style>
 </head>
 <body>
