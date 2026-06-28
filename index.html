@@ -219,33 +219,6 @@ button,input,select{font-family:'DM Sans',sans-serif;}
   .fresh-item{min-width:130px;padding:10px 14px;}
 }
 
-/* Mobile search bar — desktop এ লুকানো */
-.mobile-search-bar{
-  display:none;
-  background:var(--navy2);
-  padding:8px 4%;
-  border-top:1px solid rgba(255,255,255,.08);
-}
-.mobile-search-bar .msb-inner{
-  display:flex;flex:1;
-  background:rgba(255,255,255,.12);
-  border:1px solid rgba(255,255,255,.2);
-  border-radius:10px;overflow:hidden;
-}
-.mobile-search-bar input{
-  flex:1;background:transparent;border:none;
-  color:#fff;padding:10px 13px;font-size:.88rem;outline:none;
-  font-family:'DM Sans',sans-serif;
-}
-.mobile-search-bar input::placeholder{color:rgba(255,255,255,.45);}
-.mobile-search-bar button{
-  background:var(--orange);border:none;color:#fff;
-  padding:10px 16px;font-size:1rem;cursor:pointer;flex-shrink:0;
-}
-@media(max-width:768px){
-  .mobile-search-bar{display:flex;}
-}
-
 /* ── WHATSAPP FLOAT ── */
 .wa-float{position:fixed;bottom:28px;right:22px;z-index:1500;}
 .wa-btn{width:56px;height:56px;background:#25D366;border-radius:50%;display:flex;align-items:center;
@@ -287,7 +260,7 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 .bn-cart-badge{position:absolute;top:0;right:50%;margin-right:-18px;background:var(--orange);color:#fff;font-size:.55rem;font-weight:800;width:15px;height:15px;border-radius:50%;display:none;align-items:center;justify-content:center;}
 @media(max-width:768px){
   .bottom-nav{display:flex;}
-  body{padding-bottom:70px;}
+  body{padding-bottom:68px;}
   .wa-float{bottom:90px;}
 }
 .nav-voice-btn{background:transparent;border:none;color:rgba(255,255,255,.6);font-size:1rem;padding:0 10px;cursor:pointer;transition:color .2s;}
@@ -620,296 +593,175 @@ body.lang-bn .lang-en{display:none!important;}
   .why-grid{grid-template-columns:1fr 1fr;}
   .footer-grid{grid-template-columns:1fr 1fr;}
 }
-
-/* ══════════════════════════════════════════
-   MOBILE — 768px এবং নিচে
-   ══════════════════════════════════════════ */
 @media(max-width:768px){
-
-  /* ── NAV ── */
-  html,body{overflow-x:hidden;max-width:100vw;}
-  #nav{padding:0 4%;}
-  .nav-top{gap:10px;padding:10px 0;}
-
-  /* Logo compact করা */
-  .logo{font-size:1.35rem;}
-
-  /* Desktop search লুকানো */
+  /* NAV */
   .nav-search-wrap{display:none;}
-
-  /* Language toggle লুকানো */
+  #nav{padding:0 4%;}
+  .nav-loc-btn{font-size:.7rem;padding:5px 8px;}
   .lang-toggle{display:none;}
-
-  /* Nav actions — ডানে push করা */
   .nav-actions .btn-nav{display:none;}
-  .nav-actions{gap:6px;margin-left:auto;}
 
-  /* Location button — compact, দেখাবে */
-  .nav-loc-btn{font-size:.68rem;padding:5px 8px;display:flex;}
+  /* HERO — single column, compact */
+  .hero{padding:24px 4% 32px;}
+  .hero h1{font-size:2rem;}
+  .hero-bn{font-size:.95rem;}
+  .hero p{font-size:.875rem;}
+  .hero-search-big input{font-size:.82rem;padding:11px 14px;}
+  .hero-btns{flex-direction:column;gap:10px;}
+  .hero-btn-primary,.hero-btn-outline{width:100%;text-align:center;padding:12px 20px;}
+  .hero-stats{gap:12px;margin-top:20px;padding-top:16px;}
+  .hero-stat strong{font-size:1.2rem;}
+  .hero-stat span{font-size:.65rem;}
 
-  /* Cart button mobile friendly */
-  .cart-btn{padding:9px 13px;font-size:.8rem;gap:5px;}
+  /* SECTIONS */
+  .section{padding:22px 4%;}
+  .section-title{font-size:1.3rem;}
 
-  /* User chip compact */
-  .user-chip{padding:8px 10px;font-size:.78rem;}
-
-  /* Category scrollbar mobile smooth */
-  .nav-cats{padding-bottom:2px;-webkit-overflow-scrolling:touch;}
-  .nav-cat{padding:9px 13px;font-size:.75rem;}
-
-  /* Hero search — mobile এ দেখাবে */
-  .hero-search-big{display:flex;}
-
-  /* Nav mobile search bar — hide */
-  .mobile-search-bar{display:none!important;}
-
-  /* ── HERO ── */
-  .hero{padding:22px 4% 28px;}
-  .hero h1{font-size:1.85rem;line-height:1.2;}
-  .hero-bn{font-size:.9rem;margin-bottom:8px;}
-  .hero p{font-size:.85rem;line-height:1.65;margin-bottom:20px;}
-  .hero-tag{font-size:.7rem;padding:5px 11px;margin-bottom:14px;}
-
-  /* Hero search */
-  .hero-search-big{border-radius:10px;margin-bottom:14px;}
-  .hero-search-big input{font-size:.85rem;padding:12px 14px;}
-  .hero-search-big button{padding:0 16px;min-height:44px;min-width:46px;}
-
-  /* Hero pills */
-  .hero-tags{gap:6px;}
-  .hero-tag-pill{font-size:.73rem;padding:4px 11px;}
-
-  /* Hero CTA buttons */
-  .hero-btns{flex-direction:column;gap:9px;margin-bottom:16px;}
-  .hero-btn-primary,.hero-btn-outline{
-    width:100%;text-align:center;
-    padding:13px 20px;font-size:.9rem;border-radius:10px;
-  }
-
-  /* Hero stats — 3 column grid */
-  .hero-stats{
-    display:grid;grid-template-columns:repeat(3,1fr);
-    gap:10px;margin-top:18px;padding-top:16px;
-    border-top:1px solid rgba(255,255,255,.12);
-  }
-  .hero-stat{text-align:center;}
-  .hero-stat strong{font-size:1.1rem;display:block;}
-  .hero-stat span{font-size:.62rem;}
-
-  /* ── SECTIONS ── */
-  .section{padding:20px 4%;}
-  .section-title{font-size:1.25rem;}
-  .section-head{flex-direction:row;align-items:center;margin-bottom:16px;}
-  .section-label{font-size:.68rem;}
-
-  /* ── CATEGORY GRID ── */
-  /* 4 column — সঠিক size এ readable */
+  /* CATEGORIES */
   .cat-grid{grid-template-columns:repeat(4,1fr);gap:8px;}
-  .cat-card{
-    padding:13px 5px;border-radius:12px;
-    border-width:1px;
-  }
-  .cat-card:hover,.cat-card.active{transform:none;box-shadow:0 4px 12px rgba(240,112,24,.15);}
-  .cat-emoji{font-size:1.65rem;margin-bottom:6px;}
-  .cat-name{font-size:.7rem;line-height:1.2;}
-  .cat-name-en{font-size:.6rem;margin-top:1px;}
+  .cat-card{padding:14px 6px;}
+  .cat-emoji{font-size:1.6rem;}
+  .cat-name{font-size:.72rem;}
+  .cat-name-en{font-size:.62rem;}
 
-  /* ── SHOP CARDS ── */
-  .shops-grid{grid-template-columns:1fr 1fr;gap:12px;}
-  .shop-card:hover{transform:none;}
-  .shop-banner{height:90px;}
-  .shop-body{padding:12px;}
-  .shop-name{font-size:.88rem;}
-  .shop-cat{font-size:.72rem;margin-bottom:8px;}
-  .shop-meta{font-size:.7rem;gap:6px;}
+  /* GRIDS */
+  .shops-grid{grid-template-columns:1fr 1fr;}
+  .products-grid{grid-template-columns:1fr 1fr;}
+  .why-grid{grid-template-columns:1fr 1fr;}
 
-  /* ── PRODUCT CARDS ── */
-  .products-grid{grid-template-columns:1fr 1fr;gap:10px;}
-  .product-card:hover{transform:none;}
-  .product-img{height:140px;}
-  .product-body{padding:11px;}
-  .product-name{font-size:.85rem;}
-  .price-now{font-size:.98rem;}
-  .price-old{font-size:.73rem;}
-  .add-to-cart-btn{
-    padding:11px 10px;font-size:.8rem;border-radius:8px;
-    /* বড় touch target */
-    min-height:42px;
-  }
-  /* Wishlist button বড় করা touch এর জন্য */
-  .wishlist-btn{width:34px;height:34px;font-size:1rem;}
+  /* OFFER BANNER */
+  .offer-banner{flex-direction:column;text-align:center;padding:28px 20px;}
+  .offer-text p{margin:0 auto;}
+  .offer-code-box{min-width:unset;width:100%;}
 
-  /* Qty control mobile */
-  .pqc-btn{padding:10px 13px;}
+  /* PROMO BANNERS */
+  .promo-banner{flex-direction:column;text-align:center;padding:20px;}
+  .promo-banner-btn{width:100%;}
 
-  /* ── WHY GRID ── */
-  .why-grid{grid-template-columns:1fr 1fr;gap:12px;}
-  .why-card{padding:20px 16px;border-radius:14px;}
-  .why-icon{width:44px;height:44px;font-size:1.3rem;margin-bottom:12px;}
-  .why-card h3{font-size:.9rem;}
-  .why-card p{font-size:.8rem;}
-
-  /* ── OFFER BANNER ── */
-  .offer-banner{flex-direction:column;text-align:center;padding:24px 18px;border-radius:16px;}
-  .offer-text h2{font-size:1.4rem;}
-  .offer-text p{margin:0 auto;font-size:.85rem;}
-  .offer-code-box{min-width:unset;width:100%;padding:16px 20px;}
-  .offer-code-box strong{font-size:1.6rem;letter-spacing:4px;}
-
-  /* ── PROMO BANNERS ── */
-  .promo-banner{flex-direction:column;text-align:center;padding:20px 18px;border-radius:14px;}
-  .promo-banner-text h3{font-size:1rem;}
-  .promo-banner-text p{font-size:.8rem;}
-  .promo-banner-btn{width:100%;padding:12px 20px;}
-
-  /* ── SELLER OF THE WEEK ── */
-  .sotw-section{padding:28px 4%;}
-  .sotw-card{flex-direction:column;gap:16px;padding:18px;}
-  .sotw-info{min-width:0;width:100%;}
-  .sotw-avatar{width:68px;height:68px;font-size:1.8rem;}
-  .sotw-name{font-size:1.15rem;}
-  .sotw-visit-btn{width:100%;}
-
-  /* ── FESTIVAL BANNER ── */
-  .festival-banner{flex-direction:column;text-align:center;padding:20px 18px;border-radius:16px;}
-  .festival-banner-text h3{font-size:1.2rem;}
-  .festival-countdown{justify-content:center;}
-  .festival-cd-block{min-width:44px;padding:8px 10px;}
-  .festival-cd-num{font-size:1.3rem;}
-  .festival-btn{width:100%;}
-
-  /* ── FREE DELIVERY STRIP ── */
-  .free-delivery-strip{gap:8px;padding:10px 4%;flex-direction:row;justify-content:center;}
-  .fds-badge{display:none;}
-  .fds-text{font-size:.82rem;}
-
-  /* ── FLASH SALE ── */
-  .flash-countdown{font-size:.9rem;padding:4px 12px;}
-
-  /* ── FRESH STRIP ── */
-  .fresh-strip-label{min-width:72px;padding:0 10px;}
-  .fresh-item{min-width:140px;padding:10px 14px;}
-
-  /* ── FOOTER ── */
+  /* FOOTER */
   .footer-grid{grid-template-columns:1fr;}
   .footer-col,.footer-contact{display:none;}
   .footer-brand{display:block;}
-  footer{padding:28px 4% 20px;}
-  .footer-bottom{flex-direction:column;text-align:center;gap:8px;}
 
-  /* ── BOTTOM NAV ── */
-  /* Toast bottom nav এর উপরে রাখা */
-  .toast{bottom:80px;right:12px;left:12px;max-width:unset;font-size:.8rem;}
-
-  /* WA float button bottom nav এর উপরে */
-  .wa-float{bottom:84px!important;right:16px;}
-
-  /* Cart drawer — full width */
-  .cart-drawer{width:100vw;border-radius:20px 20px 0 0;top:auto;bottom:0;transform:translateY(100%);}
-  .cart-drawer.open{transform:translateY(0);}
-
-  /* Checkout modal */
-  .checkout-modal{border-radius:20px 20px 0 0;width:100vw;max-height:92vh;}
-
-  /* Auth modal */
-  .modal-box{border-radius:20px 20px 0 0;width:100vw;max-height:92vh;margin-top:auto;}
-  .modal-overlay{align-items:flex-end;padding:0;}
-
-  /* ── ECO COUNTER ── */
-  .eco-counter-section{padding:24px 4%;}
-  .eco-grid{grid-template-columns:1fr 1fr!important;}
-
-  /* ── STATS ROW ── */
-  .stats-row{grid-template-columns:1fr 1fr!important;}
-
-  /* ── PREVENT HOVER SCALE on touch ── */
-  @media(hover:none){
-    .product-card:hover,.shop-card:hover,.why-card:hover,.cat-card:hover{
-      transform:none!important;box-shadow:none!important;
-    }
-  }
-}
-
-/* ══════════════════════════════════════════
-   EXTRA SMALL — 480px এবং নিচে
-   ══════════════════════════════════════════ */
-@media(max-width:480px){
-
-  /* NAV — location compact রাখো */
-  .nav-loc-btn{font-size:.62rem;padding:4px 6px;}
-  .nav-loc-btn span:first-of-type{display:none;} /* "Manteswar" text ছোট করা — শুধু 📍 icon */
-  .logo{font-size:1.2rem;}
-  .cart-btn{padding:8px 10px;font-size:.75rem;}
-  .user-chip{padding:7px 9px;font-size:.72rem;}
-
-  /* HERO */
-  .hero{padding:18px 4% 24px;}
-  .hero h1{font-size:1.6rem!important;line-height:1.22!important;}
-  .hero p{font-size:.82rem!important;margin-bottom:16px;}
-  .hero-search-big input{font-size:.82rem;padding:11px 12px;}
-
-  /* CATEGORY GRID — 4 column tight */
-  .cat-grid{grid-template-columns:repeat(4,1fr)!important;gap:6px!important;}
-  .cat-card{padding:11px 4px!important;border-radius:10px!important;}
-  .cat-emoji{font-size:1.5rem!important;margin-bottom:5px!important;}
-  .cat-name{font-size:.65rem!important;}
-  .cat-name-en{display:none!important;}/* জায়গা বাঁচাতে en text লুকানো */
-
-  /* PRODUCT CARDS — 2 col compact */
-  .products-grid{grid-template-columns:1fr 1fr!important;gap:8px!important;}
-  .product-card{border-radius:10px;}
-  .product-img{height:120px!important;}
-  .product-body{padding:9px!important;}
-  .product-name{font-size:.78rem!important;}
-  .price-now{font-size:.92rem!important;}
-  .add-to-cart-btn{padding:10px 8px!important;font-size:.75rem!important;min-height:40px!important;}
-  .wishlist-btn{width:30px;height:30px;font-size:.85rem;}
-
-  /* SHOP CARDS — single col */
-  .shops-grid{grid-template-columns:1fr!important;}
-  .shop-banner{height:100px;}
-
-  /* WHY — single col */
-  .why-grid{grid-template-columns:1fr!important;}
-
-  /* SECTION */
-  .section-title{font-size:1.1rem!important;}
-  .section{padding:16px 4%!important;}
-
-  /* ECO COUNTER */
-  .eco-grid{grid-template-columns:1fr 1fr!important;}
+  /* FREE DELIVERY STRIP */
+  .fds-badge{display:none;}
+  .free-delivery-strip{gap:10px;padding:10px 4%;}
 
   /* FLASH */
+  .flash-countdown{font-size:.9rem;}
+}
+@media(max-width:480px){
+  /* NAV extra compact */
+  .nav-loc-btn{display:none;}
+  .tlogo,.logo{font-size:1.2rem;}
+
+  /* HERO */
+  .hero h1{font-size:1.7rem;}
+  .hero-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+  .hero-stat strong{font-size:1rem;}
+  .hero-stat span{font-size:.6rem;}
+
+  /* CATEGORIES */
+  .cat-grid{grid-template-columns:repeat(4,1fr);gap:7px;}
+
+  /* GRIDS */
+  .shops-grid{grid-template-columns:1fr;}
+  .products-grid{grid-template-columns:1fr 1fr;}
+  .why-grid{grid-template-columns:1fr;}
+
+  /* MISC */
+  .offer-code-box{min-width:unset;width:100%;}
+  .section-title{font-size:1.2rem;}
   .flash-countdown{font-size:.8rem;padding:3px 10px;}
 
   /* FRESH STRIP */
-  .fresh-strip-label{min-width:64px;padding:0 8px;}
-  .fresh-strip-label-text{font-size:.52rem;}
-  .fresh-item{min-width:120px;padding:9px 12px;}
-  .fresh-item-emoji{font-size:1.35rem;}
-  .fresh-item-name{font-size:.76rem;}
-
-  /* OFFER CODE */
-  .offer-code-box{min-width:unset;width:100%;}
-  .offer-code-box strong{font-size:1.5rem;letter-spacing:3px;}
-
-  /* CART PANEL full screen */
-  .cart-panel{width:100vw!important;border-radius:20px 20px 0 0!important;}
-
-  /* FOOTER */
-  .footer-bottom{font-size:.72rem;}
-
-  /* HAMPER GRID — single col on very small */
-  .hamper-appayan-grid{grid-template-columns:1fr!important;}
-
-  /* TESTIMONIAL cards ছোট */
-  .testimonial-card{width:210px;}
+  .fresh-strip-label{min-width:70px;padding:0 10px;}
+  .fresh-strip-label-text{font-size:.55rem;}
+  .fresh-item{min-width:130px;padding:10px 14px;}
 }
 
-/* ── GLOBAL IMG FIX ── */
-img{max-width:100%;height:auto;}
-[style*="min-width:260px"]{min-width:0!important;}
-[style*="min-width:200px"]{min-width:0!important;}
+/* ── COMPREHENSIVE MOBILE FIX ── */
+@media(max-width:768px){
+  /* Prevent horizontal scroll */
+  html,body{overflow-x:hidden;max-width:100vw;}
+  *{max-width:100%;}
+  img{max-width:100%;height:auto;}
+
+  /* Fix inline min-width on flex children */
+  [style*="min-width:260px"]{min-width:0!important;width:100%!important;}
+  [style*="min-width:200px"]{min-width:0!important;}
+
+  /* Section padding */
+  .section{padding:20px 4%;}
+  .section-head{flex-direction:column;align-items:flex-start;gap:8px;}
+
+  /* Cards that use flex row → stack on mobile */
+  .sotw-card{flex-direction:column!important;}
+  .sotw-info{min-width:0!important;}
+
+  /* Banner cards (Bazaar, Fresh, Hampers) */
+  .section > div[onclick]{padding:22px 18px!important;}
+  .section > div[onclick] > div[style*="flex"]{flex-direction:column!important;gap:16px!important;}
+  .section > div[onclick] h3{font-size:1.05rem!important;}
+  .section > div[onclick] p{font-size:.8rem!important;}
+  .section > div[onclick] button{width:100%!important;}
+
+  /* Free delivery strip */
+  .free-delivery-strip{flex-direction:column;text-align:center;gap:8px;padding:12px 5%;}
+  .fds-badge{display:none;}
+
+  /* Bottom nav space */
+  .wa-float{bottom:80px!important;}
+
+  /* Checkout modal */
+  .co-modal{width:96vw!important;max-height:92vh;}
+
+  /* Eco counter */
+  .eco-counter-section{padding:28px 4%;}
+  .eco-grid{grid-template-columns:1fr 1fr!important;}
+
+  /* Testimonials */
+  .testimonials-track{gap:10px;}
+
+  /* Stats row */
+  .stats-row{grid-template-columns:1fr 1fr!important;}
+}
+
+@media(max-width:480px){
+  /* Products grid — 2 column */
+  .products-grid{grid-template-columns:1fr 1fr!important;gap:8px!important;}
+
+  /* Product card compact */
+  .product-card{border-radius:10px;}
+  .product-img{height:130px!important;}
+  .product-name{font-size:.8rem!important;}
+  .product-price{font-size:.88rem!important;}
+
+  /* Category grid — 4 column */
+  .cat-grid{grid-template-columns:repeat(4,1fr)!important;gap:6px!important;}
+  .cat-item{padding:8px 4px!important;}
+  .cat-icon{font-size:1.4rem!important;}
+  .cat-name{font-size:.58rem!important;}
+
+  /* Hero compact */
+  .hero{padding:28px 4% 32px!important;}
+  .hero h1{font-size:1.6rem!important;line-height:1.25!important;}
+  .hero p{font-size:.84rem!important;}
+  .hero-btns{flex-direction:column!important;gap:8px!important;}
+  .hero-btn-primary,.hero-btn-outline{width:100%!important;text-align:center!important;}
+
+  /* Shops grid — 1 column */
+  .shops-grid{grid-template-columns:1fr!important;}
+
+  /* Section title */
+  .section-title{font-size:1.1rem!important;}
+
+  /* Eco counter — 2 column */
+  .eco-grid{grid-template-columns:1fr 1fr!important;}
+
+  /* Cart modal */
+  .cart-panel{width:100vw!important;border-radius:20px 20px 0 0!important;}
+}
 /* ══ SUBSCRIBE & SAVE ══ */
 .sub-modal-overlay{display:none;position:fixed;inset:0;background:rgba(6,21,38,.75);z-index:5000;align-items:center;justify-content:center;padding:16px;}
 .sub-modal-overlay.open{display:flex;}
@@ -1155,158 +1007,6 @@ img{max-width:100%;height:auto;}
 .festival-cd-label{font-size:.6rem;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.5px;margin-top:2px;}
 .festival-btn{background:#fff;color:var(--navy);border:none;padding:10px 20px;border-radius:10px;font-weight:700;cursor:pointer;font-size:.85rem;transition:all .2s;white-space:nowrap;}
 .festival-btn:hover{background:var(--orange);color:#fff;}
-/* ══ SIDE MENU DRAWER — Amazon two-panel ══ */
-.side-menu-overlay{display:none;position:fixed;inset:0;background:rgba(6,21,38,.6);z-index:3000;}
-.side-menu-overlay.open{display:block;}
-.side-menu-drawer{
-  position:fixed;left:0;top:0;bottom:0;
-  width:min(340px,92vw);
-  background:#fff;z-index:3001;
-  transform:translateX(-100%);
-  transition:transform .28s cubic-bezier(.4,0,.2,1);
-  display:flex;flex-direction:column;
-  box-shadow:4px 0 32px rgba(0,0,0,.22);
-  overflow:hidden;
-}
-.side-menu-drawer.open{transform:translateX(0);}
-
-/* Header */
-.smd-header{
-  background:linear-gradient(135deg,var(--navy3),var(--navy));
-  padding:16px 14px;flex-shrink:0;
-  display:flex;align-items:center;justify-content:space-between;
-}
-.smd-user-area{display:flex;align-items:center;gap:10px;flex:1;min-width:0;}
-.smd-avatar{
-  width:42px;height:42px;border-radius:50%;
-  background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.25);
-  display:flex;align-items:center;justify-content:center;
-  font-size:1.3rem;flex-shrink:0;
-}
-.smd-user-name{font-size:.88rem;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.smd-user-sub{font-size:.7rem;color:rgba(255,255,255,.6);margin-top:1px;}
-.smd-close{
-  background:rgba(255,255,255,.12);border:none;color:#fff;
-  width:30px;height:30px;border-radius:7px;cursor:pointer;
-  font-size:.9rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;
-}
-
-/* Two-panel body */
-.smd-body{display:flex;flex:1;overflow:hidden;}
-
-/* LEFT panel — narrow tab list */
-.smd-left{
-  width:72px;flex-shrink:0;
-  background:var(--navy3);
-  display:flex;flex-direction:column;
-  overflow-y:auto;
-}
-.smd-left-item{
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  padding:14px 4px;gap:4px;cursor:pointer;
-  border-left:3px solid transparent;
-  transition:all .15s;-webkit-tap-highlight-color:transparent;
-  flex-shrink:0;
-}
-.smd-left-item:hover{background:rgba(255,255,255,.06);}
-.smd-left-item.active{
-  background:rgba(240,112,24,.15);
-  border-left-color:var(--orange);
-}
-.smd-li-icon{font-size:1.2rem;line-height:1;}
-.smd-li-label{font-size:.55rem;font-weight:700;color:rgba(255,255,255,.6);text-align:center;letter-spacing:.2px;}
-.smd-left-item.active .smd-li-label{color:var(--orange);}
-
-/* RIGHT panel */
-.smd-right{flex:1;overflow-y:auto;background:#fff;}
-.smd-panel{display:none;flex-direction:column;}
-.smd-panel.active{display:flex;}
-.smd-panel-title{
-  font-size:.72rem;font-weight:800;color:var(--muted);
-  letter-spacing:1.2px;text-transform:uppercase;
-  padding:12px 14px 6px;background:var(--cream);
-  border-bottom:1px solid var(--border);
-  position:sticky;top:0;z-index:1;
-}
-
-/* Location strip */
-.smd-loc-strip{
-  background:var(--orange-light);border-bottom:1px solid rgba(240,112,24,.2);
-  padding:10px 14px;display:flex;align-items:center;gap:6px;
-  font-size:.78rem;color:var(--navy);font-weight:600;cursor:pointer;
-}
-.smd-loc-change{margin-left:auto;color:var(--orange);font-size:.7rem;font-weight:700;white-space:nowrap;}
-
-/* 2×4 grid on home panel */
-.smd-grid{
-  display:grid;grid-template-columns:1fr 1fr;
-  gap:1px;background:var(--border);
-}
-.smd-grid-item{
-  background:#fff;padding:16px 10px;
-  display:flex;flex-direction:column;align-items:center;gap:6px;
-  font-size:.75rem;font-weight:600;color:var(--charcoal);
-  cursor:pointer;text-align:center;
-  -webkit-tap-highlight-color:transparent;
-  transition:background .15s;
-}
-.smd-grid-item span{font-size:1.5rem;line-height:1;}
-.smd-grid-item:hover,.smd-grid-item:active{background:var(--orange-light);color:var(--orange);}
-
-/* Category list */
-.smd-cat-list{display:flex;flex-direction:column;}
-.smd-cat-row{
-  display:flex;align-items:center;gap:10px;
-  padding:12px 14px;font-size:.83rem;font-weight:500;color:var(--charcoal);
-  border-bottom:1px solid var(--sand);cursor:pointer;
-  -webkit-tap-highlight-color:transparent;transition:background .15s;
-}
-.smd-cat-row span:first-child{font-size:1.1rem;width:22px;text-align:center;flex-shrink:0;}
-.smd-cat-row:hover,.smd-cat-row:active{background:var(--orange-light);color:var(--orange);}
-
-/* Special cards */
-.smd-special-card{
-  display:flex;align-items:center;gap:12px;
-  padding:14px;margin:8px 10px;border-radius:12px;
-  text-decoration:none;cursor:pointer;
-  -webkit-tap-highlight-color:transparent;
-}
-.smd-sc-icon{font-size:1.6rem;flex-shrink:0;}
-.smd-sc-name{font-size:.85rem;font-weight:700;color:#fff;}
-.smd-sc-sub{font-size:.72rem;color:rgba(255,255,255,.75);margin-top:2px;}
-.smd-sc-arr{margin-left:auto;color:rgba(255,255,255,.7);font-size:1rem;flex-shrink:0;}
-
-/* Language */
-.smd-lang-row{display:flex;gap:8px;padding:10px 14px;}
-.smd-lang-btn{
-  flex:1;padding:9px;border-radius:8px;
-  border:1.5px solid var(--border);background:#fff;
-  font-size:.8rem;font-weight:700;color:var(--muted);cursor:pointer;transition:all .2s;
-}
-.smd-lang-btn.active{background:var(--navy);border-color:var(--navy);color:#fff;}
-
-/* Footer logo */
-.smd-footer-logo{
-  font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:900;
-  color:var(--navy);padding:16px 14px 20px;margin-top:auto;
-}
-.smd-footer-logo em{color:var(--orange);font-style:normal;}
-.smd-tagline{font-size:.7rem;color:var(--muted);margin-top:3px;font-family:'DM Sans',sans-serif;}
-
-/* ── CATEGORY MORE/LESS (mobile) ── */
-.cat-more-wrap{display:none;text-align:center;margin-top:12px;}
-.cat-more-btn{
-  background:#fff;border:1.5px solid var(--border);
-  color:var(--navy);padding:10px 24px;border-radius:20px;
-  font-size:.82rem;font-weight:700;cursor:pointer;
-  transition:all .2s;width:100%;
-}
-.cat-more-btn:hover{border-color:var(--orange);color:var(--orange);}
-@media(max-width:768px){
-  .cat-extra{display:none;}
-  .cat-extra.show{display:block;}
-  .cat-more-wrap{display:block;}
-}
 
 </style>
 </head>
@@ -1393,14 +1093,6 @@ img{max-width:100%;height:auto;}
     <div class="nav-cat" onclick="filterCat('remarket',this)">♻️ রিমার্কেট</div>
   </div>
 </nav>
-
-<!-- MOBILE SEARCH BAR (shown below nav on mobile) -->
-<div class="mobile-search-bar" id="mobileSearchBar">
-  <div class="msb-inner">
-    <input type="text" id="mobileSearch" placeholder="দোকান বা পণ্য খুঁজুন..." oninput="handleSearch(this.value)" onkeydown="if(event.key==='Enter')doSearch();" autocomplete="off">
-    <button onclick="doSearch()">🔍</button>
-  </div>
-</div>
 
 <!-- MARQUEE -->
 <div class="marquee-wrap">
@@ -1530,36 +1222,26 @@ img{max-width:100%;height:auto;}
       <div class="section-title">সব ক্যাটাগরি / All Categories</div>
     </div>
   </div>
-  <div class="cat-grid" id="catGrid">
-    <!-- সবসময় দেখাবে — প্রথম ৮টা -->
-    <div class="cat-card active" id="cat-all" onclick="filterCat('all',this)"><div class="cat-emoji">🏪</div><div class="cat-name"><span class="lang-bn">সব</span><span class="lang-en">All</span></div></div>
-    <div class="cat-card" id="cat-food" onclick="filterCat('food',this)"><div class="cat-emoji">🍛</div><div class="cat-name"><span class="lang-bn">খাবার</span><span class="lang-en">Food</span></div></div>
-    <div class="cat-card" id="cat-grocery" onclick="filterCat('grocery',this)"><div class="cat-emoji">🛒</div><div class="cat-name"><span class="lang-bn">মুদিখানা</span><span class="lang-en">Grocery</span></div></div>
-    <div class="cat-card" id="cat-farm" onclick="filterCat('farm',this)"><div class="cat-emoji">🌾</div><div class="cat-name"><span class="lang-bn">কৃষি</span><span class="lang-en">Farm</span></div></div>
-    <div class="cat-card" id="cat-farmtools" onclick="filterCat('farmtools',this)"><div class="cat-emoji">🌿</div><div class="cat-name"><span class="lang-bn">কৃষি সরঞ্জাম</span><span class="lang-en">Farm Tools</span></div></div>
-    <div class="cat-card" id="cat-livestock" onclick="filterCat('livestock',this)"><div class="cat-emoji">🐄</div><div class="cat-name"><span class="lang-bn">পশুপালন</span><span class="lang-en">Livestock</span></div></div>
-    <div class="cat-card" id="cat-medicine" onclick="filterCat('medicine',this)"><div class="cat-emoji">💊</div><div class="cat-name"><span class="lang-bn">ওষুধ</span><span class="lang-en">Medicine</span></div></div>
-    <div class="cat-card" id="cat-clothing" onclick="filterCat('clothing',this)"><div class="cat-emoji">👗</div><div class="cat-name"><span class="lang-bn">পোশাক</span><span class="lang-en">Clothing</span></div></div>
-
-    <!-- বাকি ১১টা — mobile এ লুকানো -->
-    <div class="cat-card cat-extra" id="cat-electronics" onclick="filterCat('electronics',this)"><div class="cat-emoji">📱</div><div class="cat-name"><span class="lang-bn">ইলেকট্রনিক্স</span><span class="lang-en">Electronics</span></div></div>
-    <div class="cat-card cat-extra" id="cat-home" onclick="filterCat('home',this)"><div class="cat-emoji">🏠</div><div class="cat-name"><span class="lang-bn">বাড়ি / হোম</span><span class="lang-en">Home</span></div></div>
-    <div class="cat-card cat-extra" id="cat-construction" onclick="filterCat('construction',this)"><div class="cat-emoji">🏗️</div><div class="cat-name"><span class="lang-bn">নির্মাণ</span><span class="lang-en">Construction</span></div></div>
-    <div class="cat-card cat-extra" id="cat-automotive" onclick="filterCat('automotive',this)"><div class="cat-emoji">🚗</div><div class="cat-name"><span class="lang-bn">যানবাহন</span><span class="lang-en">Automotive</span></div></div>
-    <div class="cat-card cat-extra" id="cat-arts" onclick="filterCat('arts',this)"><div class="cat-emoji">🎨</div><div class="cat-name"><span class="lang-bn">শিল্প</span><span class="lang-en">Arts</span></div></div>
-    <div class="cat-card cat-extra" id="cat-education" onclick="filterCat('education',this)"><div class="cat-emoji">📚</div><div class="cat-name"><span class="lang-bn">শিক্ষা</span><span class="lang-en">Education</span></div></div>
-    <div class="cat-card cat-extra" id="cat-services" onclick="filterCat('services',this)"><div class="cat-emoji">🔧</div><div class="cat-name"><span class="lang-bn">সেবা</span><span class="lang-en">Services</span></div></div>
-    <div class="cat-card cat-extra" id="cat-health" onclick="filterCat('health',this)"><div class="cat-emoji">🏥</div><div class="cat-name"><span class="lang-bn">স্বাস্থ্য</span><span class="lang-en">Health</span></div></div>
-    <div class="cat-card cat-extra" id="cat-events" onclick="filterCat('events',this)"><div class="cat-emoji">🎉</div><div class="cat-name"><span class="lang-bn">ইভেন্ট</span><span class="lang-en">Events</span></div></div>
-    <div class="cat-card cat-extra" id="cat-rental" onclick="filterCat('rental',this)"><div class="cat-emoji">🔑</div><div class="cat-name"><span class="lang-bn">ভাড়া</span><span class="lang-en">Rental</span></div></div>
-    <div class="cat-card cat-extra" id="cat-remarket" onclick="filterCat('remarket',this)"><div class="cat-emoji">♻️</div><div class="cat-name"><span class="lang-bn">রিমার্কেট</span><span class="lang-en">ReMarket</span></div></div>
-  </div>
-
-  <!-- আরও দেখুন button — শুধু mobile এ -->
-  <div class="cat-more-wrap" id="catMoreWrap">
-    <button class="cat-more-btn" id="catMoreBtn" onclick="toggleMoreCats()">
-      <span id="catMoreBtnText">আরও ১১টি ক্যাটাগরি দেখুন ▾</span>
-    </button>
+  <div class="cat-grid">
+    <div class="cat-card active" id="cat-all" onclick="filterCat('all',null)"><div class="cat-emoji">🏪</div><div class="cat-name">সব</div><div class="cat-name-en">All</div></div>
+    <div class="cat-card" id="cat-food" onclick="filterCat('food',null)"><div class="cat-emoji">🍛</div><div class="cat-name">খাবার</div><div class="cat-name-en">Food</div></div>
+    <div class="cat-card" id="cat-grocery" onclick="filterCat('grocery',null)"><div class="cat-emoji">🛒</div><div class="cat-name">মুদিখানা</div><div class="cat-name-en">Grocery</div></div>
+    <div class="cat-card" id="cat-farm" onclick="filterCat('farm',null)"><div class="cat-emoji">🌾</div><div class="cat-name">কৃষি</div><div class="cat-name-en">Farm</div></div>
+    <div class="cat-card" id="cat-farmtools" onclick="filterCat('farmtools',null)"><div class="cat-emoji">🌿</div><div class="cat-name">কৃষি সরঞ্জাম</div><div class="cat-name-en">Farm Tools</div></div>
+    <div class="cat-card" id="cat-livestock" onclick="filterCat('livestock',null)"><div class="cat-emoji">🐄</div><div class="cat-name">পশুপালন</div><div class="cat-name-en">Livestock</div></div>
+    <div class="cat-card" id="cat-medicine" onclick="filterCat('medicine',null)"><div class="cat-emoji">💊</div><div class="cat-name">ওষুধ</div><div class="cat-name-en">Medicine</div></div>
+    <div class="cat-card" id="cat-clothing" onclick="filterCat('clothing',null)"><div class="cat-emoji">👗</div><div class="cat-name">পোশাক</div><div class="cat-name-en">Clothing</div></div>
+    <div class="cat-card" id="cat-electronics" onclick="filterCat('electronics',null)"><div class="cat-emoji">📱</div><div class="cat-name">ইলেকট্রনিক্স</div><div class="cat-name-en">Electronics</div></div>
+    <div class="cat-card" id="cat-home" onclick="filterCat('home',null)"><div class="cat-emoji">🏠</div><div class="cat-name">বাড়ি / হোম</div><div class="cat-name-en">Home & Living</div></div>
+    <div class="cat-card" id="cat-construction" onclick="filterCat('construction',null)"><div class="cat-emoji">🏗️</div><div class="cat-name">নির্মাণ</div><div class="cat-name-en">Construction</div></div>
+    <div class="cat-card" id="cat-automotive" onclick="filterCat('automotive',null)"><div class="cat-emoji">🚗</div><div class="cat-name">যানবাহন</div><div class="cat-name-en">Automotive</div></div>
+    <div class="cat-card" id="cat-arts" onclick="filterCat('arts',null)"><div class="cat-emoji">🎨</div><div class="cat-name">শিল্প</div><div class="cat-name-en">Arts & Crafts</div></div>
+    <div class="cat-card" id="cat-education" onclick="filterCat('education',null)"><div class="cat-emoji">📚</div><div class="cat-name">শিক্ষা</div><div class="cat-name-en">Education</div></div>
+    <div class="cat-card" id="cat-services" onclick="filterCat('services',null)"><div class="cat-emoji">🔧</div><div class="cat-name">সেবা</div><div class="cat-name-en">Services</div></div>
+    <div class="cat-card" id="cat-health" onclick="filterCat('health',null)"><div class="cat-emoji">🏥</div><div class="cat-name">স্বাস্থ্য</div><div class="cat-name-en">Healthcare</div></div>
+    <div class="cat-card" id="cat-events" onclick="filterCat('events',null)"><div class="cat-emoji">🎉</div><div class="cat-name">ইভেন্ট</div><div class="cat-name-en">Events</div></div>
+    <div class="cat-card" id="cat-rental" onclick="filterCat('rental',null)"><div class="cat-emoji">🔑</div><div class="cat-name">ভাড়া</div><div class="cat-name-en">Rental</div></div>
+    <div class="cat-card" id="cat-remarket" onclick="filterCat('remarket',null)"><div class="cat-emoji">♻️</div><div class="cat-name">রিমার্কেট</div><div class="cat-name-en">ReMarket</div></div>
   </div>
 </section>
 
@@ -2425,133 +2107,6 @@ img{max-width:100%;height:auto;}
     </div>
   </div>
 </div>
-<!-- SIDE MENU DRAWER (Amazon two-panel style) -->
-<div class="side-menu-overlay" id="sideMenuOverlay" onclick="closeSideMenu()"></div>
-<div class="side-menu-drawer" id="sideMenuDrawer">
-
-  <!-- Header -->
-  <div class="smd-header">
-    <div class="smd-user-area">
-      <div class="smd-avatar" id="smdAvatar">👤</div>
-      <div>
-        <div class="smd-user-name" id="smdUserName">লগইন করুন</div>
-        <div class="smd-user-sub" id="smdUserSub">DELTA তে স্বাগতম</div>
-      </div>
-    </div>
-    <button class="smd-close" onclick="closeSideMenu()">✕</button>
-  </div>
-
-  <!-- Two Panel Body -->
-  <div class="smd-body">
-
-    <!-- LEFT: Tab list -->
-    <div class="smd-left">
-      <div class="smd-left-item active" onclick="smdSwitchTab(this,'home')"><span class="smd-li-icon">🏠</span><span class="smd-li-label">হোম</span></div>
-      <div class="smd-left-item" onclick="smdSwitchTab(this,'categories')"><span class="smd-li-icon">🏪</span><span class="smd-li-label">ক্যাটাগরি</span></div>
-      <div class="smd-left-item" onclick="smdSwitchTab(this,'special')"><span class="smd-li-icon">✨</span><span class="smd-li-label">বিশেষ</span></div>
-      <div class="smd-left-item" onclick="smdSwitchTab(this,'account')"><span class="smd-li-icon">👤</span><span class="smd-li-label">আমার</span></div>
-      <div class="smd-left-item" onclick="smdSwitchTab(this,'settings')"><span class="smd-li-icon">⚙️</span><span class="smd-li-label">সেটিং</span></div>
-    </div>
-
-    <!-- RIGHT: Content panels -->
-    <div class="smd-right">
-
-      <!-- HOME panel -->
-      <div class="smd-panel active" id="smd-panel-home">
-        <div class="smd-panel-title">হোম</div>
-        <div class="smd-loc-strip" onclick="closeSideMenu();openPinModal()">
-          📍 Manteswar <span class="smd-loc-change">পরিবর্তন →</span>
-        </div>
-        <div class="smd-grid">
-          <div class="smd-grid-item" onclick="closeSideMenu();window.scrollTo({top:0,behavior:'smooth'})"><span>🏠</span>হোম</div>
-          <div class="smd-grid-item" onclick="closeSideMenu();document.getElementById('shopsSection').scrollIntoView({behavior:'smooth'})"><span>🏪</span>দোকান</div>
-          <div class="smd-grid-item" onclick="closeSideMenu();openCart()"><span>🛒</span>কার্ট</div>
-          <div class="smd-grid-item" onclick="closeSideMenu();openRequestModal()"><span>📦</span>রিকোয়েস্ট</div>
-          <div class="smd-grid-item" onclick="closeSideMenu();window.location.href='fresh.html'"><span>🌿</span>Fresh</div>
-          <div class="smd-grid-item" onclick="closeSideMenu();window.location.href='bazaar.html'"><span>🏮</span>Bazaar</div>
-          <div class="smd-grid-item" onclick="closeSideMenu();window.location.href='hampers.html'"><span>🎁</span>Hampers</div>
-          <div class="smd-grid-item" onclick="closeSideMenu();window.location.href='seller.html'"><span>🏬</span>দোকান খুলুন</div>
-        </div>
-      </div>
-
-      <!-- CATEGORIES panel -->
-      <div class="smd-panel" id="smd-panel-categories">
-        <div class="smd-panel-title">সব ক্যাটাগরি</div>
-        <div class="smd-cat-list">
-          <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('all')"><span>🏪</span>সব দোকান</div>
-          <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('food')"><span>🍛</span>খাবার ও রেস্তোরাঁ</div>
-          <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('grocery')"><span>🛒</span>মুদিখানা ও কিরানা</div>
-          <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('farm')"><span>🌾</span>কৃষি ও ফার্ম</div>
-          <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('farmtools')"><span>🌿</span>কৃষি সরঞ্জাম</div>
-          <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('livestock')"><span>🐄</span>পশুপালন</div>
-          <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('medicine')"><span>💊</span>ওষুধ ও স্বাস্থ্য</div>
-          <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('clothing')"><span>👗</span>পোশাক ও ফ্যাশন</div>
-          <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('electronics')"><span>📱</span>ইলেকট্রনিক্স</div>
-          <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('home')"><span>🏠</span>গৃহস্থালি</div>
-          <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('construction')"><span>🏗️</span>নির্মাণ সামগ্রী</div>
-          <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('automotive')"><span>🚗</span>যানবাহন</div>
-          <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('arts')"><span>🎨</span>শিল্প ও হস্তশিল্প</div>
-          <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('education')"><span>📚</span>শিক্ষা</div>
-          <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('services')"><span>🔧</span>সেবা</div>
-          <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('health')"><span>🏥</span>স্বাস্থ্যসেবা</div>
-          <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('events')"><span>🎉</span>ইভেন্ট</div>
-          <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('rental')"><span>🔑</span>ভাড়া</div>
-          <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('remarket')"><span>♻️</span>রিমার্কেট</div>
-        </div>
-      </div>
-
-      <!-- SPECIAL panel -->
-      <div class="smd-panel" id="smd-panel-special">
-        <div class="smd-panel-title">বিশেষ বিভাগ</div>
-        <a class="smd-special-card" href="fresh.html" onclick="closeSideMenu()" style="background:linear-gradient(135deg,#1B4D2E,#2E7D32)">
-          <div class="smd-sc-icon">🌿</div>
-          <div><div class="smd-sc-name">DELTA Fresh</div><div class="smd-sc-sub">টাটকা সবজি ও ফল</div></div>
-          <span class="smd-sc-arr">→</span>
-        </a>
-        <a class="smd-special-card" href="bazaar.html" onclick="closeSideMenu()" style="background:linear-gradient(135deg,#3d2a6b,#5b3aa0)">
-          <div class="smd-sc-icon">🏮</div>
-          <div><div class="smd-sc-name">DELTA Bazaar</div><div class="smd-sc-sub">দূরত্ব আর বাধা নয়</div></div>
-          <span class="smd-sc-arr">→</span>
-        </a>
-        <a class="smd-special-card" href="hampers.html" onclick="closeSideMenu()" style="background:linear-gradient(135deg,#b5451b,#e07b39)">
-          <div class="smd-sc-icon">🎁</div>
-          <div><div class="smd-sc-name">Hampers</div><div class="smd-sc-sub">উৎসবের গিফট বক্স</div></div>
-          <span class="smd-sc-arr">→</span>
-        </a>
-        <a class="smd-special-card" href="seller.html" onclick="closeSideMenu()" style="background:linear-gradient(135deg,#0a1f35,#122840)">
-          <div class="smd-sc-icon">🏬</div>
-          <div><div class="smd-sc-name">দোকান খুলুন</div><div class="smd-sc-sub">DELTA তে বিক্রি করুন</div></div>
-          <span class="smd-sc-arr">→</span>
-        </a>
-      </div>
-
-      <!-- ACCOUNT panel -->
-      <div class="smd-panel" id="smd-panel-account">
-        <div class="smd-panel-title">আমার অ্যাকাউন্ট</div>
-        <div class="smd-cat-list">
-          <div class="smd-cat-row" onclick="closeSideMenu();handleUserBtn()"><span>🔐</span><span id="smdLoginLabel">লগইন / রেজিস্ট্রেশন</span></div>
-          <div class="smd-cat-row" onclick="closeSideMenu();openCart()"><span>🛒</span>আমার কার্ট</div>
-          <div class="smd-cat-row" onclick="closeSideMenu();openRequestModal()"><span>📦</span>পণ্য রিকোয়েস্ট</div>
-        </div>
-      </div>
-
-      <!-- SETTINGS panel -->
-      <div class="smd-panel" id="smd-panel-settings">
-        <div class="smd-panel-title">সেটিং</div>
-        <div class="smd-cat-list">
-          <div class="smd-cat-row" onclick="openPinModal();closeSideMenu()"><span>📍</span>এলাকা পরিবর্তন</div>
-        </div>
-        <div class="smd-panel-title" style="margin-top:12px;">ভাষা / Language</div>
-        <div class="smd-lang-row">
-          <button class="smd-lang-btn active" id="smdLangBn" onclick="setLang('bn');updateSmdLang()">বাংলা</button>
-          <button class="smd-lang-btn" id="smdLangEn" onclick="setLang('en');updateSmdLang()">English</button>
-        </div>
-        <div class="smd-footer-logo">△ DELT<em>A</em><div class="smd-tagline">পরিবর্তনের ব-দ্বীপ</div></div>
-      </div>
-
-    </div><!-- /smd-right -->
-  </div><!-- /smd-body -->
-</div>
 
 <!-- BOTTOM NAV (Mobile) -->
 <div class="bottom-nav" id="bottomNav">
@@ -2565,8 +2120,8 @@ img{max-width:100%;height:auto;}
     <span class="bn-icon">🛒</span><span class="bn">কার্ট</span>
     <span class="bn-cart-badge" id="bnCartBadge">0</span>
   </div>
-  <div class="bn-item" id="bn-menu" onclick="bottomNavClick('menu',this);openSideMenu()">
-    <span class="bn-icon">☰</span><span class="bn">মেনু</span>
+  <div class="bn-item" id="bn-search" onclick="bottomNavClick('search',this);document.getElementById('navSearch').focus()">
+    <span class="bn-icon">🔍</span><span class="bn">খুঁজুন</span>
   </div>
   <div class="bn-item" id="bn-account" onclick="bottomNavClick('account',this);handleUserBtn()">
     <span class="bn-icon">👤</span><span class="bn">আমার</span>
@@ -4004,16 +3559,10 @@ function goToBazaarRequest(){
 var currentLang='bn';
 function setLang(l){
   currentLang=l;
-  document.body.classList.remove('lang-bn','lang-en');
-  document.body.classList.add('lang-'+l);
+  document.body.className='lang-'+l;
   document.getElementById('langBn').classList.toggle('active',l==='bn');
   document.getElementById('langEn').classList.toggle('active',l==='en');
   document.documentElement.lang=l==='bn'?'bn':'en';
-  // Side menu lang buttons update
-  var sbn=document.getElementById('smdLangBn');
-  var sen=document.getElementById('smdLangEn');
-  if(sbn) sbn.classList.toggle('active',l==='bn');
-  if(sen) sen.classList.toggle('active',l==='en');
   // Re-render dynamic sections
   if(allShops.length) renderShops(allShops);
   if(allProducts.length){renderProducts(allProducts);buildFarmersStrip();}
@@ -4493,13 +4042,10 @@ function handleSearch(v){
   _st=setTimeout(function(){doSearchWith(v, false);}, 380);
 }
 function doSearch(){
-  var q = document.getElementById('heroSearch').value 
-       || document.getElementById('navSearch').value
-       || document.getElementById('mobileSearch').value;
+  var q = document.getElementById('heroSearch').value || document.getElementById('navSearch').value;
   // Hide keyboard on mobile
   document.getElementById('heroSearch').blur();
   document.getElementById('navSearch').blur();
-  document.getElementById('mobileSearch').blur();
   doSearchWith(q, true);
 }
 function doSearchWith(q,shouldScroll){
@@ -4829,73 +4375,6 @@ function updateBnCartBadge(){
 function showToast(msg,type){
   var e=document.getElementById('toastEl');e.textContent=msg;e.className='toast show '+(type||'');
   clearTimeout(e._t);e._t=setTimeout(function(){e.className='toast';},3200);
-}
-// ── CATEGORY MORE/LESS ──
-var catExpanded = false;
-function toggleMoreCats(){
-  catExpanded = !catExpanded;
-  document.querySelectorAll('.cat-extra').forEach(function(el){
-    el.classList.toggle('show', catExpanded);
-  });
-  document.getElementById('catMoreBtnText').textContent = catExpanded
-    ? 'কম দেখুন ▴'
-    : 'আরও ১১টি ক্যাটাগরি দেখুন ▾';
-}
-
-// ── SIDE MENU DRAWER — Amazon two-panel ──
-function openSideMenu(){
-  document.getElementById('sideMenuDrawer').classList.add('open');
-  document.getElementById('sideMenuOverlay').classList.add('open');
-  document.body.style.overflow='hidden';
-  // User info update
-  if(currentUser){
-    document.getElementById('smdUserName').textContent = currentUser.displayName || currentUser.email;
-    document.getElementById('smdUserSub').textContent = 'আপনার অ্যাকাউন্ট';
-    document.getElementById('smdAvatar').textContent = '😊';
-    var ll = document.getElementById('smdLoginLabel');
-    if(ll) ll.textContent = 'লগআউট';
-  } else {
-    document.getElementById('smdUserName').textContent = 'লগইন করুন';
-    document.getElementById('smdUserSub').textContent = 'DELTA তে স্বাগতম';
-    document.getElementById('smdAvatar').textContent = '👤';
-  }
-  updateSmdLang();
-  // Default to home tab
-  smdSwitchTab(document.querySelector('.smd-left-item'), 'home');
-}
-function closeSideMenu(){
-  document.getElementById('sideMenuDrawer').classList.remove('open');
-  document.getElementById('sideMenuOverlay').classList.remove('open');
-  document.body.style.overflow='';
-}
-function smdSwitchTab(el, tab){
-  // Left items active state
-  document.querySelectorAll('.smd-left-item').forEach(function(i){i.classList.remove('active');});
-  if(el) el.classList.add('active');
-  // Right panels
-  document.querySelectorAll('.smd-panel').forEach(function(p){p.classList.remove('active');});
-  var panel = document.getElementById('smd-panel-'+tab);
-  if(panel) panel.classList.add('active');
-}
-function filterCatByKey(key){
-  var cats = document.querySelectorAll('.nav-cat');
-  var matched = null;
-  cats.forEach(function(c){
-    if(c.getAttribute('onclick') && c.getAttribute('onclick').includes("'"+key+"'")) matched=c;
-  });
-  if(matched) filterCat(key, matched);
-  else filterCat(key, null);
-  setTimeout(function(){
-    var s=document.getElementById('shopsSection');
-    if(s) s.scrollIntoView({behavior:'smooth'});
-  },200);
-}
-function updateSmdLang(){
-  var isBn = (typeof currentLang !== 'undefined' ? currentLang : 'bn') === 'bn';
-  var sbn=document.getElementById('smdLangBn');
-  var sen=document.getElementById('smdLangEn');
-  if(sbn) sbn.classList.toggle('active', isBn);
-  if(sen) sen.classList.toggle('active', !isBn);
 }
 </script>
 </body>
