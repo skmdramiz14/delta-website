@@ -1690,6 +1690,10 @@ img{max-width:100%;height:auto;}
       <div class="section-label">Browse</div>
       <div class="section-title">সব ক্যাটাগরি / All Categories</div>
     </div>
+    <!-- সব দেখুন — header এ, mobile এ -->
+    <button class="view-all" id="catSeeAllBtn" onclick="toggleMoreCats()" style="display:none;">
+      <span id="catMoreBtnText">সব দেখুন ▾</span>
+    </button>
   </div>
   <div class="cat-grid" id="catGrid">
     <!-- সবসময় দেখাবে — প্রথম ৮টা -->
@@ -1716,12 +1720,8 @@ img{max-width:100%;height:auto;}
     <div class="cat-card cat-extra" id="cat-remarket" onclick="filterCat('remarket',this)"><div class="cat-emoji">♻️</div><div class="cat-name"><span class="lang-bn">রিমার্কেট</span><span class="lang-en">ReMarket</span></div></div>
   </div>
 
-  <!-- আরও দেখুন button — শুধু mobile এ -->
-  <div class="cat-more-wrap" id="catMoreWrap">
-    <button class="cat-more-btn" id="catMoreBtn" onclick="toggleMoreCats()">
-      <span id="catMoreBtnText">আরও ১১টি ক্যাটাগরি দেখুন ▾</span>
-    </button>
-  </div>
+  <!-- নিচের button সরানো — header এ "সব দেখুন" আছে -->
+  <div class="cat-more-wrap" id="catMoreWrap" style="display:none;"></div>
 </section>
 
 <!-- FESTIVAL BANNER (Dynamic) — Durga Puja Special -->
@@ -5208,10 +5208,19 @@ function toggleMoreCats(){
   document.querySelectorAll('.cat-extra').forEach(function(el){
     el.classList.toggle('show', catExpanded);
   });
-  document.getElementById('catMoreBtnText').textContent = catExpanded
-    ? 'কম দেখুন ▴'
-    : 'আরও ১১টি ক্যাটাগরি দেখুন ▾';
+  var btnText = document.getElementById('catMoreBtnText');
+  if(btnText) btnText.textContent = catExpanded ? 'কম দেখুন ▴' : 'সব দেখুন ▾';
 }
+
+// Mobile এ "সব দেখুন" button দেখাও
+function initCatMoreBtn(){
+  if(window.innerWidth <= 768){
+    var btn = document.getElementById('catSeeAllBtn');
+    if(btn) btn.style.display = 'block';
+  }
+}
+document.addEventListener('DOMContentLoaded', initCatMoreBtn);
+window.addEventListener('resize', initCatMoreBtn);
 
 // ── SETTINGS ──
 function smdToggleOpenNow(on){
