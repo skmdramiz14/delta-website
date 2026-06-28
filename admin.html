@@ -386,6 +386,38 @@ button,input,select{font-family:'DM Sans',sans-serif;}
           💡 "Auto" রাখলে date অনুযায়ী automatically সঠিক banner দেখাবে। Manual select করলে সেই banner সবসময় দেখাবে।
         </div>
       </div>
+
+      <!-- MARQUEE MESSAGES CONTROL -->
+      <div class="add-zone-card" style="margin-bottom:16px">
+        <div style="font-size:.82rem;font-weight:700;color:var(--navy);margin-bottom:4px">📢 Marquee Strip — Homepage scrolling বার্তা</div>
+        <div style="font-size:.72rem;color:var(--muted);margin-bottom:12px">প্রতিটি লাইন = একটি বার্তা। পাশাপাশি scroll করবে। সর্বোচ্চ ১০টি।</div>
+
+        <div id="marqueeList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px"></div>
+
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <input type="text" id="marqueeNewMsg" class="form-input" style="flex:1;min-width:200px" placeholder="যেমন: 🎉 দুর্গাপূজায় বিশেষ ছাড়!">
+          <button class="btn-sm btn-orange" onclick="addMarqueeMsg()">➕ যোগ করুন</button>
+        </div>
+
+        <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+          <button class="btn-sm btn-orange" onclick="saveMarqueeMessages()">💾 Save করুন</button>
+          <button class="btn-sm" style="background:var(--sand);color:var(--navy)" onclick="loadMarqueeDefaults()">↺ Default বার্তায় ফিরুন</button>
+          <span style="font-size:.72rem;color:var(--muted)" id="marqueeSaveStatus"></span>
+        </div>
+
+        <!-- Quick templates -->
+        <div style="margin-top:12px;border-top:1px solid var(--border);padding-top:10px">
+          <div style="font-size:.7rem;font-weight:700;color:var(--muted);margin-bottom:6px">⚡ Quick Templates</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="filter-pill" onclick="addMarqueeTemplate('🎉 Durga Puja Special Offers — এখনই Order করুন!')">🎉 পূজা অফার</button>
+            <button class="filter-pill" onclick="addMarqueeTemplate('🌾 Farm Fresh — সরাসরি কৃষক থেকে আপনার দরজায়')">🌾 Farm Fresh</button>
+            <button class="filter-pill" onclick="addMarqueeTemplate('🚀 প্রথম অর্ডারে বিনামূল্যে ডেলিভারি!')">🚀 Free Delivery</button>
+            <button class="filter-pill" onclick="addMarqueeTemplate('⭐ 500+ স্থানীয় দোকান — Manteswar ও আশপাশ')">⭐ Sellers</button>
+            <button class="filter-pill" onclick="addMarqueeTemplate('💊 ২ ঘণ্টায় ওষুধ ডেলিভারি')">💊 Pharmacy</button>
+            <button class="filter-pill" onclick="addMarqueeTemplate('🛵 ২ ঘণ্টার মধ্যে হোম ডেলিভারি')">🛵 Delivery</button>
+          </div>
+        </div>
+      </div>
       <div class="toolbar">
         <input type="text" class="search-input" id="orderSearch" placeholder="🔍 Order ID, shop name, customer name দিয়ে খুঁজুন..." oninput="renderOrders()">
         <button class="filter-pill active" data-f="all" onclick="setOrderFilter('all',this)">সব</button>
@@ -814,6 +846,7 @@ function loadAllData(){
 
   loadPerKmRate();
   loadFestivalBannerSetting();
+  loadMarqueeMessages();
 
   db.collection('categoryRequests').get().then(function(snap){
     allRequests = [];
@@ -1497,6 +1530,117 @@ function saveFestivalBanner(){
       };
       showToast('Festival banner: '+(labels[val]||'Auto')+' সেট হয়েছে ✅','green');
     }).catch(function(e){ showToast('সেভ ব্যর্থ: '+e.message,'red'); });
+}
+
+function saveFestivalBanner(){
+  var val = document.getElementById('festivalSelect').value;
+  var data = val
+    ? {activeFestival: val, updatedAt: new Date().toISOString()}
+    : {activeFestival: firebase.firestore.FieldValue.delete(), updatedAt: new Date().toISOString()};
+  db.collection('cities').doc(CITY).collection('settings').doc('festivalBanner')
+    .set(data, {merge:true}).then(function(){
+      loadFestivalBannerSetting();
+      var labels = {
+        durga_puja:'দুর্গাপূজা',eid:'ঈদ',
+        poila_boishakh:'পহেলা বৈশাখ',kali_puja:'কালীপূজা',hidden:'লুকানো','':"Auto"
+      };
+      showToast('Festival banner: '+(labels[val]||'Auto')+' সেট হয়েছে ✅','green');
+    }).catch(function(e){ showToast('সেভ ব্যর্থ: '+e.message,'red'); });
+}
+
+// ═══ MARQUEE MESSAGES ═══
+var marqueeMessages = [];
+var DEFAULT_MARQUEE = [
+  '🎉 Durga Puja Special Offers',
+  '🌾 Farm Fresh — সরাসরি কৃষক থেকে',
+  '🚀 প্রথম অর্ডারে বিনামূল্যে ডেলিভারি!',
+  '⭐ 500+ স্থানীয় দোকান — Manteswar ও আশপাশ',
+  '🍬 বাংলার সেরা মিষ্টি — Order Now',
+  '💊 ২ ঘণ্টায় ওষুধ ডেলিভারি'
+];
+
+function loadMarqueeMessages(){
+  db.collection('cities').doc(CITY).collection('settings').doc('marqueeMessages')
+    .get().then(function(doc){
+      if(doc.exists && doc.data().messages && doc.data().messages.length){
+        marqueeMessages = doc.data().messages;
+      } else {
+        marqueeMessages = DEFAULT_MARQUEE.slice();
+      }
+      renderMarqueeList();
+    }).catch(function(){
+      marqueeMessages = DEFAULT_MARQUEE.slice();
+      renderMarqueeList();
+    });
+}
+
+function renderMarqueeList(){
+  var wrap = document.getElementById('marqueeList');
+  if(!wrap) return;
+  if(!marqueeMessages.length){
+    wrap.innerHTML = '<div style="color:var(--muted);font-size:.8rem;padding:8px 0">কোনো বার্তা নেই — নিচে যোগ করুন</div>';
+    return;
+  }
+  wrap.innerHTML = marqueeMessages.map(function(msg, i){
+    return '<div style="display:flex;align-items:center;gap:8px;background:var(--sand);border-radius:8px;padding:8px 12px;">'+
+      '<span style="flex:1;font-size:.82rem;color:var(--charcoal)">'+msg+'</span>'+
+      '<button onclick="moveMarqueeMsg('+i+',-1)" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:var(--muted)" title="উপরে">↑</button>'+
+      '<button onclick="moveMarqueeMsg('+i+',1)" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:var(--muted)" title="নিচে">↓</button>'+
+      '<button onclick="deleteMarqueeMsg('+i+')" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:#c0392b" title="মুছুন">✕</button>'+
+    '</div>';
+  }).join('');
+}
+
+function addMarqueeMsg(){
+  var inp = document.getElementById('marqueeNewMsg');
+  var msg = (inp.value||'').trim();
+  if(!msg){ showToast('বার্তা লিখুন','red'); return; }
+  if(marqueeMessages.length >= 10){ showToast('সর্বোচ্চ ১০টি বার্তা দেওয়া যাবে','red'); return; }
+  marqueeMessages.push(msg);
+  inp.value = '';
+  renderMarqueeList();
+}
+
+function addMarqueeTemplate(msg){
+  if(marqueeMessages.length >= 10){ showToast('সর্বোচ্চ ১০টি বার্তা','red'); return; }
+  marqueeMessages.push(msg);
+  renderMarqueeList();
+}
+
+function deleteMarqueeMsg(i){
+  marqueeMessages.splice(i, 1);
+  renderMarqueeList();
+}
+
+function moveMarqueeMsg(i, dir){
+  var j = i + dir;
+  if(j < 0 || j >= marqueeMessages.length) return;
+  var tmp = marqueeMessages[i];
+  marqueeMessages[i] = marqueeMessages[j];
+  marqueeMessages[j] = tmp;
+  renderMarqueeList();
+}
+
+function loadMarqueeDefaults(){
+  if(!confirm('Default বার্তায় ফিরবেন? বর্তমান বার্তা মুছে যাবে।')) return;
+  marqueeMessages = DEFAULT_MARQUEE.slice();
+  renderMarqueeList();
+  showToast('Default বার্তা লোড হয়েছে','green');
+}
+
+function saveMarqueeMessages(){
+  var statusEl = document.getElementById('marqueeSaveStatus');
+  if(statusEl) statusEl.textContent = 'সেভ হচ্ছে...';
+  db.collection('cities').doc(CITY).collection('settings').doc('marqueeMessages')
+    .set({messages: marqueeMessages, updatedAt: new Date().toISOString()})
+    .then(function(){
+      if(statusEl) statusEl.textContent = '✅ সেভ হয়েছে';
+      setTimeout(function(){ if(statusEl) statusEl.textContent = ''; }, 3000);
+      showToast('Marquee বার্তা সেভ হয়েছে ✅','green');
+    }).catch(function(e){
+      if(statusEl) statusEl.textContent = '❌ সমস্যা হয়েছে';
+      showToast('সেভ ব্যর্থ: '+e.message,'red');
+    });
 }
 
 // ═══ ORDER MANAGERS MANAGEMENT ═══
