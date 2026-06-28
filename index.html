@@ -1503,19 +1503,20 @@ img{max-width:100%;height:auto;}
 
 <!-- MARQUEE -->
 <div class="marquee-wrap">
-  <div class="marquee-inner">
+  <div class="marquee-inner" id="marqueeInner">
+    <!-- Firebase থেকে load হবে, fallback hardcoded -->
     <div class="marquee-item">🎉 Durga Puja Special Offers</div>
     <div class="marquee-item">🌾 Farm Fresh — সরাসরি কৃষক থেকে</div>
-    <div class="marquee-item">🚀 Free Delivery on First Order</div>
-    <div class="marquee-item">⭐ 500+ Local Sellers — Manteswar &amp; Beyond</div>
+    <div class="marquee-item">🚀 প্রথম অর্ডারে বিনামূল্যে ডেলিভারি!</div>
+    <div class="marquee-item">⭐ 500+ স্থানীয় দোকান — Manteswar ও আশপাশ</div>
     <div class="marquee-item">🍬 বাংলার সেরা মিষ্টি — Order Now</div>
-    <div class="marquee-item">💊 Pharmacy Delivery in 2 Hours</div>
+    <div class="marquee-item">💊 ২ ঘণ্টায় ওষুধ ডেলিভারি</div>
     <div class="marquee-item">🎉 Durga Puja Special Offers</div>
     <div class="marquee-item">🌾 Farm Fresh — সরাসরি কৃষক থেকে</div>
-    <div class="marquee-item">🚀 Free Delivery on First Order</div>
-    <div class="marquee-item">⭐ 500+ Local Sellers — Manteswar &amp; Beyond</div>
+    <div class="marquee-item">🚀 প্রথম অর্ডারে বিনামূল্যে ডেলিভারি!</div>
+    <div class="marquee-item">⭐ 500+ স্থানীয় দোকান — Manteswar ও আশপাশ</div>
     <div class="marquee-item">🍬 বাংলার সেরা মিষ্টি — Order Now</div>
-    <div class="marquee-item">💊 Pharmacy Delivery in 2 Hours</div>
+    <div class="marquee-item">💊 ২ ঘণ্টায় ওষুধ ডেলিভারি</div>
   </div>
 </div>
 
@@ -2981,6 +2982,7 @@ async function loadData(retryCount){
     updateCommunityStats(allShops);
     initEcoCounter(allShops, allProducts);
     initFestivalBanner();
+    loadMarqueeFromFirebase();
     updateSubCount();
     initAllFeatures(allShops, allProducts);
   }catch(e){
@@ -3931,58 +3933,62 @@ function initFestivalBanner(){
 }
 
 function renderFestivalBanner(overrideKey){
+  // Admin বলেছে লুকাও
+  if(overrideKey === 'hidden') return;
+
   var now = new Date();
   var festivals = [
     {
-      name_bn: '🎊 দুর্গাপূজা স্পেশাল',
-      name_en: '🎊 Durga Puja Special',
-      date: new Date('2026-10-20'),
-      festivalKey: 'durga_puja',
+      name_bn: '🎊 দুর্গাপূজা স্পেশাল', name_en: '🎊 Durga Puja Special',
+      date: new Date('2026-10-20'), festivalKey: 'durga_puja',
       bg: 'linear-gradient(135deg,#b5451b,#e8863a)',
       desc_bn: 'মন্তেশ্বরের সেরা দোকান থেকে পূজার কেনাকাটা। বিশেষ ছাড় ও উপহার।',
       desc_en: 'Best Pujo shopping from Manteswar\'s top shops. Special discounts & gifts.',
-      btn_bn: 'পূজার শপিং শুরু করুন →',
-      btn_en: 'Start Pujo Shopping →'
+      btn_bn: 'পূজার শপিং শুরু করুন →', btn_en: 'Start Pujo Shopping →'
     },
     {
-      name_bn: '🌙 ঈদ স্পেশাল',
-      name_en: '🌙 Eid Special',
-      date: new Date('2027-03-20'),
-      festivalKey: 'eid',
+      name_bn: '🌙 ঈদ স্পেশাল', name_en: '🌙 Eid Special',
+      date: new Date('2027-03-20'), festivalKey: 'eid',
       bg: 'linear-gradient(135deg,#1a5c3a,#2e8b57)',
       desc_bn: 'ঈদের কেনাকাটা এখন আরও সহজ। পোশাক, মিষ্টি, সব কিছু।',
       desc_en: 'Eid shopping made easy. Clothes, sweets, everything.',
-      btn_bn: 'ঈদ শপিং →',
-      btn_en: 'Eid Shopping →'
+      btn_bn: 'ঈদ শপিং →', btn_en: 'Eid Shopping →'
     },
     {
-      name_bn: '🌸 পহেলা বৈশাখ',
-      name_en: '🌸 Poila Boishakh',
-      date: new Date('2027-04-14'),
-      festivalKey: 'poila_boishakh',
+      name_bn: '🌸 পহেলা বৈশাখ', name_en: '🌸 Poila Boishakh',
+      date: new Date('2027-04-14'), festivalKey: 'poila_boishakh',
       bg: 'linear-gradient(135deg,#8b1a1a,#c0392b)',
       desc_bn: 'নববর্ষের শুভেচ্ছা! বিশেষ উপহার বাক্স অর্ডার করুন।',
       desc_en: 'Happy New Year! Order special gift boxes.',
-      btn_bn: 'উপহার অর্ডার করুন →',
-      btn_en: 'Order Gifts →'
+      btn_bn: 'উপহার অর্ডার করুন →', btn_en: 'Order Gifts →'
+    },
+    {
+      name_bn: '🪔 কালীপূজা স্পেশাল', name_en: '🪔 Kali Puja Special',
+      date: new Date('2026-11-01'), festivalKey: 'kali_puja',
+      bg: 'linear-gradient(135deg,#1a0533,#6a0dad)',
+      desc_bn: 'কালীপূজার আলোয় কেনাকাটা করুন DELTA তে।',
+      desc_en: 'Shop for Kali Puja on DELTA.',
+      btn_bn: 'কালীপূজা শপিং →', btn_en: 'Kali Puja Shopping →'
     }
   ];
 
   var upcoming;
+  var isOverride = false;
 
-  // If Admin has set override — use that festival
+  // Admin override — 90-day limit নেই, সরাসরি দেখাও
   if(overrideKey){
     upcoming = festivals.find(function(f){ return f.festivalKey === overrideKey; });
+    if(upcoming) isOverride = true;
   }
 
-  // Otherwise auto-detect next upcoming within 90 days
+  // Auto-detect — শুধু ৯০ দিনের মধ্যে হলে
   if(!upcoming){
     upcoming = festivals
       .filter(function(f){ return f.date > now; })
       .sort(function(a,b){ return a.date - b.date; })[0];
     if(upcoming){
-      var diff = Math.ceil((upcoming.date - now) / (1000*60*60*24));
-      if(diff > 90) upcoming = null;
+      var autoDiff = Math.ceil((upcoming.date - now) / (1000*60*60*24));
+      if(autoDiff > 90) upcoming = null;
     }
   }
 
@@ -4192,6 +4198,29 @@ function setLang(l){
   if(allShops.length) renderShops(allShops);
   if(allProducts.length){renderProducts(allProducts);buildFarmersStrip();}
   showToast(l==='bn'?'বাংলা মোড সক্রিয় ✅':'English mode active ✅','green');
+}
+
+
+// ── MARQUEE — Firebase থেকে load ──
+function loadMarqueeFromFirebase(){
+  if(!db) return;
+  db.collection('cities').doc(CITY).collection('settings').doc('marqueeMessages')
+    .get().then(function(doc){
+      if(doc.exists && doc.data().messages && doc.data().messages.length){
+        renderMarquee(doc.data().messages);
+      }
+      // else: hardcoded fallback থাকবে
+    }).catch(function(){ /* fallback থাকবে */ });
+}
+
+function renderMarquee(messages){
+  var wrap = document.getElementById('marqueeInner');
+  if(!wrap || !messages.length) return;
+  // Duplicate for seamless loop
+  var all = messages.concat(messages);
+  wrap.innerHTML = all.map(function(m){
+    return '<div class="marquee-item">'+m+'</div>';
+  }).join('');
 }
 
 // ── FLASH COUNTDOWN ──
