@@ -634,18 +634,18 @@ body.lang-bn .lang-en{display:none!important;}
   /* Logo compact করা */
   .logo{font-size:1.35rem;}
 
-  /* Desktop search লুকানো, mobile search bar দেখানো */
+  /* Desktop search লুকানো */
   .nav-search-wrap{display:none;}
 
-  /* Location button compact */
-  .nav-loc-btn{font-size:.7rem;padding:5px 8px;}
-
-  /* Language toggle লুকানো — bottom nav এ রাখা হয়েছে */
+  /* Language toggle লুকানো */
   .lang-toggle{display:none;}
 
-  /* Nav actions — শুধু cart আর user রাখো */
+  /* Nav actions — ডানে push করা */
   .nav-actions .btn-nav{display:none;}
-  .nav-actions{gap:6px;}
+  .nav-actions{gap:6px;margin-left:auto;}
+
+  /* Location button — compact, দেখাবে */
+  .nav-loc-btn{font-size:.68rem;padding:5px 8px;display:flex;}
 
   /* Cart button mobile friendly */
   .cart-btn{padding:9px 13px;font-size:.8rem;gap:5px;}
@@ -835,8 +835,9 @@ body.lang-bn .lang-en{display:none!important;}
    ══════════════════════════════════════════ */
 @media(max-width:480px){
 
-  /* NAV */
-  .nav-loc-btn{display:none;}
+  /* NAV — location compact রাখো */
+  .nav-loc-btn{font-size:.62rem;padding:4px 6px;}
+  .nav-loc-btn span:first-of-type{display:none;} /* "Manteswar" text ছোট করা — শুধু 📍 icon */
   .logo{font-size:1.2rem;}
   .cart-btn{padding:8px 10px;font-size:.75rem;}
   .user-chip{padding:7px 9px;font-size:.72rem;}
