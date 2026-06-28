@@ -4415,7 +4415,7 @@ function buildFreshStrip(freshProds){
     freshProds.forEach(function(p){
       var badge = getBadge(p);
       var name = p.nameBn || p.nameEn || p.name || 'পণ্য';
-      var meta = p.meta || p.unit || p.area || '';
+      var meta = p.description || p.unit || p.area || '';
       var emoji = prodEmoji ? prodEmoji(p.category) : '🌿';
       var img = p.imageUrl || (p.images && p.images[0]) || '';
       html += '<div class="fresh-item" onclick="openProductModal(\''+p.id+'\',\''+p.shopId+'\')">' +
