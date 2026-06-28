@@ -322,11 +322,34 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 @keyframes waPulse{0%{transform:scale(1);opacity:.35}100%{transform:scale(1.9);opacity:0}}
 
 /* ── HERO BUTTONS ── */
-.hero-btns{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px;}
+.hero-btns{display:flex;gap:10px;margin-bottom:20px;align-items:stretch;}
 .hero-btn-primary{background:var(--orange);color:#fff;border:none;padding:13px 28px;border-radius:9px;font-size:.95rem;font-weight:700;cursor:pointer;transition:all .2s;box-shadow:0 4px 16px rgba(240,112,24,.4);}
 .hero-btn-primary:hover{background:var(--orange2);transform:translateY(-1px);}
 .hero-btn-outline{background:transparent;color:#fff;border:2px solid rgba(255,255,255,.35);padding:13px 28px;border-radius:9px;font-size:.95rem;cursor:pointer;transition:all .2s;}
 .hero-btn-outline:hover{border-color:#fff;background:rgba(255,255,255,.1);}
+
+/* Sketch layout — big left + two small right */
+.hero-btn-big{
+  flex-shrink:0;width:100px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:4px;font-size:1.1rem;line-height:1.3;text-align:center;
+  padding:14px 10px;border-radius:12px;
+}
+.hero-btn-stack{
+  display:flex;flex-direction:column;gap:8px;flex:1;
+}
+.hero-btn-half{
+  flex:1;padding:0 14px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  gap:6px;font-size:.85rem;font-weight:700;text-align:center;
+  white-space:nowrap;
+}
+
+/* Mobile */
+@media(max-width:480px){
+  .hero-btn-big{width:85px;font-size:1rem;}
+  .hero-btn-half{font-size:.78rem;padding:0 10px;}
+}
 
 /* ── FREE DELIVERY STRIP (green like Appayan) ── */
 .free-delivery-strip{background:linear-gradient(90deg,#1a4d2e,#2d7a3a,#1a4d2e);padding:13px 5%;display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;}
@@ -745,11 +768,8 @@ body.lang-bn .lang-en{display:none!important;}
   .hero-tag-pill{font-size:.73rem;padding:4px 11px;}
 
   /* Hero CTA buttons */
-  .hero-btns{flex-direction:column;gap:9px;margin-bottom:16px;}
-  .hero-btn-primary,.hero-btn-outline{
-    width:100%;text-align:center;
-    padding:13px 20px;font-size:.9rem;border-radius:10px;
-  }
+  .hero-btns{gap:8px;margin-bottom:16px;}
+  .hero-btn-primary,.hero-btn-outline{font-size:.85rem;}
 
   /* Hero stats — 3 column grid */
   .hero-stats{
@@ -1549,8 +1569,19 @@ img{max-width:100%;height:auto;}
         <div class="search-suggestions" id="heroSuggestions" style="border-radius:0 0 12px 12px;"></div>
       </div>
       <div class="hero-btns">
-        <button class="hero-btn-primary" onclick="document.getElementById('productsSection').scrollIntoView({behavior:'smooth'})">🛒 <span class="lang-bn">এখনই কিনুন</span><span class="lang-en">Shop Now</span></button>
-        <button class="hero-btn-outline" onclick="document.getElementById('cat-all').closest('section').scrollIntoView({behavior:'smooth'})"><span class="lang-bn">ক্যাটাগরি দেখুন →</span><span class="lang-en">Explore Categories →</span></button>
+        <!-- বড় primary button বাঁয়ে -->
+        <button class="hero-btn-primary hero-btn-big" onclick="document.getElementById('productsSection').scrollIntoView({behavior:'smooth'})">
+          🛒<br><span class="lang-bn">এখনই<br>কিনুন</span><span class="lang-en">Shop<br>Now</span>
+        </button>
+        <!-- ডানে দুটো ছোট button উপর-নিচে -->
+        <div class="hero-btn-stack">
+          <button class="hero-btn-outline hero-btn-half" onclick="document.getElementById('shopsSection').scrollIntoView({behavior:'smooth'})">
+            🏪 <span class="lang-bn">কাছের দোকান</span><span class="lang-en">Nearby Shops</span>
+          </button>
+          <button class="hero-btn-outline hero-btn-half" onclick="document.getElementById('cat-all').closest('section').scrollIntoView({behavior:'smooth'})">
+            🛍️ <span class="lang-bn">ক্যাটাগরি দেখুন</span><span class="lang-en">Categories</span>
+          </button>
+        </div>
       </div>
       <div class="hero-stats">
         <div class="hero-stat">
