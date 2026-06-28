@@ -1692,71 +1692,68 @@ img{max-width:100%;height:auto;}
 
 <!-- DELTA BAZAAR ENTRY CARD — after shops -->
 <section class="section">
-  <div onclick="window.location.href='bazaar.html'" style="background:linear-gradient(120deg,#0a1f35 0%,#3d2a6b 55%,#5b3aa0 100%);border-radius:18px;padding:28px 24px;cursor:pointer;position:relative;overflow:hidden;">
-    <div style="position:absolute;top:-40%;right:-6%;width:260px;height:260px;background:radial-gradient(circle,rgba(255,255,255,.08),transparent 70%);border-radius:50%;pointer-events:none;"></div>
-    <div style="position:relative;z-index:2;">
-      <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:#fff;padding:5px 12px;border-radius:20px;font-size:.68rem;font-weight:700;margin-bottom:10px;">
+  <div onclick="window.location.href='bazaar.html'" style="background:linear-gradient(120deg,#0a1f35 0%,#3d2a6b 55%,#5b3aa0 100%);border-radius:18px;padding:18px 20px;cursor:pointer;position:relative;overflow:hidden;display:flex;align-items:center;gap:14px;">
+    <div style="position:absolute;right:-20px;top:50%;transform:translateY(-50%);font-size:5rem;opacity:.08;pointer-events:none;">🏮</div>
+    <div style="flex:1;min-width:0;position:relative;z-index:1;">
+      <div style="display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);color:#c4b0ff;padding:3px 10px;border-radius:20px;font-size:.62rem;font-weight:700;margin-bottom:7px;">
         ✦ <span class="lang-bn">নতুন</span><span class="lang-en">NEW</span>
       </div>
-      <h3 style="font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:800;color:#fff;margin-bottom:7px;line-height:1.35;">
-        <span class="lang-bn">DELTA Bazaar — দূরত্ব এখন আর বাধা নয়</span>
-        <span class="lang-en">DELTA Bazaar — Distance is no longer a barrier</span>
-      </h3>
-      <p style="font-size:.82rem;color:rgba(255,255,255,.72);line-height:1.6;margin-bottom:16px;">
-        <span class="lang-bn">পণ্যটি যেখানেই থাকুক — DELTA Bazaar সেটা খুঁজে বের করে ন্যায্য দামে পৌঁছে দেয়।</span>
-        <span class="lang-en">No matter where the product is — DELTA Bazaar finds it and delivers it fairly.</span>
-      </p>
-      <button style="background:#fff;border:none;padding:11px 22px;border-radius:10px;font-weight:800;font-size:.84rem;cursor:pointer;color:#3d2a6b;">
-        <span class="lang-bn">পণ্য খুঁজুন →</span><span class="lang-en">Find a Product →</span>
-      </button>
+      <div style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:800;color:#fff;line-height:1.3;margin-bottom:4px;">
+        <span class="lang-bn">DELTA Bazaar — দূরত্ব আর বাধা নয়</span>
+        <span class="lang-en">DELTA Bazaar — No distance barrier</span>
+      </div>
+      <div style="font-size:.72rem;color:rgba(255,255,255,.65);line-height:1.45;">
+        <span class="lang-bn">যেকোনো পণ্য · ন্যায্য দামে · দোরগোড়ায়</span>
+        <span class="lang-en">Any product · Fair price · At your door</span>
+      </div>
     </div>
+    <button onclick="event.stopPropagation();window.location.href='bazaar.html'" style="background:#fff;border:none;padding:9px 14px;border-radius:10px;font-weight:800;font-size:.74rem;cursor:pointer;color:#3d2a6b;flex-shrink:0;white-space:nowrap;line-height:1.3;text-align:center;position:relative;z-index:1;">
+      <span class="lang-bn">খুঁজুন →</span><span class="lang-en">Find →</span>
+    </button>
   </div>
 </section>
 
-<!-- FESTIVAL HAMPERS BANNER — right after Nearby Shops -->
-<section class="section gray">
-  <div style="background:linear-gradient(135deg,#4A148C,#7B1FA2,#C2185B);border-radius:16px;padding:22px 28px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
-    <div style="color:#fff;">
-      <h3 style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:800;margin-bottom:5px;">
+<!-- FESTIVAL HAMPERS BANNER -->
+<section class="section gray" style="padding-top:0;">
+  <div onclick="window.location.href='hampers.html'" style="background:linear-gradient(135deg,#4A148C,#7B1FA2,#C2185B);border-radius:16px;padding:18px 20px;cursor:pointer;display:flex;align-items:center;gap:14px;">
+    <div style="flex:1;min-width:0;color:#fff;">
+      <div style="font-family:'Playfair Display',serif;font-size:.98rem;font-weight:800;margin-bottom:4px;">
         🎊 <span class="lang-bn">ফেস্টিভাল হ্যাম্পার এসে গেছে!</span><span class="lang-en">Festival Hampers Are Here!</span>
-      </h3>
-      <p style="font-size:.82rem;opacity:.85;line-height:1.5;max-width:380px;">
-        <span class="lang-bn">দুর্গাপূজা · ঈদ · পহেলা বৈশাখ · কালীপূজা — কিউরেটেড ফার্ম-ফ্রেশ গিফট বক্স ₹399 থেকে শুরু</span>
-        <span class="lang-en">Durga Puja · Eid · Poila Boishakh — curated farm-fresh gift boxes from ₹399</span>
-      </p>
+      </div>
+      <div style="font-size:.72rem;opacity:.82;line-height:1.45;">
+        <span class="lang-bn">পূজা · ঈদ · বৈশাখ — ₹399 থেকে শুরু</span>
+        <span class="lang-en">Puja · Eid · Boishakh — from ₹399</span>
+      </div>
     </div>
-    <button onclick="window.location.href='hampers.html'" style="background:#fff;border:none;padding:11px 22px;border-radius:10px;font-weight:800;font-size:.85rem;cursor:pointer;white-space:nowrap;color:#4A148C;flex-shrink:0;transition:all .2s;" onmouseover="this.style.background='#f3e5f5'" onmouseout="this.style.background='#fff'">
-      <span class="lang-bn">হ্যাম্পার দেখুন →</span><span class="lang-en">Shop Hampers →</span>
+    <button onclick="event.stopPropagation();window.location.href='hampers.html'" style="background:#fff;border:none;padding:9px 14px;border-radius:10px;font-weight:800;font-size:.74rem;cursor:pointer;white-space:nowrap;color:#4A148C;flex-shrink:0;line-height:1.3;text-align:center;">
+      <span class="lang-bn">দেখুন →</span><span class="lang-en">Shop →</span>
     </button>
   </div>
 </section>
 
 <!-- DELTA FRESH ENTRY CARD -->
-<section class="section">
-  <div onclick="window.location.href='fresh.html'" style="background:linear-gradient(120deg,#2d1b0e 0%,#3d6b28 55%,#5d8a3c 100%);
-    border-radius:18px;padding:28px 32px;cursor:pointer;position:relative;overflow:hidden;transition:transform .2s;"
-    onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
-    <div style="position:absolute;top:-30%;right:4%;font-size:7rem;opacity:.1;pointer-events:none">🌾</div>
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;position:relative;z-index:2;">
+<section class="section" style="padding-top:0;">
+  <div onclick="window.location.href='fresh.html'" style="background:linear-gradient(120deg,#2d1b0e 0%,#3d6b28 55%,#5d8a3c 100%);border-radius:18px;padding:20px 20px;cursor:pointer;position:relative;overflow:hidden;">
+    <div style="position:absolute;right:-10px;top:50%;transform:translateY(-50%);font-size:5rem;opacity:.12;pointer-events:none;line-height:1;">🌾</div>
+    <div style="position:relative;z-index:2;display:flex;align-items:center;gap:16px;">
+      <!-- Left: text -->
       <div style="flex:1;min-width:0;">
-        <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.12);
-          border:1px solid rgba(255,255,255,.25);color:#a8d080;padding:5px 13px;border-radius:20px;
-          font-size:.68rem;font-weight:700;letter-spacing:.4px;margin-bottom:10px;">
-          🌱 <span class="lang-bn">DELTA Fresh</span><span class="lang-en">DELTA Fresh</span>
+        <div style="display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);color:#a8d080;padding:3px 10px;border-radius:20px;font-size:.62rem;font-weight:700;margin-bottom:8px;">
+          🌱 DELTA Fresh
         </div>
-        <h3 style="font-family:'Playfair Display',serif;font-size:1.25rem;font-weight:800;color:#fff;margin-bottom:7px;line-height:1.35;">
-          <span class="lang-bn">মাঠ থেকে আপনার থালায় — তাজার নিশ্চয়তা</span>
+        <div style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:800;color:#fff;line-height:1.3;margin-bottom:5px;">
+          <span class="lang-bn">মাঠ থেকে থালায় — তাজার নিশ্চয়তা</span>
           <span class="lang-en">Farm to Table — Freshness Guaranteed</span>
-        </h3>
-        <p style="font-size:.84rem;color:rgba(255,255,255,.72);line-height:1.6;max-width:480px;">
-          <span class="lang-bn">স্থানীয় কৃষকদের কাছ থেকে সরাসরি তাজা মাছ, সবজি, ফল ও ডেয়ারি পণ্য — কোনো মধ্যস্থতাকারী নেই।</span>
-          <span class="lang-en">Fresh fish, vegetables, fruits & dairy directly from local farmers — no middlemen.</span>
-        </p>
+        </div>
+        <div style="font-size:.75rem;color:rgba(255,255,255,.68);line-height:1.5;">
+          <span class="lang-bn">সরাসরি কৃষক থেকে · কোনো মধ্যস্থতাকারী নেই</span>
+          <span class="lang-en">Direct from farmers · No middlemen</span>
+        </div>
       </div>
-      <button style="background:#fff;border:none;padding:12px 26px;border-radius:10px;font-weight:800;
-        font-size:.85rem;cursor:pointer;white-space:nowrap;color:#3d6b28;flex-shrink:0;transition:all .2s;"
-        onmouseover="this.style.background='#eef5e8'" onmouseout="this.style.background='#fff'">
-        <span class="lang-bn">তাজা পণ্য দেখুন →</span><span class="lang-en">Shop Fresh →</span>
+      <!-- Right: button -->
+      <button onclick="event.stopPropagation();window.location.href='fresh.html'" style="background:#fff;border:none;padding:10px 14px;border-radius:12px;font-weight:800;font-size:.75rem;cursor:pointer;color:#3d6b28;flex-shrink:0;white-space:nowrap;line-height:1.3;text-align:center;">
+        <span class="lang-bn">তাজা পণ্য<br>দেখুন →</span>
+        <span class="lang-en">Shop<br>Fresh →</span>
       </button>
     </div>
   </div>
