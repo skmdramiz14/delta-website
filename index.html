@@ -2975,7 +2975,7 @@ async function loadData(retryCount){
     await Promise.all(proms);
     renderShops(allShops);renderProducts(allProducts);
     // Fresh strip — isFresh tagged products only
-    var freshProds = allProducts.filter(function(p){ return p.isFresh === true; });
+    var freshProds = allProducts.filter(function(p){ return p.isFresh === true || p.isFresh === 'true'; });
     buildFreshStrip(freshProds);
     buildFreshCards(allProducts);
     buildFarmersStrip();
@@ -4398,6 +4398,10 @@ function buildFreshStrip(freshProds){
     if(stripEl) stripEl.style.display = 'none';
     return;
   }
+
+  // Products আছে — strip দেখাও
+  var stripEl = document.getElementById('freshStrip');
+  if(stripEl) stripEl.style.display = 'block';
 
   // Badge logic
   function getBadge(p){
