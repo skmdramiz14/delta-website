@@ -25,7 +25,7 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 /* ── NAV ── */
 #nav{background:var(--navy);padding:0 5%;position:sticky;top:0;z-index:1000;box-shadow:0 2px 20px rgba(0,0,0,.3);}
 .nav-top{display:flex;align-items:center;gap:14px;padding:13px 0;}
-.logo{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:900;color:#fff;cursor:pointer;white-space:nowrap;letter-spacing:1px;}
+.logo{font-family:'Playfair Display',serif;font-size:1.62rem;font-weight:900;color:#fff;cursor:pointer;white-space:nowrap;letter-spacing:1px;}
 .logo em{color:var(--orange);font-style:normal;}
 .nav-search-wrap{flex:1;max-width:460px;}
 .nav-search{display:flex;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:8px;transition:all .2s;position:relative;overflow:visible;}
@@ -45,7 +45,7 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 .user-chip{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;padding:8px 13px;border-radius:7px;cursor:pointer;font-size:.82rem;display:flex;align-items:center;gap:6px;}
 .nav-cats{display:flex;border-top:1px solid rgba(255,255,255,.08);overflow-x:auto;gap:0;}
 .nav-cats::-webkit-scrollbar{display:none;}
-.nav-cat{color:rgba(255,255,255,.65);font-size:.8rem;padding:10px 16px;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;transition:all .2s;font-weight:500;}
+.nav-cat{color:rgba(255,255,255,.65);font-size:.8rem;padding:10px 16px;cursor:pointer;white-space:nowrap;border-bottom:3px solid transparent;transition:all .2s;font-weight:500;display:flex;align-items:center;gap:7px;}
 .nav-cat:hover,.nav-cat.active{color:#fff;border-bottom-color:var(--orange);}
 
 /* ── MARQUEE ── */
@@ -298,6 +298,54 @@ button,input,select{font-family:'DM Sans',sans-serif;}
   .fresh-strip-label{min-width:70px;padding:0 10px;}
   .fresh-strip-label-text{font-size:.55rem;}
   .fresh-item{min-width:130px;padding:10px 14px;}
+}
+
+/* ── HERO BENEFIT LINE ── */
+.hero-benefit-line{display:flex;align-items:center;gap:8px;font-size:.8rem;font-weight:600;color:#a8d8a8;white-space:nowrap;overflow:hidden;margin-bottom:0;}
+.hero-benefit-line span{display:flex;align-items:center;gap:4px;}
+.hbl-dot{color:rgba(255,255,255,.3);font-size:.7rem;}
+
+/* ── POPULAR SEARCH CHIPS ── */
+.popular-chips-wrap{display:flex;flex-direction:column;gap:6px;}
+.popular-chips-label{font-size:.7rem;font-weight:700;color:rgba(255,255,255,.45);letter-spacing:.8px;text-transform:uppercase;}
+.popular-chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-bottom:2px;}
+.popular-chips::-webkit-scrollbar{display:none;}
+.pop-chip{flex-shrink:0;height:34px;padding:0 13px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:20px;color:#fff;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:5px;white-space:nowrap;}
+.pop-chip:hover,.pop-chip:active{background:rgba(240,112,24,.25);border-color:var(--orange);}
+
+/* ── CTA SUB TEXT ── */
+.hero-cta-sub{font-size:.75rem;font-weight:500;color:rgba(255,255,255,.45);text-align:center;margin-top:4px;}
+
+/* ── HERO STATS NEW ── */
+.hero-stats-new{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:24px;padding-top:20px;border-top:1px solid rgba(255,255,255,.1);}
+.hero-stat-new{text-align:center;padding:10px 4px;background:rgba(255,255,255,.05);border-radius:10px;border:1px solid rgba(255,255,255,.08);}
+.hsn-icon{font-size:1.1rem;margin-bottom:4px;}
+.hsn-num{font-size:1rem;font-weight:800;color:#fff;line-height:1.1;margin-bottom:2px;}
+.hsn-label{font-size:.6rem;color:rgba(255,255,255,.5);line-height:1.3;}
+
+/* ── TRUST STRIP ── */
+.hero-trust-strip{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:14px;padding:10px 12px;background:rgba(255,255,255,.05);border-radius:10px;border:1px solid rgba(255,255,255,.08);}
+.hts-item{font-size:.72rem;font-weight:600;color:rgba(255,255,255,.65);white-space:nowrap;}
+.hts-sep{width:1px;height:14px;background:rgba(255,255,255,.2);flex-shrink:0;}
+
+/* ── HERO TAG improvement ── */
+.hero-tag{display:inline-flex;align-items:center;gap:7px;background:rgba(240,112,24,.15);border:1px solid rgba(240,112,24,.25);color:#ffb07a;padding:7px 18px;border-radius:20px;font-size:.75rem;font-weight:600;letter-spacing:.8px;text-transform:uppercase;margin-bottom:18px;box-shadow:0 2px 12px rgba(240,112,24,.1);}
+
+@media(max-width:768px){
+  .hero-stats-new{gap:6px;}
+  .hsn-num{font-size:.88rem;}
+  .hsn-label{font-size:.55rem;}
+  .hero-trust-strip{gap:8px;padding:8px 10px;}
+  .hts-item{font-size:.65rem;}
+  .hero-benefit-line{font-size:.72rem;}
+}
+@media(max-width:480px){
+  .hero-stat-new{padding:8px 2px;}
+  .hsn-icon{font-size:.9rem;}
+  .hsn-num{font-size:.78rem;}
+  .hsn-label{font-size:.5rem;}
+  .hts-sep{display:none;}
+  .hero-trust-strip{flex-wrap:wrap;gap:6px;}
 }
 
 /* Mobile search bar — desktop এ লুকানো */
@@ -1583,26 +1631,61 @@ img{max-width:100%;height:auto;}
 
 <!-- HERO -->
 <section class="hero">
-  <!-- Subtle grid pattern -->
-  <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;"></div>
+  <!-- Subtle grid pattern — opacity কমানো -->
+  <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;"></div>
+  <!-- Logo পিছনে subtle radial glow -->
+  <div style="position:absolute;top:10%;left:3%;width:340px;height:340px;background:radial-gradient(circle,rgba(99,102,241,.1) 0%,transparent 65%);border-radius:50%;pointer-events:none;z-index:0;"></div>
   <div class="hero-inner" style="position:relative;z-index:1;">
     <div class="hero-content">
+
+      <!-- 5. Hero Badge -->
       <div class="hero-tag">🌟 <span class="lang-bn">পশ্চিমবঙ্গের প্রথম লোকাল সুপার অ্যাপ</span><span class="lang-en">West Bengal's First Local Super App</span></div>
+
+      <!-- 6. Brand Block -->
       <h1>△ DELT<em>A</em></h1>
       <div class="hero-bn"><span class="lang-bn">পরিবর্তনের ব-দ্বীপ</span><span class="lang-en">The Delta of Change</span></div>
-      <p><span class="lang-bn">আপনার শহরের প্রতিটি দোকান, কৃষক ও শিল্পী — এক প্ল্যাটফর্মে। Local Roots. Global Wings.</span><span class="lang-en">Every shop, farmer and artisan in your town — one platform. Local Roots. Global Wings.</span></p>
-      <div class="hero-search-big" style="position:relative;">
-        <input type="text" id="heroSearch" placeholder="আজ কী দরকার? যেমন: ইলিশ মাছ, রসগোল্লা, ইলেকট্রিশিয়ান..." oninput="handleSearch(this.value)" onkeydown="handleSearchKey(event,'hero')" onfocus="showSuggestions(this.value)" autocomplete="off">
-        <button onclick="startVoiceSearch()" id="heroVoiceBtn" style="background:transparent;border:none;color:var(--muted);padding:0 12px;font-size:1.1rem;cursor:pointer;min-height:48px;flex-shrink:0;" title="Voice Search">🎙️</button>
+      <p style="margin-bottom:14px;"><span class="lang-bn">আপনার শহরের দোকান, কৃষক ও শিল্পী — সব এক প্ল্যাটফর্মে।</span><span class="lang-en">Your town's shops, farmers & artisans — all in one platform.</span></p>
+
+      <!-- Benefit line -->
+      <div class="hero-benefit-line">
+        <span>🛵 <span class="lang-bn">২ ঘণ্টার ডেলিভারি</span><span class="lang-en">2-Hour Delivery</span></span>
+        <span class="hbl-dot">•</span>
+        <span>🌱 <span class="lang-bn">স্থানীয় বিক্রেতা</span><span class="lang-en">Local Sellers</span></span>
+        <span class="hbl-dot">•</span>
+        <span>💰 <span class="lang-bn">ন্যায্য মূল্য</span><span class="lang-en">Fair Price</span></span>
+      </div>
+
+      <!-- 7. Search -->
+      <div class="hero-search-big" style="position:relative;margin-top:24px;margin-bottom:12px;">
+        <input type="text" id="heroSearch" placeholder="ইলিশ মাছ, রসগোল্লা, চাল..." oninput="handleSearch(this.value)" onkeydown="handleSearchKey(event,'hero')" onfocus="showSuggestions(this.value)" autocomplete="off">
+        <button onclick="startVoiceSearch()" id="heroVoiceBtn" style="background:#fff;border:none;color:var(--muted);padding:0 12px;font-size:1.2rem;cursor:pointer;min-height:48px;flex-shrink:0;" title="Voice Search">🎙️</button>
         <button onclick="doSearch()" style="border-radius:0 12px 12px 0;">🔍</button>
         <div class="search-suggestions" id="heroSuggestions" style="border-radius:0 0 12px 12px;"></div>
       </div>
+
+      <!-- 8. Popular Search Chips -->
+      <div class="popular-chips-wrap" style="margin-bottom:20px;">
+        <div class="popular-chips-label lang-bn">জনপ্রিয় সার্চ</div>
+        <div class="popular-chips-label lang-en">Popular</div>
+        <div class="popular-chips">
+          <button class="pop-chip" onclick="quickSearch('সবজি')">🥬 <span class="lang-bn">সবজি</span><span class="lang-en">Vegetables</span></button>
+          <button class="pop-chip" onclick="quickSearch('মাছ')">🐟 <span class="lang-bn">মাছ</span><span class="lang-en">Fish</span></button>
+          <button class="pop-chip" onclick="quickSearch('মিষ্টি')">🍬 <span class="lang-bn">মিষ্টি</span><span class="lang-en">Sweets</span></button>
+          <button class="pop-chip" onclick="quickSearch('দুধ')">🥛 <span class="lang-bn">দুধ</span><span class="lang-en">Milk</span></button>
+          <button class="pop-chip" onclick="quickSearch('ডিম')">🥚 <span class="lang-bn">ডিম</span><span class="lang-en">Eggs</span></button>
+          <button class="pop-chip" onclick="quickSearch('চাল')">🍚 <span class="lang-bn">চাল</span><span class="lang-en">Rice</span></button>
+        </div>
+      </div>
+
+      <!-- 9. Primary CTA -->
       <div class="hero-btns">
-        <!-- Full width primary button -->
         <button class="hero-btn-primary hero-btn-full" onclick="document.getElementById('productsSection').scrollIntoView({behavior:'smooth'})">
           🛒 <span class="lang-bn">এখনই কিনুন</span><span class="lang-en">Shop Now</span>
         </button>
-        <!-- 2 small pill buttons নিচে -->
+        <div class="hero-cta-sub lang-bn">কাছের দোকান থেকে কেনাকাটা শুরু করুন</div>
+        <div class="hero-cta-sub lang-en">Start shopping from nearby stores</div>
+
+        <!-- 10. Quick Actions -->
         <div class="hero-pill-row">
           <button class="hero-pill" onclick="document.getElementById('shopsSection').scrollIntoView({behavior:'smooth'})">
             🏪 <span class="lang-bn">কাছের দোকান</span><span class="lang-en">Nearby Shops</span>
@@ -1612,28 +1695,40 @@ img{max-width:100%;height:auto;}
           </button>
         </div>
       </div>
-      <div class="hero-stats">
-        <div class="hero-stat">
-          <strong>18+</strong>
-          <span><span class="lang-bn">ক্যাটাগরি</span><span class="lang-en">Categories</span></span>
-          <span style="font-size:.62rem;color:rgba(255,255,255,.35);"><span class="lang-bn">পণ্য ও সেবা</span><span class="lang-en">Products & Services</span></span>
+
+      <!-- 11. Stats -->
+      <div class="hero-stats-new">
+        <div class="hero-stat-new">
+          <div class="hsn-icon">📦</div>
+          <div class="hsn-num">18+</div>
+          <div class="hsn-label"><span class="lang-bn">ক্যাটাগরি</span><span class="lang-en">Categories</span></div>
         </div>
-        <div class="hero-stat">
-          <strong>500+</strong>
-          <span><span class="lang-bn">স্থানীয় উদ্যোক্তা</span><span class="lang-en">Local Sellers</span></span>
-          <span style="font-size:.62rem;color:rgba(255,255,255,.35);"><span class="lang-bn">দোকানদার, কৃষক, সেবাদাতা</span><span class="lang-en">Shops, Farmers, Services</span></span>
+        <div class="hero-stat-new">
+          <div class="hsn-icon">🏪</div>
+          <div class="hsn-num">500+</div>
+          <div class="hsn-label"><span class="lang-bn">স্থানীয় দোকান</span><span class="lang-en">Local Shops</span></div>
         </div>
-        <div class="hero-stat">
-          <strong><span class="lang-bn">২ ঘণ্টা</span><span class="lang-en">2 Hours</span></strong>
-          <span><span class="lang-bn">লোকাল ডেলিভারি</span><span class="lang-en">Local Delivery</span></span>
-          <span style="font-size:.62rem;color:rgba(255,255,255,.35);"><span class="lang-bn">কাছের দোকান থেকে</span><span class="lang-en">From nearby shops</span></span>
+        <div class="hero-stat-new">
+          <div class="hsn-icon">🚚</div>
+          <div class="hsn-num"><span class="lang-bn">২ ঘণ্টা</span><span class="lang-en">2 hrs</span></div>
+          <div class="hsn-label"><span class="lang-bn">লোকাল ডেলিভারি</span><span class="lang-en">Delivery</span></div>
         </div>
-        <div class="hero-stat">
-          <strong style="color:#a5d6a7;">FREE</strong>
-          <span><span class="lang-bn">প্রথম অর্ডারে</span><span class="lang-en">First Order</span></span>
-          <span style="font-size:.62rem;color:rgba(255,255,255,.35);"><span class="lang-bn">ডেলিভারি বিনামূল্যে</span><span class="lang-en">Free delivery</span></span>
+        <div class="hero-stat-new">
+          <div class="hsn-icon">🎁</div>
+          <div class="hsn-num" style="color:#a5d6a7;">FREE</div>
+          <div class="hsn-label"><span class="lang-bn">প্রথম ডেলিভারি</span><span class="lang-en">First Delivery</span></div>
         </div>
       </div>
+
+      <!-- 12. Trust Strip -->
+      <div class="hero-trust-strip">
+        <div class="hts-item">⭐ <span class="lang-bn">৪.৮ রেটিং</span><span class="lang-en">4.8 Rating</span></div>
+        <div class="hts-sep"></div>
+        <div class="hts-item">🔒 <span class="lang-bn">নিরাপদ পেমেন্ট</span><span class="lang-en">Safe Payment</span></div>
+        <div class="hts-sep"></div>
+        <div class="hts-item">💬 <span class="lang-bn">স্থানীয় সাপোর্ট</span><span class="lang-en">Local Support</span></div>
+      </div>
+
     </div>
     <div class="hero-phone">
       <div class="phone-wrap">
@@ -4872,6 +4967,15 @@ function doSearch(){
   document.getElementById('navSearch').blur();
   document.getElementById('mobileSearch').blur();
   doSearchWith(q, true);
+}
+function quickSearch(term){
+  var heroInput = document.getElementById('heroSearch');
+  var mobileInput = document.getElementById('mobileSearch');
+  if(heroInput) heroInput.value = term;
+  if(mobileInput) mobileInput.value = term;
+  doSearchWith(term, true);
+  var ps = document.getElementById('productsSection');
+  if(ps) setTimeout(function(){ ps.scrollIntoView({behavior:'smooth'}); }, 200);
 }
 function doSearchWith(q,shouldScroll){
   q=(q||'').toLowerCase().trim();
