@@ -2974,6 +2974,9 @@ async function loadData(retryCount){
     });
     await Promise.all(proms);
     renderShops(allShops);renderProducts(allProducts);
+    // Fresh strip — isFresh tagged products only
+    var freshProds = allProducts.filter(function(p){ return p.isFresh === true; });
+    buildFreshStrip(freshProds);
     buildFreshCards(allProducts);
     buildFarmersStrip();
     buildFeatured(allProducts);
@@ -4377,54 +4380,66 @@ function buildBestsellers(prods){
   sec.style.display='block';
 }
 
-// ── FRESH TODAY STRIP (scrollable marquee) ──
-// ── FRESH TODAY STRIP (Appayan pattern — static curated items) ──
-var FRESH_TODAY_ITEMS = [
-  {emoji:'🐟', name:'Rohu Fish (Rui)',       meta:'Caught this morning · Zone 1-3',    badge:'in',      badgeText:'Just In'},
-  {emoji:'🐟', name:'Hilsa (Ilish)',          meta:'Fresh from Padma · Limited',        badge:'limited', badgeText:'Limited'},
-  {emoji:'🥬', name:'Laal Shaak',             meta:'Harvested 5 AM today',              badge:'in',      badgeText:'Just In'},
-  {emoji:'🍅', name:'Deshi Tomatoes',         meta:'Manteswar farm · 2 kg lots',        badge:'special', badgeText:'Special'},
-  {emoji:'🥛', name:'Fresh Dahi',             meta:'Made today · Cow milk',             badge:'in',      badgeText:'Just In'},
-  {emoji:'🍬', name:'রসগোল্লা',              meta:'তাজা বানানো · আজকের ব্যাচ',        badge:'in',      badgeText:'Just In'},
-  {emoji:'🌿', name:'Dhone Pata',             meta:'Fresh coriander · Bundles',         badge:'in',      badgeText:'Just In'},
-  {emoji:'🍌', name:'Elaichi Banana',         meta:'Chandpur farm · Sweet variety',     badge:'in',      badgeText:'Just In'},
-  {emoji:'🥦', name:'Organic Broccoli',       meta:'Certified organic · 500g',          badge:'special', badgeText:'Special'},
-  {emoji:'🐄', name:'Cow Paneer',             meta:'Fresh pressed · Today only',        badge:'limited', badgeText:'Limited'},
-  {emoji:'🌶️', name:'Green Chillies',         meta:'Spicy variety · Manteswar',         badge:'in',      badgeText:'Just In'},
-  {emoji:'🍋', name:'Kagzi Lemons',           meta:'Juicy & fresh · Dozen pack',        badge:'special', badgeText:'Special'},
-];
+// ── FRESH TODAY STRIP — Firebase থেকে real products ──
+function buildFreshStrip(freshProds){
+  var track = document.getElementById('freshTrack');
+  var dateEl = document.getElementById('freshDate');
+  if(!track) return;
 
-function buildFreshStrip(){
-  var track=document.getElementById('freshTrack');
-  var dateEl=document.getElementById('freshDate');
-  if(!track)return;
-  var now=new Date();
-  var days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  var months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  if(dateEl)dateEl.textContent=days[now.getDay()]+' '+now.getDate()+' '+months[now.getMonth()];
-  var html='';
-  // Render twice for seamless loop
-  for(var pass=0;pass<2;pass++){
-    for(var i=0;i<FRESH_TODAY_ITEMS.length;i++){
-      var it=FRESH_TODAY_ITEMS[i];
-      var bc=it.badge==='in'?'fresh-badge-in':it.badge==='limited'?'fresh-badge-limited':'fresh-badge-special';
-      html+='<div class="fresh-item" onclick="filterCat(\'farm\',null)">'+
-        '<div class="fresh-item-emoji">'+it.emoji+'</div>'+
-        '<div class="fresh-item-info">'+
-          '<div class="fresh-item-name">'+it.name+'</div>'+
-          '<div class="fresh-item-meta">'+it.meta+'</div>'+
-          '<span class="fresh-item-badge '+bc+'">'+it.badgeText+'</span>'+
-        '</div></div>';
-    }
+  // Date update
+  var now = new Date();
+  var days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  if(dateEl) dateEl.textContent = days[now.getDay()]+' '+now.getDate()+' '+months[now.getMonth()];
+
+  // No products yet — strip hide করো
+  if(!freshProds || !freshProds.length){
+    var stripEl = document.getElementById('freshStrip');
+    if(stripEl) stripEl.style.display = 'none';
+    return;
   }
-  track.innerHTML=html;
+
+  // Badge logic
+  function getBadge(p){
+    var createdAt = p.createdAt ? new Date(p.createdAt.seconds ? p.createdAt.seconds*1000 : p.createdAt) : null;
+    var hoursAgo = createdAt ? (Date.now() - createdAt) / 3600000 : 999;
+    if(hoursAgo < 6) return {cls:'fresh-badge-in', text:'Just In'};
+    if(hoursAgo < 24) return {cls:'fresh-badge-in', text:'আজকের'};
+    if(p.discount >= 10) return {cls:'fresh-badge-special', text:'Special'};
+    return {cls:'fresh-badge-in', text:'Fresh'};
+  }
+
+  // Render twice for seamless scroll loop
+  var html = '';
+  for(var pass = 0; pass < 2; pass++){
+    freshProds.forEach(function(p){
+      var badge = getBadge(p);
+      var name = p.nameBn || p.nameEn || p.name || 'পণ্য';
+      var meta = p.meta || p.unit || p.area || '';
+      var emoji = prodEmoji ? prodEmoji(p.category) : '🌿';
+      var img = p.imageUrl || (p.images && p.images[0]) || '';
+      html += '<div class="fresh-item" onclick="openProductModal(\''+p.id+'\',\''+p.shopId+'\')">' +
+        (img
+          ? '<img class="fresh-item-emoji" src="'+img+'" style="width:36px;height:36px;object-fit:cover;border-radius:8px;" loading="lazy">'
+          : '<div class="fresh-item-emoji">'+emoji+'</div>') +
+        '<div class="fresh-item-info">'+
+          '<div class="fresh-item-name">'+name+'</div>'+
+          (meta ? '<div class="fresh-item-meta">'+meta+'</div>' : '')+
+          '<span class="fresh-item-badge '+badge.cls+'">'+badge.text+'</span>'+
+        '</div></div>';
+    });
+  }
+  track.innerHTML = html;
 }
-// Call immediately — no Firebase needed, uses static data
-document.addEventListener('DOMContentLoaded',function(){
-  buildFreshStrip();
-  // Subscribe modal overlay click
+
+// DOMContentLoaded — strip initially hidden, shows when Firebase data arrives
+document.addEventListener('DOMContentLoaded', function(){
+  // Strip শুরুতে hide — Firebase data এলে buildFreshStrip() call হবে loadData() থেকে
+  var stripEl = document.getElementById('freshStrip');
+  if(stripEl) stripEl.style.display = 'none';
+
   var subOv = document.getElementById('subModalOverlay');
-  if(subOv) subOv.addEventListener('click',function(e){ if(e.target===this) closeSubModal(); });
+  if(subOv) subOv.addEventListener('click', function(e){ if(e.target===this) closeSubModal(); });
 });
 
 // Fix: browser Back/Forward button was restoring a cached page snapshot (bfcache) where
