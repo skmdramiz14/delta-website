@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="bn">
-<head> 
+<head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Festival Hampers — DELTA</title>
@@ -114,6 +114,24 @@ body.lang-bn .lang-en{display:none!important;}
   .hamper-grid{grid-template-columns:1fr;}
   .hap-banner{min-height:110px;}
   .hap-art{font-size:2.8rem;}
+}
+
+/* ── MOBILE FIX ── */
+@media(max-width:768px){
+  html,body{overflow-x:hidden;max-width:100vw;}
+  *{max-width:100%;}
+  .hamper-hero{padding:32px 4% 40px;}
+  .hamper-hero h1{font-size:1.6rem;}
+  .hamper-section{padding:20px 4%;}
+  .hamper-grid{grid-template-columns:1fr 1fr;gap:12px;}
+  .hap-card{border-radius:14px;}
+}
+
+@media(max-width:480px){
+  .hamper-hero h1{font-size:1.4rem;}
+  .hamper-grid{grid-template-columns:1fr!important;}
+  .hap-items{flex-wrap:wrap;}
+  .hap-tag{font-size:.64rem;}
 }
 </style>
 </head>
@@ -362,11 +380,6 @@ body.lang-bn .lang-en{display:none!important;}
 
   </div><!-- end hamperGrid -->
 
-  <div class="coming-note" style="margin-top:24px;">
-    <strong>⚡ <span class="lang-bn">Admin Panel তৈরি হলে real hampers অর্ডার করা যাবে</span><span class="lang-en">Real hamper ordering available once Admin Panel is ready</span></strong>
-    <span class="lang-bn">Step 8, July 2026 — তারপর থেকে "যোগ করুন" button কাজ করবে।</span>
-    <span class="lang-en">Step 8, July 2026 — the "Add" button will be fully functional then.</span>
-  </div>
 </div>
 
 <!-- TOAST -->
