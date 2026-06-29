@@ -333,6 +333,9 @@ button,input,select{font-family:'DM Sans',sans-serif;}
     <button class="tab-btn" id="tab-categories" onclick="goTab('categories',this)">
       🏷️ Category Management
     </button>
+    <button class="tab-btn" id="tab-flashsale" onclick="goTab('flashsale',this)">
+      ⚡ Flash Sale Management
+    </button>
   </nav>
 
   <div class="content">
@@ -764,6 +767,57 @@ button,input,select{font-family:'DM Sans',sans-serif;}
       <div id="catConfigList"></div>
     </div>
 
+    <!-- ═══ FLASH SALE MANAGEMENT PAGE ═══ -->
+    <div class="page" id="page-flashsale">
+      <div class="sec-head">
+        <div class="sec-title">⚡ Flash Sale Management <small>Homepage এ কোন products Flash Sale এ দেখাবে</small></div>
+      </div>
+
+      <div class="add-zone-card" style="margin-bottom:16px">
+        <div style="font-size:.82rem;font-weight:700;color:var(--navy);margin-bottom:12px">⚙️ Settings</div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:10px">
+          <div>
+            <label style="font-size:.72rem;font-weight:600;color:var(--muted);display:block;margin-bottom:4px">Flash Sale শেষ হওয়ার সময়</label>
+            <input type="datetime-local" id="flashEndTime" class="form-input" style="max-width:220px">
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:20px">
+            <label style="font-size:.82rem;font-weight:600;color:var(--navy)">Flash Sale চালু</label>
+            <input type="checkbox" id="flashEnabled" style="width:18px;height:18px;accent-color:var(--orange);cursor:pointer">
+          </div>
+        </div>
+        <button class="btn-sm btn-orange" onclick="saveFlashSettings()">💾 Settings সেভ করুন</button>
+        <span id="flashSettingsStatus" style="font-size:.72rem;color:var(--muted);margin-left:10px"></span>
+      </div>
+
+      <div class="add-zone-card" style="margin-bottom:16px">
+        <div style="font-size:.82rem;font-weight:700;color:var(--navy);margin-bottom:10px">➕ Flash Sale এ Product যোগ করুন</div>
+        <div style="font-size:.72rem;color:var(--muted);margin-bottom:10px">সব approved products নিচে দেখাবে।</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
+          <div style="flex:1;min-width:200px">
+            <label style="font-size:.72rem;font-weight:600;color:var(--muted);display:block;margin-bottom:4px">Product বেছে নিন</label>
+            <select id="flashProductSelect" class="form-input">
+              <option value="">-- লোড হচ্ছে... --</option>
+            </select>
+          </div>
+          <div style="min-width:90px">
+            <label style="font-size:.72rem;font-weight:600;color:var(--muted);display:block;margin-bottom:4px">Discount %</label>
+            <input type="number" id="flashDiscount" class="form-input" min="1" max="90" value="10">
+          </div>
+          <button class="btn-sm btn-orange" onclick="addToFlashSale()">➕ যোগ করুন</button>
+        </div>
+      </div>
+
+      <div style="font-size:.82rem;font-weight:700;color:var(--navy);margin-bottom:10px">
+        ⚡ বর্তমান Flash Sale Products <span id="flashCount" style="color:var(--muted);font-weight:400"></span>
+      </div>
+      <div id="flashProductsList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px"></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <button class="btn-sm btn-orange" onclick="saveFlashProducts()">💾 সেভ করুন</button>
+        <button class="btn-sm" style="background:var(--sand);color:var(--navy)" onclick="clearFlashSale()">🗑️ সব সরিয়ে দিন</button>
+        <span id="flashSaveStatus" style="font-size:.72rem;color:var(--muted)"></span>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -876,6 +930,7 @@ function goTab(tab, btn){
   if(tab==='bazaar') loadBazaarRequestsAdmin();
   if(tab==='recon') loadReconOrders();
   if(tab==='categories') loadCategoryConfig();
+  if(tab==='flashsale') loadFlashSaleData();
 }
 
 // ═══ DATA LOADING ═══
@@ -1715,6 +1770,156 @@ function saveMarqueeMessages(){
     });
 }
 
+
+// ═══ FLASH SALE MANAGEMENT ═══
+var flashSaleProducts = []; // {productId, shopId, productName, shopName, discount, price}
+var allProductsForFlash = []; // সব products dropdown এর জন্য
+
+function loadFlashSaleData(){
+  // Settings load
+  db.collection('cities').doc(CITY).collection('settings').doc('flashSale')
+    .get().then(function(doc){
+      if(doc.exists){
+        var d = doc.data();
+        if(d.endTime) document.getElementById('flashEndTime').value = new Date(d.endTime).toISOString().slice(0,16);
+        if(d.enabled !== undefined) document.getElementById('flashEnabled').checked = d.enabled;
+        flashSaleProducts = d.products || [];
+      }
+      renderFlashProductsList();
+    }).catch(function(){ renderFlashProductsList(); });
+
+  // সব products load করো dropdown এর জন্য
+  loadAllProductsForFlash();
+}
+
+function loadAllProductsForFlash(){
+  var select = document.getElementById('flashProductSelect');
+  select.innerHTML = '<option value="">-- Product বেছে নিন --</option>';
+  allProductsForFlash = [];
+
+  db.collection('cities').doc(CITY).collection('sellers').get().then(function(snap){
+    var promises = [];
+    snap.forEach(function(sellerDoc){
+      var seller = sellerDoc.data();
+      if(seller.status === 'pending') return;
+      var p = db.collection('cities').doc(CITY).collection('sellers').doc(sellerDoc.id)
+        .collection('products').get().then(function(prodSnap){
+          prodSnap.forEach(function(pd){
+            var prod = pd.data();
+            allProductsForFlash.push({
+              productId: pd.id,
+              shopId: sellerDoc.id,
+              productName: prod.nameBn || prod.nameEn || prod.name || 'পণ্য',
+              shopName: seller.shopName || 'দোকান',
+              price: prod.price || prod.sellPrice || 0,
+              imageUrl: prod.imageUrl || (prod.images && prod.images[0]) || ''
+            });
+          });
+        });
+      promises.push(p);
+    });
+    return Promise.all(promises);
+  }).then(function(){
+    allProductsForFlash.sort(function(a,b){ return a.productName.localeCompare(b.productName); });
+    allProductsForFlash.forEach(function(p){
+      var opt = document.createElement('option');
+      opt.value = p.shopId + '::' + p.productId;
+      opt.textContent = p.productName + ' — ' + p.shopName + ' (₹'+p.price+')';
+      select.appendChild(opt);
+    });
+  }).catch(function(e){ showToast('Products লোড ব্যর্থ: '+e.message,'red'); });
+}
+
+function addToFlashSale(){
+  var val = document.getElementById('flashProductSelect').value;
+  var disc = parseInt(document.getElementById('flashDiscount').value) || 10;
+  if(!val){ showToast('Product বেছে নিন','red'); return; }
+  var parts = val.split('::');
+  var shopId = parts[0], productId = parts[1];
+  var prod = allProductsForFlash.find(function(p){ return p.shopId===shopId && p.productId===productId; });
+  if(!prod){ showToast('Product পাওয়া যায়নি','red'); return; }
+  if(flashSaleProducts.find(function(p){ return p.productId===productId && p.shopId===shopId; })){
+    showToast('এই product ইতোমধ্যে Flash Sale এ আছে','red'); return;
+  }
+  if(flashSaleProducts.length >= 10){ showToast('সর্বোচ্চ ১০টি product দেওয়া যাবে','red'); return; }
+  flashSaleProducts.push({
+    productId: productId,
+    shopId: shopId,
+    productName: prod.productName,
+    shopName: prod.shopName,
+    price: prod.price,
+    discount: disc,
+    imageUrl: prod.imageUrl
+  });
+  renderFlashProductsList();
+  document.getElementById('flashProductSelect').value = '';
+  showToast('"'+prod.productName+'" Flash Sale এ যোগ হয়েছে ✅','green');
+}
+
+function renderFlashProductsList(){
+  var wrap = document.getElementById('flashProductsList');
+  var countEl = document.getElementById('flashCount');
+  if(!wrap) return;
+  if(countEl) countEl.textContent = '('+flashSaleProducts.length+'/10)';
+  if(!flashSaleProducts.length){
+    wrap.innerHTML = '<div style="color:var(--muted);font-size:.8rem;padding:12px 0">কোনো product নেই — উপরে যোগ করুন</div>';
+    return;
+  }
+  wrap.innerHTML = flashSaleProducts.map(function(p, i){
+    return '<div style="display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px 14px;">'+
+      (p.imageUrl ? '<img src="'+p.imageUrl+'" style="width:44px;height:44px;object-fit:cover;border-radius:8px;flex-shrink:0">' : '<div style="width:44px;height:44px;background:var(--sand);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0">🏷️</div>')+
+      '<div style="flex:1;min-width:0">'+
+        '<div style="font-size:.85rem;font-weight:700;color:var(--charcoal)">'+p.productName+'</div>'+
+        '<div style="font-size:.72rem;color:var(--muted)">'+p.shopName+' · ₹'+p.price+'</div>'+
+      '</div>'+
+      '<div style="display:flex;align-items:center;gap:6px;flex-shrink:0">'+
+        '<input type="number" min="1" max="90" value="'+p.discount+'" style="width:56px;border:1px solid var(--border);border-radius:6px;padding:4px 6px;font-size:.78rem;text-align:center;" oninput="flashSaleProducts['+i+'].discount=parseInt(this.value)||10" title="Discount %">'+
+        '<span style="font-size:.72rem;color:var(--muted)">% OFF</span>'+
+        '<button onclick="removeFromFlashSale('+i+')" style="background:none;border:none;color:#c0392b;cursor:pointer;font-size:1rem;padding:4px">🗑️</button>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+function removeFromFlashSale(i){
+  var name = flashSaleProducts[i].productName;
+  flashSaleProducts.splice(i, 1);
+  renderFlashProductsList();
+  showToast('"'+name+'" Flash Sale থেকে সরানো হয়েছে','green');
+}
+
+function saveFlashSettings(){
+  var status = document.getElementById('flashSettingsStatus');
+  var endTime = document.getElementById('flashEndTime').value;
+  var enabled = document.getElementById('flashEnabled').checked;
+  if(!endTime){ showToast('শেষ সময় দিন','red'); return; }
+  db.collection('cities').doc(CITY).collection('settings').doc('flashSale')
+    .set({ endTime: new Date(endTime).getTime(), enabled: enabled, products: flashSaleProducts, updatedAt: new Date().toISOString() }, {merge:true})
+    .then(function(){
+      if(status) status.textContent = '✅ সেভ হয়েছে';
+      setTimeout(function(){ if(status) status.textContent=''; }, 3000);
+      showToast('Flash Sale settings সেভ হয়েছে ✅','green');
+    }).catch(function(e){ showToast('সেভ ব্যর্থ: '+e.message,'red'); });
+}
+
+function saveFlashProducts(){
+  var status = document.getElementById('flashSaveStatus');
+  if(status) status.textContent = 'সেভ হচ্ছে...';
+  db.collection('cities').doc(CITY).collection('settings').doc('flashSale')
+    .set({ products: flashSaleProducts, updatedAt: new Date().toISOString() }, {merge:true})
+    .then(function(){
+      if(status) status.textContent = '✅ সেভ হয়েছে';
+      setTimeout(function(){ if(status) status.textContent=''; }, 3000);
+      showToast('Flash Sale products সেভ হয়েছে ✅','green');
+    }).catch(function(e){ showToast('সেভ ব্যর্থ: '+e.message,'red'); });
+}
+
+function clearFlashSale(){
+  if(!confirm('সব Flash Sale products সরাবেন?')) return;
+  flashSaleProducts = [];
+  renderFlashProductsList();
+  showToast('Flash Sale clear হয়েছে — Save করুন','green');
+}
 
 // ═══ CATEGORY MANAGEMENT ═══
 var DEFAULT_CATEGORIES = [
