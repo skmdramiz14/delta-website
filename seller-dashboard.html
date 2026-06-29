@@ -1881,11 +1881,19 @@ async function saveProduct(){
       var idx=products.findIndex(function(p){return p.id===editId;});
       if(idx>=0)products[idx]=Object.assign({},products[idx],data);
       showToast('পণ্য আপডেট হয়েছে ✅','green');
+      // Discount update হলে Flash Sale pending আপডেট করো
+      if(disc>=10){
+        submitFlashSalePending(editId, data, disc);
+      }
     } else {
       data.createdAt=new Date().toISOString();
       var ref=await productsRef().add(data);
       products.unshift(Object.assign({id:ref.id},data));
       showToast('নতুন পণ্য যোগ হয়েছে ✅','green');
+      // নতুন product এ discount ≥ 10% হলে Flash Sale pending এ পাঠাও
+      if(disc>=10){
+        submitFlashSalePending(ref.id, data, disc);
+      }
     }
     renderProducts();
     updateProductStats();
@@ -1896,6 +1904,34 @@ async function saveProduct(){
   }
   btn.disabled=false;
   btn.textContent='✅ সেভ করুন / Save';
+}
+
+// ── FLASH SALE PENDING AUTO-SUBMIT ──
+function submitFlashSalePending(productId, productData, disc){
+  if(!firebase.auth().currentUser) return;
+  var shopId = firebase.auth().currentUser.uid;
+  var pendingRef = db.collection('cities').doc(CITY)
+    .collection('settings').doc('flashSalePending')
+    .collection('requests').doc(shopId+'_'+productId);
+
+  pendingRef.set({
+    productId: productId,
+    shopId: shopId,
+    shopName: SD.shopName||'দোকান',
+    productName: productData.nameBn||productData.name||'পণ্য',
+    price: productData.price||0,
+    mrp: productData.mrp||0,
+    discount: disc,
+    imageUrl: productData.imageUrl||'',
+    category: productData.category||'',
+    status: 'pending', // pending / approved / rejected
+    submittedAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  }).then(function(){
+    console.log('Flash Sale pending submitted');
+  }).catch(function(e){
+    console.warn('Flash Sale pending failed:', e.message);
+  });
 }
 
 // ═══ REGISTRATION CATEGORY SYSTEM ═══
