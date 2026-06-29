@@ -4487,19 +4487,53 @@ function flashCardHTML(p){
 }
 
 function buildFlashSale(prods){
-  if(!prods||!prods.length)return;
-  var flash=prods.filter(function(p){return p.discount>=10;}).slice(0,6);
-  if(!flash.length)return;
-  var sec=document.getElementById('flashSection');
-  var grid=document.getElementById('flashGrid');
-  if(!sec||!grid)return;
-  flash.forEach(function(p,i){
-    p._flashEnd=Date.now()+(2+i)*3600000+Math.floor(Math.random()*60)*60000;
-  });
-  grid.innerHTML=flash.map(function(p){return flashCardHTML(p);}).join('');
-  sec.style.display='block';
-  startFlashCountdown();
-  startFlashCardTimers(flash);
+  if(!db) return;
+  // Firebase থেকে Admin-set Flash Sale products load করো
+  db.collection('cities').doc(CITY).collection('settings').doc('flashSale')
+    .get().then(function(doc){
+      var flash = [];
+      if(doc.exists && doc.data().enabled && doc.data().products && doc.data().products.length){
+        // Admin defined products
+        var adminProds = doc.data().products;
+        var endTime = doc.data().endTime || (Date.now() + 3*3600000);
+        adminProds.forEach(function(ap, i){
+          var found = prods.find(function(p){ return p.id===ap.productId && p.shopId===ap.shopId; });
+          if(found){
+            found = Object.assign({}, found);
+            found.discount = ap.discount || found.discount || 10;
+            found._flashEnd = endTime;
+            flash.push(found);
+          }
+        });
+      }
+      // Fallback — discount >= 10% products
+      if(!flash.length){
+        flash = prods.filter(function(p){ return p.discount>=10; }).slice(0,6);
+        flash.forEach(function(p,i){
+          p._flashEnd = Date.now()+(2+i)*3600000+Math.floor(Math.random()*60)*60000;
+        });
+      }
+      if(!flash.length) return;
+      var sec=document.getElementById('flashSection');
+      var grid=document.getElementById('flashGrid');
+      if(!sec||!grid) return;
+      grid.innerHTML=flash.map(function(p){return flashCardHTML(p);}).join('');
+      sec.style.display='block';
+      startFlashCountdown();
+      startFlashCardTimers(flash);
+    }).catch(function(){
+      // Error হলে discount filter fallback
+      var flash=prods.filter(function(p){return p.discount>=10;}).slice(0,6);
+      if(!flash.length)return;
+      flash.forEach(function(p,i){ p._flashEnd=Date.now()+(2+i)*3600000; });
+      var sec=document.getElementById('flashSection');
+      var grid=document.getElementById('flashGrid');
+      if(!sec||!grid)return;
+      grid.innerHTML=flash.map(function(p){return flashCardHTML(p);}).join('');
+      sec.style.display='block';
+      startFlashCountdown();
+      startFlashCardTimers(flash);
+    });
 }
 
 function startFlashCardTimers(flashProds){
