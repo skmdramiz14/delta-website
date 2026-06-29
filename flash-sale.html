@@ -170,11 +170,13 @@ body.lang-bn .lang-en{display:none!important;}
 
   <!-- Countdown -->
   <div class="hero-countdown" id="heroCountdown">
-    <div class="cd-block"><div class="cd-num" id="cdHours">--</div><div class="cd-label">ঘণ্টা</div></div>
+    <div class="cd-block" id="cdDaysWrap" style="display:none;"><div class="cd-num" id="cdDays">--</div><div class="cd-label"><span class="lang-bn">দিন</span><span class="lang-en">days</span></div></div>
+    <span class="cd-sep" id="cdDaySep" style="display:none;">:</span>
+    <div class="cd-block"><div class="cd-num" id="cdHours">--</div><div class="cd-label"><span class="lang-bn">ঘণ্টা</span><span class="lang-en">hrs</span></div></div>
     <div class="cd-sep">:</div>
-    <div class="cd-block"><div class="cd-num" id="cdMins">--</div><div class="cd-label">মিনিট</div></div>
+    <div class="cd-block"><div class="cd-num" id="cdMins">--</div><div class="cd-label"><span class="lang-bn">মিনিট</span><span class="lang-en">min</span></div></div>
     <div class="cd-sep">:</div>
-    <div class="cd-block"><div class="cd-num" id="cdSecs">--</div><div class="cd-label">সেকেন্ড</div></div>
+    <div class="cd-block"><div class="cd-num" id="cdSecs">--</div><div class="cd-label"><span class="lang-bn">সেকেন্ড</span><span class="lang-en">sec</span></div></div>
   </div>
   <div class="hero-ends" id="heroEnds"></div>
   <div class="hero-count" id="heroCount"></div>
@@ -394,15 +396,31 @@ function startCountdown(){
   countdownInterval=setInterval(function(){
     var ms=flashEndTime-Date.now();
     if(ms<=0){
-      document.getElementById('cdHours').textContent='00';
-      document.getElementById('cdMins').textContent='00';
-      document.getElementById('cdSecs').textContent='00';
-      clearInterval(countdownInterval);
-      return;
+      ['cdDays','cdHours','cdMins','cdSecs'].forEach(function(id){ var el=document.getElementById(id); if(el) el.textContent='00'; });
+      clearInterval(countdownInterval); return;
     }
-    document.getElementById('cdHours').textContent=String(Math.floor(ms/3600000)).padStart(2,'0');
-    document.getElementById('cdMins').textContent=String(Math.floor((ms%3600000)/60000)).padStart(2,'0');
-    document.getElementById('cdSecs').textContent=String(Math.floor((ms%60000)/1000)).padStart(2,'0');
+    var days=Math.floor(ms/86400000);
+    var h=Math.floor((ms%86400000)/3600000);
+    var m=Math.floor((ms%3600000)/60000);
+    var s=Math.floor((ms%60000)/1000);
+
+    var dw=document.getElementById('cdDaysWrap');
+    var ds=document.getElementById('cdDaySep');
+    var dEl=document.getElementById('cdDays');
+    if(days>0){
+      if(dw) dw.style.display='flex';
+      if(ds) ds.style.display='inline';
+      if(dEl) dEl.textContent=days;
+    } else {
+      if(dw) dw.style.display='none';
+      if(ds) ds.style.display='none';
+    }
+    var hEl=document.getElementById('cdHours');
+    var mEl=document.getElementById('cdMins');
+    var sEl=document.getElementById('cdSecs');
+    if(hEl) hEl.textContent=String(h).padStart(2,'0');
+    if(mEl) mEl.textContent=String(m).padStart(2,'0');
+    if(sEl) sEl.textContent=String(s).padStart(2,'0');
   },1000);
 }
 
