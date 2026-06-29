@@ -773,6 +773,21 @@ button,input,select{font-family:'DM Sans',sans-serif;}
         <div class="sec-title">⚡ Flash Sale Management <small>Homepage এ কোন products Flash Sale এ দেখাবে</small></div>
       </div>
 
+      <!-- Pending Requests from Sellers -->
+      <div class="add-zone-card" style="margin-bottom:16px;border-left:3px solid var(--orange);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <div style="font-size:.82rem;font-weight:700;color:var(--navy);">
+            🔔 Seller Requests <span id="pendingFlashCount" style="background:var(--orange);color:#fff;border-radius:20px;padding:2px 8px;font-size:.7rem;margin-left:6px;">0</span>
+          </div>
+          <button class="btn-sm" style="background:var(--sand);color:var(--navy)" onclick="loadFlashPendingRequests()">↺ Refresh</button>
+        </div>
+        <div style="font-size:.72rem;color:var(--muted);margin-bottom:10px;">Seller দের discount দেওয়া products — Approve করলে Flash Sale এ যাবে, discount edit করা যাবে।</div>
+        <div id="flashPendingList">
+          <div style="color:var(--muted);font-size:.8rem;padding:8px 0">লোড হচ্ছে...</div>
+        </div>
+      </div>
+
+      <!-- Flash Sale Settings -->
       <div class="add-zone-card" style="margin-bottom:16px">
         <div style="font-size:.82rem;font-weight:700;color:var(--navy);margin-bottom:12px">⚙️ Settings</div>
         <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:10px">
@@ -789,9 +804,9 @@ button,input,select{font-family:'DM Sans',sans-serif;}
         <span id="flashSettingsStatus" style="font-size:.72rem;color:var(--muted);margin-left:10px"></span>
       </div>
 
+      <!-- Manually Add Product -->
       <div class="add-zone-card" style="margin-bottom:16px">
-        <div style="font-size:.82rem;font-weight:700;color:var(--navy);margin-bottom:10px">➕ Flash Sale এ Product যোগ করুন</div>
-        <div style="font-size:.72rem;color:var(--muted);margin-bottom:10px">সব approved products নিচে দেখাবে।</div>
+        <div style="font-size:.82rem;font-weight:700;color:var(--navy);margin-bottom:10px">➕ নিজে Product যোগ করুন</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
           <div style="flex:1;min-width:200px">
             <label style="font-size:.72rem;font-weight:600;color:var(--muted);display:block;margin-bottom:4px">Product বেছে নিন</label>
@@ -807,6 +822,7 @@ button,input,select{font-family:'DM Sans',sans-serif;}
         </div>
       </div>
 
+      <!-- Current Flash Sale products -->
       <div style="font-size:.82rem;font-weight:700;color:var(--navy);margin-bottom:10px">
         ⚡ বর্তমান Flash Sale Products <span id="flashCount" style="color:var(--muted);font-weight:400"></span>
       </div>
@@ -1772,11 +1788,10 @@ function saveMarqueeMessages(){
 
 
 // ═══ FLASH SALE MANAGEMENT ═══
-var flashSaleProducts = []; // {productId, shopId, productName, shopName, discount, price}
-var allProductsForFlash = []; // সব products dropdown এর জন্য
+var flashSaleProducts = [];
+var allProductsForFlash = [];
 
 function loadFlashSaleData(){
-  // Settings load
   db.collection('cities').doc(CITY).collection('settings').doc('flashSale')
     .get().then(function(doc){
       if(doc.exists){
@@ -1787,16 +1802,84 @@ function loadFlashSaleData(){
       }
       renderFlashProductsList();
     }).catch(function(){ renderFlashProductsList(); });
-
-  // সব products load করো dropdown এর জন্য
   loadAllProductsForFlash();
+  loadFlashPendingRequests();
+}
+
+function loadFlashPendingRequests(){
+  var wrap = document.getElementById('flashPendingList');
+  var countEl = document.getElementById('pendingFlashCount');
+  if(wrap) wrap.innerHTML = '<div style="color:var(--muted);font-size:.8rem;padding:8px 0">লোড হচ্ছে...</div>';
+  db.collection('cities').doc(CITY).collection('settings').doc('flashSalePending')
+    .collection('requests').where('status','==','pending').get()
+    .then(function(snap){
+      if(countEl) countEl.textContent = snap.size;
+      if(!snap.size){
+        if(wrap) wrap.innerHTML = '<div style="color:var(--muted);font-size:.8rem;padding:8px 0">কোনো pending request নেই</div>';
+        return;
+      }
+      var html = '';
+      snap.forEach(function(doc){
+        var r = doc.data();
+        html += '<div style="display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:8px;">'+
+          (r.imageUrl?'<img src="'+r.imageUrl+'" style="width:44px;height:44px;object-fit:cover;border-radius:8px;flex-shrink:0">':'<div style="width:44px;height:44px;background:var(--sand);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0">🏷️</div>')+
+          '<div style="flex:1;min-width:0;">'+
+            '<div style="font-size:.85rem;font-weight:700;color:var(--charcoal)">'+r.productName+'</div>'+
+            '<div style="font-size:.72rem;color:var(--muted)">'+r.shopName+' · ₹'+r.price+'</div>'+
+            '<div style="font-size:.7rem;color:var(--orange);font-weight:600">Seller discount: '+r.discount+'%</div>'+
+          '</div>'+
+          '<div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;flex-shrink:0;">'+
+            '<div style="display:flex;align-items:center;gap:4px;">'+
+              '<input type="number" min="1" max="90" value="'+r.discount+'" id="pd_'+doc.id+'" style="width:54px;border:1px solid var(--border);border-radius:6px;padding:4px 6px;font-size:.78rem;text-align:center;">'+
+              '<span style="font-size:.7rem;color:var(--muted)">% OFF</span>'+
+            '</div>'+
+            '<div style="display:flex;gap:6px;">'+
+              '<button class="btn-sm btn-orange" style="padding:5px 12px;font-size:.72rem;" onclick="approveFlashRequest(\''+doc.id+'\',\''+r.productId+'\',\''+r.shopId+'\',\''+r.productName.replace(/'/g,"\\'")+'\',\''+r.shopName.replace(/'/g,"\\'")+'\','+r.price+',\''+r.imageUrl+'\')">✅ Approve</button>'+
+              '<button class="btn-sm" style="padding:5px 12px;font-size:.72rem;background:var(--red2);color:var(--red);" onclick="rejectFlashRequest(\''+doc.id+'\')">❌ Reject</button>'+
+            '</div>'+
+          '</div>'+
+        '</div>';
+      });
+      if(wrap) wrap.innerHTML = html;
+    }).catch(function(e){
+      if(wrap) wrap.innerHTML = '<div style="color:var(--muted);font-size:.8rem;">লোড ব্যর্থ: '+e.message+'</div>';
+    });
+}
+
+function approveFlashRequest(docId, productId, shopId, productName, shopName, price, imageUrl){
+  var discInput = document.getElementById('pd_'+docId);
+  var disc = discInput ? (parseInt(discInput.value)||10) : 10;
+  if(flashSaleProducts.length >= 10){ showToast('সর্বোচ্চ ১০টি product','red'); return; }
+  var exists = flashSaleProducts.find(function(p){ return p.productId===productId && p.shopId===shopId; });
+  if(!exists){
+    flashSaleProducts.push({ productId:productId, shopId:shopId, productName:productName, shopName:shopName, price:price, discount:disc, imageUrl:imageUrl||'' });
+  }
+  renderFlashProductsList();
+  db.collection('cities').doc(CITY).collection('settings').doc('flashSalePending')
+    .collection('requests').doc(docId)
+    .update({ status:'approved', approvedDiscount:disc, approvedAt:new Date().toISOString() })
+    .then(function(){
+      showToast('"'+productName+'" Approved ✅ — এখন Save করুন','green');
+      loadFlashPendingRequests();
+    }).catch(function(e){ showToast('Error: '+e.message,'red'); });
+}
+
+function rejectFlashRequest(docId){
+  if(!confirm('এই request reject করবেন?')) return;
+  db.collection('cities').doc(CITY).collection('settings').doc('flashSalePending')
+    .collection('requests').doc(docId)
+    .update({ status:'rejected', rejectedAt:new Date().toISOString() })
+    .then(function(){
+      showToast('Request reject হয়েছে','green');
+      loadFlashPendingRequests();
+    }).catch(function(e){ showToast('Error: '+e.message,'red'); });
 }
 
 function loadAllProductsForFlash(){
   var select = document.getElementById('flashProductSelect');
+  if(!select) return;
   select.innerHTML = '<option value="">-- Product বেছে নিন --</option>';
   allProductsForFlash = [];
-
   db.collection('cities').doc(CITY).collection('sellers').get().then(function(snap){
     var promises = [];
     snap.forEach(function(sellerDoc){
@@ -1806,14 +1889,7 @@ function loadAllProductsForFlash(){
         .collection('products').get().then(function(prodSnap){
           prodSnap.forEach(function(pd){
             var prod = pd.data();
-            allProductsForFlash.push({
-              productId: pd.id,
-              shopId: sellerDoc.id,
-              productName: prod.nameBn || prod.nameEn || prod.name || 'পণ্য',
-              shopName: seller.shopName || 'দোকান',
-              price: prod.price || prod.sellPrice || 0,
-              imageUrl: prod.imageUrl || (prod.images && prod.images[0]) || ''
-            });
+            allProductsForFlash.push({ productId:pd.id, shopId:sellerDoc.id, productName:prod.nameBn||prod.nameEn||prod.name||'পণ্য', shopName:seller.shopName||'দোকান', price:prod.price||prod.sellPrice||0, imageUrl:prod.imageUrl||(prod.images&&prod.images[0])||'' });
           });
         });
       promises.push(p);
@@ -1823,8 +1899,8 @@ function loadAllProductsForFlash(){
     allProductsForFlash.sort(function(a,b){ return a.productName.localeCompare(b.productName); });
     allProductsForFlash.forEach(function(p){
       var opt = document.createElement('option');
-      opt.value = p.shopId + '::' + p.productId;
-      opt.textContent = p.productName + ' — ' + p.shopName + ' (₹'+p.price+')';
+      opt.value = p.shopId+'::'+p.productId;
+      opt.textContent = p.productName+' — '+p.shopName+' (₹'+p.price+')';
       select.appendChild(opt);
     });
   }).catch(function(e){ showToast('Products লোড ব্যর্থ: '+e.message,'red'); });
@@ -1832,94 +1908,60 @@ function loadAllProductsForFlash(){
 
 function addToFlashSale(){
   var val = document.getElementById('flashProductSelect').value;
-  var disc = parseInt(document.getElementById('flashDiscount').value) || 10;
+  var disc = parseInt(document.getElementById('flashDiscount').value)||10;
   if(!val){ showToast('Product বেছে নিন','red'); return; }
   var parts = val.split('::');
-  var shopId = parts[0], productId = parts[1];
-  var prod = allProductsForFlash.find(function(p){ return p.shopId===shopId && p.productId===productId; });
+  var prod = allProductsForFlash.find(function(p){ return p.shopId===parts[0]&&p.productId===parts[1]; });
   if(!prod){ showToast('Product পাওয়া যায়নি','red'); return; }
-  if(flashSaleProducts.find(function(p){ return p.productId===productId && p.shopId===shopId; })){
-    showToast('এই product ইতোমধ্যে Flash Sale এ আছে','red'); return;
-  }
-  if(flashSaleProducts.length >= 10){ showToast('সর্বোচ্চ ১০টি product দেওয়া যাবে','red'); return; }
-  flashSaleProducts.push({
-    productId: productId,
-    shopId: shopId,
-    productName: prod.productName,
-    shopName: prod.shopName,
-    price: prod.price,
-    discount: disc,
-    imageUrl: prod.imageUrl
-  });
+  if(flashSaleProducts.find(function(p){ return p.productId===parts[1]&&p.shopId===parts[0]; })){ showToast('ইতোমধ্যে আছে','red'); return; }
+  if(flashSaleProducts.length>=10){ showToast('সর্বোচ্চ ১০টি','red'); return; }
+  flashSaleProducts.push({ productId:parts[1], shopId:parts[0], productName:prod.productName, shopName:prod.shopName, price:prod.price, discount:disc, imageUrl:prod.imageUrl });
   renderFlashProductsList();
-  document.getElementById('flashProductSelect').value = '';
-  showToast('"'+prod.productName+'" Flash Sale এ যোগ হয়েছে ✅','green');
+  document.getElementById('flashProductSelect').value='';
+  showToast('"'+prod.productName+'" যোগ হয়েছে ✅','green');
 }
 
 function renderFlashProductsList(){
-  var wrap = document.getElementById('flashProductsList');
-  var countEl = document.getElementById('flashCount');
-  if(!wrap) return;
-  if(countEl) countEl.textContent = '('+flashSaleProducts.length+'/10)';
-  if(!flashSaleProducts.length){
-    wrap.innerHTML = '<div style="color:var(--muted);font-size:.8rem;padding:12px 0">কোনো product নেই — উপরে যোগ করুন</div>';
-    return;
-  }
-  wrap.innerHTML = flashSaleProducts.map(function(p, i){
+  var wrap=document.getElementById('flashProductsList');
+  var countEl=document.getElementById('flashCount');
+  if(!wrap)return;
+  if(countEl)countEl.textContent='('+flashSaleProducts.length+'/10)';
+  if(!flashSaleProducts.length){ wrap.innerHTML='<div style="color:var(--muted);font-size:.8rem;padding:12px 0">কোনো product নেই</div>'; return; }
+  wrap.innerHTML=flashSaleProducts.map(function(p,i){
     return '<div style="display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px 14px;">'+
-      (p.imageUrl ? '<img src="'+p.imageUrl+'" style="width:44px;height:44px;object-fit:cover;border-radius:8px;flex-shrink:0">' : '<div style="width:44px;height:44px;background:var(--sand);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0">🏷️</div>')+
-      '<div style="flex:1;min-width:0">'+
-        '<div style="font-size:.85rem;font-weight:700;color:var(--charcoal)">'+p.productName+'</div>'+
-        '<div style="font-size:.72rem;color:var(--muted)">'+p.shopName+' · ₹'+p.price+'</div>'+
-      '</div>'+
+      (p.imageUrl?'<img src="'+p.imageUrl+'" style="width:44px;height:44px;object-fit:cover;border-radius:8px;flex-shrink:0">':'<div style="width:44px;height:44px;background:var(--sand);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0">🏷️</div>')+
+      '<div style="flex:1;min-width:0"><div style="font-size:.85rem;font-weight:700;color:var(--charcoal)">'+p.productName+'</div><div style="font-size:.72rem;color:var(--muted)">'+p.shopName+' · ₹'+p.price+'</div></div>'+
       '<div style="display:flex;align-items:center;gap:6px;flex-shrink:0">'+
-        '<input type="number" min="1" max="90" value="'+p.discount+'" style="width:56px;border:1px solid var(--border);border-radius:6px;padding:4px 6px;font-size:.78rem;text-align:center;" oninput="flashSaleProducts['+i+'].discount=parseInt(this.value)||10" title="Discount %">'+
+        '<input type="number" min="1" max="90" value="'+p.discount+'" style="width:56px;border:1px solid var(--border);border-radius:6px;padding:4px 6px;font-size:.78rem;text-align:center;" oninput="flashSaleProducts['+i+'].discount=parseInt(this.value)||10">'+
         '<span style="font-size:.72rem;color:var(--muted)">% OFF</span>'+
         '<button onclick="removeFromFlashSale('+i+')" style="background:none;border:none;color:#c0392b;cursor:pointer;font-size:1rem;padding:4px">🗑️</button>'+
-      '</div>'+
-    '</div>';
+      '</div></div>';
   }).join('');
 }
 
-function removeFromFlashSale(i){
-  var name = flashSaleProducts[i].productName;
-  flashSaleProducts.splice(i, 1);
-  renderFlashProductsList();
-  showToast('"'+name+'" Flash Sale থেকে সরানো হয়েছে','green');
-}
+function removeFromFlashSale(i){ var n=flashSaleProducts[i].productName; flashSaleProducts.splice(i,1); renderFlashProductsList(); showToast('"'+n+'" সরানো হয়েছে','green'); }
 
 function saveFlashSettings(){
-  var status = document.getElementById('flashSettingsStatus');
-  var endTime = document.getElementById('flashEndTime').value;
-  var enabled = document.getElementById('flashEnabled').checked;
-  if(!endTime){ showToast('শেষ সময় দিন','red'); return; }
+  var status=document.getElementById('flashSettingsStatus');
+  var endTime=document.getElementById('flashEndTime').value;
+  var enabled=document.getElementById('flashEnabled').checked;
+  if(!endTime){showToast('শেষ সময় দিন','red');return;}
   db.collection('cities').doc(CITY).collection('settings').doc('flashSale')
-    .set({ endTime: new Date(endTime).getTime(), enabled: enabled, products: flashSaleProducts, updatedAt: new Date().toISOString() }, {merge:true})
-    .then(function(){
-      if(status) status.textContent = '✅ সেভ হয়েছে';
-      setTimeout(function(){ if(status) status.textContent=''; }, 3000);
-      showToast('Flash Sale settings সেভ হয়েছে ✅','green');
-    }).catch(function(e){ showToast('সেভ ব্যর্থ: '+e.message,'red'); });
+    .set({endTime:new Date(endTime).getTime(),enabled:enabled,products:flashSaleProducts,updatedAt:new Date().toISOString()},{merge:true})
+    .then(function(){ if(status)status.textContent='✅ সেভ হয়েছে'; setTimeout(function(){if(status)status.textContent='';},3000); showToast('Settings সেভ ✅','green'); })
+    .catch(function(e){ showToast('সেভ ব্যর্থ: '+e.message,'red'); });
 }
 
 function saveFlashProducts(){
-  var status = document.getElementById('flashSaveStatus');
-  if(status) status.textContent = 'সেভ হচ্ছে...';
+  var status=document.getElementById('flashSaveStatus');
+  if(status)status.textContent='সেভ হচ্ছে...';
   db.collection('cities').doc(CITY).collection('settings').doc('flashSale')
-    .set({ products: flashSaleProducts, updatedAt: new Date().toISOString() }, {merge:true})
-    .then(function(){
-      if(status) status.textContent = '✅ সেভ হয়েছে';
-      setTimeout(function(){ if(status) status.textContent=''; }, 3000);
-      showToast('Flash Sale products সেভ হয়েছে ✅','green');
-    }).catch(function(e){ showToast('সেভ ব্যর্থ: '+e.message,'red'); });
+    .set({products:flashSaleProducts,updatedAt:new Date().toISOString()},{merge:true})
+    .then(function(){ if(status)status.textContent='✅ সেভ হয়েছে'; setTimeout(function(){if(status)status.textContent='';},3000); showToast('Flash Sale products সেভ ✅','green'); })
+    .catch(function(e){ showToast('সেভ ব্যর্থ: '+e.message,'red'); });
 }
 
-function clearFlashSale(){
-  if(!confirm('সব Flash Sale products সরাবেন?')) return;
-  flashSaleProducts = [];
-  renderFlashProductsList();
-  showToast('Flash Sale clear হয়েছে — Save করুন','green');
-}
+function clearFlashSale(){ if(!confirm('সব সরাবেন?'))return; flashSaleProducts=[]; renderFlashProductsList(); showToast('Clear হয়েছে — Save করুন','green'); }
 
 // ═══ CATEGORY MANAGEMENT ═══
 var DEFAULT_CATEGORIES = [
