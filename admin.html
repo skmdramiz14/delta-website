@@ -1311,6 +1311,21 @@ function orderCardHTML(o){
       'onclick="saveRiderPayout(\''+o.shopId+'\',\''+o.id+'\')">💾 Payout সেভ করুন</button>'+
   '</div>';
 
+  // Delivery boy assign dropdown
+  var dbAssignSection = '';
+  var activeDBoys = allDeliveryBoys.filter(function(d){
+    return (d.isActive===true || d.isActive==='true');
+  });
+  var dbOptions = '<option value="">— Delivery Boy বেছে নিন —</option>';
+  dbOptions += activeDBoys.map(function(d){
+    return '<option value="'+d.id+'|'+d.name+'|'+(d.phone||'')+'" '+(o.deliveryBoyId===d.id?'selected':'')+'>'+d.name+(d.phone?' ('+d.phone+')':'')+'</option>';
+  }).join('');
+  dbAssignSection = '<div class="payout-box" style="margin-top:8px;">'+
+    '<div class="payout-box-title">🛵 Delivery Boy Assign করুন</div>'+
+    '<select class="order-status-sel" id="dbAssignSel-'+o.id+'" style="width:100%;margin-bottom:8px;">'+dbOptions+'</select>'+
+    '<button class="btn-sm btn-blue" style="width:100%;justify-content:center" onclick="adminAssignDeliveryBoy(\''+o.shopId+'\',\''+o.id+'\')">✅ Assign করুন</button>'+
+  '</div>';
+
   return '<div class="order-card">'+
     '<div class="order-top">'+
       '<div>'+
@@ -1333,11 +1348,34 @@ function orderCardHTML(o){
     '</div>'+
     (o.deliveryBoyName?'<div class="db-assigned-tag">🛵 '+o.deliveryBoyName+' কে assign করা আছে'+(o.riderPayout?' · Payout: ₹'+o.riderPayout:'')+'</div>':'')+
     payoutSection+
+    dbAssignSection+
     '<div class="sc-actions">'+
       '<select class="order-status-sel" onchange="changeOrderStatus(\''+o.shopId+'\',\''+o.id+'\',this.value)">'+statusOptions+'</select>'+
       (status!=='cancelled'?'<button class="btn-sm btn-red" onclick="cancelOrder(\''+o.shopId+'\',\''+o.id+'\')">❌ Order Cancel করুন</button>':'')+
     '</div>'+
   '</div>';
+}
+
+function adminAssignDeliveryBoy(shopId, orderId){
+  var sel = document.getElementById('dbAssignSel-'+orderId);
+  if(!sel || !sel.value){ showToast('Delivery Boy বেছে নিন','red'); return; }
+  var parts = sel.value.split('|');
+  var dbId=parts[0], dbName=parts[1], dbPhone=parts[2]||'';
+  db.collection('cities').doc(CITY).collection('sellers').doc(shopId)
+    .collection('orders').doc(orderId).update({
+      deliveryBoyId: dbId,
+      deliveryBoyName: dbName,
+      deliveryBoyPhone: dbPhone,
+      deliveryBoyAssignedAt: new Date().toISOString(),
+      deliveryStatus: 'assigned'
+    }).then(function(){
+      var o = allOrders.find(function(x){return x.id===orderId && x.shopId===shopId;});
+      if(o){ o.deliveryBoyId=dbId; o.deliveryBoyName=dbName; o.deliveryBoyPhone=dbPhone; o.deliveryStatus='assigned'; }
+      showToast(dbName+' কে assign করা হয়েছে ✅','green');
+      renderOrders();
+    }).catch(function(e){
+      showToast('Assign ব্যর্থ: '+e.message,'red');
+    });
 }
 
 function calcPayout(orderId){
