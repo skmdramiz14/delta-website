@@ -2991,24 +2991,30 @@ function saveFreshCategory(sellerId, prodId, cat){
 // ═══ COD RECONCILIATION ═══
 function loadReconOrders(){
   allReconOrders = [];
+  if(!allSellers.length){
+    console.warn('loadReconOrders: allSellers খালি — sellers এখনো load হয়নি');
+  }
   var proms = allSellers.map(function(s){
     return db.collection('cities').doc(CITY).collection('sellers').doc(s.id)
       .collection('orders')
       .where('paymentMethod','==','cod')
       .get().then(function(snap){
+        console.log('Shop:', s.shopName, '— COD orders found:', snap.size);
         snap.forEach(function(d){
           var data = d.data();
-          // আসল business rule: cash physically সংগ্রহ হয়েছে কিনা সেটাই গুরুত্বপূর্ণ,
-          // main 'status' field পরে Admin override করলেও সেটা প্রভাবিত করবে না
+          console.log('  Order', d.id, 'codCashCollected:', data.codCashCollected, 'status:', data.status);
           if(data.codCashCollected === true){
             allReconOrders.push(Object.assign({
               id:d.id, shopId:s.id, shopName:s.shopName
             }, data));
           }
         });
-      }).catch(function(){});
+      }).catch(function(e){
+        console.error('loadReconOrders error for shop', s.id, ':', e.message);
+      });
   });
   Promise.all(proms).then(function(){
+    console.log('Total reconcilable orders:', allReconOrders.length);
     allReconOrders.sort(function(a,b){ return new Date(b.createdAt||0)-new Date(a.createdAt||0); });
     renderRecon();
     updateReconStats();
