@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DELTA — Seller Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600;700&family=Tiro+Bangla&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 :root{
@@ -383,7 +384,25 @@ select.form-input{cursor:pointer;}
   .form-grid-2{grid-template-columns:1fr;}
   .plans-grid{grid-template-columns:1fr;}
   .img-upload-grid{grid-template-columns:repeat(5,1fr);}
+/* ── PICKUP VERIFY MODAL ── */
+.pv-modal-overlay{display:none;position:fixed;inset:0;background:rgba(10,31,53,.7);z-index:5000;align-items:center;justify-content:center;padding:20px;}
+.pv-modal-overlay.open{display:flex;}
+.pv-modal-box{background:#fff;border-radius:18px;max-width:380px;width:100%;padding:28px 24px;text-align:center;}
+.pv-modal-title{font-size:1.05rem;font-weight:800;color:var(--navy);margin-bottom:6px;}
+.pv-modal-sub{font-size:.8rem;color:var(--muted);margin-bottom:20px;}
+.pv-otp-display{
+  font-size:2.4rem;font-weight:900;letter-spacing:10px;
+  color:var(--orange);background:var(--orange-light,#fff4ec);
+  border-radius:14px;padding:18px;margin-bottom:16px;
+  font-family:monospace;
 }
+.pv-qr-wrap{margin-bottom:16px;}
+.pv-qr-wrap canvas{margin:0 auto;border-radius:10px;border:1px solid var(--border);}
+.pv-divider{display:flex;align-items:center;gap:10px;margin:16px 0;color:var(--muted);font-size:.72rem;}
+.pv-divider::before,.pv-divider::after{content:'';flex:1;height:1px;background:var(--border);}
+.pv-instructions{font-size:.78rem;color:var(--muted);text-align:left;background:var(--sand);border-radius:10px;padding:12px 14px;margin-bottom:18px;line-height:1.6;}
+.pv-confirm-btn{width:100%;background:var(--green,#1a8a4a);color:#fff;border:none;padding:13px;border-radius:10px;font-weight:700;font-size:.9rem;cursor:pointer;margin-bottom:8px;}
+.pv-cancel-btn{width:100%;background:transparent;color:var(--muted);border:none;padding:8px;font-size:.82rem;cursor:pointer;}
 </style>
 </head>
 <body>
@@ -3166,9 +3185,19 @@ function orderCardHTML(o){
   // (Delivery Boy assign Admin/Order Manager এর দায়িত্ব — Admin Panel থেকে হবে)
   var dbInfo = '';
   if(o.deliveryBoyName){
+    var verifiedBadge = o.pickupVerified
+      ? '<span style="background:rgba(255,255,255,.25);padding:2px 8px;border-radius:10px;font-size:.68rem;margin-left:6px;">✅ Pickup Verified</span>'
+      : '<span style="background:rgba(255,255,255,.2);padding:2px 8px;border-radius:10px;font-size:.68rem;margin-left:6px;">⏳ Pickup বাকি</span>';
     dbInfo = '<div style="background:var(--green2);border-radius:8px;padding:8px 12px;'+
-      'margin-top:8px;font-size:.78rem;display:flex;align-items:center;gap:8px;">'+
-      '🛵 <strong>'+o.deliveryBoyName+'</strong> · '+( o.deliveryBoyPhone||'—')+'</div>';
+      'margin-top:8px;font-size:.78rem;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">'+
+      '🛵 <strong>'+o.deliveryBoyName+'</strong> · '+( o.deliveryBoyPhone||'—')+verifiedBadge+'</div>';
+
+    // Pickup verify করার button — শুধুমাত্র এখনো verify না হলে
+    if(!o.pickupVerified && o.pickupOtp){
+      dbInfo += '<button class="btn-sm btn-orange" style="width:100%;margin-top:8px;justify-content:center" '+
+        'onclick="showPickupVerifyModal(\''+o.id+'\',\''+o.pickupOtp+'\',\''+o.deliveryBoyName+'\')">'+
+        '🔐 Rider কে পণ্য দেওয়ার আগে Pickup Verify করুন</button>';
+    }
   } else if(o.status==='confirmed'||o.status==='preparing'){
     dbInfo = '<div style="background:var(--sand);border-radius:8px;padding:8px 12px;'+
       'margin-top:8px;font-size:.74rem;color:var(--muted);display:flex;align-items:center;gap:6px;">'+
@@ -3572,6 +3601,68 @@ function loadMyTickets(){
       wrap.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><p>লোড করতে সমস্যা হয়েছে</p></div>';
     });
 }
+
+// ── PICKUP VERIFY (OTP + QR) ──
+var pvCurrentOrderId = null;
+
+function showPickupVerifyModal(orderId, otp, riderName){
+  pvCurrentOrderId = orderId;
+  document.getElementById('pvRiderName').textContent = riderName+' কে পণ্য হস্তান্তরের আগে verify করুন';
+  document.getElementById('pvOtpDisplay').textContent = otp;
+
+  // QR code generate করো — rider এর app এ scan করার জন্য
+  var qrPayload = JSON.stringify({orderId: orderId, otp: otp, type: 'delta_pickup'});
+  var canvas = document.getElementById('pvQrCanvas');
+  if(window.QRCode){
+    QRCode.toCanvas(canvas, qrPayload, {width: 180, margin: 1}, function(err){
+      if(err) console.warn('QR generate ব্যর্থ:', err);
+    });
+  }
+
+  document.getElementById('pvModalOverlay').classList.add('open');
+}
+
+function closePickupVerifyModal(){
+  document.getElementById('pvModalOverlay').classList.remove('open');
+  pvCurrentOrderId = null;
+}
+
+function confirmPickupVerified(){
+  if(!pvCurrentOrderId) return;
+  ordersRef().doc(pvCurrentOrderId).update({
+    pickupVerified: true,
+    pickupVerifiedAt: new Date().toISOString()
+  }).then(function(){
+    var o = orders.find(function(x){return x.id===pvCurrentOrderId;});
+    if(o){ o.pickupVerified = true; }
+    renderOrders('all'); renderRecentOrders();
+    showToast('Pickup Verify হয়েছে ✅ — এখন rider কে পণ্য দিন','green');
+    closePickupVerifyModal();
+  }).catch(function(e){
+    showToast('Verify ব্যর্থ: '+e.message,'red');
+  });
+}
 </script>
+<!-- PICKUP VERIFY MODAL -->
+<div class="pv-modal-overlay" id="pvModalOverlay">
+  <div class="pv-modal-box">
+    <div class="pv-modal-title">🔐 Rider Pickup Verify করুন</div>
+    <div class="pv-modal-sub" id="pvRiderName">Rider যাচাই করুন</div>
+
+    <div class="pv-otp-display" id="pvOtpDisplay">----</div>
+
+    <div class="pv-qr-wrap">
+      <canvas id="pvQrCanvas"></canvas>
+    </div>
+
+    <div class="pv-instructions">
+      💡 Rider কে এই ৪-সংখ্যার কোড বলুন, অথবা rider কে তার app এ QR scan করতে দিন। Rider সঠিকভাবে verify করলেই তবে তাকে পণ্য হস্তান্তর করুন।
+    </div>
+
+    <button class="pv-confirm-btn" onclick="confirmPickupVerified()">✅ Rider Verify হয়েছে — পণ্য দিয়ে দিলাম</button>
+    <button class="pv-cancel-btn" onclick="closePickupVerifyModal()">বাতিল করুন</button>
+  </div>
+</div>
+
 </body>
 </html>
