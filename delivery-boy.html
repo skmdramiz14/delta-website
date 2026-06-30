@@ -522,8 +522,13 @@ function orderCardHTML(o, showActions){
   var time = o.createdAt ? new Date(o.createdAt).toLocaleDateString('bn-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) : '—';
   var actionBtns = '';
   if(showActions){
-    if(ds==='assigned')
-      actionBtns='<button class="btn-sm btn-blue" onclick="updateDeliveryStatus(\''+o.shopId+'\',\''+o.id+'\',\'picked_up\')">📦 Picked Up করুন</button>';
+    if(ds==='assigned'){
+      if(o.pickupVerified){
+        actionBtns='<button class="btn-sm btn-blue" onclick="updateDeliveryStatus(\''+o.shopId+'\',\''+o.id+'\',\'picked_up\')">📦 Picked Up করুন</button>';
+      } else {
+        actionBtns='<div style="font-size:.74rem;color:var(--muted);text-align:center;padding:8px;background:var(--sand);border-radius:8px;">⏳ Seller এখনো verify করেননি — OTP দিন</div>';
+      }
+    }
     else if(ds==='picked_up')
       actionBtns='<button class="btn-sm btn-orange" onclick="updateDeliveryStatus(\''+o.shopId+'\',\''+o.id+'\',\'on_the_way\')">🛵 On the Way</button>';
     else if(ds==='on_the_way')
@@ -556,6 +561,12 @@ function orderCardHTML(o, showActions){
       '<span class="payment-tag">'+(o.paymentMethod==='cod'?'💵 Cash on Delivery':'💳 UPI')+'</span>'+
       '<span class="amount-val">₹'+(o.total||0)+'</span>'+
     '</div>'+
+    (ds==='assigned' && o.pickupOtp ?
+      '<div style="background:#fff4ec;border:1.5px dashed var(--orange);border-radius:8px;padding:10px 12px;margin-top:8px;text-align:center;">'+
+      '<div style="font-size:.7rem;color:var(--muted);margin-bottom:4px;">🔐 দোকানে গিয়ে এই OTP বলুন Seller-কে</div>'+
+      '<div style="font-size:1.4rem;font-weight:900;letter-spacing:6px;color:var(--orange);font-family:monospace;">'+o.pickupOtp+'</div>'+
+      '</div>'
+      : '')+
     (o.riderPayout ?
       '<div style="background:var(--green2);border-radius:8px;padding:8px 12px;margin-top:8px;'+
       'font-size:.82rem;display:flex;justify-content:space-between;align-items:center;">'+
@@ -716,6 +727,13 @@ function doUpdateStatus(shopId, orderId, newStatus, codCashCollected){
     deliveryStatus: newStatus,
     deliveryUpdatedAt: new Date().toISOString()
   };
+  // Rider যখন pickup করে বা রওনা দেয়, main order status ও "Out for Delivery" এ
+  // auto-sync হয়ে যাবে — Seller কে আলাদা করে আবার click করতে হবে না।
+  // Rider এর physical action-ই আসল সত্য, Seller এর সাথে data mismatch এড়াতে এই sync জরুরি।
+  if(newStatus==='picked_up' || newStatus==='on_the_way'){
+    updates.status = 'out';
+    updates.statusChangedByRider = true;
+  }
   if(newStatus==='delivered'){
     updates.status = 'delivered';
     updates.deliveryCompletedAt = new Date().toISOString();
