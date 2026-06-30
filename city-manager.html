@@ -149,6 +149,14 @@ button,input,select,textarea{font-family:'DM Sans',sans-serif;}
   border-bottom:1px solid var(--border);font-size:.85rem;}
 .order-row:last-child{border-bottom:none;}
 
+.status-badge-pill{font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap;}
+.bp-pending{background:#fff8e1;color:#7d5a00;}
+.bp-confirmed{background:#e8f4ff;color:#0984e3;}
+.bp-preparing{background:#f3e5f5;color:#7b1fa2;}
+.bp-out{background:#fff4ec;color:var(--orange);}
+.bp-delivered{background:#eef9f0;color:#1a8a4a;}
+.bp-cancelled{background:#fdeeec;color:#c0392b;}
+
 .loading-screen{position:fixed;inset:0;background:var(--navy3);display:flex;
   align-items:center;justify-content:center;z-index:1000;}
 .loading-spinner{width:40px;height:40px;border:3px solid rgba(255,255,255,.15);
@@ -462,20 +470,29 @@ function loadAllData(){
   }).catch(function(e){ showToast('Support ticket লোড সমস্যা: '+e.message,'red'); });
 }
 
+var cmOrderListeners = []; // unsubscribe functions
+
 function loadAllOrders(){
+  cmOrderListeners.forEach(function(unsub){ unsub(); });
+  cmOrderListeners = [];
   allOrders = [];
-  var proms = allSellers.map(function(s){
-    return db.collection('cities').doc(managerCity).collection('sellers').doc(s.id)
-      .collection('orders').get().then(function(snap){
+
+  if(!allSellers.length){ renderRecentOrders(); updateOverviewStats(); return; }
+
+  allSellers.forEach(function(s){
+    var unsub = db.collection('cities').doc(managerCity).collection('sellers').doc(s.id)
+      .collection('orders').onSnapshot(function(snap){
+        allOrders = allOrders.filter(function(o){ return o._sid !== s.id; });
         snap.forEach(function(d){
-          allOrders.push(Object.assign({id:d.id, shopName:s.shopName}, d.data()));
+          allOrders.push(Object.assign({id:d.id, shopName:s.shopName, _sid:s.id}, d.data()));
         });
-      }).catch(function(){});
-  });
-  Promise.all(proms).then(function(){
-    allOrders.sort(function(a,b){ return new Date(b.createdAt||0) - new Date(a.createdAt||0); });
-    renderRecentOrders();
-    updateOverviewStats();
+        allOrders.sort(function(a,b){ return new Date(b.createdAt||0) - new Date(a.createdAt||0); });
+        renderRecentOrders();
+        updateOverviewStats();
+      }, function(err){
+        console.warn('Order listener error for', s.id, err.message);
+      });
+    cmOrderListeners.push(unsub);
   });
 }
 
@@ -498,6 +515,15 @@ function updateOverviewStats(){
   document.getElementById('countDirectory').classList.toggle('zero', allSellers.length===0);
 }
 
+var CM_STATUS_LABELS = {
+  pending:{label:'⏳ Pending', cls:'bp-pending'},
+  confirmed:{label:'✅ Confirmed', cls:'bp-confirmed'},
+  preparing:{label:'🔄 Preparing', cls:'bp-preparing'},
+  out:{label:'🛵 Out for Delivery', cls:'bp-out'},
+  delivered:{label:'📦 Delivered', cls:'bp-delivered'},
+  cancelled:{label:'❌ Cancelled', cls:'bp-cancelled'}
+};
+
 function renderRecentOrders(){
   var wrap = document.getElementById('recentOrdersWrap');
   var recent = allOrders.slice(0,8);
@@ -507,8 +533,10 @@ function renderRecentOrders(){
   }
   wrap.innerHTML = recent.map(function(o){
     var time = o.createdAt ? new Date(o.createdAt).toLocaleDateString('bn-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) : '—';
+    var st = CM_STATUS_LABELS[o.status||'pending'] || CM_STATUS_LABELS.pending;
     return '<div class="order-row">'+
-      '<div><strong>'+(o.shopName||'—')+'</strong> · '+(o.customerName||'Customer')+'</div>'+
+      '<div><strong>'+(o.shopName||'—')+'</strong> · '+(o.customerName||'Customer')+
+        ' <span class="status-badge-pill '+st.cls+'" style="margin-left:6px;font-size:.65rem;">'+st.label+'</span></div>'+
       '<div style="color:var(--muted)">₹'+(o.total||0)+' · '+time+'</div>'+
     '</div>';
   }).join('');
