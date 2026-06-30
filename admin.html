@@ -1014,15 +1014,12 @@ function loadAllData(){
 
   db.collection('deliveryBoys').get().then(function(snap){
     allDeliveryBoys = [];
-    console.log('DELTA DEBUG deliveryBoys snap size:', snap.size);
     snap.forEach(function(d){
-      console.log('DELTA DEBUG deliveryBoy doc:', d.id, d.data());
       allDeliveryBoys.push(Object.assign({id:d.id}, d.data()));
     });
     renderDeliveryBoys();
     updateCounts();
   }).catch(function(e){
-    console.log('DELTA DEBUG deliveryBoys error:', e.code, e.message);
     showToast('Delivery Boy লোড করতে সমস্যা: '+e.message,'red');
   });
 }
@@ -3024,18 +3021,14 @@ function saveFreshCategory(sellerId, prodId, cat){
 // ═══ COD RECONCILIATION ═══
 function loadReconOrders(){
   allReconOrders = [];
-  if(!allSellers.length){
-    console.warn('loadReconOrders: allSellers খালি — sellers এখনো load হয়নি');
-  }
   var proms = allSellers.map(function(s){
     return db.collection('cities').doc(CITY).collection('sellers').doc(s.id)
       .collection('orders')
       .where('paymentMethod','==','cod')
       .get().then(function(snap){
-        console.log('Shop:', s.shopName, '— COD orders found:', snap.size);
         snap.forEach(function(d){
           var data = d.data();
-          console.log('  Order', d.id, 'codCashCollected:', data.codCashCollected, 'status:', data.status);
+          // আসল business rule: cash physically সংগ্রহ হয়েছে কিনা সেটাই গুরুত্বপূর্ণ
           if(data.codCashCollected === true){
             allReconOrders.push(Object.assign({
               id:d.id, shopId:s.id, shopName:s.shopName
@@ -3047,7 +3040,6 @@ function loadReconOrders(){
       });
   });
   Promise.all(proms).then(function(){
-    console.log('Total reconcilable orders:', allReconOrders.length);
     allReconOrders.sort(function(a,b){ return new Date(b.createdAt||0)-new Date(a.createdAt||0); });
     renderRecon();
     updateReconStats();
