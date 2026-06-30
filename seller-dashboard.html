@@ -1602,8 +1602,6 @@ function loadSellerData(){
     setDate();
     // Ask for browser notification permission once
     requestNotificationPermission();
-    // Load registered delivery boys for assignment dropdown
-    loadDeliveryBoys();
   }).catch(function(){ hideLoading(); showApp(); });
 }
 
@@ -1881,19 +1879,13 @@ async function saveProduct(){
       var idx=products.findIndex(function(p){return p.id===editId;});
       if(idx>=0)products[idx]=Object.assign({},products[idx],data);
       showToast('পণ্য আপডেট হয়েছে ✅','green');
-      // Discount update হলে Flash Sale pending আপডেট করো
-      if(disc>=10){
-        submitFlashSalePending(editId, data, disc);
-      }
+      if(disc>=10){ submitFlashSalePending(editId, data, disc); }
     } else {
       data.createdAt=new Date().toISOString();
       var ref=await productsRef().add(data);
       products.unshift(Object.assign({id:ref.id},data));
       showToast('নতুন পণ্য যোগ হয়েছে ✅','green');
-      // নতুন product এ discount ≥ 10% হলে Flash Sale pending এ পাঠাও
-      if(disc>=10){
-        submitFlashSalePending(ref.id, data, disc);
-      }
+      if(disc>=10){ submitFlashSalePending(ref.id, data, disc); }
     }
     renderProducts();
     updateProductStats();
@@ -1904,34 +1896,6 @@ async function saveProduct(){
   }
   btn.disabled=false;
   btn.textContent='✅ সেভ করুন / Save';
-}
-
-// ── FLASH SALE PENDING AUTO-SUBMIT ──
-function submitFlashSalePending(productId, productData, disc){
-  if(!firebase.auth().currentUser) return;
-  var shopId = firebase.auth().currentUser.uid;
-  var pendingRef = db.collection('cities').doc(CITY)
-    .collection('settings').doc('flashSalePending')
-    .collection('requests').doc(shopId+'_'+productId);
-
-  pendingRef.set({
-    productId: productId,
-    shopId: shopId,
-    shopName: SD.shopName||'দোকান',
-    productName: productData.nameBn||productData.name||'পণ্য',
-    price: productData.price||0,
-    mrp: productData.mrp||0,
-    discount: disc,
-    imageUrl: productData.imageUrl||'',
-    category: productData.category||'',
-    status: 'pending', // pending / approved / rejected
-    submittedAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  }).then(function(){
-    console.log('Flash Sale pending submitted');
-  }).catch(function(e){
-    console.warn('Flash Sale pending failed:', e.message);
-  });
 }
 
 // ═══ REGISTRATION CATEGORY SYSTEM ═══
@@ -3198,34 +3162,17 @@ function orderCardHTML(o){
   if(o.status==='out')
     actionBtns='<button class="btn-sm btn-green" onclick="updateOrder(\''+o.id+'\',\'delivered\')">📦 Delivered</button>';
 
-  // Delivery boy info display
+  // Delivery boy info display — শুধু দেখাবে, assign করার option নেই
+  // (Delivery Boy assign Admin/Order Manager এর দায়িত্ব — Admin Panel থেকে হবে)
   var dbInfo = '';
   if(o.deliveryBoyName){
     dbInfo = '<div style="background:var(--green2);border-radius:8px;padding:8px 12px;'+
       'margin-top:8px;font-size:.78rem;display:flex;align-items:center;gap:8px;">'+
       '🛵 <strong>'+o.deliveryBoyName+'</strong> · '+( o.deliveryBoyPhone||'—')+'</div>';
-  }
-
-  // Delivery boy assign UI (shown when status is confirmed or preparing, not yet assigned)
-  var assignUI = '';
-  if((o.status==='confirmed'||o.status==='preparing') && !o.deliveryBoyId){
-    var dbOptions = '<option value="">— Delivery Boy বেছে নিন —</option>';
-    if(window._deliveryBoys && window._deliveryBoys.length){
-      dbOptions += window._deliveryBoys.map(function(d){
-        return '<option value="'+d.id+'|'+d.name+'|'+(d.phone||'')+'" >'+d.name+(d.phone?' ('+d.phone+')':'')+'</option>';
-      }).join('');
-    }
-    dbOptions += '<option value="manual">✏️ নিজে লিখুন (Manual)</option>';
-    assignUI = '<div style="margin-top:10px;padding:10px 12px;background:var(--sand);border-radius:10px;">'+
-      '<div style="font-size:.72rem;font-weight:700;color:var(--muted);margin-bottom:8px">🛵 DELIVERY BOY ASSIGN করুন</div>'+
-      '<select class="filter-pill" id="dbSel-'+o.id+'" style="width:100%;margin-bottom:8px;padding:9px 12px;border-radius:9px;border:1.5px solid var(--border);background:#fff;font-size:.82rem;" onchange="onDBSelChange(\''+o.id+'\')">'+
-      dbOptions+'</select>'+
-      '<div id="dbManual-'+o.id+'" style="display:none;margin-bottom:8px">'+
-        '<input type="text" id="dbManualName-'+o.id+'" class="filter-pill" style="width:100%;padding:9px 12px;border-radius:9px;border:1.5px solid var(--border);margin-bottom:6px;font-size:.82rem;" placeholder="Delivery Boy-এর নাম">'+
-        '<input type="tel" id="dbManualPhone-'+o.id+'" class="filter-pill" style="width:100%;padding:9px 12px;border-radius:9px;border:1.5px solid var(--border);font-size:.82rem;" placeholder="Phone number">'+
-      '</div>'+
-      '<button class="btn-sm btn-orange" style="width:100%;justify-content:center" onclick="assignDeliveryBoy(\''+o.id+'\')">✅ Assign করুন</button>'+
-    '</div>';
+  } else if(o.status==='confirmed'||o.status==='preparing'){
+    dbInfo = '<div style="background:var(--sand);border-radius:8px;padding:8px 12px;'+
+      'margin-top:8px;font-size:.74rem;color:var(--muted);display:flex;align-items:center;gap:6px;">'+
+      '⏳ Delivery Boy assign হয়নি — Admin শীঘ্রই assign করবেন</div>';
   }
 
   return '<div class="order-card">'+
@@ -3245,7 +3192,6 @@ function orderCardHTML(o){
       '<div class="order-amount">₹'+(o.total||0).toLocaleString('en-IN')+'</div>'+
     '</div>'+
     dbInfo+
-    assignUI+
     (actionBtns?'<div class="order-actions">'+actionBtns+'</div>':'')+
   '</div>';
 }
@@ -3538,65 +3484,31 @@ function flashPageTitle(msg){
   }, 700);
 }
 
-// ═══ DELIVERY BOY ASSIGNMENT ═══
-window._deliveryBoys = [];
-
-function loadDeliveryBoys(){
-  db.collection('deliveryBoys').get().then(function(snap){
-    window._deliveryBoys = [];
-    snap.forEach(function(d){
-      var data = d.data();
-      // Accept both boolean true and string "true" for isActive
-      // Filter by city client-side to avoid compound index requirement
-      if((data.isActive===true || data.isActive==='true') && data.city===CITY){
-        window._deliveryBoys.push(Object.assign({id:d.id}, data));
-      }
+// ── FLASH SALE PENDING AUTO-SUBMIT ──
+function submitFlashSalePending(productId, productData, disc){
+  if(!auth.currentUser) return;
+  var shopId = auth.currentUser.uid;
+  db.collection('cities').doc(CITY)
+    .collection('settings').doc('flashSalePending')
+    .collection('requests').doc(shopId+'_'+productId)
+    .set({
+      productId: productId,
+      shopId: shopId,
+      shopName: SD.shopName||'দোকান',
+      productName: productData.nameBn||productData.name||'পণ্য',
+      price: productData.price||0,
+      mrp: productData.mrp||0,
+      discount: disc,
+      imageUrl: productData.imageUrl||'',
+      category: productData.category||'',
+      status: 'pending',
+      submittedAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }).then(function(){
+      console.log('Flash Sale pending submitted');
+    }).catch(function(e){
+      console.warn('Flash Sale pending failed:', e.message);
     });
-  }).catch(function(e){
-    console.log('loadDeliveryBoys error:', e.message);
-  });
-}
-
-function onDBSelChange(orderId){
-  var sel = document.getElementById('dbSel-'+orderId);
-  var manualDiv = document.getElementById('dbManual-'+orderId);
-  if(sel && manualDiv){
-    manualDiv.style.display = sel.value==='manual' ? 'block' : 'none';
-  }
-}
-
-function assignDeliveryBoy(orderId){
-  var sel = document.getElementById('dbSel-'+orderId);
-  if(!sel || !sel.value){
-    showToast('Delivery Boy বেছে নিন','red'); return;
-  }
-  var dbId='', dbName='', dbPhone='';
-  if(sel.value==='manual'){
-    dbName = (document.getElementById('dbManualName-'+orderId).value||'').trim();
-    dbPhone = (document.getElementById('dbManualPhone-'+orderId).value||'').trim();
-    if(!dbName){ showToast('Delivery Boy-এর নাম লিখুন','red'); return; }
-    dbId = 'manual_'+Date.now();
-  } else {
-    var parts = sel.value.split('|');
-    dbId=parts[0]; dbName=parts[1]; dbPhone=parts[2]||'';
-  }
-  ordersRef().doc(orderId).update({
-    deliveryBoyId: dbId,
-    deliveryBoyName: dbName,
-    deliveryBoyPhone: dbPhone,
-    deliveryBoyAssignedAt: new Date().toISOString(),
-    deliveryStatus: 'assigned'
-  }).then(function(){
-    var o = orders.find(function(x){return x.id===orderId;});
-    if(o){
-      o.deliveryBoyId=dbId; o.deliveryBoyName=dbName;
-      o.deliveryBoyPhone=dbPhone; o.deliveryStatus='assigned';
-    }
-    renderOrders('all'); renderRecentOrders();
-    showToast(dbName+' কে assign করা হয়েছে ✅','green');
-  }).catch(function(e){
-    showToast('Assign ব্যর্থ: '+e.message,'red');
-  });
 }
 
 // ═══ SUPPORT TICKETS ═══
