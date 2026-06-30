@@ -1338,6 +1338,32 @@ function orderCardHTML(o){
     '<button class="btn-sm btn-blue" style="width:100%;justify-content:center" onclick="adminAssignDeliveryBoy(\''+o.shopId+'\',\''+o.id+'\')">✅ Assign করুন</button>'+
   '</div>';
 
+  // Delivery boy progress + COD cash status (rider নিজে এগুলো update করে)
+  var DELIVERY_PROGRESS_LABELS = {
+    assigned:'🔵 Assigned — এখনো পিকআপ হয়নি',
+    picked_up:'📦 Picked Up',
+    on_the_way:'🛵 On the Way',
+    delivered:'✅ Delivered (Rider কর্তৃক)'
+  };
+  var deliveryProgressTag = '';
+  if(o.deliveryStatus && DELIVERY_PROGRESS_LABELS[o.deliveryStatus]){
+    deliveryProgressTag = '<div class="db-assigned-tag" style="background:var(--sand);color:var(--navy);margin-top:6px;">'+
+      DELIVERY_PROGRESS_LABELS[o.deliveryStatus]+'</div>';
+  }
+  var codCashTag = '';
+  if(o.paymentMethod==='cod'){
+    if(o.codCashCollected){
+      codCashTag = '<div class="db-assigned-tag" style="background:var(--green2);color:var(--green);margin-top:6px;">'+
+        '💵 ₹'+(o.codCashAmount||0).toLocaleString('en-IN')+' Cash সংগৃহীত'+
+        (o.codCashCollectedAt?' — '+new Date(o.codCashCollectedAt).toLocaleString('bn-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'')+
+      '</div>';
+    } else if(o.deliveryStatus==='delivered'){
+      codCashTag = '<div class="db-assigned-tag" style="background:var(--red2);color:var(--red);margin-top:6px;">'+
+        '⚠️ Delivered কিন্তু Cash এখনো confirm হয়নি'+
+      '</div>';
+    }
+  }
+
   return '<div class="order-card">'+
     '<div class="order-top">'+
       '<div>'+
@@ -1359,6 +1385,8 @@ function orderCardHTML(o){
       '<div>Shop ID<strong style="font-size:.7rem">'+(o.shopId||'—')+'</strong></div>'+
     '</div>'+
     (o.deliveryBoyName?'<div class="db-assigned-tag">🛵 '+o.deliveryBoyName+' কে assign করা আছে'+(o.riderPayout?' · Payout: ₹'+o.riderPayout:'')+'</div>':'')+
+    deliveryProgressTag+
+    codCashTag+
     payoutSection+
     dbAssignSection+
     '<div class="sc-actions">'+
@@ -2967,12 +2995,16 @@ function loadReconOrders(){
     return db.collection('cities').doc(CITY).collection('sellers').doc(s.id)
       .collection('orders')
       .where('paymentMethod','==','cod')
-      .where('status','==','delivered')
       .get().then(function(snap){
         snap.forEach(function(d){
-          allReconOrders.push(Object.assign({
-            id:d.id, shopId:s.id, shopName:s.shopName
-          }, d.data()));
+          var data = d.data();
+          // আসল business rule: cash physically সংগ্রহ হয়েছে কিনা সেটাই গুরুত্বপূর্ণ,
+          // main 'status' field পরে Admin override করলেও সেটা প্রভাবিত করবে না
+          if(data.codCashCollected === true){
+            allReconOrders.push(Object.assign({
+              id:d.id, shopId:s.id, shopName:s.shopName
+            }, data));
+          }
         });
       }).catch(function(){});
   });
