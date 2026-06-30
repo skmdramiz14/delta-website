@@ -1476,6 +1476,40 @@ function renderOrders(){
 }
 
 function changeOrderStatus(shopId, orderId, newStatus){
+  var o = allOrders.find(function(x){return x.id===orderId && x.shopId===shopId;});
+
+  // Admin যদি COD order কে 'delivered' করে, cash collected হয়েছে কিনা জিজ্ঞেস করো
+  if(newStatus==='delivered' && o && o.paymentMethod==='cod' && !o.codCashCollected){
+    var collectCash = confirm(
+      'এই অর্ডারটি Cash on Delivery (₹'+(o.total||0)+')।\n\n'+
+      'OK চাপলে: Status "Delivered" হবে এবং Cash সংগ্রহ হয়েছে বলে মার্ক করা হবে (COD Reconciliation এ যোগ হবে)।\n'+
+      'Cancel চাপলে: শুধু Status "Delivered" হবে, Cash এখনো অসংগৃহীত থাকবে।'
+    );
+    var updates = {
+      status: newStatus,
+      updatedAt: new Date().toISOString(),
+      statusChangedByAdmin: true
+    };
+    if(collectCash){
+      updates.codCashCollected = true;
+      updates.codCashAmount = o.total || 0;
+      updates.codCashCollectedAt = new Date().toISOString();
+      updates.codCashCollectedByAdmin = true;
+    }
+    db.collection('cities').doc(CITY).collection('sellers').doc(shopId)
+      .collection('orders').doc(orderId).update(updates)
+      .then(function(){
+        Object.assign(o, updates);
+        renderOrders();
+        updateCounts();
+        showToast(collectCash ? 'Delivered + Cash সংগৃহীত মার্ক হয়েছে ✅' : 'Status আপডেট হয়েছে ✅','green');
+      }).catch(function(e){
+        showToast('আপডেট ব্যর্থ: '+e.message,'red');
+        renderOrders();
+      });
+    return;
+  }
+
   if(!confirm('Order status "'+ORDER_STATUS_LABELS[newStatus]+'" এ পরিবর্তন করতে চান?')) return;
   db.collection('cities').doc(CITY).collection('sellers').doc(shopId)
     .collection('orders').doc(orderId).update({
@@ -1483,7 +1517,6 @@ function changeOrderStatus(shopId, orderId, newStatus){
       updatedAt: new Date().toISOString(),
       statusChangedByAdmin: true
     }).then(function(){
-      var o = allOrders.find(function(x){return x.id===orderId && x.shopId===shopId;});
       if(o) o.status = newStatus;
       renderOrders();
       updateCounts();
