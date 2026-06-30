@@ -1027,20 +1027,32 @@ function loadAllData(){
   });
 }
 
+var orderListeners = []; // unsubscribe functions রাখার জন্য
+
 function loadAllOrders(){
+  // আগের listeners বন্ধ করো (re-load হলে duplicate না হয়)
+  orderListeners.forEach(function(unsub){ unsub(); });
+  orderListeners = [];
   allOrders = [];
-  var proms = allSellers.map(function(s){
-    return db.collection('cities').doc(CITY).collection('sellers').doc(s.id)
-      .collection('orders').get().then(function(snap){
+
+  if(!allSellers.length){ renderOrders(); updateCounts(); return; }
+
+  var loadedCount = 0;
+  allSellers.forEach(function(s){
+    var unsub = db.collection('cities').doc(CITY).collection('sellers').doc(s.id)
+      .collection('orders').onSnapshot(function(snap){
+        // এই shop এর পুরোনো orders সরিয়ে নতুন করে বসাও (real-time update)
+        allOrders = allOrders.filter(function(o){ return o.shopId !== s.id; });
         snap.forEach(function(d){
           allOrders.push(Object.assign({id:d.id, shopId:s.id, shopName:s.shopName}, d.data()));
         });
-      }).catch(function(){});
-  });
-  Promise.all(proms).then(function(){
-    allOrders.sort(function(a,b){ return new Date(b.createdAt||0) - new Date(a.createdAt||0); });
-    renderOrders();
-    updateCounts();
+        allOrders.sort(function(a,b){ return new Date(b.createdAt||0) - new Date(a.createdAt||0); });
+        renderOrders();
+        updateCounts();
+      }, function(err){
+        console.warn('Order listener error for', s.id, err.message);
+      });
+    orderListeners.push(unsub);
   });
 }
 
@@ -1409,6 +1421,13 @@ function saveRiderPayout(shopId, orderId){
 }
 
 function renderOrders(){
+  // Admin যদি কোনো input এ active type করছে (distance ইত্যাদি), তাহলে এই মুহূর্তে re-render স্কিপ করো
+  // যাতে typing এর মাঝে value হারিয়ে না যায় — পরের update এ ঠিক হয়ে যাবে
+  var active = document.activeElement;
+  if(active && (active.id||'').indexOf('dist-') === 0){
+    return;
+  }
+
   var wrap = document.getElementById('ordersListWrap');
   var search = (document.getElementById('orderSearch').value||'').toLowerCase().trim();
   var filtered = allOrders.filter(function(o){
