@@ -1398,17 +1398,21 @@ function adminAssignDeliveryBoy(shopId, orderId){
   if(!sel || !sel.value){ showToast('Delivery Boy বেছে নিন','red'); return; }
   var parts = sel.value.split('|');
   var dbId=parts[0], dbName=parts[1], dbPhone=parts[2]||'';
+  // ৪-সংখ্যার Pickup OTP generate করো — Seller rider কে handover করার আগে verify করবে
+  var pickupOtp = String(Math.floor(1000 + Math.random()*9000));
   db.collection('cities').doc(CITY).collection('sellers').doc(shopId)
     .collection('orders').doc(orderId).update({
       deliveryBoyId: dbId,
       deliveryBoyName: dbName,
       deliveryBoyPhone: dbPhone,
       deliveryBoyAssignedAt: new Date().toISOString(),
-      deliveryStatus: 'assigned'
+      deliveryStatus: 'assigned',
+      pickupOtp: pickupOtp,
+      pickupVerified: false
     }).then(function(){
       var o = allOrders.find(function(x){return x.id===orderId && x.shopId===shopId;});
-      if(o){ o.deliveryBoyId=dbId; o.deliveryBoyName=dbName; o.deliveryBoyPhone=dbPhone; o.deliveryStatus='assigned'; }
-      showToast(dbName+' কে assign করা হয়েছে ✅','green');
+      if(o){ o.deliveryBoyId=dbId; o.deliveryBoyName=dbName; o.deliveryBoyPhone=dbPhone; o.deliveryStatus='assigned'; o.pickupOtp=pickupOtp; o.pickupVerified=false; }
+      showToast(dbName+' কে assign করা হয়েছে ✅ — Pickup OTP: '+pickupOtp,'green');
       renderOrders();
     }).catch(function(e){
       showToast('Assign ব্যর্থ: '+e.message,'red');
