@@ -5392,6 +5392,8 @@ async function placeOrder(){
     for(var sid in byShop){
       var od=byShop[sid];
       var deliveryCharge = od.total >= FREE_DELIVERY_MIN ? 0 : 30;
+      // Shop এর info lookup করো
+      var shopInfo = allShops.find(function(s){ return s.id === sid; }) || {};
       var ref=await db.collection('cities').doc(CITY).collection('sellers').doc(sid).collection('orders').add({
         customerId:currentUser.uid,customerName:currentUser.displayName||'Customer',
         customerEmail:currentUser.email,customerMobile:mobile,deliveryAddress:addr,
@@ -5401,6 +5403,9 @@ async function placeOrder(){
         deliveryCharge:deliveryCharge,
         grandTotal:od.total+deliveryCharge,
         paymentMethod:selectedPay,
+        shopName:od.shopName||shopInfo.shopName||'দোকান',
+        shopAddress:shopInfo.area||shopInfo.address||'',
+        shopPhone:shopInfo.phone||shopInfo.ownerPhone||'',
         status:'pending',createdAt:new Date().toISOString()
       });
       oids.push(ref.id);
