@@ -3622,16 +3622,44 @@ var pvCorrectOtp = null;
 function showPickupVerifyModal(orderId, otp, riderName){
   pvCurrentOrderId = orderId;
   pvCorrectOtp = otp;
-  document.getElementById('pvRiderName').textContent = riderName+' কে verify করুন';
-  document.getElementById('pvOtpInput').value = '';
-  document.getElementById('pvOtpError').style.display = 'none';
-  document.getElementById('pvOtpSuccess').style.display = 'none';
-  var btn = document.getElementById('pvConfirmBtn');
-  btn.disabled = true;
-  btn.style.opacity = '.5';
-  btn.style.cursor = 'not-allowed';
-  document.getElementById('pvModalOverlay').classList.add('open');
-  setTimeout(function(){ document.getElementById('pvOtpInput').focus(); }, 200);
+
+  // পুরোনো modal সরাও
+  var old = document.getElementById('pvModalOverlay');
+  if(old) old.remove();
+
+  // Body তে directly inject করো — parent CSS এর প্রভাব পড়বে না
+  var modal = document.createElement('div');
+  modal.id = 'pvModalOverlay';
+  modal.style.cssText = 'display:flex;position:fixed;top:0;left:0;width:100%;height:100%;'+
+    'background:rgba(10,31,53,.8);z-index:999999;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;';
+  modal.innerHTML =
+    '<div style="background:#fff;border-radius:18px;max-width:360px;width:100%;padding:24px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.3);">'+
+      '<div style="font-size:1rem;font-weight:800;color:#0a1f35;margin-bottom:6px;">🔐 Rider Pickup Verify করুন</div>'+
+      '<div style="font-size:.82rem;color:#6b7b8d;margin-bottom:14px;">'+riderName+' কে verify করুন</div>'+
+      '<div style="background:#eef2f7;border-radius:10px;padding:12px;margin-bottom:14px;font-size:.78rem;color:#6b7b8d;text-align:left;line-height:1.6;">'+
+        '💡 Rider কে জিজ্ঞেস করুন তার WhatsApp এ আসা OTP কত। সঠিক OTP দিলেই পণ্য হস্তান্তর করুন।'+
+      '</div>'+
+      '<label style="font-size:.78rem;font-weight:700;color:#0a1f35;display:block;margin-bottom:8px;">Rider এর OTP লিখুন:</label>'+
+      '<input type="tel" id="pvOtpInput" maxlength="4" inputmode="numeric" pattern="[0-9]*" placeholder="----" '+
+        'style="width:100%;font-size:2rem;font-weight:900;letter-spacing:8px;text-align:center;border:2px solid #dde5ef;border-radius:12px;padding:14px;font-family:monospace;outline:none;box-sizing:border-box;margin-bottom:8px;" '+
+        'oninput="this.value=this.value.replace(/[^0-9]/g,\'\').slice(0,4);pvCheckOtpInput()" '+
+        'onfocus="this.style.borderColor=\'#f07018\'" onblur="this.style.borderColor=\'#dde5ef\'">'+
+      '<div id="pvOtpError" style="color:#c0392b;font-size:.75rem;margin-bottom:8px;display:none;">❌ OTP সঠিক নয় — আবার চেষ্টা করুন</div>'+
+      '<div id="pvOtpSuccess" style="color:#1a8a4a;font-size:.75rem;margin-bottom:8px;display:none;">✅ OTP সঠিক!</div>'+
+      '<button id="pvConfirmBtn" onclick="confirmPickupVerified()" disabled '+
+        'style="width:100%;background:#1a8a4a;color:#fff;border:none;padding:13px;border-radius:10px;font-weight:700;font-size:.9rem;cursor:not-allowed;opacity:.5;margin-bottom:8px;">'+
+        '✅ Verify করুন — পণ্য দিয়ে দিলাম'+
+      '</button>'+
+      '<button onclick="closePickupVerifyModal()" '+
+        'style="width:100%;background:transparent;color:#6b7b8d;border:none;padding:8px;font-size:.82rem;cursor:pointer;">'+
+        'বাতিল করুন'+
+      '</button>'+
+    '</div>';
+  document.body.appendChild(modal);
+  setTimeout(function(){ 
+    var inp = document.getElementById('pvOtpInput');
+    if(inp) inp.focus(); 
+  }, 100);
 }
 
 function pvCheckOtpInput(){
@@ -3647,7 +3675,7 @@ function pvCheckOtpInput(){
     return; 
   }
 
-  if(input === pvCorrectOtp){
+  if(input === String(pvCorrectOtp)){
     errEl.style.display='none';
     okEl.style.display='block';
     btn.disabled=false; btn.style.opacity='1'; btn.style.cursor='pointer';
@@ -3659,7 +3687,8 @@ function pvCheckOtpInput(){
 }
 
 function closePickupVerifyModal(){
-  document.getElementById('pvModalOverlay').classList.remove('open');
+  var modal = document.getElementById('pvModalOverlay');
+  if(modal) modal.remove();
   pvCurrentOrderId = null;
   pvCorrectOtp = null;
 }
@@ -3679,43 +3708,5 @@ function confirmPickupVerified(){
     showToast('Verify ব্যর্থ: '+e.message,'red');
   });
 }
-</script>
-<!-- PICKUP VERIFY MODAL — Seller OTP input করবে, দেখবে না -->
-<div class="pv-modal-overlay" id="pvModalOverlay">
-  <div class="pv-modal-box">
-    <div class="pv-modal-title">🔐 Rider Pickup Verify করুন</div>
-    <div class="pv-modal-sub" id="pvRiderName">Rider যাচাই করুন</div>
-
-    <div style="background:var(--sand);border-radius:12px;padding:14px;margin-bottom:16px;font-size:.8rem;color:var(--muted);text-align:left;line-height:1.6;">
-      💡 Rider কে জিজ্ঞেস করুন তার WhatsApp এ আসা OTP কত। সঠিক OTP দিলেই পণ্য হস্তান্তর করুন।
-    </div>
-
-    <!-- OTP Input -->
-    <div style="margin-bottom:16px;">
-      <label style="font-size:.78rem;font-weight:700;color:var(--navy);display:block;margin-bottom:8px;">Rider এর OTP লিখুন:</label>
-      <input type="tel" id="pvOtpInput" maxlength="4" pattern="[0-9]*" inputmode="numeric"
-        style="width:100%;font-size:2rem;font-weight:900;letter-spacing:8px;text-align:center;
-        border:2px solid var(--border);border-radius:12px;padding:14px;font-family:monospace;
-        outline:none;"
-        placeholder="----"
-        oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,4);pvCheckOtpInput()"
-        onfocus="this.style.borderColor='var(--orange)'"
-        onblur="this.style.borderColor='var(--border)'">
-      <div id="pvOtpError" style="color:#c0392b;font-size:.75rem;margin-top:6px;display:none;">
-        ❌ OTP সঠিক নয় — আবার চেষ্টা করুন
-      </div>
-      <div id="pvOtpSuccess" style="color:#1a8a4a;font-size:.75rem;margin-top:6px;display:none;">
-        ✅ OTP সঠিক!
-      </div>
-    </div>
-
-    <button class="pv-confirm-btn" id="pvConfirmBtn" onclick="confirmPickupVerified()" disabled
-      style="opacity:.5;cursor:not-allowed;">
-      ✅ Verify করুন — পণ্য দিয়ে দিলাম
-    </button>
-    <button class="pv-cancel-btn" onclick="closePickupVerifyModal()">বাতিল করুন</button>
-  </div>
-</div>
-
 </body>
 </html>
