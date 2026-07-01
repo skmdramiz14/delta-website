@@ -703,14 +703,13 @@ function updateDeliveryStatus(shopId, orderId, newStatus){
 
 function confirmCodAndDeliver(){
   if(!pendingCodUpdate) return;
-  closeCodModal();
-  doUpdateStatus(
-    pendingCodUpdate.shopId,
-    pendingCodUpdate.orderId,
-    'delivered',
-    true // codCashCollected
-  );
+  // আগে data save করো, তারপর modal বন্ধ করো
+  var shopId = pendingCodUpdate.shopId;
+  var orderId = pendingCodUpdate.orderId;
   pendingCodUpdate = null;
+  document.getElementById('codModal').classList.remove('open');
+  document.body.style.overflow = '';
+  doUpdateStatus(shopId, orderId, 'delivered', true);
 }
 
 function closeCodModal(){
