@@ -1398,8 +1398,8 @@ function adminAssignDeliveryBoy(shopId, orderId){
   if(!sel || !sel.value){ showToast('Delivery Boy বেছে নিন','red'); return; }
   var parts = sel.value.split('|');
   var dbId=parts[0], dbName=parts[1], dbPhone=parts[2]||'';
-  // ৪-সংখ্যার Pickup OTP generate করো — Seller rider কে handover করার আগে verify করবে
   var pickupOtp = String(Math.floor(1000 + Math.random()*9000));
+
   db.collection('cities').doc(CITY).collection('sellers').doc(shopId)
     .collection('orders').doc(orderId).update({
       deliveryBoyId: dbId,
@@ -1412,11 +1412,63 @@ function adminAssignDeliveryBoy(shopId, orderId){
     }).then(function(){
       var o = allOrders.find(function(x){return x.id===orderId && x.shopId===shopId;});
       if(o){ o.deliveryBoyId=dbId; o.deliveryBoyName=dbName; o.deliveryBoyPhone=dbPhone; o.deliveryStatus='assigned'; o.pickupOtp=pickupOtp; o.pickupVerified=false; }
-      showToast(dbName+' কে assign করা হয়েছে ✅ — Pickup OTP: '+pickupOtp,'green');
+      showToast(dbName+' কে assign করা হয়েছে ✅','green');
       renderOrders();
+      // WhatsApp এ OTP পাঠানোর option দেখাও
+      showOtpWhatsAppPrompt(dbName, dbPhone, pickupOtp, orderId);
     }).catch(function(e){
       showToast('Assign ব্যর্থ: '+e.message,'red');
     });
+}
+
+function showOtpWhatsAppPrompt(riderName, riderPhone, otp, orderId){
+  // পুরোনো prompt সরাও
+  var old = document.getElementById('otpWhatsAppPrompt');
+  if(old) old.remove();
+
+  if(!riderPhone){ return; } // phone না থাকলে skip
+
+  var phone = riderPhone.replace(/[^0-9]/g,'');
+  if(phone.length === 10) phone = '91' + phone; // India code যোগ করো
+
+  var message = encodeURIComponent(
+    'DELTA Delivery OTP\n\n'+
+    'প্রিয় '+riderName+',\n'+
+    'আপনার Pickup OTP: *'+otp+'*\n\n'+
+    'Order ID: #'+orderId.slice(-6).toUpperCase()+'\n'+
+    'দোকানে গিয়ে Seller কে এই OTP বলুন।\n\n'+
+    '— DELTA Platform'
+  );
+
+  var waUrl = 'https://wa.me/'+phone+'?text='+message;
+
+  // Order card এর নিচে একটা prompt দেখাও
+  var prompt = document.createElement('div');
+  prompt.id = 'otpWhatsAppPrompt';
+  prompt.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);'+
+    'background:#fff;border:2px solid #25D366;border-radius:14px;padding:16px 20px;'+
+    'z-index:9999;box-shadow:0 4px 24px rgba(0,0,0,.18);max-width:340px;width:90%;text-align:center;';
+  prompt.innerHTML =
+    '<div style="font-size:.85rem;font-weight:700;color:#1a2535;margin-bottom:4px;">📱 Rider কে OTP পাঠান</div>'+
+    '<div style="font-size:.75rem;color:#6b7b8d;margin-bottom:12px;">'+riderName+' ('+riderPhone+') কে WhatsApp এ OTP পাঠান</div>'+
+    '<div style="font-size:1.6rem;font-weight:900;letter-spacing:8px;color:#f07018;font-family:monospace;margin-bottom:12px;">'+otp+'</div>'+
+    '<div style="display:flex;gap:8px;">'+
+      '<a href="'+waUrl+'" target="_blank" style="flex:1;background:#25D366;color:#fff;'+
+        'border:none;padding:10px;border-radius:8px;font-weight:700;font-size:.82rem;'+
+        'text-decoration:none;display:flex;align-items:center;justify-content:center;gap:5px;">'+
+        '💬 WhatsApp এ পাঠাও</a>'+
+      '<button onclick="document.getElementById(\'otpWhatsAppPrompt\').remove()" '+
+        'style="background:var(--sand);border:none;padding:10px 14px;border-radius:8px;'+
+        'color:var(--muted);cursor:pointer;font-size:.78rem;">✕ বন্ধ করুন</button>'+
+    '</div>';
+
+  document.body.appendChild(prompt);
+
+  // ১ মিনিট পর auto-close
+  setTimeout(function(){
+    var el = document.getElementById('otpWhatsAppPrompt');
+    if(el) el.remove();
+  }, 60000);
 }
 
 function calcPayout(orderId){
