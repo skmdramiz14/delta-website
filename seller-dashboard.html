@@ -385,9 +385,9 @@ select.form-input{cursor:pointer;}
   .plans-grid{grid-template-columns:1fr;}
   .img-upload-grid{grid-template-columns:repeat(5,1fr);}
 /* ── PICKUP VERIFY MODAL ── */
-.pv-modal-overlay{display:none;position:fixed;inset:0;background:rgba(10,31,53,.7);z-index:5000;align-items:center;justify-content:center;padding:20px;}
+.pv-modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(10,31,53,.75);z-index:99999;align-items:center;justify-content:center;padding:20px;}
 .pv-modal-overlay.open{display:flex;}
-.pv-modal-box{background:#fff;border-radius:18px;max-width:380px;width:100%;padding:28px 24px;text-align:center;}
+.pv-modal-box{background:#fff;border-radius:18px;max-width:380px;width:100%;padding:28px 24px;text-align:center;position:relative;z-index:100000;max-height:90vh;overflow-y:auto;}
 .pv-modal-title{font-size:1.05rem;font-weight:800;color:var(--navy);margin-bottom:6px;}
 .pv-modal-sub{font-size:.8rem;color:var(--muted);margin-bottom:20px;}
 .pv-otp-display{
@@ -3693,12 +3693,12 @@ function confirmPickupVerified(){
     <!-- OTP Input -->
     <div style="margin-bottom:16px;">
       <label style="font-size:.78rem;font-weight:700;color:var(--navy);display:block;margin-bottom:8px;">Rider এর OTP লিখুন:</label>
-      <input type="number" id="pvOtpInput" maxlength="4"
+      <input type="tel" id="pvOtpInput" maxlength="4" pattern="[0-9]*" inputmode="numeric"
         style="width:100%;font-size:2rem;font-weight:900;letter-spacing:8px;text-align:center;
         border:2px solid var(--border);border-radius:12px;padding:14px;font-family:monospace;
         outline:none;"
         placeholder="----"
-        oninput="this.value=this.value.slice(0,4);pvCheckOtpInput()"
+        oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,4);pvCheckOtpInput()"
         onfocus="this.style.borderColor='var(--orange)'"
         onblur="this.style.borderColor='var(--border)'">
       <div id="pvOtpError" style="color:#c0392b;font-size:.75rem;margin-top:6px;display:none;">
