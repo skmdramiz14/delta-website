@@ -341,14 +341,14 @@ function doLogout(){
 }
 
 // ═══ DATA LOADING ═══
-var omOrderListeners = []; // unsubscribe functions
+var omOrderListeners = [];
+var omRenderTimeout = null;
 
 function loadAllOrders(){
   db.collection('cities').doc(managerCity).collection('sellers').get().then(function(snap){
     allSellers = [];
     snap.forEach(function(d){ allSellers.push(Object.assign({id:d.id}, d.data())); });
 
-    // আগের listeners বন্ধ করো
     omOrderListeners.forEach(function(unsub){ unsub(); });
     omOrderListeners = [];
     allOrders = [];
@@ -358,14 +358,16 @@ function loadAllOrders(){
     allSellers.forEach(function(s){
       var unsub = db.collection('cities').doc(managerCity).collection('sellers').doc(s.id)
         .collection('orders').onSnapshot(function(oSnap){
-          // এই shop এর পুরোনো orders সরিয়ে নতুন করে বসাও — real-time sync
           allOrders = allOrders.filter(function(o){ return o.shopId !== s.id; });
           oSnap.forEach(function(d){
             allOrders.push(Object.assign({id:d.id, shopId:s.id, shopName:s.shopName}, d.data()));
           });
           allOrders.sort(function(a,b){ return new Date(b.createdAt||0)-new Date(a.createdAt||0); });
-          renderOrders();
-          updateCounts();
+          if(omRenderTimeout) clearTimeout(omRenderTimeout);
+          omRenderTimeout = setTimeout(function(){
+            renderOrders();
+            updateCounts();
+          }, 150);
         }, function(err){
           console.warn('Order listener error for', s.id, err.message);
         });
