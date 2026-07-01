@@ -3083,14 +3083,24 @@ function saveFreshCategory(sellerId, prodId, cat){
 // ═══ COD RECONCILIATION ═══
 function loadReconOrders(){
   allReconOrders = [];
+  // Seller payment details cache
+  if(!window._sellerPaymentCache) window._sellerPaymentCache = {};
+
   var proms = allSellers.map(function(s){
+    // Seller payment details cache করো
+    window._sellerPaymentCache[s.id] = {
+      upiId: s.upiId||'',
+      bankAccount: s.bankAccount||'',
+      ifsc: s.ifsc||'',
+      bankName: s.bankName||'',
+      accountName: s.accountName||''
+    };
     return db.collection('cities').doc(CITY).collection('sellers').doc(s.id)
       .collection('orders')
       .where('paymentMethod','==','cod')
       .get().then(function(snap){
         snap.forEach(function(d){
           var data = d.data();
-          // আসল business rule: cash physically সংগ্রহ হয়েছে কিনা সেটাই গুরুত্বপূর্ণ
           if(data.codCashCollected === true){
             allReconOrders.push(Object.assign({
               id:d.id, shopId:s.id, shopName:s.shopName
@@ -3224,12 +3234,48 @@ function reconCardHTML(o){
       '</div>'+
     '</div>'+
 
+    // Seller payment details
+    var sp = (window._sellerPaymentCache||{})[o.shopId] || {};
+    var payDetails = '';
+    if(sp.upiId || sp.bankAccount){
+      payDetails = '<div style="background:#e8f4ff;border-radius:12px;padding:14px;margin-bottom:10px;">'+
+        '<div style="font-size:.72rem;font-weight:700;color:#0984e3;margin-bottom:8px;">💳 Seller Payment Details</div>'+
+        (sp.upiId?'<div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:4px;">'+
+          '<span style="color:var(--muted)">UPI ID</span>'+
+          '<strong style="color:var(--navy)">'+sp.upiId+'</strong></div>':'')+
+        (sp.bankAccount?'<div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:4px;">'+
+          '<span style="color:var(--muted)">Bank Account</span>'+
+          '<strong style="color:var(--navy)">'+sp.bankAccount+'</strong></div>':'')+
+        (sp.ifsc?'<div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:4px;">'+
+          '<span style="color:var(--muted)">IFSC</span>'+
+          '<strong style="color:var(--navy)">'+sp.ifsc+'</strong></div>':'')+
+        (sp.bankName?'<div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:4px;">'+
+          '<span style="color:var(--muted)">Bank</span>'+
+          '<strong style="color:var(--navy)">'+sp.bankName+'</strong></div>':'')+
+        (sp.accountName?'<div style="display:flex;justify-content:space-between;font-size:.82rem;">'+
+          '<span style="color:var(--muted)">Account Name</span>'+
+          '<strong style="color:var(--navy)">'+sp.accountName+'</strong></div>':'')+
+      '</div>';
+    } else {
+      payDetails = '<div style="background:var(--yellow2);border-radius:10px;padding:10px 14px;margin-bottom:10px;font-size:.78rem;color:#7d5a00;">'+
+        '⚠️ Seller এখনো payment details দেননি — তাকে জানান</div>';
+    }
+
     // Settlement action
     (!isSettled
-      ? '<button class="btn-sm btn-green" style="width:100%;justify-content:center" '+
-          'onclick="markSettled(\''+o.shopId+'\',\''+o.id+'\')">✅ Seller-কে ₹'+sellerAmount.toLocaleString('en-IN')+' দিয়ে Settled করুন</button>'
-      : '<div style="text-align:center;font-size:.78rem;color:var(--green);padding:8px;'+
-          'background:var(--green2);border-radius:8px">✅ Seller-কে ₹'+sellerAmount.toLocaleString('en-IN')+' দেওয়া হয়েছে</div>')+
+      ? payDetails+
+        '<button class="btn-sm btn-green" style="width:100%;justify-content:center" '+
+          'onclick="markSettled(\''+o.shopId+'\',\''+o.id+'\')">✅ Transfer করে Settled করুন — ₹'+sellerAmount.toLocaleString('en-IN')+'</button>'
+      : payDetails+
+        '<div style="text-align:center;font-size:.78rem;color:var(--green);padding:8px;'+
+          'background:var(--green2);border-radius:8px;margin-bottom:6px;">✅ Seller-কে ₹'+sellerAmount.toLocaleString('en-IN')+' দেওয়া হয়েছে</div>'+
+        (o.sellerConfirmedReceipt
+          ? '<div style="text-align:center;font-size:.75rem;color:var(--green);padding:6px;background:var(--green2);border-radius:8px;">'+
+              '✅ Seller payment পাওয়ার বিষয়টি confirm করেছেন'+(o.sellerConfirmedAt?' · '+new Date(o.sellerConfirmedAt).toLocaleDateString('bn-IN',{day:'numeric',month:'short'}):'')+
+            '</div>'
+          : '<div style="text-align:center;font-size:.75rem;color:#7d5a00;padding:6px;background:var(--yellow2);border-radius:8px;">'+
+              '⏳ Seller এখনো receipt confirm করেননি</div>'
+        )+
 
     // PDF button
     '<button onclick="downloadReconPDF(\''+o.id+'\')" '+
@@ -3359,14 +3405,19 @@ function renderRecon(){
 }
 
 function markSettled(shopId, orderId){
+  var o = allReconOrders.find(function(x){return x.id===orderId&&x.shopId===shopId;});
+  var sellerAmount = o ? (o.total||0) - calcCommission(o.total||0) : 0;
   db.collection('cities').doc(CITY).collection('sellers').doc(shopId)
     .collection('orders').doc(orderId).update({
-      codSettled:true, codSettledAt:new Date().toISOString(), codSettledBy:'admin'
+      codSettled:true,
+      codSettledAt:new Date().toISOString(),
+      codSettledBy:'admin',
+      sellerPaymentAmount: sellerAmount,
+      sellerConfirmedReceipt: false  // Seller এখনো confirm করেনি
     }).then(function(){
-      var o = allReconOrders.find(function(x){return x.id===orderId&&x.shopId===shopId;});
-      if(o){ o.codSettled=true; o.codSettledAt=new Date().toISOString(); }
+      if(o){ o.codSettled=true; o.codSettledAt=new Date().toISOString(); o.sellerPaymentAmount=sellerAmount; o.sellerConfirmedReceipt=false; }
       renderRecon(); updateReconStats(); updateCounts();
-      showToast('Settlement সম্পন্ন ✅','green');
+      showToast('Settlement সম্পন্ন ✅ — Seller কে জানানো হবে','green');
     }).catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
 }
 
