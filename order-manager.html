@@ -341,23 +341,35 @@ function doLogout(){
 }
 
 // ═══ DATA LOADING ═══
+var omOrderListeners = []; // unsubscribe functions
+
 function loadAllOrders(){
   db.collection('cities').doc(managerCity).collection('sellers').get().then(function(snap){
     allSellers = [];
     snap.forEach(function(d){ allSellers.push(Object.assign({id:d.id}, d.data())); });
+
+    // আগের listeners বন্ধ করো
+    omOrderListeners.forEach(function(unsub){ unsub(); });
+    omOrderListeners = [];
     allOrders = [];
-    var proms = allSellers.map(function(s){
-      return db.collection('cities').doc(managerCity).collection('sellers').doc(s.id)
-        .collection('orders').get().then(function(oSnap){
+
+    if(!allSellers.length){ renderOrders(); updateCounts(); return; }
+
+    allSellers.forEach(function(s){
+      var unsub = db.collection('cities').doc(managerCity).collection('sellers').doc(s.id)
+        .collection('orders').onSnapshot(function(oSnap){
+          // এই shop এর পুরোনো orders সরিয়ে নতুন করে বসাও — real-time sync
+          allOrders = allOrders.filter(function(o){ return o.shopId !== s.id; });
           oSnap.forEach(function(d){
             allOrders.push(Object.assign({id:d.id, shopId:s.id, shopName:s.shopName}, d.data()));
           });
-        }).catch(function(){});
-    });
-    Promise.all(proms).then(function(){
-      allOrders.sort(function(a,b){ return new Date(b.createdAt||0)-new Date(a.createdAt||0); });
-      renderOrders();
-      updateCounts();
+          allOrders.sort(function(a,b){ return new Date(b.createdAt||0)-new Date(a.createdAt||0); });
+          renderOrders();
+          updateCounts();
+        }, function(err){
+          console.warn('Order listener error for', s.id, err.message);
+        });
+      omOrderListeners.push(unsub);
     });
   }).catch(function(e){ showToast('লোড সমস্যা: '+e.message,'red'); });
 }
@@ -498,6 +510,12 @@ function saveRiderPayout(shopId, orderId){
 }
 
 function renderOrders(){
+  // Manager যদি distance input এ টাইপ করছে, এই মুহূর্তে re-render স্কিপ করো
+  var active = document.activeElement;
+  if(active && (active.id||'').indexOf('dist-') === 0){
+    return;
+  }
+
   var wrap = document.getElementById('ordersListWrap');
   var search = (document.getElementById('orderSearch').value||'').toLowerCase().trim();
   var filtered = allOrders.filter(function(o){
