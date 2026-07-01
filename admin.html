@@ -1379,9 +1379,13 @@ function orderCardHTML(o){
     '</div>'+
     '<div class="order-meta-grid" style="margin-top:-4px">'+
       '<div>ঠিকানা<strong style="font-size:.76rem">'+(o.deliveryAddress||'—')+'</strong></div>'+
+      '<div>Phone<strong>'+
+        (o.customerMobile||o.customerPhone
+          ? '<a href="tel:'+(o.customerMobile||o.customerPhone)+'" style="color:var(--orange);text-decoration:none;">📞 '+(o.customerMobile||o.customerPhone)+'</a>'
+          : '—')+
+      '</strong></div>'+
       '<div>অর্ডারের সময়<strong>'+time+'</strong></div>'+
       '<div>Order ID<strong style="font-size:.7rem">'+o.id+'</strong></div>'+
-      '<div>Shop ID<strong style="font-size:.7rem">'+(o.shopId||'—')+'</strong></div>'+
     '</div>'+
     (o.deliveryBoyName?'<div class="db-assigned-tag">🛵 '+o.deliveryBoyName+' কে assign করা আছে'+(o.riderPayout?' · Payout: ₹'+o.riderPayout:'')+'</div>':'')+
     deliveryProgressTag+
@@ -3227,7 +3231,109 @@ function reconCardHTML(o){
       : '<div style="text-align:center;font-size:.78rem;color:var(--green);padding:8px;'+
           'background:var(--green2);border-radius:8px">✅ Seller-কে ₹'+sellerAmount.toLocaleString('en-IN')+' দেওয়া হয়েছে</div>')+
 
+    // PDF button
+    '<button onclick="downloadReconPDF(\''+o.id+'\')" '+
+      'style="width:100%;margin-top:8px;background:var(--navy);color:#fff;border:none;padding:10px;'+
+      'border-radius:10px;font-weight:700;font-size:.78rem;cursor:pointer;">'+
+      '📄 Order Receipt PDF</button>'+
+
   '</div>';
+}
+
+function downloadReconPDF(orderId){
+  var o = allReconOrders.find(function(x){ return x.id===orderId; });
+  if(!o){ showToast('Order পাওয়া যায়নি','red'); return; }
+
+  var orderTotal = o.total||0;
+  var commission = calcCommission(orderTotal);
+  var sellerAmount = orderTotal - commission;
+  var isFreeDelivery = orderTotal >= FREE_DELIVERY_THRESHOLD;
+  var deliveryCharge = isFreeDelivery ? 0 : (o.deliveryCharge||0);
+  var riderPayout = o.riderPayout||0;
+  var totalCash = orderTotal + deliveryCharge;
+  var deltaNet = commission + deliveryCharge - riderPayout;
+  var commPct = COMMISSION_TIERS.find(function(t){return orderTotal<=t.max;});
+  var pct = commPct ? Math.round(commPct.rate*100) : 4;
+  var orderDate = o.createdAt ? new Date(o.createdAt).toLocaleString('en-IN',{
+    day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'
+  }) : '—';
+  var settledDate = o.codSettledAt ? new Date(o.codSettledAt).toLocaleString('en-IN',{
+    day:'numeric',month:'short',year:'numeric'
+  }) : '';
+
+  var items = (o.itemsDetail||[]).map(function(i){
+    return '<tr><td style="padding:6px 8px;border-bottom:1px solid #eee;">'+i.name+'</td>'+
+      '<td style="padding:6px 8px;border-bottom:1px solid #eee;text-align:center;">'+i.qty+'</td>'+
+      '<td style="padding:6px 8px;border-bottom:1px solid #eee;text-align:right;">₹'+i.price+'</td>'+
+      '<td style="padding:6px 8px;border-bottom:1px solid #eee;text-align:right;">₹'+(i.price*i.qty)+'</td></tr>';
+  }).join('') || '<tr><td colspan="4" style="padding:8px;color:#999;text-align:center;">'+(o.items||'পণ্য')+'</td></tr>';
+
+  var html = '<!DOCTYPE html><html><head><meta charset="UTF-8">'+
+    '<title>DELTA COD Receipt - #'+o.id.slice(-6).toUpperCase()+'</title>'+
+    '<style>'+
+      'body{font-family:Arial,sans-serif;max-width:480px;margin:0 auto;padding:24px;color:#333;font-size:14px;}'+
+      'h1{color:#f07018;margin:0;font-size:1.5rem;}'+
+      '.header{border-bottom:3px solid #f07018;padding-bottom:14px;margin-bottom:18px;}'+
+      '.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:700;}'+
+      '.settled{background:#eef9f0;color:#1a8a4a;}.unsettled{background:#fff4ec;color:#f07018;}'+
+      '.row{display:flex;justify-content:space-between;margin-bottom:8px;font-size:.88rem;}'+
+      '.section{background:#f8f9fa;border-radius:10px;padding:14px;margin:14px 0;}'+
+      '.section-title{font-size:.72rem;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;}'+
+      'table{width:100%;border-collapse:collapse;font-size:.85rem;}'+
+      'th{background:#0a1f35;color:#fff;padding:8px;text-align:left;}'+
+      '.fin-row{display:flex;justify-content:space-between;padding:8px 10px;border-radius:6px;margin-bottom:5px;}'+
+      '.fin-total{background:#0a1f35;color:#fff;font-weight:700;}'+
+      '.fin-comm{background:#fff4ec;color:#f07018;}'+
+      '.fin-rider{background:#e8f0fe;color:#3f51b5;}'+
+      '.result-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;}'+
+      '.result-box{border-radius:10px;padding:12px;text-align:center;}'+
+      '.result-box .label{font-size:.68rem;font-weight:700;margin-bottom:4px;}'+
+      '.result-box .value{font-size:1.1rem;font-weight:900;}'+
+      '.seller-box{background:#eef9f0;}.seller-box .label,.seller-box .value{color:#1a8a4a;}'+
+      '.delta-box{background:#fff4ec;}.delta-box .label,.delta-box .value{color:#f07018;}'+
+      'button{width:100%;padding:12px;background:#f07018;color:#fff;border:none;border-radius:8px;font-size:1rem;cursor:pointer;margin-top:16px;}'+
+      '@media print{button{display:none!important;}}'+
+    '</style></head><body>'+
+
+    '<div class="header">'+
+      '<h1>∆ DELTA</h1>'+
+      '<div style="font-size:.72rem;color:#999;margin-top:2px;">deltaapp.in · COD Reconciliation Receipt</div>'+
+    '</div>'+
+
+    '<div class="row"><span style="font-size:1rem;font-weight:700">#'+o.id.slice(-6).toUpperCase()+'</span>'+
+      '<span class="badge '+(o.codSettled?'settled':'unsettled')+'">'+(o.codSettled?'✅ Settled':'⏳ Unsettled')+'</span></div>'+
+
+    '<div class="row"><span>তারিখ</span><span>'+orderDate+'</span></div>'+
+    '<div class="row"><span>দোকান</span><strong>'+(o.shopName||'—')+'</strong></div>'+
+    '<div class="row"><span>গ্রাহক</span><span>'+(o.customerName||'—')+'</span></div>'+
+    '<div class="row"><span>ডেলিভারি ঠিকানা</span><span>'+(o.deliveryAddress||'—')+'</span></div>'+
+    (o.deliveryBoyName?'<div class="row"><span>Rider</span><span>'+o.deliveryBoyName+'</span></div>':'')+
+    (settledDate?'<div class="row"><span>Settlement তারিখ</span><span>'+settledDate+'</span></div>':'')+
+
+    '<div class="section">'+
+      '<div class="section-title">📦 Items</div>'+
+      '<table><thead><tr><th>পণ্য</th><th style="text-align:center">পরিমাণ</th><th style="text-align:right">দাম</th><th style="text-align:right">মোট</th></tr></thead>'+
+      '<tbody>'+items+'</tbody></table>'+
+    '</div>'+
+
+    '<div class="section">'+
+      '<div class="section-title">💰 Financial Breakdown</div>'+
+      '<div class="fin-row fin-total"><span>💵 মোট Cash Collected</span><strong>₹'+totalCash.toLocaleString('en-IN')+'</strong></div>'+
+      '<div class="fin-row fin-comm"><span>DELTA Commission ('+pct+'%)</span><strong>- ₹'+commission.toLocaleString('en-IN')+'</strong></div>'+
+      '<div class="fin-row fin-rider"><span>🛵 Rider Payout</span><strong>- ₹'+riderPayout.toLocaleString('en-IN')+'</strong></div>'+
+      '<div class="result-grid">'+
+        '<div class="result-box seller-box"><div class="label">✅ Seller পাবে</div><div class="value">₹'+sellerAmount.toLocaleString('en-IN')+'</div></div>'+
+        '<div class="result-box delta-box"><div class="label">DELTA রাখবে</div><div class="value">₹'+deltaNet.toLocaleString('en-IN')+'</div></div>'+
+      '</div>'+
+    '</div>'+
+
+    '<div style="text-align:center;font-size:.72rem;color:#999;margin-top:16px;">DELTA Platform · Local Roots. Global Wings.</div>'+
+    '<button onclick="window.print()">🖨️ Print / Save as PDF</button>'+
+    '</body></html>';
+
+  var win = window.open('', '_blank');
+  win.document.write(html);
+  win.document.close();
 }
 
 function renderRecon(){
