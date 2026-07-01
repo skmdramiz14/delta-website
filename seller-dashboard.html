@@ -661,6 +661,9 @@ select.form-input{cursor:pointer;}
 
       <!-- ═══ DASHBOARD PAGE ═══ -->
       <div class="page active" id="page-dashboard">
+        <!-- Payment Notification Banner -->
+        <div id="paymentNotificationBanner" style="display:none;"></div>
+
         <div class="stats-grid">
           <div class="stat-card orange">
             <div class="stat-icon">📦</div>
@@ -865,6 +868,40 @@ select.form-input{cursor:pointer;}
               <input type="text" class="form-input" id="pAddress" placeholder="গ্রাম, পোস্ট, থানা, জেলা"></div>
             <div class="form-group full"><label class="bn">দোকানের বিবরণ</label>
               <input type="text" class="form-input" id="pDesc" placeholder="সংক্ষিপ্ত বিবরণ..."></div>
+          </div>
+
+          <!-- ═══ PAYMENT DETAILS SECTION ═══ -->
+          <div style="margin-top:22px;padding-top:18px;border-top:2px dashed var(--border)">
+            <h3 style="font-size:.95rem;font-weight:800;color:var(--navy);margin-bottom:4px">
+              💳 Payment Details
+            </h3>
+            <p style="font-size:.72rem;color:var(--gray);margin-bottom:14px">
+              Admin আপনাকে payment পাঠানোর জন্য এই তথ্য ব্যবহার করবে। সঠিক তথ্য দিন।
+            </p>
+            <div class="form-grid">
+              <div class="form-group">
+                <label>UPI ID</label>
+                <input type="text" class="form-input" id="pUpiId" placeholder="yourname@upi">
+              </div>
+              <div class="form-group">
+                <label>Bank Account Number</label>
+                <input type="text" class="form-input" id="pBankAccount" placeholder="Account number">
+              </div>
+              <div class="form-group">
+                <label>IFSC Code</label>
+                <input type="text" class="form-input" id="pIfsc" placeholder="SBIN0001234">
+              </div>
+              <div class="form-group">
+                <label>Bank Name</label>
+                <input type="text" class="form-input" id="pBankName" placeholder="SBI / UCO / PNB...">
+              </div>
+              <div class="form-group">
+                <label>Account Holder Name</label>
+                <input type="text" class="form-input" id="pAccountName" placeholder="নামের সাথে মিলতে হবে">
+              </div>
+            </div>
+            <!-- Payment Status -->
+            <div id="paymentDetailsStatus" style="display:none;margin-top:10px;padding:10px 14px;border-radius:10px;font-size:.8rem;"></div>
           </div>
 
           <!-- ═══ SHOP PHOTO GALLERY SECTION ═══ -->
@@ -1616,6 +1653,8 @@ function loadSellerData(){
       // Start real-time listener AFTER initial load so existing orders
       // don't trigger "new order" notifications on page load.
       startOrderListener();
+      // Check করো Admin কোনো pending payment পাঠিয়েছে কিনা
+      checkPendingPayments();
     }).catch(function(){orders=[]; startOrderListener();});
     hideLoading(); showApp();
     setDate();
@@ -3167,6 +3206,13 @@ var statusMap={
   cancelled:{label:'❌ Cancelled',cls:'status-cancelled'}
 };
 
+function calcSellerAmount(total){
+  // Commission tiers (v5.0 business rules)
+  var t = total||0;
+  var rate = t<=200?0.08 : t<=500?0.06 : t<=1000?0.05 : 0.04;
+  return Math.round(t - (t*rate));
+}
+
 function orderCardHTML(o){
   var st=statusMap[o.status]||statusMap.pending;
   var time=o.createdAt?new Date(o.createdAt).toLocaleString('bn-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'সম্প্রতি';
@@ -3178,23 +3224,25 @@ function orderCardHTML(o){
     actionBtns='<button class="btn-sm btn-yellow" onclick="updateOrder(\''+o.id+'\',\'preparing\')">🔄 Preparing</button>';
   if(o.status==='preparing'){
     if(!o.deliveryBoyId){
-      // Rider assign হয়নি — block করো
       actionBtns='<div style="background:var(--sand);border-radius:8px;padding:9px 12px;font-size:.76rem;color:var(--muted);text-align:center;">'+
         '⏳ Admin এখনো Delivery Boy assign করেননি</div>';
     } else if(o.pickupVerified !== true){
-      // Rider assign হয়েছে কিন্তু verify হয়নি — block করো
       actionBtns='<div style="background:var(--sand);border-radius:8px;padding:9px 12px;font-size:.76rem;color:var(--muted);text-align:center;">'+
         '⚠️ আগে Pickup Verify করুন, তারপর Out for Delivery করা যাবে</div>';
     } else {
-      // Assign + verified — enable করো
       actionBtns='<button class="btn-sm btn-orange" onclick="updateOrder(\''+o.id+'\',\'out\')">🛵 Out for Delivery</button>';
     }
   }
   if(o.status==='out')
     actionBtns='<button class="btn-sm btn-green" onclick="updateOrder(\''+o.id+'\',\'delivered\')">📦 Delivered</button>';
 
-  // Delivery boy info display — শুধু দেখাবে, assign করার option নেই
-  // (Delivery Boy assign Admin/Order Manager এর দায়িত্ব — Admin Panel থেকে হবে)
+  // Seller earnings calculation
+  var orderTotal = o.total||0;
+  var sellerAmount = calcSellerAmount(orderTotal);
+  var rate = orderTotal<=200?8 : orderTotal<=500?6 : orderTotal<=1000?5 : 4;
+  var commission = orderTotal - sellerAmount;
+
+  // Delivery boy info display
   var dbInfo = '';
   if(o.deliveryBoyName){
     var verifiedBadge = o.pickupVerified
@@ -3202,9 +3250,7 @@ function orderCardHTML(o){
       : '<span style="background:rgba(255,255,255,.2);padding:2px 8px;border-radius:10px;font-size:.68rem;margin-left:6px;">⏳ Pickup বাকি</span>';
     dbInfo = '<div style="background:var(--green2);border-radius:8px;padding:8px 12px;'+
       'margin-top:8px;font-size:.78rem;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">'+
-      '🛵 <strong>'+o.deliveryBoyName+'</strong> · '+( o.deliveryBoyPhone||'—')+verifiedBadge+'</div>';
-
-    // Pickup verify করার button — শুধুমাত্র এখনো verify না হলে
+      '🛵 <strong>'+o.deliveryBoyName+'</strong> · '+(o.deliveryBoyPhone||'—')+verifiedBadge+'</div>';
     if(!o.pickupVerified && o.pickupOtp){
       var safeRiderName = (o.deliveryBoyName||'Rider').replace(/'/g,"\\'").replace(/"/g,'&quot;');
       dbInfo += '<button class="btn-sm btn-orange" style="width:100%;margin-top:8px;justify-content:center" '+
@@ -3215,6 +3261,16 @@ function orderCardHTML(o){
     dbInfo = '<div style="background:var(--sand);border-radius:8px;padding:8px 12px;'+
       'margin-top:8px;font-size:.74rem;color:var(--muted);display:flex;align-items:center;gap:6px;">'+
       '⏳ Delivery Boy assign হয়নি — Admin শীঘ্রই assign করবেন</div>';
+  }
+
+  // Payment status
+  var paymentTag = '';
+  if(o.codSettled && o.sellerConfirmedReceipt){
+    paymentTag = '<div style="background:var(--green2);border-radius:8px;padding:6px 10px;margin-top:6px;font-size:.72rem;color:var(--green);">'+
+      '✅ Payment পেয়েছেন — ₹'+sellerAmount.toLocaleString('en-IN')+'</div>';
+  } else if(o.codSettled){
+    paymentTag = '<div style="background:var(--yellow2);border-radius:8px;padding:6px 10px;margin-top:6px;font-size:.72rem;color:#7d5a00;">'+
+      '💰 Admin ₹'+sellerAmount.toLocaleString('en-IN')+' পাঠিয়েছেন — <button onclick="confirmPaymentReceipt(\''+o.id+'\')" style="background:var(--green);color:#fff;border:none;padding:2px 8px;border-radius:6px;font-size:.7rem;cursor:pointer;">✅ পেয়েছি</button></div>';
   }
 
   return '<div class="order-card">'+
@@ -3231,10 +3287,21 @@ function orderCardHTML(o){
         '<div class="order-addr">📍 '+(o.deliveryAddress||'ঠিকানা নেই')+'</div>'+
         '<div style="font-size:.72rem;color:var(--muted);margin-top:2px">💵 '+(o.paymentMethod==='cod'?'Cash on Delivery':'UPI')+'</div>'+
       '</div>'+
-      '<div class="order-amount">₹'+(o.total||0).toLocaleString('en-IN')+'</div>'+
+      '<div style="text-align:right">'+
+        '<div class="order-amount">₹'+orderTotal.toLocaleString('en-IN')+'</div>'+
+        '<div style="font-size:.7rem;color:var(--green);font-weight:600;margin-top:2px">আপনি পাবেন: ₹'+sellerAmount.toLocaleString('en-IN')+'</div>'+
+        '<div style="font-size:.65rem;color:var(--muted)">Commission: '+rate+'% (₹'+commission+')</div>'+
+      '</div>'+
     '</div>'+
+    paymentTag+
     dbInfo+
     (actionBtns?'<div class="order-actions">'+actionBtns+'</div>':'')+
+    (o.status==='delivered'?
+      '<button onclick="downloadSellerOrderPDF(\''+o.id+'\')" '+
+        'style="width:100%;margin-top:8px;background:var(--navy);color:#fff;border:none;padding:9px;'+
+        'border-radius:10px;font-weight:700;font-size:.76rem;cursor:pointer;">'+
+        '📄 Order Receipt PDF</button>'
+      : '')+
   '</div>';
 }
 
@@ -3338,6 +3405,27 @@ function loadProfile(){
   var plan = SD.plan || 'free';
   document.getElementById('subPlanName').textContent=plan.toUpperCase()+' PLAN';
   document.getElementById('dashPlanName').textContent=plan.toUpperCase()+' PLAN';
+  // Payment details
+  document.getElementById('pUpiId').value=SD.upiId||'';
+  document.getElementById('pBankAccount').value=SD.bankAccount||'';
+  document.getElementById('pIfsc').value=SD.ifsc||'';
+  document.getElementById('pBankName').value=SD.bankName||'';
+  document.getElementById('pAccountName').value=SD.accountName||'';
+  // Payment status badge
+  var payStatus = document.getElementById('paymentDetailsStatus');
+  if(payStatus){
+    if(SD.upiId||SD.bankAccount){
+      payStatus.style.display='block';
+      payStatus.style.background='var(--green2)';
+      payStatus.style.color='var(--green)';
+      payStatus.innerHTML='✅ Payment details সেভ আছে — Admin এই তথ্যে payment পাঠাবে';
+    } else {
+      payStatus.style.display='block';
+      payStatus.style.background='var(--yellow2)';
+      payStatus.style.color='#7d5a00';
+      payStatus.innerHTML='⚠️ Payment details এখনো দেওয়া হয়নি — দিলে Admin সহজে payment করতে পারবে';
+    }
+  }
 }
 
 function saveProfile(){
@@ -3361,6 +3449,11 @@ function saveProfile(){
     storyText:document.getElementById('pStory').value.trim(),
     photoUrl:storyPhotoUrl||null,
     videoUrl:storyVideoUrl||null,
+    upiId:document.getElementById('pUpiId').value.trim(),
+    bankAccount:document.getElementById('pBankAccount').value.trim(),
+    ifsc:document.getElementById('pIfsc').value.trim().toUpperCase(),
+    bankName:document.getElementById('pBankName').value.trim(),
+    accountName:document.getElementById('pAccountName').value.trim(),
     updatedAt:new Date().toISOString()
   };
   sellerRef().set(upd, {merge:true}).then(function(){
@@ -3448,10 +3541,15 @@ function startOrderListener(){
         } else if(change.type === 'modified'){
           // Order status changed — update local state silently
           var idx = orders.findIndex(function(x){return x.id===change.doc.id;});
-          if(idx>=0) orders[idx] = Object.assign({id:change.doc.id}, change.doc.data());
+          var updatedOrder = Object.assign({id:change.doc.id}, change.doc.data());
+          if(idx>=0) orders[idx] = updatedOrder;
           updateOrderStats();
           renderOrders('all');
           renderRecentOrders();
+          // Payment notification — Admin settled করেছে কিনা check করো
+          if(updatedOrder.codSettled && !updatedOrder.sellerConfirmedReceipt){
+            showPaymentNotification(updatedOrder);
+          }
         } else if(change.type === 'removed'){
           orders = orders.filter(function(x){return x.id!==change.doc.id;});
           updateOrderStats();
@@ -3460,6 +3558,58 @@ function startOrderListener(){
     }, function(err){
       console.error('Order listener error:', err);
     });
+}
+
+// ── PAYMENT NOTIFICATION ──
+function showPaymentNotification(o){
+  var banner = document.getElementById('paymentNotificationBanner');
+  if(!banner) return;
+  var amount = o.sellerPaymentAmount || ((o.total||0) - Math.round((o.total||0)*0.08));
+  banner.style.display = 'block';
+  banner.innerHTML =
+    '<div style="background:linear-gradient(135deg,#1a8a4a,#27ae60);color:#fff;border-radius:14px;'+
+    'padding:16px 18px;margin-bottom:16px;box-shadow:0 4px 16px rgba(26,138,74,.3);">'+
+      '<div style="font-size:.82rem;font-weight:800;margin-bottom:4px;">💰 Admin Payment পাঠিয়েছেন!</div>'+
+      '<div style="font-size:.78rem;opacity:.9;margin-bottom:12px;">'+
+        'Order #'+o.id.slice(-6).toUpperCase()+' এর জন্য ₹'+amount.toLocaleString('en-IN')+' আপনার UPI/Bank এ transfer করা হয়েছে।'+
+      '</div>'+
+      '<div style="display:flex;gap:8px;">'+
+        '<button onclick="confirmPaymentReceipt(\''+o.id+'\')" '+
+          'style="flex:1;background:#fff;color:#1a8a4a;border:none;padding:10px;border-radius:8px;font-weight:700;font-size:.82rem;cursor:pointer;">'+
+          '✅ হ্যাঁ, পেয়েছি</button>'+
+        '<button onclick="this.parentElement.parentElement.parentElement.style.display=\'none\'" '+
+          'style="background:rgba(255,255,255,.2);color:#fff;border:none;padding:10px 14px;border-radius:8px;font-size:.82rem;cursor:pointer;">'+
+          'পরে</button>'+
+      '</div>'+
+    '</div>';
+}
+
+function checkPendingPayments(){
+  // Page load এ pending payment notifications দেখাও
+  var pendingPayments = orders.filter(function(o){
+    return o.codSettled && !o.sellerConfirmedReceipt;
+  });
+  if(pendingPayments.length > 0){
+    showPaymentNotification(pendingPayments[0]);
+  }
+}
+
+function confirmPaymentReceipt(orderId){
+  ordersRef().doc(orderId).update({
+    sellerConfirmedReceipt: true,
+    sellerConfirmedAt: new Date().toISOString()
+  }).then(function(){
+    var banner = document.getElementById('paymentNotificationBanner');
+    if(banner) banner.style.display = 'none';
+    showToast('✅ পাওয়ার বিষয়টি নিশ্চিত করা হয়েছে — ধন্যবাদ!','green');
+    // Check করো আরো pending payment আছে কিনা
+    var remaining = orders.filter(function(o){
+      return o.codSettled && !o.sellerConfirmedReceipt && o.id !== orderId;
+    });
+    if(remaining.length > 0) showPaymentNotification(remaining[0]);
+  }).catch(function(e){
+    showToast('সমস্যা: '+e.message,'red');
+  });
 }
 
 function fireNewOrderNotification(o){
@@ -3615,7 +3765,87 @@ function loadMyTickets(){
     });
 }
 
-// ── PICKUP VERIFY (OTP Input) ──
+// ── SELLER ORDER RECEIPT PDF ──
+function downloadSellerOrderPDF(orderId){
+  var o = orders.find(function(x){ return x.id===orderId; });
+  if(!o){ showToast('Order পাওয়া যায়নি','red'); return; }
+
+  var orderTotal = o.total||0;
+  var sellerAmount = calcSellerAmount(orderTotal);
+  var commission = orderTotal - sellerAmount;
+  var rate = orderTotal<=200?8 : orderTotal<=500?6 : orderTotal<=1000?5 : 4;
+  var orderDate = o.createdAt ? new Date(o.createdAt).toLocaleString('en-IN',{
+    day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'
+  }) : '—';
+
+  var items = (o.itemsDetail||[]).map(function(i){
+    return '<tr><td style="padding:6px 8px;border-bottom:1px solid #eee;">'+i.name+'</td>'+
+      '<td style="padding:6px 8px;border-bottom:1px solid #eee;text-align:center;">'+i.qty+'</td>'+
+      '<td style="padding:6px 8px;border-bottom:1px solid #eee;text-align:right;">₹'+i.price+'</td>'+
+      '<td style="padding:6px 8px;border-bottom:1px solid #eee;text-align:right;">₹'+(i.price*i.qty)+'</td></tr>';
+  }).join('') || '<tr><td colspan="4" style="padding:8px;color:#999;text-align:center;">'+(o.items||'পণ্য')+'</td></tr>';
+
+  var html = '<!DOCTYPE html><html><head><meta charset="UTF-8">'+
+    '<title>DELTA Order Receipt - #'+o.id.slice(-6).toUpperCase()+'</title>'+
+    '<style>'+
+      'body{font-family:Arial,sans-serif;max-width:420px;margin:0 auto;padding:20px;color:#333;font-size:14px;}'+
+      'h1{color:#f07018;margin:0;font-size:1.4rem;}'+
+      '.header{border-bottom:3px solid #f07018;padding-bottom:12px;margin-bottom:16px;}'+
+      '.row{display:flex;justify-content:space-between;margin-bottom:6px;font-size:.85rem;}'+
+      'table{width:100%;border-collapse:collapse;font-size:.85rem;margin:12px 0;}'+
+      'th{background:#0a1f35;color:#fff;padding:8px;text-align:left;}'+
+      '.breakdown{background:#f8f9fa;border-radius:10px;padding:14px;margin:12px 0;}'+
+      '.breakdown-row{display:flex;justify-content:space-between;padding:6px 0;font-size:.85rem;border-bottom:1px solid #eee;}'+
+      '.breakdown-row:last-child{border-bottom:none;}'+
+      '.highlight{background:var(--green,#eef9f0);border-radius:8px;padding:12px;text-align:center;margin-top:12px;}'+
+      '.settlement{background:#fff4ec;border-radius:8px;padding:10px;text-align:center;margin-top:8px;font-size:.8rem;}'+
+      'button{width:100%;padding:12px;background:#f07018;color:#fff;border:none;border-radius:8px;font-size:1rem;cursor:pointer;margin-top:16px;}'+
+      '@media print{button{display:none!important;}}'+
+    '</style></head><body>'+
+
+    '<div class="header">'+
+      '<h1>∆ DELTA</h1>'+
+      '<div style="font-size:.72rem;color:#999;margin-top:2px;">Seller Order Receipt</div>'+
+    '</div>'+
+
+    '<div class="row"><span>Order ID</span><strong>#'+o.id.slice(-6).toUpperCase()+'</strong></div>'+
+    '<div class="row"><span>তারিখ</span><span>'+orderDate+'</span></div>'+
+    '<div class="row"><span>দোকান</span><strong>'+(SD?SD.shopName||'—':'—')+'</strong></div>'+
+    '<div class="row"><span>গ্রাহক</span><span>'+(o.customerName||'—')+'</span></div>'+
+    '<div class="row"><span>ডেলিভারি ঠিকানা</span><span>'+(o.deliveryAddress||'—')+'</span></div>'+
+    '<div class="row"><span>Payment</span><span>'+(o.paymentMethod==='cod'?'Cash on Delivery':'UPI')+'</span></div>'+
+
+    '<table><thead><tr>'+
+      '<th>পণ্য</th><th style="text-align:center">পরিমাণ</th><th style="text-align:right">দাম</th><th style="text-align:right">মোট</th>'+
+    '</tr></thead><tbody>'+items+'</tbody></table>'+
+
+    '<div class="breakdown">'+
+      '<div style="font-size:.72rem;font-weight:700;color:#999;text-transform:uppercase;margin-bottom:8px;">Financial Breakdown</div>'+
+      '<div class="breakdown-row"><span>Order Total</span><strong>₹'+orderTotal.toLocaleString('en-IN')+'</strong></div>'+
+      '<div class="breakdown-row" style="color:#f07018;"><span>DELTA Commission ('+rate+'%)</span><strong>- ₹'+commission.toLocaleString('en-IN')+'</strong></div>'+
+    '</div>'+
+
+    '<div style="background:#eef9f0;border-radius:10px;padding:16px;text-align:center;margin-top:8px;">'+
+      '<div style="font-size:.75rem;color:#1a8a4a;font-weight:700;margin-bottom:4px;">✅ আপনি পাবেন</div>'+
+      '<div style="font-size:1.6rem;font-weight:900;color:#1a8a4a;">₹'+sellerAmount.toLocaleString('en-IN')+'</div>'+
+      '<div style="font-size:.7rem;color:#6b7b8d;margin-top:4px;">Order Total - '+rate+'% Commission</div>'+
+    '</div>'+
+
+    (o.codSettled
+      ? '<div style="background:#e8f4ff;border-radius:8px;padding:10px;text-align:center;margin-top:8px;font-size:.8rem;color:#0984e3;">'+
+          '✅ Payment পেয়েছেন'+(o.sellerConfirmedReceipt?' · Confirmed':'')+'</div>'
+      : '<div style="background:#fff4ec;border-radius:8px;padding:10px;text-align:center;margin-top:8px;font-size:.8rem;color:#f07018;">'+
+          '⏳ Payment pending — Admin শীঘ্রই পাঠাবেন</div>')+
+
+    '<div style="text-align:center;font-size:.7rem;color:#999;margin-top:16px;">DELTA Platform · deltaapp.in</div>'+
+    '<button onclick="window.print()">🖨️ Print / Save as PDF</button>'+
+    '</body></html>';
+
+  var win = window.open('', '_blank');
+  win.document.write(html);
+  win.document.close();
+}
+</script>
 var pvCurrentOrderId = null;
 var pvCorrectOtp = null;
 
