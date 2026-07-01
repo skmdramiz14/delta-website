@@ -3177,11 +3177,16 @@ function orderCardHTML(o){
   if(o.status==='confirmed')
     actionBtns='<button class="btn-sm btn-yellow" onclick="updateOrder(\''+o.id+'\',\'preparing\')">🔄 Preparing</button>';
   if(o.status==='preparing'){
-    // Rider assign আছে কিন্তু pickup verify হয়নি — Out for Delivery block করো
-    if(o.deliveryBoyId && o.pickupVerified !== true){
+    if(!o.deliveryBoyId){
+      // Rider assign হয়নি — block করো
+      actionBtns='<div style="background:var(--sand);border-radius:8px;padding:9px 12px;font-size:.76rem;color:var(--muted);text-align:center;">'+
+        '⏳ Admin এখনো Delivery Boy assign করেননি</div>';
+    } else if(o.pickupVerified !== true){
+      // Rider assign হয়েছে কিন্তু verify হয়নি — block করো
       actionBtns='<div style="background:var(--sand);border-radius:8px;padding:9px 12px;font-size:.76rem;color:var(--muted);text-align:center;">'+
         '⚠️ আগে Pickup Verify করুন, তারপর Out for Delivery করা যাবে</div>';
     } else {
+      // Assign + verified — enable করো
       actionBtns='<button class="btn-sm btn-orange" onclick="updateOrder(\''+o.id+'\',\'out\')">🛵 Out for Delivery</button>';
     }
   }
