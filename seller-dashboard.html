@@ -3178,7 +3178,7 @@ function orderCardHTML(o){
     actionBtns='<button class="btn-sm btn-yellow" onclick="updateOrder(\''+o.id+'\',\'preparing\')">🔄 Preparing</button>';
   if(o.status==='preparing'){
     // Rider assign আছে কিন্তু pickup verify হয়নি — Out for Delivery block করো
-    if(o.deliveryBoyId && !o.pickupVerified){
+    if(o.deliveryBoyId && o.pickupVerified !== true){
       actionBtns='<div style="background:var(--sand);border-radius:8px;padding:9px 12px;font-size:.76rem;color:var(--muted);text-align:center;">'+
         '⚠️ আগে Pickup Verify করুন, তারপর Out for Delivery করা যাবে</div>';
     } else {
