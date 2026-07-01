@@ -467,9 +467,13 @@ function orderCardHTML(o){
     '</div>'+
     '<div class="order-meta-grid" style="margin-top:-4px">'+
       '<div>ঠিকানা<strong style="font-size:.76rem">'+(o.deliveryAddress||'—')+'</strong></div>'+
+      '<div>Phone<strong>'+
+        (o.customerMobile||o.customerPhone
+          ? '<a href="tel:'+(o.customerMobile||o.customerPhone)+'" style="color:var(--orange);text-decoration:none;">📞 '+(o.customerMobile||o.customerPhone)+'</a>'
+          : '—')+
+      '</strong></div>'+
       '<div>অর্ডারের সময়<strong>'+time+'</strong></div>'+
       '<div>Order ID<strong style="font-size:.7rem">'+o.id+'</strong></div>'+
-      '<div>Shop ID<strong style="font-size:.7rem">'+(o.shopId||'—')+'</strong></div>'+
     '</div>'+
     (o.deliveryBoyName?'<div class="db-assigned-tag">🛵 '+o.deliveryBoyName+' কে assign করা আছে'+(o.riderPayout?' · Payout: ₹'+o.riderPayout:'')+'</div>':'')+
     payoutSection+
