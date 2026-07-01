@@ -1024,28 +1024,30 @@ function loadAllData(){
   });
 }
 
-var orderListeners = []; // unsubscribe functions রাখার জন্য
+var orderListeners = [];
+var renderOrdersTimeout = null;
 
 function loadAllOrders(){
-  // আগের listeners বন্ধ করো (re-load হলে duplicate না হয়)
   orderListeners.forEach(function(unsub){ unsub(); });
   orderListeners = [];
   allOrders = [];
 
   if(!allSellers.length){ renderOrders(); updateCounts(); return; }
 
-  var loadedCount = 0;
   allSellers.forEach(function(s){
     var unsub = db.collection('cities').doc(CITY).collection('sellers').doc(s.id)
       .collection('orders').onSnapshot(function(snap){
-        // এই shop এর পুরোনো orders সরিয়ে নতুন করে বসাও (real-time update)
         allOrders = allOrders.filter(function(o){ return o.shopId !== s.id; });
         snap.forEach(function(d){
           allOrders.push(Object.assign({id:d.id, shopId:s.id, shopName:s.shopName}, d.data()));
         });
         allOrders.sort(function(a,b){ return new Date(b.createdAt||0) - new Date(a.createdAt||0); });
-        renderOrders();
-        updateCounts();
+        // Debounce — সব sellers এর snapshots settle হওয়ার পর একবার render করো
+        if(renderOrdersTimeout) clearTimeout(renderOrdersTimeout);
+        renderOrdersTimeout = setTimeout(function(){
+          renderOrders();
+          updateCounts();
+        }, 150);
       }, function(err){
         console.warn('Order listener error for', s.id, err.message);
       });
