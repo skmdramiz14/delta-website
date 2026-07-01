@@ -544,7 +544,9 @@ function orderCardHTML(o, showActions){
       '<div class="addr-row">'+
         '<span class="addr-icon">📍</span>'+
         '<div><span class="addr-label">Pickup (দোকান)</span>'+
-        '<span class="addr-text">'+(o.shopAddress||o.shopName||'দোকানের ঠিকানা নেই')+'</span></div>'+
+        '<span class="addr-text">'+(o.shopAddress ? o.shopAddress : (o.shopName||'ঠিকানা নেই'))+'</span>'+
+        (o.shopPhone?'<br><a class="addr-phone" href="tel:'+o.shopPhone+'">📞 '+o.shopPhone+'</a>':'')+
+        '</div>'+
       '</div>'+
       '<div class="addr-row">'+
         '<span class="addr-icon">🏠</span>'+
@@ -554,7 +556,7 @@ function orderCardHTML(o, showActions){
       '<div class="addr-row">'+
         '<span class="addr-icon">📞</span>'+
         '<div><span class="addr-label">গ্রাহকের Phone</span>'+
-        '<a class="addr-phone" href="tel:'+(o.customerPhone||'')+'">'+(o.customerPhone||o.customerName||'—')+'</a></div>'+
+        '<a class="addr-phone" href="tel:'+(o.customerMobile||o.customerPhone||'')+'">'+(o.customerMobile||o.customerPhone||o.customerName||'—')+'</a></div>'+
       '</div>'+
     '</div>'+
     '<div class="amount-row">'+
@@ -575,6 +577,12 @@ function orderCardHTML(o, showActions){
       : '<div style="background:var(--yellow2);border-radius:8px;padding:8px 12px;margin-top:8px;'+
         'font-size:.78rem;color:#7d5a00;">⏳ Payout এখনো নির্ধারণ করা হয়নি</div>')+
     (actionBtns?'<div class="oc-actions">'+actionBtns+'</div>':'')+
+    (ds==='delivered' ?
+      '<button onclick="downloadOrderPDF(\''+o.id+'\')" '+
+        'style="width:100%;margin-top:8px;background:var(--navy);color:#fff;border:none;padding:10px;'+
+        'border-radius:10px;font-weight:700;font-size:.8rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">'+
+        '📄 Order Receipt Download করুন</button>'
+      : '')+
   '</div>';
 }
 
@@ -758,6 +766,64 @@ function doUpdateStatus(shopId, orderId, newStatus, codCashCollected){
     }).catch(function(e){
       showToast('আপডেট ব্যর্থ: '+e.message,'red');
     });
+}// ── ORDER RECEIPT PDF ──
+function downloadOrderPDF(orderId){
+  var o = myOrders.find(function(x){ return x.id===orderId; });
+  if(!o){ showToast('Order পাওয়া যায়নি','red'); return; }
+
+  var time = o.createdAt ? new Date(o.createdAt).toLocaleString('en-IN',{
+    day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'
+  }) : '—';
+
+  var items = (o.itemsDetail||[]).map(function(i){
+    return '<tr><td style="padding:6px 8px;border-bottom:1px solid #eee;">'+i.name+'</td>'+
+      '<td style="padding:6px 8px;border-bottom:1px solid #eee;text-align:center;">'+i.qty+'</td>'+
+      '<td style="padding:6px 8px;border-bottom:1px solid #eee;text-align:right;">₹'+i.price+'</td>'+
+      '<td style="padding:6px 8px;border-bottom:1px solid #eee;text-align:right;">₹'+(i.price*i.qty)+'</td></tr>';
+  }).join('');
+
+  var html = '<!DOCTYPE html><html><head><meta charset="UTF-8">'+
+    '<title>DELTA Order Receipt</title>'+
+    '<style>body{font-family:Arial,sans-serif;max-width:400px;margin:0 auto;padding:20px;color:#333;}'+
+    'h1{color:#f07018;font-size:1.4rem;margin:0;}'+
+    '.header{border-bottom:2px solid #f07018;padding-bottom:12px;margin-bottom:16px;}'+
+    '.info-row{display:flex;justify-content:space-between;margin-bottom:6px;font-size:.85rem;}'+
+    'table{width:100%;border-collapse:collapse;margin:16px 0;font-size:.85rem;}'+
+    'th{background:#f07018;color:#fff;padding:8px;text-align:left;}'+
+    '.total-row{font-weight:700;font-size:.95rem;border-top:2px solid #333;}'+
+    '.footer{text-align:center;margin-top:20px;font-size:.75rem;color:#999;}'+
+    '@media print{button{display:none!important;}}</style></head><body>'+
+    '<div class="header">'+
+      '<h1>∆ DELTA</h1>'+
+      '<div style="font-size:.75rem;color:#666;">deltaapp.in · পরিবর্তনের ব-দ্বীপ</div>'+
+    '</div>'+
+    '<div class="info-row"><span>Order ID</span><strong>#'+o.id.slice(-6).toUpperCase()+'</strong></div>'+
+    '<div class="info-row"><span>তারিখ</span><span>'+time+'</span></div>'+
+    '<div class="info-row"><span>দোকান</span><span>'+(o.shopName||'—')+'</span></div>'+
+    (o.shopAddress?'<div class="info-row"><span>দোকানের ঠিকানা</span><span>'+o.shopAddress+'</span></div>':'')+
+    '<div class="info-row"><span>গ্রাহক</span><span>'+(o.customerName||'Customer')+'</span></div>'+
+    '<div class="info-row"><span>ডেলিভারি ঠিকানা</span><span>'+(o.deliveryAddress||'—')+'</span></div>'+
+    '<div class="info-row"><span>Payment</span><span>'+(o.paymentMethod==='cod'?'Cash on Delivery':'UPI')+'</span></div>'+
+    '<table><thead><tr>'+
+      '<th>পণ্য</th><th style="text-align:center">পরিমাণ</th><th style="text-align:right">দাম</th><th style="text-align:right">মোট</th>'+
+    '</tr></thead><tbody>'+items+'</tbody>'+
+    '<tfoot><tr class="total-row">'+
+      '<td colspan="3" style="padding:8px;">উপমোট</td>'+
+      '<td style="padding:8px;text-align:right;">₹'+(o.total||0)+'</td></tr>'+
+    (o.deliveryCharge>0?'<tr><td colspan="3" style="padding:4px 8px;font-size:.8rem;">ডেলিভারি চার্জ</td>'+
+      '<td style="padding:4px 8px;text-align:right;font-size:.8rem;">₹'+o.deliveryCharge+'</td></tr>':'')+
+    '<tr class="total-row"><td colspan="3" style="padding:8px;background:#fff8f0;">সর্বমোট</td>'+
+      '<td style="padding:8px;text-align:right;background:#fff8f0;color:#f07018;">₹'+(o.grandTotal||o.total||0)+'</td></tr>'+
+    '</tfoot></table>'+
+    (o.riderPayout?'<div class="info-row"><span>🛵 আপনার Payout</span><strong style="color:green">₹'+o.riderPayout+'</strong></div>':'')+
+    (o.codCashCollected?'<div class="info-row"><span>💵 COD Cash সংগ্রহ</span><strong>₹'+(o.codCashAmount||o.total||0)+'</strong></div>':'')+
+    '<div class="footer">DELTA — Local Roots. Global Wings.<br>ধন্যবাদ আপনার সেবা করতে পেরে!</div>'+
+    '<br><button onclick="window.print()" style="width:100%;padding:10px;background:#f07018;color:#fff;border:none;border-radius:8px;font-size:1rem;cursor:pointer;">🖨️ Print / Save PDF</button>'+
+    '</body></html>';
+
+  var win = window.open('', '_blank');
+  win.document.write(html);
+  win.document.close();
 }
 </script>
 </body>
