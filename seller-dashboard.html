@@ -1655,6 +1655,8 @@ function loadSellerData(){
       startOrderListener();
       // Check করো Admin কোনো pending payment পাঠিয়েছে কিনা
       checkPendingPayments();
+      // Admin notification check করো
+      checkAdminNotification();
     }).catch(function(){orders=[]; startOrderListener();});
     hideLoading(); showApp();
     setDate();
@@ -1780,13 +1782,20 @@ function renderProducts(){
     var img=p.imageUrl||(p.images&&p.images[0])||'';
     var name=p.nameBn||p.nameEn||p.name||'পণ্য';
     var disc=p.discount||0;
-    return '<div class="product-item">'+
+    var isRemoved = p.adminRemoved||false;
+    var isFlagged = p.adminFlagged||false;
+
+    return '<div class="product-item" style="'+(isRemoved?'opacity:.5;border-left:3px solid var(--red);':'isFlagged?\'border-left:3px solid var(--orange);\'':'')+'">' +
       '<div class="prod-thumb">'+(img?'<img src="'+img+'" alt="'+name+'">':'📦')+'</div>'+
       '<div class="prod-info">'+
         '<div class="prod-name">'+name+
           (disc?'<span class="disc-pill">'+disc+'% OFF</span>':'')+
           (p.offerActive&&p.offerLabel?'<span class="disc-pill" style="background:var(--orange);margin-left:4px">'+p.offerLabel+'</span>':'')+
+          (isRemoved?'<span style="background:var(--red2);color:var(--red);font-size:.65rem;padding:2px 6px;border-radius:6px;margin-left:4px;">❌ Admin Removed</span>':'')+
+          (isFlagged&&!isRemoved?'<span style="background:#fff4ec;color:var(--orange);font-size:.65rem;padding:2px 6px;border-radius:6px;margin-left:4px;">🚩 Flagged</span>':'')+
         '</div>'+
+        (isRemoved&&p.adminRemoveReason?'<div style="font-size:.72rem;color:var(--red);margin-top:2px;">কারণ: '+p.adminRemoveReason+'</div>':'')+
+        (isFlagged&&!isRemoved&&p.adminFlagReason?'<div style="font-size:.72rem;color:var(--orange);margin-top:2px;">Admin note: '+p.adminFlagReason+'</div>':'')+
         '<div class="prod-meta">'+(p.category||'')+(p.unit?' · '+p.unit:'')+(p.prepTime?' · '+p.prepTime+' মিনিট':'')+'</div>'+
         '<div><span class="prod-price">₹'+(p.price||0)+'</span>'+
           (p.mrp&&p.mrp!==p.price?'<span class="prod-mrp">₹'+p.mrp+'</span>':'')+
@@ -1794,7 +1803,7 @@ function renderProducts(){
         '<span class="stock-pill '+(p.stock>0?'stock-in':'stock-out')+'">'+(p.stock>0?'✅ স্টক: '+(p.stock||0):' স্টক নেই')+'</span>'+
       '</div>'+
       '<div class="prod-actions">'+
-        '<button class="btn-sm btn-outline" onclick="editProduct(\''+p.id+'\')">✏️</button>'+
+        (!isRemoved?'<button class="btn-sm btn-outline" onclick="editProduct(\''+p.id+'\')">✏️</button>':'')+
         '<button class="btn-sm btn-red" onclick="deleteProduct(\''+p.id+'\')">🗑️</button>'+
       '</div></div>';
   }).join('');
@@ -3582,6 +3591,45 @@ function showPaymentNotification(o){
           'পরে</button>'+
       '</div>'+
     '</div>';
+}
+
+// ── ADMIN NOTIFICATION ──
+function checkAdminNotification(){
+  if(!auth.currentUser) return;
+  db.collection('cities').doc(CITY).collection('sellers').doc(auth.currentUser.uid)
+    .get().then(function(doc){
+      if(!doc.exists) return;
+      var notif = doc.data().lastAdminNotification;
+      if(notif && !notif.read){
+        showAdminNotificationBanner(notif);
+      }
+    }).catch(function(){});
+}
+
+function showAdminNotificationBanner(notif){
+  var banner = document.getElementById('paymentNotificationBanner');
+  if(!banner) return;
+  var isRemoval = notif.type === 'product_removed';
+  banner.style.display = 'block';
+  banner.innerHTML =
+    '<div style="background:'+(isRemoval?'linear-gradient(135deg,#c0392b,#e74c3c)':'linear-gradient(135deg,#e67e22,#f39c12)')+';color:#fff;border-radius:14px;'+
+    'padding:16px 18px;margin-bottom:16px;box-shadow:0 4px 16px rgba(0,0,0,.2);">'+
+      '<div style="font-size:.82rem;font-weight:800;margin-bottom:4px;">'+(isRemoval?'⚠️ Admin থেকে গুরুত্বপূর্ণ বার্তা':'📢 Admin থেকে বার্তা')+'</div>'+
+      '<div style="font-size:.78rem;opacity:.95;margin-bottom:12px;">'+notif.message+'</div>'+
+      '<button onclick="dismissAdminNotification()" '+
+        'style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);padding:8px 16px;border-radius:8px;font-size:.8rem;font-weight:700;cursor:pointer;">'+
+        '✅ বুঝলাম</button>'+
+    '</div>';
+}
+
+function dismissAdminNotification(){
+  if(!auth.currentUser) return;
+  db.collection('cities').doc(CITY).collection('sellers').doc(auth.currentUser.uid)
+    .update({'lastAdminNotification.read': true})
+    .then(function(){
+      var banner = document.getElementById('paymentNotificationBanner');
+      if(banner) banner.style.display='none';
+    }).catch(function(){});
 }
 
 function checkPendingPayments(){
