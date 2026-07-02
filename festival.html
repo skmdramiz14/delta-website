@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DELTA — উৎসব</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600;700&family=Tiro+Bangla&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --saffron:#C84B11;
+  --maroon:#2D0A00;
+  --gold:#E8A020;
+  --cream:#FDF6EC;
+  --cream2:#F5ECD9;
+  --navy:#0A1F35;
+  --muted:#6B7B8D;
+  --border:#E8EDF2;
+  --white:#fff;
+  --green:#1a8a4a;
+  --green2:#eef9f0;
+  --orange:#f07018;
+}
+html{scroll-behavior:smooth;}
+body{
+  font-family:'DM Sans',sans-serif;
+  background:var(--cream);
+  color:var(--navy);
+  min-height:100vh;
+}
+
+/* ── ALPONA BORDER (SVG pattern) ── */
+.alpona-border{
+  height:28px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='28'%3E%3Ccircle cx='10' cy='14' r='5' fill='none' stroke='%23E8A020' stroke-width='1.5'/%3E%3Ccircle cx='10' cy='14' r='2' fill='%23E8A020'/%3E%3Cpath d='M15 14 Q27 4 40 14 Q53 24 65 14' fill='none' stroke='%23E8A020' stroke-width='1.5'/%3E%3Ccircle cx='70' cy='14' r='5' fill='none' stroke='%23E8A020' stroke-width='1.5'/%3E%3Ccircle cx='70' cy='14' r='2' fill='%23E8A020'/%3E%3C/svg%3E");
+  background-repeat:repeat-x;
+  background-position:center;
+}
+
+/* ── NAVBAR ── */
+.nav{
+  position:sticky;top:0;z-index:100;
+  background:rgba(45,10,0,.92);
+  backdrop-filter:blur(12px);
+  padding:12px 20px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.nav-logo{
+  font-family:'Playfair Display',serif;
+  font-size:1.3rem;font-weight:900;
+  color:var(--gold);letter-spacing:1px;
+}
+.nav-back{
+  color:rgba(255,255,255,.7);
+  font-size:.82rem;text-decoration:none;
+  display:flex;align-items:center;gap:6px;
+}
+.nav-back:hover{color:#fff;}
+.nav-right{display:flex;align-items:center;gap:12px;}
+.nav-cart{
+  background:var(--saffron);color:#fff;
+  border:none;padding:8px 16px;border-radius:20px;
+  font-size:.78rem;font-weight:700;cursor:pointer;
+  display:flex;align-items:center;gap:6px;
+}
+
+/* ── HERO ── */
+.hero{
+  background:linear-gradient(160deg, var(--maroon) 0%, #6B1A00 50%, #B84000 100%);
+  padding:40px 20px 0;
+  position:relative;overflow:hidden;
+  text-align:center;
+}
+.hero::before{
+  content:'';position:absolute;
+  top:-60px;right:-60px;
+  width:250px;height:250px;
+  background:radial-gradient(circle, rgba(232,160,32,.2) 0%, transparent 70%);
+  border-radius:50%;
+}
+.hero::after{
+  content:'';position:absolute;
+  bottom:-40px;left:-40px;
+  width:180px;height:180px;
+  background:radial-gradient(circle, rgba(200,75,17,.3) 0%, transparent 70%);
+  border-radius:50%;
+}
+.hero-eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(232,160,32,.15);
+  border:1px solid rgba(232,160,32,.4);
+  color:var(--gold);
+  padding:5px 14px;border-radius:20px;
+  font-size:.72rem;font-weight:700;
+  letter-spacing:1px;text-transform:uppercase;
+  margin-bottom:16px;
+}
+.hero-title{
+  font-family:'Playfair Display',serif;
+  font-size:2.4rem;font-weight:900;
+  color:#fff;line-height:1.1;
+  margin-bottom:8px;
+  position:relative;z-index:1;
+}
+.hero-title .gold{color:var(--gold);}
+.hero-subtitle{
+  font-family:'Tiro Bangla',serif;
+  font-size:1rem;color:rgba(255,255,255,.75);
+  margin-bottom:24px;
+  position:relative;z-index:1;
+}
+
+/* Countdown */
+.countdown-strip{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(0,0,0,.3);
+  border:1px solid rgba(232,160,32,.3);
+  padding:10px 20px;border-radius:14px;
+  margin-bottom:28px;
+  position:relative;z-index:1;
+}
+.cd-unit{text-align:center;}
+.cd-num{
+  font-size:1.6rem;font-weight:900;
+  color:#fff;font-family:monospace;line-height:1;
+}
+.cd-label{
+  font-size:.55rem;color:rgba(255,255,255,.5);
+  text-transform:uppercase;letter-spacing:.5px;margin-top:2px;
+}
+.cd-sep{font-size:1.4rem;color:rgba(255,255,255,.3);margin-bottom:10px;}
+
+/* Stats row */
+.hero-stats{
+  display:flex;justify-content:center;gap:0;
+  background:rgba(0,0,0,.25);
+  border-radius:14px 14px 0 0;
+  padding:14px 20px;
+  position:relative;z-index:1;
+}
+.hero-stat{
+  flex:1;text-align:center;
+  border-right:1px solid rgba(255,255,255,.1);
+  padding:0 12px;
+}
+.hero-stat:last-child{border-right:none;}
+.hero-stat .num{
+  font-size:1.2rem;font-weight:800;color:var(--gold);
+}
+.hero-stat .lbl{
+  font-size:.65rem;color:rgba(255,255,255,.55);margin-top:2px;
+}
+
+/* ── CATEGORY TABS ── */
+.tabs-wrap{
+  background:#fff;
+  border-bottom:1px solid var(--border);
+  position:sticky;top:53px;z-index:90;
+  padding:0 4%;
+}
+.tabs{
+  display:flex;gap:0;overflow-x:auto;
+  scrollbar-width:none;-webkit-overflow-scrolling:touch;
+}
+.tabs::-webkit-scrollbar{display:none;}
+.tab-btn{
+  flex-shrink:0;
+  padding:14px 16px;
+  font-size:.82rem;font-weight:600;
+  color:var(--muted);
+  border:none;background:none;cursor:pointer;
+  border-bottom:3px solid transparent;
+  white-space:nowrap;transition:all .2s;
+}
+.tab-btn.active{
+  color:var(--saffron);
+  border-bottom-color:var(--saffron);
+  font-weight:700;
+}
+
+/* ── CONTENT ── */
+.content{padding:0 4% 80px;}
+
+/* Section header */
+.sec-head{
+  display:flex;align-items:baseline;justify-content:space-between;
+  padding:24px 0 14px;
+}
+.sec-head h2{
+  font-family:'Playfair Display',serif;
+  font-size:1.2rem;font-weight:900;color:var(--navy);
+}
+.sec-head .count{
+  font-size:.75rem;color:var(--muted);
+  background:var(--cream2);padding:3px 10px;border-radius:20px;
+}
+
+/* ── PRODUCT GRID ── */
+.product-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+}
+.product-card{
+  background:#fff;border-radius:16px;
+  border:1px solid var(--border);
+  overflow:hidden;
+  transition:transform .2s,box-shadow .2s;
+  cursor:pointer;
+}
+.product-card:active{transform:scale(.98);}
+.product-card:hover{box-shadow:0 4px 20px rgba(0,0,0,.1);}
+.product-img{
+  width:100%;aspect-ratio:1;
+  object-fit:cover;background:var(--cream2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:2.5rem;
+}
+.product-img img{width:100%;height:100%;object-fit:cover;}
+.product-body{padding:10px 12px 12px;}
+.product-shop{
+  font-size:.65rem;color:var(--muted);
+  margin-bottom:3px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.product-name{
+  font-size:.88rem;font-weight:700;color:var(--navy);
+  margin-bottom:6px;line-height:1.3;
+}
+.product-price-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.product-price{font-size:1rem;font-weight:800;color:var(--saffron);}
+.product-mrp{font-size:.72rem;color:var(--muted);text-decoration:line-through;}
+.product-disc{
+  font-size:.65rem;font-weight:700;
+  background:#FFF4EC;color:var(--saffron);
+  padding:2px 6px;border-radius:6px;
+}
+.add-btn{
+  width:100%;padding:9px;
+  background:var(--navy);color:#fff;
+  border:none;border-radius:10px;
+  font-size:.8rem;font-weight:700;cursor:pointer;
+  transition:background .2s;
+}
+.add-btn:hover{background:var(--saffron);}
+
+/* Festival badge */
+.festival-tag{
+  display:inline-flex;align-items:center;gap:4px;
+  background:linear-gradient(135deg,var(--saffron),var(--gold));
+  color:#fff;font-size:.6rem;font-weight:700;
+  padding:2px 7px;border-radius:6px;margin-bottom:4px;
+}
+
+/* ── HAMPERS SECTION ── */
+.hamper-grid{
+  display:flex;gap:12px;overflow-x:auto;
+  scrollbar-width:none;-webkit-overflow-scrolling:touch;
+  padding-bottom:6px;
+}
+.hamper-grid::-webkit-scrollbar{display:none;}
+.hamper-card{
+  flex-shrink:0;width:200px;
+  background:#fff;border-radius:16px;
+  border:1.5px solid rgba(232,160,32,.3);
+  overflow:hidden;
+}
+.hamper-img{
+  height:130px;background:linear-gradient(135deg,#FDF0DC,#F5DDB0);
+  display:flex;align-items:center;justify-content:center;
+  font-size:3rem;
+}
+.hamper-body{padding:12px;}
+.hamper-name{font-size:.88rem;font-weight:700;color:var(--navy);margin-bottom:4px;}
+.hamper-items{font-size:.68rem;color:var(--muted);margin-bottom:8px;line-height:1.5;}
+.hamper-price{font-size:.95rem;font-weight:800;color:var(--saffron);}
+.hamper-btn{
+  width:100%;margin-top:8px;padding:8px;
+  background:var(--saffron);color:#fff;
+  border:none;border-radius:8px;font-size:.76rem;font-weight:700;cursor:pointer;
+}
+
+/* ── EMPTY STATE ── */
+.empty-festival{
+  text-align:center;padding:48px 20px;
+}
+.empty-festival .icon{font-size:3rem;margin-bottom:12px;}
+.empty-festival h3{
+  font-family:'Playfair Display',serif;
+  font-size:1.1rem;color:var(--navy);margin-bottom:8px;
+}
+.empty-festival p{font-size:.82rem;color:var(--muted);line-height:1.6;}
+
+/* ── LOADING ── */
+.skeleton{
+  background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%);
+  background-size:200% 100%;
+  animation:shimmer 1.5s infinite;
+  border-radius:10px;
+}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.skel-card{background:#fff;border-radius:16px;border:1px solid var(--border);overflow:hidden;}
+.skel-img{height:150px;}
+.skel-body{padding:10px 12px 12px;}
+.skel-line{height:12px;margin-bottom:8px;}
+.skel-line.short{width:60%;}
+
+/* ── FLOATING CART ── */
+.floating-cart{
+  position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+  background:var(--navy);color:#fff;
+  padding:14px 28px;border-radius:28px;
+  display:none;align-items:center;gap:12px;
+  box-shadow:0 8px 32px rgba(0,0,0,.25);
+  z-index:200;cursor:pointer;
+  font-weight:700;font-size:.9rem;
+  min-width:280px;justify-content:space-between;
+}
+.floating-cart.visible{display:flex;}
+.cart-count{
+  background:var(--saffron);color:#fff;
+  width:24px;height:24px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.75rem;font-weight:800;
+}
+.cart-total{font-size:.95rem;font-weight:800;color:var(--gold);}
+
+/* Mobile */
+@media(max-width:480px){
+  .hero-title{font-size:1.9rem;}
+  .product-grid{gap:10px;}
+  .floating-cart{left:16px;right:16px;transform:none;min-width:unset;}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <a href="index.html" class="nav-back">← হোম</a>
+  <div class="nav-logo">∆ উৎসব</div>
+  <div class="nav-right">
+    <button class="nav-cart" onclick="goToCart()">
+      🛒 <span id="navCartCount">0</span>
+    </button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero" id="heroSection">
+  <div class="hero-eyebrow" id="heroEyebrow">🎊 DELTA উৎসব শপিং</div>
+  <h1 class="hero-title" id="heroTitle">
+    দুর্গাপূজা <span class="gold">স্পেশাল</span>
+  </h1>
+  <p class="hero-subtitle" id="heroSubtitle">মন্তেশ্বরের সেরা দোকান থেকে পূজার কেনাকাটা</p>
+
+  <!-- Countdown -->
+  <div class="countdown-strip">
+    <div class="cd-unit"><div class="cd-num" id="festCdD">--</div><div class="cd-label">দিন</div></div>
+    <div class="cd-sep">:</div>
+    <div class="cd-unit"><div class="cd-num" id="festCdH">--</div><div class="cd-label">ঘণ্টা</div></div>
+    <div class="cd-sep">:</div>
+    <div class="cd-unit"><div class="cd-num" id="festCdM">--</div><div class="cd-label">মিনিট</div></div>
+    <div class="cd-sep">:</div>
+    <div class="cd-unit"><div class="cd-num" id="festCdS">--</div><div class="cd-label">সেকেন্ড</div></div>
+  </div>
+
+  <!-- Stats -->
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <div class="num" id="statShops">0</div>
+      <div class="lbl">দোকান</div>
+    </div>
+    <div class="hero-stat">
+      <div class="num" id="statProducts">0</div>
+      <div class="lbl">পণ্য</div>
+    </div>
+    <div class="hero-stat">
+      <div class="num">২ ঘণ্টা</div>
+      <div class="lbl">ডেলিভারি</div>
+    </div>
+  </div>
+</div>
+
+<!-- ALPONA BORDER -->
+<div class="alpona-border"></div>
+
+<!-- CATEGORY TABS -->
+<div class="tabs-wrap">
+  <div class="tabs" id="categoryTabs">
+    <button class="tab-btn active" onclick="filterFestival('all',this)">🎉 সব</button>
+    <button class="tab-btn" onclick="filterFestival('পোশাক',this)">👗 পোশাক</button>
+    <button class="tab-btn" onclick="filterFestival('মিষ্টি',this)">🍬 মিষ্টি</button>
+    <button class="tab-btn" onclick="filterFestival('উপহার',this)">🎁 উপহার</button>
+    <button class="tab-btn" onclick="filterFestival('গৃহসজ্জা',this)">🏮 গৃহসজ্জা</button>
+    <button class="tab-btn" onclick="filterFestival('পূজার সামগ্রী',this)">🪔 পূজার সামগ্রী</button>
+    <button class="tab-btn" onclick="filterFestival('খাবার',this)">🍛 খাবার</button>
+    <button class="tab-btn" onclick="filterFestival('ইলেকট্রনিক্স',this)">📱 ইলেকট্রনিক্স</button>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div class="content">
+
+  <!-- Hampers -->
+  <div id="hampersSection">
+    <div class="sec-head">
+      <h2>🎁 উৎসব হ্যাম্পার</h2>
+      <span class="count" id="hamperCount">লোড হচ্ছে...</span>
+    </div>
+    <div class="hamper-grid" id="hamperGrid">
+      <!-- skeleton -->
+      <div class="hamper-card skel-card">
+        <div class="hamper-img skeleton"></div>
+        <div class="hamper-body">
+          <div class="skeleton skel-line" style="height:14px;margin-bottom:8px;"></div>
+          <div class="skeleton skel-line short" style="height:12px;"></div>
+        </div>
+      </div>
+      <div class="hamper-card skel-card">
+        <div class="hamper-img skeleton"></div>
+        <div class="hamper-body">
+          <div class="skeleton skel-line" style="height:14px;margin-bottom:8px;"></div>
+          <div class="skeleton skel-line short" style="height:12px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Festival Products -->
+  <div id="productsSection">
+    <div class="sec-head">
+      <h2>✨ উৎসব অফার</h2>
+      <span class="count" id="productCount">লোড হচ্ছে...</span>
+    </div>
+    <div class="product-grid" id="productGrid">
+      <!-- skeleton -->
+      <div class="skel-card"><div class="skeleton skel-img"></div><div class="skel-body"><div class="skeleton skel-line"></div><div class="skeleton skel-line short"></div></div></div>
+      <div class="skel-card"><div class="skeleton skel-img"></div><div class="skel-body"><div class="skeleton skel-line"></div><div class="skeleton skel-line short"></div></div></div>
+      <div class="skel-card"><div class="skeleton skel-img"></div><div class="skel-body"><div class="skeleton skel-line"></div><div class="skeleton skel-line short"></div></div></div>
+      <div class="skel-card"><div class="skeleton skel-img"></div><div class="skel-body"><div class="skeleton skel-line"></div><div class="skeleton skel-line short"></div></div></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- FLOATING CART -->
+<div class="floating-cart" id="floatingCart" onclick="goToCart()">
+  <div style="display:flex;align-items:center;gap:10px;">
+    <div class="cart-count" id="floatCartCount">0</div>
+    <span>কার্ট দেখুন</span>
+  </div>
+  <div class="cart-total" id="floatCartTotal">₹0</div>
+</div>
+
+<script>
+// Firebase init
+var fbcfg={apiKey:"AIzaSyA6TrrnCMwv1aa1WPqGvTVWlnieB2pVOEU",authDomain:"delta-platform-82fc0.firebaseapp.com",projectId:"delta-platform-82fc0",storageBucket:"delta-platform-82fc0.firebasestorage.app",messagingSenderId:"444904180433",appId:"1:444904180433:web:6706eba4d73a30cd67d3f0"};
+if(!firebase.apps.length){ firebase.initializeApp(fbcfg); }
+var db = firebase.firestore();
+var auth = firebase.auth();
+
+// Config
+var CITY = 'manteswar';
+
+// URL params থেকে festival type নাও
+var params = new URLSearchParams(window.location.search);
+var FESTIVAL_TYPE = params.get('type') || 'durga_puja';
+
+// Festival data
+var FESTIVALS = {
+  durga_puja: {
+    title: 'দুর্গাপূজা <span style="color:var(--gold)">স্পেশাল</span>',
+    subtitle: 'মন্তেশ্বরের সেরা দোকান থেকে পূজার কেনাকাটা',
+    eyebrow: '🎊 DELTA পূজা শপিং',
+    date: new Date('2026-10-20'),
+    bg: 'linear-gradient(160deg, #2D0A00 0%, #6B1A00 50%, #B84000 100%)'
+  },
+  eid: {
+    title: 'ঈদ <span style="color:var(--gold)">মোবারক</span>',
+    subtitle: 'ঈদের কেনাকাটা এখন আরও সহজ',
+    eyebrow: '🌙 DELTA ঈদ শপিং',
+    date: new Date('2027-03-20'),
+    bg: 'linear-gradient(160deg, #0A2D1A 0%, #1A5C3A 50%, #2E8B57 100%)'
+  },
+  poila_boishakh: {
+    title: 'পহেলা <span style="color:var(--gold)">বৈশাখ</span>',
+    subtitle: 'নববর্ষের শুভেচ্ছা! বিশেষ উপহার বাক্স অর্ডার করুন',
+    eyebrow: '🌸 DELTA নববর্ষ শপিং',
+    date: new Date('2027-04-14'),
+    bg: 'linear-gradient(160deg, #2D0A0A 0%, #8B1A1A 50%, #C0392B 100%)'
+  },
+  kali_puja: {
+    title: 'কালীপূজা <span style="color:var(--gold)">স্পেশাল</span>',
+    subtitle: 'কালীপূজার আলোয় কেনাকাটা করুন DELTA তে',
+    eyebrow: '🪔 DELTA কালীপূজা শপিং',
+    date: new Date('2026-11-01'),
+    bg: 'linear-gradient(160deg, #0A0020 0%, #1A0540 50%, #4A0D80 100%)'
+  }
+};
+
+// Cart (localStorage থেকে index.html এর cart)
+var cart = [];
+try{ cart = JSON.parse(localStorage.getItem('deltaCart')||'[]'); }catch(e){}
+
+// All products + filtered
+var allFestProducts = [];
+var filteredProducts = [];
+var activeCategory = 'all';
+
+// ── INIT ──
+window.addEventListener('load', function(){
+  setupFestival();
+  updateCartUI();
+  startCountdown();
+  loadFestivalData();
+});
+
+function setupFestival(){
+  var f = FESTIVALS[FESTIVAL_TYPE] || FESTIVALS['durga_puja'];
+  document.getElementById('heroTitle').innerHTML = f.title;
+  document.getElementById('heroSubtitle').textContent = f.subtitle;
+  document.getElementById('heroEyebrow').textContent = f.eyebrow;
+  document.getElementById('heroSection').style.background = f.bg;
+  document.title = 'DELTA — '+f.eyebrow;
+}
+
+function startCountdown(){
+  var f = FESTIVALS[FESTIVAL_TYPE] || FESTIVALS['durga_puja'];
+  var target = f.date;
+  function tick(){
+    var rem = target - new Date();
+    if(rem<=0){ ['festCdD','festCdH','festCdM','festCdS'].forEach(function(id){ document.getElementById(id).textContent='00'; }); return; }
+    var d=Math.floor(rem/86400000);
+    var h=Math.floor((rem%86400000)/3600000);
+    var m=Math.floor((rem%3600000)/60000);
+    var s=Math.floor((rem%60000)/1000);
+    document.getElementById('festCdD').textContent=d;
+    document.getElementById('festCdH').textContent=String(h).padStart(2,'0');
+    document.getElementById('festCdM').textContent=String(m).padStart(2,'0');
+    document.getElementById('festCdS').textContent=String(s).padStart(2,'0');
+  }
+  tick(); setInterval(tick,1000);
+}
+
+// ── LOAD DATA ──
+function loadFestivalData(){
+  if(!db){ showNoFirebase(); return; }
+  var shopCount = 0; var prodCount = 0;
+  allFestProducts = [];
+
+  db.collection('cities').doc(CITY).collection('sellers').get().then(function(snap){
+    shopCount = snap.size;
+    document.getElementById('statShops').textContent = shopCount+'+';
+    var proms = [];
+    snap.forEach(function(sellerDoc){
+      var seller = sellerDoc.data();
+      if(seller.status==='pending') return;
+      var p = db.collection('cities').doc(CITY).collection('sellers').doc(sellerDoc.id)
+        .collection('products').get().then(function(prodSnap){
+          prodSnap.forEach(function(pd){
+            var prod = pd.data();
+            // Festival products: festivalTag match OR offerActive হলে দেখাও
+            if(prod.festivalTag===FESTIVAL_TYPE || prod.offerActive || (prod.discount&&prod.discount>=10)){
+              allFestProducts.push(Object.assign({
+                id:pd.id, shopId:sellerDoc.id,
+                shopName:seller.shopName||'দোকান'
+              }, prod));
+              prodCount++;
+            }
+          });
+        });
+      proms.push(p);
+    });
+    return Promise.all(proms);
+  }).then(function(){
+    document.getElementById('statProducts').textContent = prodCount+'+';
+    filteredProducts = allFestProducts.slice();
+    renderProducts();
+    loadHampers();
+  }).catch(function(e){
+    showNoFirebase();
+  });
+}
+
+// ── HAMPERS ──
+function loadHampers(){
+  if(!db) return;
+  db.collection('hampers').where('festivalTag','==',FESTIVAL_TYPE).get()
+    .then(function(snap){
+      var hampers = [];
+      snap.forEach(function(d){ hampers.push(Object.assign({id:d.id},d.data())); });
+      if(!hampers.length){
+        // Default hampers দেখাও
+        hampers = [
+          {id:'h1', name:'পূজা উপহার বাক্স', emoji:'🎁', items:'মিষ্টি, কাপড়, প্রসাধনী', price:599, tag:'Popular'},
+          {id:'h2', name:'ফ্যামিলি হ্যাম্পার', emoji:'🏮', items:'চাল, ডাল, তেল, মিষ্টি', price:899, tag:'Best Value'},
+          {id:'h3', name:'পূজা ফুড বাস্কেট', emoji:'🍬', items:'রসগোল্লা, মিষ্টি, নাড়ু', price:399, tag:'Sweet'},
+        ];
+      }
+      document.getElementById('hamperCount').textContent = hampers.length+'টি হ্যাম্পার';
+      document.getElementById('hamperGrid').innerHTML = hampers.map(function(h){
+        return '<div class="hamper-card">'+
+          '<div class="hamper-img">'+(h.imageUrl?'<img src="'+h.imageUrl+'" style="width:100%;height:100%;object-fit:cover">':h.emoji||'🎁')+'</div>'+
+          '<div class="hamper-body">'+
+            (h.tag?'<div class="festival-tag">'+h.tag+'</div>':'')+
+            '<div class="hamper-name">'+h.name+'</div>'+
+            '<div class="hamper-items">'+h.items+'</div>'+
+            '<div class="hamper-price">₹'+(h.price||0)+'</div>'+
+            '<button class="hamper-btn" onclick="addHamperToCart(\''+h.id+'\',\''+h.name+'\','+h.price+')">+ কার্টে যোগ করুন</button>'+
+          '</div>'+
+        '</div>';
+      }).join('');
+    }).catch(function(){ renderDefaultHampers(); });
+}
+
+function renderDefaultHampers(){
+  var hampers = [
+    {id:'h1', emoji:'🎁', name:'পূজা উপহার বাক্স', items:'মিষ্টি, কাপড়, প্রসাধনী', price:599, tag:'Popular'},
+    {id:'h2', emoji:'🏮', name:'ফ্যামিলি হ্যাম্পার', items:'চাল, ডাল, তেল, মিষ্টি', price:899, tag:'Best Value'},
+    {id:'h3', emoji:'🍬', name:'পূজা ফুড বাস্কেট', items:'রসগোল্লা, মিষ্টি, নাড়ু', price:399, tag:'Sweet'},
+  ];
+  document.getElementById('hamperCount').textContent = hampers.length+'টি হ্যাম্পার';
+  document.getElementById('hamperGrid').innerHTML = hampers.map(function(h){
+    return '<div class="hamper-card">'+
+      '<div class="hamper-img">'+h.emoji+'</div>'+
+      '<div class="hamper-body">'+
+        '<div class="festival-tag">'+h.tag+'</div>'+
+        '<div class="hamper-name">'+h.name+'</div>'+
+        '<div class="hamper-items">'+h.items+'</div>'+
+        '<div class="hamper-price">₹'+h.price+'</div>'+
+        '<button class="hamper-btn" onclick="addHamperToCart(\''+h.id+'\',\''+h.name+'\','+h.price+')">+ কার্টে যোগ করুন</button>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+// ── PRODUCTS ──
+function filterFestival(cat, btn){
+  activeCategory = cat;
+  document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});
+  if(btn) btn.classList.add('active');
+  if(cat==='all'){
+    filteredProducts = allFestProducts.slice();
+  } else {
+    filteredProducts = allFestProducts.filter(function(p){
+      return (p.category||p.categoryMain||'').indexOf(cat) > -1 ||
+             (p.nameBn||p.name||'').indexOf(cat) > -1;
+    });
+  }
+  renderProducts();
+}
+
+function renderProducts(){
+  var grid = document.getElementById('productGrid');
+  var countEl = document.getElementById('productCount');
+  if(!filteredProducts.length){
+    grid.innerHTML = '<div class="empty-festival" style="grid-column:1/-1">'+
+      '<div class="icon">🎊</div>'+
+      '<h3>এই ক্যাটাগরিতে উৎসব পণ্য আসছে!</h3>'+
+      '<p>বিক্রেতারা শীঘ্রই পূজার বিশেষ পণ্য যোগ করবেন।<br>সব দেখতে "সব" ট্যাবে ক্লিক করুন।</p>'+
+    '</div>';
+    if(countEl) countEl.textContent = '০টি পণ্য';
+    return;
+  }
+  if(countEl) countEl.textContent = filteredProducts.length+'টি পণ্য';
+  grid.innerHTML = filteredProducts.map(function(p){
+    var name = p.nameBn||p.nameEn||p.name||'পণ্য';
+    var price = p.price||p.sellPrice||0;
+    var mrp = p.mrp||0;
+    var disc = p.discount||0;
+    var img = p.imageUrl||(p.images&&p.images[0])||'';
+    return '<div class="product-card" onclick="openProduct(\''+p.id+'\',\''+p.shopId+'\')">'+
+      '<div class="product-img">'+(img?'<img src="'+img+'" alt="'+name+'">':'🛍️')+'</div>'+
+      '<div class="product-body">'+
+        '<div class="product-shop">🏪 '+p.shopName+'</div>'+
+        (p.festivalTag===FESTIVAL_TYPE?'<div class="festival-tag">🎊 পূজা অফার</div>':'')+
+        '<div class="product-name">'+name+'</div>'+
+        '<div class="product-price-row">'+
+          '<span class="product-price">₹'+price+'</span>'+
+          (mrp&&mrp>price?'<span class="product-mrp">₹'+mrp+'</span>':'')+ 
+          (disc?'<span class="product-disc">'+disc+'% OFF</span>':'')+
+        '</div>'+
+        '<button class="add-btn" onclick="event.stopPropagation();addToCart(\''+p.id+'\',\''+p.shopId+'\',\''+name.replace(/'/g,"\\'")+'\','+price+',\''+img+'\')">+ কার্টে যোগ করুন</button>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+// ── CART ──
+function addToCart(productId, shopId, name, price, img){
+  var existing = cart.find(function(i){ return i.id===productId&&i.shopId===shopId; });
+  if(existing){ existing.qty++; }
+  else{ cart.push({id:productId, shopId:shopId, name:name, price:price, img:img, qty:1}); }
+  try{ localStorage.setItem('deltaCart', JSON.stringify(cart)); }catch(e){}
+  updateCartUI();
+  showAddedToast(name);
+}
+
+function addHamperToCart(id, name, price){
+  addToCart('hamper_'+id, 'delta_hampers', name, price, '🎁');
+}
+
+function updateCartUI(){
+  var total = cart.reduce(function(s,i){return s+i.price*i.qty;},0);
+  var count = cart.reduce(function(s,i){return s+i.qty;},0);
+  document.getElementById('navCartCount').textContent = count;
+  var fc = document.getElementById('floatingCart');
+  if(count>0){
+    fc.classList.add('visible');
+    document.getElementById('floatCartCount').textContent = count;
+    document.getElementById('floatCartTotal').textContent = '₹'+total.toLocaleString('en-IN');
+  } else {
+    fc.classList.remove('visible');
+  }
+}
+
+function goToCart(){
+  window.location.href = 'index.html#cart';
+}
+
+function showAddedToast(name){
+  var t = document.createElement('div');
+  t.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);'+
+    'background:#1a8a4a;color:#fff;padding:10px 20px;border-radius:20px;'+
+    'font-size:.82rem;font-weight:600;z-index:9999;white-space:nowrap;'+
+    'box-shadow:0 4px 16px rgba(0,0,0,.2);';
+  t.textContent = '✅ '+name+' কার্টে যোগ হয়েছে';
+  document.body.appendChild(t);
+  setTimeout(function(){ t.remove(); }, 2000);
+}
+
+function openProduct(productId, shopId){
+  window.location.href = 'index.html?shop='+shopId+'&product='+productId;
+}
+
+function showNoFirebase(){
+  document.getElementById('productGrid').innerHTML =
+    '<div class="empty-festival" style="grid-column:1/-1">'+
+      '<div class="icon">🎊</div>'+
+      '<h3>উৎসব পণ্য আসছে শীঘ্রই!</h3>'+
+      '<p>বিক্রেতারা পূজার বিশেষ পণ্য যোগ করছেন।<br>কিছুক্ষণ পরে আবার চেষ্টা করুন।</p>'+
+    '</div>';
+  document.getElementById('productCount').textContent = '০টি পণ্য';
+  renderDefaultHampers();
+}
+</script>
+</body>
+</html>
