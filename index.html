@@ -4149,16 +4149,68 @@ function initFestivalBanner(){
     db.collection('cities').doc(CITY).collection('settings').doc('festivalBanner').get()
       .then(function(doc){
         var overrideKey = doc.exists ? doc.data().activeFestival : null;
-        renderFestivalBanner(overrideKey);
+        var customBanner = doc.exists ? doc.data().customBanner : null;
+        renderFestivalBanner(overrideKey, customBanner);
       }).catch(function(){
-        renderFestivalBanner(null);
+        renderFestivalBanner(null, null);
       });
   } else {
     renderFestivalBanner(null);
   }
 }
 
-function renderFestivalBanner(overrideKey){
+function _festivalBannerHTML(bg, name, btnText, days, hours, festivalKey){
+  return '<section class="section" style="padding-top:0;padding-bottom:0;">'+
+    '<div class="festival-banner" style="background:'+bg+';'+
+      'border-radius:16px;padding:14px 18px;display:flex;align-items:center;'+
+      'justify-content:space-between;gap:12px;overflow:hidden;position:relative;cursor:pointer;"'+
+      ' onclick="showFestivalOffers(\''+festivalKey+'\')">'+
+      '<div style="position:absolute;right:-20px;top:-20px;width:120px;height:120px;'+
+        'background:rgba(255,255,255,.07);border-radius:50%;pointer-events:none;"></div>'+
+      '<div style="flex:1;min-width:0;position:relative;z-index:1;">'+
+        '<div style="font-family:\'Playfair Display\',serif;font-size:1.05rem;font-weight:900;color:#fff;'+
+          'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+name+'</div>'+
+        '<div style="font-size:.7rem;color:rgba(255,255,255,.75);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+btnText+'</div>'+
+      '</div>'+
+      '<div style="display:flex;align-items:center;gap:6px;flex-shrink:0;position:relative;z-index:1;">'+
+        '<div style="text-align:center;">'+
+          '<div style="font-size:1.3rem;font-weight:900;color:#fff;font-family:monospace;line-height:1;" id="cdDays">'+days+'</div>'+
+          '<div style="font-size:.55rem;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:.5px;"><span class="lang-bn">দিন</span><span class="lang-en">days</span></div>'+
+        '</div>'+
+        '<div style="color:rgba(255,255,255,.4);font-size:1rem;">:</div>'+
+        '<div style="text-align:center;">'+
+          '<div style="font-size:1.3rem;font-weight:900;color:#fff;font-family:monospace;line-height:1;" id="cdHours">'+String(hours).padStart(2,'0')+'</div>'+
+          '<div style="font-size:.55rem;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:.5px;"><span class="lang-bn">ঘণ্টা</span><span class="lang-en">hrs</span></div>'+
+        '</div>'+
+        '<div style="color:rgba(255,255,255,.4);font-size:1rem;">:</div>'+
+        '<div style="text-align:center;">'+
+          '<div style="font-size:1.3rem;font-weight:900;color:#fff;font-family:monospace;line-height:1;" id="cdMins">00</div>'+
+          '<div style="font-size:.55rem;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:.5px;"><span class="lang-bn">মিনিট</span><span class="lang-en">min</span></div>'+
+        '</div>'+
+        '<div style="margin-left:8px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);'+
+          'color:#fff;padding:7px 12px;border-radius:20px;font-size:.72rem;font-weight:700;">→</div>'+
+      '</div>'+
+    '</div></section>';
+}
+
+function _startFestivalCountdown(targetDate){
+  if(!targetDate) return;
+  setInterval(function(){
+    var rem = targetDate - new Date();
+    if(rem <= 0) return;
+    var d=Math.floor(rem/(1000*60*60*24));
+    var h=Math.floor((rem%(1000*60*60*24))/(1000*60*60));
+    var m=Math.floor((rem%(1000*60*60))/(1000*60));
+    var dEl=document.getElementById('cdDays');
+    var hEl=document.getElementById('cdHours');
+    var mEl=document.getElementById('cdMins');
+    if(dEl) dEl.textContent=d;
+    if(hEl) hEl.textContent=String(h).padStart(2,'0');
+    if(mEl) mEl.textContent=String(m).padStart(2,'0');
+  }, 1000);
+}
+
+function renderFestivalBanner(overrideKey, customBanner){
   // Admin বলেছে লুকাও
   if(overrideKey === 'hidden') return;
 
@@ -4201,6 +4253,23 @@ function renderFestivalBanner(overrideKey){
   var upcoming;
   var isOverride = false;
 
+  // Custom banner — Admin এর নিজের তৈরি
+  if(overrideKey === 'custom' && customBanner && customBanner.name){
+    var bg = 'linear-gradient(135deg,'+customBanner.color1+','+customBanner.color2+')';
+    var festDate = customBanner.date ? new Date(customBanner.date) : null;
+    var days = 0, hours = 0;
+    if(festDate){
+      var diff = festDate - new Date();
+      days = Math.max(0, Math.floor(diff/(1000*60*60*24)));
+      hours = Math.max(0, Math.floor((diff%(1000*60*60*24))/(1000*60*60)));
+    }
+    var wrap = document.getElementById('festivalBannerWrap');
+    if(!wrap) return;
+    wrap.innerHTML = _festivalBannerHTML(bg, customBanner.name, customBanner.btn||'এখনই দেখুন →', days, hours, 'custom');
+    _startFestivalCountdown(festDate);
+    return;
+  }
+
   // Admin override — 90-day limit নেই, সরাসরি দেখাও
   if(overrideKey){
     upcoming = festivals.find(function(f){ return f.festivalKey === overrideKey; });
@@ -4220,59 +4289,17 @@ function renderFestivalBanner(overrideKey){
 
   if(!upcoming) return;
 
-  var diff = Math.ceil((upcoming.date - now) / (1000*60*60*24));
-  var days  = Math.max(0, Math.floor(diff));
-  var hours = Math.floor((diff % 1) * 24) || 0;
+  var diff = upcoming.date - now;
+  var days  = Math.max(0, Math.floor(diff/(1000*60*60*24)));
+  var hours = Math.max(0, Math.floor((diff%(1000*60*60*24))/(1000*60*60)));
 
   var wrap = document.getElementById('festivalBannerWrap');
   if(!wrap) return;
 
-  wrap.innerHTML =
-    '<section class="section gray"><div class="festival-banner" style="background:'+upcoming.bg+'">'+
-    '<div class="festival-banner-text">'+
-      '<h3><span class="lang-bn">'+upcoming.name_bn+'</span><span class="lang-en">'+upcoming.name_en+'</span></h3>'+
-      '<p><span class="lang-bn">'+upcoming.desc_bn+'</span><span class="lang-en">'+upcoming.desc_en+'</span></p>'+
-      '<button class="festival-btn" onclick="showFestivalOffers(\''+upcoming.festivalKey+'\')">'+
-        '<span class="lang-bn">'+upcoming.btn_bn+'</span>'+
-        '<span class="lang-en">'+upcoming.btn_en+'</span>'+
-      '</button>'+
-    '</div>'+
-    '<div class="festival-countdown-wrap">'+
-      '<div style="color:rgba(255,255,255,.6);font-size:.7rem;margin-bottom:10px;text-transform:uppercase;letter-spacing:1px;">'+
-        '<span class="lang-bn">বাকি আছে</span><span class="lang-en">Remaining</span>'+
-      '</div>'+
-      '<div class="festival-countdown">'+
-        '<div class="festival-cd-block">'+
-          '<div class="festival-cd-num" id="cdDays">'+days+'</div>'+
-          '<div class="festival-cd-label"><span class="lang-bn">দিন</span><span class="lang-en">Days</span></div>'+
-        '</div>'+
-        '<div class="festival-cd-block">'+
-          '<div class="festival-cd-num" id="cdHours">'+String(hours).padStart(2,'0')+'</div>'+
-          '<div class="festival-cd-label"><span class="lang-bn">ঘণ্টা</span><span class="lang-en">Hours</span></div>'+
-        '</div>'+
-        '<div class="festival-cd-block">'+
-          '<div class="festival-cd-num" id="cdMins">00</div>'+
-          '<div class="festival-cd-label"><span class="lang-bn">মিনিট</span><span class="lang-en">Mins</span></div>'+
-        '</div>'+
-      '</div>'+
-    '</div>'+
-    '</div></section>';
-
-  // Live countdown timer
-  setInterval(function(){
-    var now2 = new Date();
-    var rem = upcoming.date - now2;
-    if(rem <= 0) return;
-    var d = Math.floor(rem/(1000*60*60*24));
-    var h = Math.floor((rem%(1000*60*60*24))/(1000*60*60));
-    var m = Math.floor((rem%(1000*60*60))/(1000*60));
-    var dEl = document.getElementById('cdDays');
-    var hEl = document.getElementById('cdHours');
-    var mEl = document.getElementById('cdMins');
-    if(dEl) dEl.textContent = d;
-    if(hEl) hEl.textContent = String(h).padStart(2,'0');
-    if(mEl) mEl.textContent = String(m).padStart(2,'0');
-  }, 60000);
+  var name = '<span class="lang-bn">'+upcoming.name_bn+'</span><span class="lang-en">'+upcoming.name_en+'</span>';
+  var btn = '<span class="lang-bn">'+upcoming.btn_bn+'</span><span class="lang-en">'+upcoming.btn_en+'</span>';
+  wrap.innerHTML = _festivalBannerHTML(upcoming.bg, name, btn, days, hours, upcoming.festivalKey);
+  _startFestivalCountdown(upcoming.date);
 }
 
 // ══ FEATURE 5: SELLER OF THE WEEK ══
@@ -4468,7 +4495,7 @@ function renderCategoryGrid(cats){
   // More button text update
   var moreBtn = document.getElementById('catMoreBtnText');
   if(moreBtn && extraCount > 0){
-    moreBtn.textContent = 'আরও '+extraCount+'টি ক্যাটাগরি দেখুন ▾';
+    moreBtn.textContent = 'সব দেখুন →';
   }
   var moreWrap = document.getElementById('catMoreWrap');
   if(moreWrap) moreWrap.style.display = extraCount > 0 ? 'block' : 'none';
