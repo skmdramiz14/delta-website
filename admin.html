@@ -1918,22 +1918,6 @@ function saveFestivalBanner(){
     }).catch(function(e){ showToast('সেভ ব্যর্থ: '+e.message,'red'); });
 }
 
-function saveFestivalBanner(){
-  var val = document.getElementById('festivalSelect').value;
-  var data = val
-    ? {activeFestival: val, updatedAt: new Date().toISOString()}
-    : {activeFestival: firebase.firestore.FieldValue.delete(), updatedAt: new Date().toISOString()};
-  db.collection('cities').doc(CITY).collection('settings').doc('festivalBanner')
-    .set(data, {merge:true}).then(function(){
-      loadFestivalBannerSetting();
-      var labels = {
-        durga_puja:'দুর্গাপূজা',eid:'ঈদ',
-        poila_boishakh:'পহেলা বৈশাখ',kali_puja:'কালীপূজা',hidden:'লুকানো','':"Auto"
-      };
-      showToast('Festival banner: '+(labels[val]||'Auto')+' সেট হয়েছে ✅','green');
-    }).catch(function(e){ showToast('সেভ ব্যর্থ: '+e.message,'red'); });
-}
-
 // ═══ MARQUEE MESSAGES ═══
 var marqueeMessages = [];
 var DEFAULT_MARQUEE = [
