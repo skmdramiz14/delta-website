@@ -398,18 +398,48 @@ button,input,select{font-family:'DM Sans',sans-serif;}
       <!-- FESTIVAL BANNER CONTROL -->
       <div class="add-zone-card" style="margin-bottom:16px">
         <div style="font-size:.82rem;font-weight:700;color:var(--navy);margin-bottom:10px">🎊 Festival Banner Control — Homepage-এ কোন banner দেখাবে</div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px">
           <select id="festivalSelect" class="form-input" style="max-width:260px;padding:8px 12px">
             <option value="">🤖 Auto (date অনুযায়ী)</option>
             <option value="durga_puja">🎊 দুর্গাপূজা স্পেশাল</option>
             <option value="eid">🌙 ঈদ স্পেশাল</option>
             <option value="poila_boishakh">🌸 পহেলা বৈশাখ</option>
             <option value="kali_puja">🪔 কালীপূজা স্পেশাল</option>
+            <option value="custom">✏️ Custom Banner (নিচে দিন)</option>
             <option value="hidden">🚫 Banner লুকান</option>
           </select>
           <button class="btn-sm btn-orange" onclick="saveFestivalBanner()">💾 সেভ করুন</button>
           <span style="font-size:.74rem;color:var(--muted)" id="festivalStatusDisplay">লোড হচ্ছে...</span>
         </div>
+
+        <!-- Custom Festival Form -->
+        <div id="customFestivalForm" style="display:none;background:var(--sand);border-radius:12px;padding:14px;margin-top:10px;">
+          <div style="font-size:.78rem;font-weight:700;color:var(--navy);margin-bottom:10px">✏️ Custom Banner তৈরি করুন</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+            <div>
+              <label style="font-size:.7rem;color:var(--muted);font-weight:600">Banner শিরোনাম (বাংলা)</label>
+              <input type="text" class="form-input" id="customFestName" placeholder="যেমন: 🎄 বড়দিন স্পেশাল">
+            </div>
+            <div>
+              <label style="font-size:.7rem;color:var(--muted);font-weight:600">Button text</label>
+              <input type="text" class="form-input" id="customFestBtn" placeholder="যেমন: এখনই কিনুন →">
+            </div>
+            <div>
+              <label style="font-size:.7rem;color:var(--muted);font-weight:600">Background color (from)</label>
+              <input type="color" class="form-input" id="customFestColor1" value="#b5451b" style="height:42px;padding:4px;">
+            </div>
+            <div>
+              <label style="font-size:.7rem;color:var(--muted);font-weight:600">Background color (to)</label>
+              <input type="color" class="form-input" id="customFestColor2" value="#e8863a" style="height:42px;padding:4px;">
+            </div>
+            <div>
+              <label style="font-size:.7rem;color:var(--muted);font-weight:600">Festival তারিখ</label>
+              <input type="date" class="form-input" id="customFestDate">
+            </div>
+          </div>
+          <div style="font-size:.7rem;color:var(--muted)">💡 Save করলে homepage এ এই custom banner দেখাবে যতক্ষণ না বদলানো হয়।</div>
+        </div>
+
         <div style="font-size:.72rem;color:var(--muted);margin-top:8px">
           💡 "Auto" রাখলে date অনুযায়ী automatically সঠিক banner দেখাবে। Manual select করলে সেই banner সবসময় দেখাবে।
         </div>
@@ -1825,10 +1855,21 @@ function loadFestivalBannerSetting(){
       if(doc.exists && doc.data().activeFestival){
         sel.value = doc.data().activeFestival;
         var labels = {
-          durga_puja:'🎊 দুর্গাপূজা',eid:'🌙 ঈদ',
-          poila_boishakh:'🌸 পহেলা বৈশাখ',kali_puja:'🪔 কালীপূজা',hidden:'🚫 লুকানো'
+          durga_puja:'🎊 দুর্গাপূজা', eid:'🌙 ঈদ',
+          poila_boishakh:'🌸 পহেলা বৈশাখ', kali_puja:'🪔 কালীপূজা',
+          custom:'✏️ Custom', hidden:'🚫 লুকানো'
         };
         if(display) display.textContent = 'বর্তমান: '+(labels[doc.data().activeFestival]||'Auto');
+        // Custom banner এর saved data load করো
+        if(doc.data().activeFestival==='custom' && doc.data().customBanner){
+          var cb = doc.data().customBanner;
+          document.getElementById('customFestName').value = cb.name||'';
+          document.getElementById('customFestBtn').value = cb.btn||'';
+          document.getElementById('customFestColor1').value = cb.color1||'#b5451b';
+          document.getElementById('customFestColor2').value = cb.color2||'#e8863a';
+          document.getElementById('customFestDate').value = cb.date||'';
+          document.getElementById('customFestivalForm').style.display='block';
+        }
       } else {
         sel.value = '';
         if(display) display.textContent = 'বর্তমান: 🤖 Auto';
@@ -1836,11 +1877,36 @@ function loadFestivalBannerSetting(){
     }).catch(function(){});
 }
 
+// Dropdown change করলে custom form দেখাও/লুকাও
+document.addEventListener('DOMContentLoaded', function(){
+  var sel = document.getElementById('festivalSelect');
+  if(sel) sel.addEventListener('change', function(){
+    var form = document.getElementById('customFestivalForm');
+    if(form) form.style.display = this.value==='custom' ? 'block' : 'none';
+  });
+});
+
 function saveFestivalBanner(){
   var val = document.getElementById('festivalSelect').value;
-  var data = val
-    ? {activeFestival: val, updatedAt: new Date().toISOString()}
-    : {activeFestival: firebase.firestore.FieldValue.delete(), updatedAt: new Date().toISOString()};
+  var data = {updatedAt: new Date().toISOString()};
+
+  if(!val){
+    data.activeFestival = firebase.firestore.FieldValue.delete();
+  } else {
+    data.activeFestival = val;
+  }
+
+  // Custom banner data যোগ করো
+  if(val==='custom'){
+    var name = (document.getElementById('customFestName').value||'').trim();
+    var btn = (document.getElementById('customFestBtn').value||'').trim();
+    var color1 = document.getElementById('customFestColor1').value||'#b5451b';
+    var color2 = document.getElementById('customFestColor2').value||'#e8863a';
+    var date = document.getElementById('customFestDate').value||'';
+    if(!name){ showToast('Banner শিরোনাম দিন','red'); return; }
+    data.customBanner = { name:name, btn:btn||'এখনই দেখুন →', color1:color1, color2:color2, date:date };
+  }
+
   db.collection('cities').doc(CITY).collection('settings').doc('festivalBanner')
     .set(data, {merge:true}).then(function(){
       loadFestivalBannerSetting();
