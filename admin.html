@@ -336,6 +336,9 @@ button,input,select{font-family:'DM Sans',sans-serif;}
     <button class="tab-btn" id="tab-flashsale" onclick="goTab('flashsale',this)">
       ⚡ Flash Sale Management
     </button>
+    <button class="tab-btn" id="tab-products" onclick="goTab('products',this)">
+      📦 Product Moderation
+    </button>
   </nav>
 
   <div class="content">
@@ -864,6 +867,46 @@ button,input,select{font-family:'DM Sans',sans-serif;}
       </div>
     </div>
 
+    <!-- ═══ PRODUCT MODERATION PAGE ═══ -->
+    <div class="page" id="page-products">
+      <div class="sec-head">
+        <div class="sec-title">📦 Product Moderation
+          <small>সব sellers এর products দেখুন, flag বা remove করুন</small>
+        </div>
+      </div>
+
+      <!-- Filters + Search -->
+      <div class="add-zone-card" style="margin-bottom:16px;">
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+          <input type="text" id="productModSearch" class="form-input" style="flex:1;min-width:180px;"
+            placeholder="🔍 Product নাম বা দোকান খুঁজুন..."
+            oninput="renderModProducts()">
+          <select id="productModFilter" class="form-input" style="max-width:160px;" onchange="renderModProducts()">
+            <option value="all">সব Products</option>
+            <option value="active">✅ Active</option>
+            <option value="flagged">🚩 Flagged</option>
+            <option value="removed">❌ Removed</option>
+          </select>
+          <select id="productModSeller" class="form-input" style="max-width:200px;" onchange="renderModProducts()">
+            <option value="all">সব Sellers</option>
+          </select>
+          <button class="btn-sm" style="background:var(--sand);color:var(--navy)" onclick="loadModProducts()">↺ Refresh</button>
+        </div>
+        <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
+          <span id="modStatTotal" style="font-size:.75rem;background:var(--sand);padding:4px 10px;border-radius:20px;">মোট: ০</span>
+          <span id="modStatFlagged" style="font-size:.75rem;background:#fff4ec;color:var(--orange);padding:4px 10px;border-radius:20px;">🚩 Flagged: ০</span>
+          <span id="modStatRemoved" style="font-size:.75rem;background:var(--red2);color:var(--red);padding:4px 10px;border-radius:20px;">❌ Removed: ০</span>
+        </div>
+      </div>
+
+      <!-- Products List -->
+      <div id="productModList" style="display:flex;flex-direction:column;gap:10px;">
+        <div style="color:var(--muted);font-size:.85rem;padding:20px;text-align:center;">
+          Tab এ click করলে products লোড হবে
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -977,6 +1020,7 @@ function goTab(tab, btn){
   if(tab==='recon') loadReconOrders();
   if(tab==='categories') loadCategoryConfig();
   if(tab==='flashsale') loadFlashSaleData();
+  if(tab==='products') loadModProducts();
 }
 
 // ═══ DATA LOADING ═══
@@ -2189,6 +2233,214 @@ function saveFlashProducts(){
 }
 
 function clearFlashSale(){ if(!confirm('সব সরাবেন?'))return; flashSaleProducts=[]; renderFlashProductsList(); showToast('Clear হয়েছে — Save করুন','green'); }
+
+// ═══ PRODUCT MODERATION ═══
+var allModProducts = []; // {id, shopId, shopName, ...productData}
+
+function loadModProducts(){
+  var wrap = document.getElementById('productModList');
+  if(wrap) wrap.innerHTML = '<div style="color:var(--muted);font-size:.85rem;padding:20px;text-align:center;">লোড হচ্ছে...</div>';
+  allModProducts = [];
+
+  // Seller dropdown populate করো
+  var selSel = document.getElementById('productModSeller');
+  if(selSel){
+    selSel.innerHTML = '<option value="all">সব Sellers</option>';
+    allSellers.forEach(function(s){
+      var opt = document.createElement('option');
+      opt.value = s.id;
+      opt.textContent = s.shopName||s.id;
+      selSel.appendChild(opt);
+    });
+  }
+
+  var proms = allSellers.map(function(s){
+    return db.collection('cities').doc(CITY).collection('sellers').doc(s.id)
+      .collection('products').get().then(function(snap){
+        snap.forEach(function(pd){
+          allModProducts.push(Object.assign({
+            id:pd.id, shopId:s.id, shopName:s.shopName||'দোকান'
+          }, pd.data()));
+        });
+      }).catch(function(){});
+  });
+
+  Promise.all(proms).then(function(){
+    allModProducts.sort(function(a,b){
+      return new Date(b.createdAt||0)-new Date(a.createdAt||0);
+    });
+    renderModProducts();
+    updateModStats();
+  });
+}
+
+function updateModStats(){
+  var total = allModProducts.length;
+  var flagged = allModProducts.filter(function(p){ return p.adminFlagged; }).length;
+  var removed = allModProducts.filter(function(p){ return p.adminRemoved; }).length;
+  var t=document.getElementById('modStatTotal');
+  var f=document.getElementById('modStatFlagged');
+  var r=document.getElementById('modStatRemoved');
+  if(t) t.textContent='মোট: '+total;
+  if(f) f.textContent='🚩 Flagged: '+flagged;
+  if(r) r.textContent='❌ Removed: '+removed;
+}
+
+function renderModProducts(){
+  var wrap = document.getElementById('productModList');
+  if(!wrap) return;
+  var search = (document.getElementById('productModSearch').value||'').toLowerCase().trim();
+  var filter = document.getElementById('productModFilter').value;
+  var sellerFilter = document.getElementById('productModSeller').value;
+
+  var list = allModProducts.filter(function(p){
+    // Filter by status
+    if(filter==='active' && (p.adminRemoved||p.adminFlagged)) return false;
+    if(filter==='flagged' && !p.adminFlagged) return false;
+    if(filter==='removed' && !p.adminRemoved) return false;
+    // Filter by seller
+    if(sellerFilter!=='all' && p.shopId!==sellerFilter) return false;
+    // Search
+    if(search){
+      var hay = [(p.nameBn||''), (p.nameEn||''), (p.name||''), (p.shopName||'')].join(' ').toLowerCase();
+      if(hay.indexOf(search)===-1) return false;
+    }
+    return true;
+  });
+
+  if(!list.length){
+    wrap.innerHTML='<div style="color:var(--muted);font-size:.85rem;padding:20px;text-align:center;">কোনো product পাওয়া যায়নি</div>';
+    return;
+  }
+
+  wrap.innerHTML = list.map(function(p){
+    var name = p.nameBn||p.nameEn||p.name||'পণ্য';
+    var img = p.imageUrl||(p.images&&p.images[0])||'';
+    var price = p.price||p.sellPrice||0;
+    var isRemoved = p.adminRemoved||false;
+    var isFlagged = p.adminFlagged||false;
+
+    var statusBadge = isRemoved
+      ? '<span style="background:var(--red2);color:var(--red);padding:2px 8px;border-radius:10px;font-size:.65rem;font-weight:700;">❌ Removed</span>'
+      : isFlagged
+      ? '<span style="background:#fff4ec;color:var(--orange);padding:2px 8px;border-radius:10px;font-size:.65rem;font-weight:700;">🚩 Flagged</span>'
+      : '<span style="background:var(--green2);color:var(--green);padding:2px 8px;border-radius:10px;font-size:.65rem;font-weight:700;">✅ Active</span>';
+
+    return '<div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px;'+
+      'display:flex;gap:12px;align-items:flex-start;'+(isRemoved?'opacity:.6;':'')+'">'+
+
+      // Image
+      (img
+        ? '<img src="'+img+'" style="width:64px;height:64px;object-fit:cover;border-radius:10px;flex-shrink:0;">'
+        : '<div style="width:64px;height:64px;background:var(--sand);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0;">🛍️</div>')+
+
+      // Info
+      '<div style="flex:1;min-width:0;">'+
+        '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px;">'+
+          '<span style="font-size:.9rem;font-weight:700;color:var(--navy);">'+name+'</span>'+
+          statusBadge+
+        '</div>'+
+        '<div style="font-size:.75rem;color:var(--muted);margin-bottom:4px;">🏪 '+p.shopName+' · '+p.category+'</div>'+
+        '<div style="font-size:.82rem;font-weight:700;color:var(--orange);">₹'+price+
+          (p.mrp&&p.mrp>price?' <span style="color:var(--muted);font-weight:400;text-decoration:line-through;font-size:.72rem;">₹'+p.mrp+'</span>':'')+
+        '</div>'+
+        (isFlagged&&p.adminFlagReason?'<div style="font-size:.72rem;color:var(--orange);margin-top:4px;">🚩 কারণ: '+p.adminFlagReason+'</div>':'')+
+        (isRemoved&&p.adminRemoveReason?'<div style="font-size:.72rem;color:var(--red);margin-top:4px;">❌ কারণ: '+p.adminRemoveReason+'</div>':'')+
+      '</div>'+
+
+      // Actions
+      '<div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">'+
+        (!isRemoved
+          ? '<button class="btn-sm" style="background:var(--red2);color:var(--red);font-size:.72rem;" '+
+              'onclick="removeProduct(\''+p.shopId+'\',\''+p.id+'\',\''+name.replace(/'/g,"\\'")+'\')">❌ Remove</button>'
+          : '<button class="btn-sm" style="background:var(--green2);color:var(--green);font-size:.72rem;" '+
+              'onclick="restoreProduct(\''+p.shopId+'\',\''+p.id+'\')">↩ Restore</button>')+
+        (!isFlagged&&!isRemoved
+          ? '<button class="btn-sm" style="background:#fff4ec;color:var(--orange);font-size:.72rem;" '+
+              'onclick="flagProduct(\''+p.shopId+'\',\''+p.id+'\',\''+name.replace(/'/g,"\\'")+'\')">🚩 Flag</button>'
+          : isFlagged&&!isRemoved
+          ? '<button class="btn-sm" style="background:var(--sand);color:var(--muted);font-size:.72rem;" '+
+              'onclick="unflagProduct(\''+p.shopId+'\',\''+p.id+'\')">✕ Unflag</button>'
+          : '')+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+function removeProduct(shopId, productId, productName){
+  var reason = prompt('"'+productName+'" remove করার কারণ লিখুন:\n(Seller কে notification যাবে)');
+  if(reason === null) return; // cancelled
+  if(!reason.trim()){ showToast('কারণ লিখতে হবে','red'); return; }
+
+  db.collection('cities').doc(CITY).collection('sellers').doc(shopId)
+    .collection('products').doc(productId).update({
+      adminRemoved: true,
+      adminRemoveReason: reason.trim(),
+      adminRemovedAt: new Date().toISOString(),
+      adminRemovedBy: ADMIN_UID
+    }).then(function(){
+      // Seller notification — order এর মতো notification field set করো
+      db.collection('cities').doc(CITY).collection('sellers').doc(shopId).update({
+        lastAdminNotification: {
+          type: 'product_removed',
+          message: '"'+productName+'" আপনার দোকান থেকে সরিয়ে দেওয়া হয়েছে। কারণ: '+reason,
+          at: new Date().toISOString(),
+          read: false
+        }
+      });
+      var p = allModProducts.find(function(x){return x.id===productId&&x.shopId===shopId;});
+      if(p){ p.adminRemoved=true; p.adminRemoveReason=reason; }
+      renderModProducts(); updateModStats();
+      showToast('"'+productName+'" remove হয়েছে ✅','green');
+    }).catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
+}
+
+function restoreProduct(shopId, productId){
+  if(!confirm('এই product টি restore করবেন?')) return;
+  db.collection('cities').doc(CITY).collection('sellers').doc(shopId)
+    .collection('products').doc(productId).update({
+      adminRemoved: false,
+      adminRemoveReason: firebase.firestore.FieldValue.delete(),
+      adminRemovedAt: firebase.firestore.FieldValue.delete()
+    }).then(function(){
+      var p = allModProducts.find(function(x){return x.id===productId&&x.shopId===shopId;});
+      if(p){ p.adminRemoved=false; p.adminRemoveReason=''; }
+      renderModProducts(); updateModStats();
+      showToast('Product restore হয়েছে ✅','green');
+    }).catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
+}
+
+function flagProduct(shopId, productId, productName){
+  var reason = prompt('"'+productName+'" flag করার কারণ লিখুন:\n(Product active থাকবে কিন্তু marked হবে)');
+  if(reason === null) return;
+  if(!reason.trim()){ showToast('কারণ লিখতে হবে','red'); return; }
+
+  db.collection('cities').doc(CITY).collection('sellers').doc(shopId)
+    .collection('products').doc(productId).update({
+      adminFlagged: true,
+      adminFlagReason: reason.trim(),
+      adminFlaggedAt: new Date().toISOString()
+    }).then(function(){
+      var p = allModProducts.find(function(x){return x.id===productId&&x.shopId===shopId;});
+      if(p){ p.adminFlagged=true; p.adminFlagReason=reason; }
+      renderModProducts(); updateModStats();
+      showToast('"'+productName+'" flagged হয়েছে 🚩','green');
+    }).catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
+}
+
+function unflagProduct(shopId, productId){
+  db.collection('cities').doc(CITY).collection('sellers').doc(shopId)
+    .collection('products').doc(productId).update({
+      adminFlagged: false,
+      adminFlagReason: firebase.firestore.FieldValue.delete(),
+      adminFlaggedAt: firebase.firestore.FieldValue.delete()
+    }).then(function(){
+      var p = allModProducts.find(function(x){return x.id===productId&&x.shopId===shopId;});
+      if(p){ p.adminFlagged=false; p.adminFlagReason=''; }
+      renderModProducts(); updateModStats();
+      showToast('Flag সরানো হয়েছে ✅','green');
+    }).catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
+}
 
 // ═══ CATEGORY MANAGEMENT ═══
 var DEFAULT_CATEGORIES = [
