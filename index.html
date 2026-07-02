@@ -3190,8 +3190,13 @@ async function loadData(retryCount){
       // before this approval system existed) are treated as approved for backward compatibility.
       if(shop.status === 'pending') return;
       allShops.push(shop);
-      proms.push(db.collection('cities').doc(CITY).collection('sellers').doc(d.id).collection('products').get().then(function(ps){
-        ps.forEach(function(pd){allProducts.push(Object.assign({id:pd.id,shopId:d.id,shopName:shop.shopName,shopCat:shop.category,shopArea:shop.area},pd.data()));});
+      proms.push(db.collection('cities').doc(CITY).collection('sellers').doc(d.id).collection('products').get({source:'server'}).then(function(ps){
+        ps.forEach(function(pd){
+          var pdata = pd.data();
+          // Admin removed products homepage এ দেখাবে না
+          if(pdata.adminRemoved === true) return;
+          allProducts.push(Object.assign({id:pd.id,shopId:d.id,shopName:shop.shopName,shopCat:shop.category,shopArea:shop.area},pdata));
+        });
       }));
     });
     await Promise.all(proms);
@@ -4107,35 +4112,38 @@ function initFestivalBanner(){
 }
 
 function _festivalBannerHTML(bg, name, btnText, days, hours, festivalKey){
-  return '<section class="section" style="padding-top:0;padding-bottom:0;">'+
+  return '<section class="section" style="padding-top:4px;padding-bottom:4px;">'+
     '<div class="festival-banner" style="background:'+bg+';'+
-      'border-radius:16px;padding:14px 18px;display:flex;align-items:center;'+
-      'justify-content:space-between;gap:12px;overflow:hidden;position:relative;cursor:pointer;"'+
+      'border-radius:18px;padding:20px 22px;display:flex;align-items:center;'+
+      'justify-content:space-between;gap:14px;overflow:hidden;position:relative;cursor:pointer;'+
+      'box-shadow:0 6px 24px rgba(0,0,0,.18);"'+
       ' onclick="showFestivalOffers(\''+festivalKey+'\')">'+
-      '<div style="position:absolute;right:-20px;top:-20px;width:120px;height:120px;'+
+      '<div style="position:absolute;right:-30px;top:-30px;width:160px;height:160px;'+
         'background:rgba(255,255,255,.07);border-radius:50%;pointer-events:none;"></div>'+
+      '<div style="position:absolute;left:-20px;bottom:-20px;width:100px;height:100px;'+
+        'background:rgba(255,255,255,.04);border-radius:50%;pointer-events:none;"></div>'+
       '<div style="flex:1;min-width:0;position:relative;z-index:1;">'+
-        '<div style="font-family:\'Playfair Display\',serif;font-size:1.05rem;font-weight:900;color:#fff;'+
-          'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+name+'</div>'+
-        '<div style="font-size:.7rem;color:rgba(255,255,255,.75);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+btnText+'</div>'+
+        '<div style="font-family:\'Playfair Display\',serif;font-size:1.2rem;font-weight:900;color:#fff;'+
+          'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px;">'+name+'</div>'+
+        '<div style="font-size:.76rem;color:rgba(255,255,255,.8);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+btnText+'</div>'+
       '</div>'+
-      '<div style="display:flex;align-items:center;gap:6px;flex-shrink:0;position:relative;z-index:1;">'+
-        '<div style="text-align:center;">'+
-          '<div style="font-size:1.3rem;font-weight:900;color:#fff;font-family:monospace;line-height:1;" id="cdDays">'+days+'</div>'+
-          '<div style="font-size:.55rem;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:.5px;"><span class="lang-bn">দিন</span><span class="lang-en">days</span></div>'+
+      '<div style="display:flex;align-items:center;gap:8px;flex-shrink:0;position:relative;z-index:1;">'+
+        '<div style="text-align:center;background:rgba(0,0,0,.2);border-radius:10px;padding:8px 10px;min-width:44px;">'+
+          '<div style="font-size:1.5rem;font-weight:900;color:#fff;font-family:monospace;line-height:1;" id="cdDays">'+days+'</div>'+
+          '<div style="font-size:.58rem;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:.5px;margin-top:2px;"><span class="lang-bn">দিন</span><span class="lang-en">days</span></div>'+
         '</div>'+
-        '<div style="color:rgba(255,255,255,.4);font-size:1rem;">:</div>'+
-        '<div style="text-align:center;">'+
-          '<div style="font-size:1.3rem;font-weight:900;color:#fff;font-family:monospace;line-height:1;" id="cdHours">'+String(hours).padStart(2,'0')+'</div>'+
-          '<div style="font-size:.55rem;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:.5px;"><span class="lang-bn">ঘণ্টা</span><span class="lang-en">hrs</span></div>'+
+        '<div style="color:rgba(255,255,255,.35);font-size:1.2rem;font-weight:300;">:</div>'+
+        '<div style="text-align:center;background:rgba(0,0,0,.2);border-radius:10px;padding:8px 10px;min-width:44px;">'+
+          '<div style="font-size:1.5rem;font-weight:900;color:#fff;font-family:monospace;line-height:1;" id="cdHours">'+String(hours).padStart(2,'0')+'</div>'+
+          '<div style="font-size:.58rem;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:.5px;margin-top:2px;"><span class="lang-bn">ঘণ্টা</span><span class="lang-en">hrs</span></div>'+
         '</div>'+
-        '<div style="color:rgba(255,255,255,.4);font-size:1rem;">:</div>'+
-        '<div style="text-align:center;">'+
-          '<div style="font-size:1.3rem;font-weight:900;color:#fff;font-family:monospace;line-height:1;" id="cdMins">00</div>'+
-          '<div style="font-size:.55rem;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:.5px;"><span class="lang-bn">মিনিট</span><span class="lang-en">min</span></div>'+
+        '<div style="color:rgba(255,255,255,.35);font-size:1.2rem;font-weight:300;">:</div>'+
+        '<div style="text-align:center;background:rgba(0,0,0,.2);border-radius:10px;padding:8px 10px;min-width:44px;">'+
+          '<div style="font-size:1.5rem;font-weight:900;color:#fff;font-family:monospace;line-height:1;" id="cdMins">00</div>'+
+          '<div style="font-size:.58rem;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:.5px;margin-top:2px;"><span class="lang-bn">মিনিট</span><span class="lang-en">min</span></div>'+
         '</div>'+
-        '<div style="margin-left:8px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);'+
-          'color:#fff;padding:7px 12px;border-radius:20px;font-size:.72rem;font-weight:700;">→</div>'+
+        '<div style="margin-left:6px;background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.4);'+
+          'color:#fff;padding:10px 14px;border-radius:22px;font-size:.78rem;font-weight:800;letter-spacing:.5px;">→</div>'+
       '</div>'+
     '</div></section>';
 }
