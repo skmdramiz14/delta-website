@@ -4024,55 +4024,6 @@ function showFestivalOffers(festivalKey){
   window.location.href = 'festival.html?type='+festivalKey;
 }
 
-  if(festivalProds.length > 0){
-    // Show festival products in a highlighted section
-    var productsSection = document.getElementById('productsSection');
-    var productsTitle   = document.getElementById('productsTitle');
-
-    var festivalNames = {
-      'durga_puja'     : {bn:'🎊 পূজা স্পেশাল অফার', en:'🎊 Durga Puja Special Offers'},
-      'eid'            : {bn:'🌙 ঈদ স্পেশাল অফার',   en:'🌙 Eid Special Offers'},
-      'poila_boishakh' : {bn:'🌸 পহেলা বৈশাখ অফার', en:'🌸 Poila Boishakh Offers'},
-      'general'        : {bn:'🎁 ফেস্টিভাল অফার',   en:'🎁 Festival Offers'},
-    };
-
-    var titleObj = festivalNames[festivalKey] || festivalNames['general'];
-    if(productsTitle){
-      productsTitle.innerHTML =
-        '<span class="lang-bn">'+titleObj.bn+'</span>'+
-        '<span class="lang-en">'+titleObj.en+'</span>'+
-        ' <small style="font-size:.75rem;font-weight:400;color:var(--muted)">'+
-        festivalProds.length+' <span class="lang-bn">টি অফার</span>'+
-        '<span class="lang-en"> offers</span></small>';
-    }
-
-    // Render festival products first, then all others below
-    var otherProds = allProducts.filter(function(p){
-      return !(p.festivalTag === festivalKey && p.offerActive);
-    });
-    renderProducts(festivalProds.concat(otherProds));
-    renderShops(allShops);
-
-    // Scroll to products
-    productsSection.scrollIntoView({behavior:'smooth'});
-
-    showToast(
-      currentLang==='bn'
-        ? festivalProds.length + 'টি পূজা স্পেশাল অফার পাওয়া গেছে! 🎊'
-        : festivalProds.length + ' festival offers found! 🎊',
-      'green');
-
-  } else {
-    // No festival offers yet — show all products with toast
-    filterCat('all', null);
-    document.getElementById('productsSection').scrollIntoView({behavior:'smooth'});
-    showToast(
-      currentLang==='bn'
-        ? 'এখনো কোনো পূজা স্পেশাল অফার নেই। শীঘ্রই আসছে! 🎊'
-        : 'No festival offers yet. Coming soon! 🎊');
-  }
-}
-
 // ── ECONOMIC IMPACT COUNTER ──
 function animateCounter(el, target, prefix, suffix, duration){
   if(!el) return;
