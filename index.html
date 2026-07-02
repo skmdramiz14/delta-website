@@ -1,4 +1,4 @@
-<!DOCTYPE html>   
+<!DOCTYPE html>
 <html lang="bn">
 <head>
 <meta charset="UTF-8">
@@ -4020,13 +4020,9 @@ function addHamperToCart(hamperId){
 
 // ══ FESTIVAL OFFERS FUNCTION ══
 function showFestivalOffers(festivalKey){
-  // Load hampers for this festival
-  loadHampers(festivalKey);
-
-  // Filter products with matching festivalTag
-  var festivalProds = allProducts.filter(function(p){
-    return p.festivalTag === festivalKey && p.offerActive;
-  });
+  // Festival dedicated page এ redirect করো
+  window.location.href = 'festival.html?type='+festivalKey;
+}
 
   if(festivalProds.length > 0){
     // Show festival products in a highlighted section
