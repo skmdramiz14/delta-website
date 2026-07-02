@@ -1785,7 +1785,8 @@ function renderProducts(){
     var isRemoved = p.adminRemoved||false;
     var isFlagged = p.adminFlagged||false;
 
-    return '<div class="product-item" style="'+(isRemoved?'opacity:.5;border-left:3px solid var(--red);':'isFlagged?\'border-left:3px solid var(--orange);\'':'')+'">' +
+    var itemStyle = isRemoved ? 'opacity:.5;border-left:3px solid var(--red);' : isFlagged ? 'border-left:3px solid var(--orange);' : '';
+    return '<div class="product-item" style="'+itemStyle+'">'+
       '<div class="prod-thumb">'+(img?'<img src="'+img+'" alt="'+name+'">':'📦')+'</div>'+
       '<div class="prod-info">'+
         '<div class="prod-name">'+name+
