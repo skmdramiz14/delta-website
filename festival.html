@@ -584,8 +584,11 @@ function loadFestivalData(){
         .collection('products').get().then(function(prodSnap){
           prodSnap.forEach(function(pd){
             var prod = pd.data();
-            // Festival products: festivalTag match OR offerActive হলে দেখাও
-            if(prod.festivalTag===FESTIVAL_TYPE || prod.offerActive || (prod.discount&&prod.discount>=10)){
+            // festivalTags array বা পুরোনো festivalTag string check করো
+            var tags = prod.festivalTags||[];
+            if(!tags.length && prod.festivalTag) tags = [prod.festivalTag];
+            var matchesFestival = tags.indexOf(FESTIVAL_TYPE)>-1 || prod.festivalTag===FESTIVAL_TYPE;
+            if(matchesFestival || prod.offerActive || (prod.discount&&prod.discount>=10)){
               allFestProducts.push(Object.assign({
                 id:pd.id, shopId:sellerDoc.id,
                 shopName:seller.shopName||'দোকান'
