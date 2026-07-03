@@ -922,15 +922,25 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 
       <!-- Festival Conditions -->
       <div class="add-zone-card" style="margin-bottom:16px;">
-        <div style="font-size:.85rem;font-weight:700;color:var(--navy);margin-bottom:12px;">⚙️ Festival Conditions — Seller দের জন্য</div>
-        <div style="font-size:.72rem;color:var(--muted);margin-bottom:10px;">Seller যদি এই condition মেনে festival product add করে তাহলে directly approve হবে। না মিললে special request যাবে।</div>
-        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+        <div style="font-size:.85rem;font-weight:700;color:var(--navy);margin-bottom:4px;">⚙️ Festival Conditions — Seller দের জন্য</div>
+        <div style="font-size:.72rem;color:var(--muted);margin-bottom:12px;">Seller এই conditions মিলিয়ে product add করলে directly pending এ যাবে। না মিললে special request হবে।</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px;">
           <div>
-            <label style="font-size:.7rem;color:var(--muted);">ন্যূনতম Discount (%)</label>
-            <input type="number" class="form-input" id="festCondDiscount" value="10" min="0" max="90" style="width:100px;margin-top:4px;">
+            <label style="font-size:.7rem;color:var(--muted);font-weight:600;">ন্যূনতম Discount (%)</label>
+            <input type="number" class="form-input" id="festCondDiscount" value="10" min="0" max="90" style="margin-top:4px;">
           </div>
-          <button class="btn-sm btn-orange" style="margin-top:20px;" onclick="saveFestivalConditions()">💾 Save করুন</button>
-          <span id="festCondStatus" style="font-size:.72rem;color:var(--muted);margin-top:20px;"></span>
+          <div>
+            <label style="font-size:.7rem;color:var(--muted);font-weight:600;">ন্যূনতম Stock</label>
+            <input type="number" class="form-input" id="festCondStock" value="5" min="0" style="margin-top:4px;">
+          </div>
+          <div>
+            <label style="font-size:.7rem;color:var(--muted);font-weight:600;">Allowed Categories (comma separated)</label>
+            <input type="text" class="form-input" id="festCondCategories" placeholder="food,clothing,gift" style="margin-top:4px;">
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button class="btn-sm btn-orange" onclick="saveFestivalConditions()">💾 Save করুন</button>
+          <span id="festCondStatus" style="font-size:.72rem;color:var(--muted);"></span>
         </div>
       </div>
 
@@ -991,9 +1001,22 @@ button,input,select{font-family:'DM Sans',sans-serif;}
           <!-- Base Items -->
           <div style="margin-bottom:10px;">
             <div style="font-size:.72rem;font-weight:700;color:var(--navy);margin-bottom:6px;">📦 Base Items (Pre-arranged sellers থেকে)</div>
+
+            <!-- Approved festival products থেকে select -->
+            <div style="background:#e8f4ff;border-radius:10px;padding:10px;margin-bottom:8px;">
+              <div style="font-size:.7rem;color:#0984e3;font-weight:700;margin-bottom:6px;">✅ Approved Festival Products থেকে select করুন</div>
+              <div style="display:flex;gap:6px;">
+                <select class="form-input" id="hApprovedProductSelect" style="flex:1;">
+                  <option value="">-- Approved product select করুন --</option>
+                </select>
+                <button class="btn-sm" style="background:#0984e3;color:#fff;" onclick="addApprovedProductToBase()">+ Add</button>
+              </div>
+            </div>
+
+            <!-- Manual add -->
             <div id="hBaseItems" style="display:flex;flex-direction:column;gap:6px;margin-bottom:6px;"></div>
             <div style="display:flex;gap:6px;">
-              <input class="form-input" id="hBaseItemName" placeholder="Item নাম (যেমন: রসগোল্লা ৫০০গ্রাম)" style="flex:2;">
+              <input class="form-input" id="hBaseItemName" placeholder="Item নাম (manually যোগ করুন)" style="flex:2;">
               <input class="form-input" id="hBaseItemSeller" placeholder="Seller নাম" style="flex:1;">
               <button class="btn-sm" style="background:var(--navy);color:#fff;" onclick="addHamperBaseItem()">+ Add</button>
             </div>
@@ -4042,17 +4065,28 @@ function loadFestivalManagement(){
   // Festival conditions load করো
   db.collection('cities').doc(CITY).collection('settings').doc('festivalConditions')
     .get().then(function(doc){
-      if(doc.exists && doc.data().minDiscount){
-        document.getElementById('festCondDiscount').value = doc.data().minDiscount;
+      if(doc.exists){
+        var d = doc.data();
+        if(d.minDiscount) document.getElementById('festCondDiscount').value = d.minDiscount;
+        if(d.minStock) document.getElementById('festCondStock').value = d.minStock;
+        if(d.allowedCategories) document.getElementById('festCondCategories').value = d.allowedCategories.join(',');
       }
     }).catch(function(){});
 }
 
 function saveFestivalConditions(){
   var minDiscount = parseInt(document.getElementById('festCondDiscount').value)||10;
+  var minStock = parseInt(document.getElementById('festCondStock').value)||5;
+  var catStr = document.getElementById('festCondCategories').value.trim();
+  var allowedCategories = catStr ? catStr.split(',').map(function(c){return c.trim().toLowerCase();}).filter(Boolean) : [];
+
   db.collection('cities').doc(CITY).collection('settings').doc('festivalConditions')
-    .set({minDiscount: minDiscount, updatedAt: new Date().toISOString()})
-    .then(function(){
+    .set({
+      minDiscount: minDiscount,
+      minStock: minStock,
+      allowedCategories: allowedCategories,
+      updatedAt: new Date().toISOString()
+    }).then(function(){
       document.getElementById('festCondStatus').textContent = '✅ সেভ হয়েছে';
       setTimeout(function(){ document.getElementById('festCondStatus').textContent=''; },3000);
       showToast('Festival conditions সেভ হয়েছে ✅','green');
@@ -4287,6 +4321,9 @@ function loadHampersManagement(){
     });
   }
 
+  // Approved festival products load করো
+  loadApprovedFestivalProducts();
+
   // Add-on products dropdown populate করো
   var addOnSel = document.getElementById('hAddOnSelect');
   if(addOnSel){
@@ -4313,6 +4350,49 @@ function loadHampersManagement(){
       snap.forEach(function(d){ allHampers.push(Object.assign({id:d.id},d.data())); });
       renderHampersList();
     }).catch(function(){ renderHampersList(); });
+}
+
+function loadApprovedFestivalProducts(){
+  var sel = document.getElementById('hApprovedProductSelect');
+  if(!sel) return;
+  sel.innerHTML = '<option value="">-- Approved product select করুন --</option>';
+
+  db.collection('cities').doc(CITY).collection('festivalRequests')
+    .where('status','==','approved').get()
+    .then(function(snap){
+      snap.forEach(function(d){
+        var r = d.data();
+        var opt = document.createElement('option');
+        opt.value = JSON.stringify({
+          name: r.productName,
+          sellerName: r.shopName,
+          price: r.price,
+          festivalKey: r.festivalKey,
+          discount: r.festivalDiscount
+        });
+        opt.textContent = r.productName+' — ₹'+r.price+
+          (r.festivalDiscount?' ('+r.festivalDiscount+'% OFF)':'')+
+          ' | '+r.shopName+' | 🎊 '+r.festivalName;
+        sel.appendChild(opt);
+      });
+    }).catch(function(){});
+}
+
+function addApprovedProductToBase(){
+  var sel = document.getElementById('hApprovedProductSelect');
+  var val = sel.value;
+  if(!val){ showToast('Product select করুন','red'); return; }
+  try{
+    var data = JSON.parse(val);
+    hamperBaseItems.push({
+      name: data.name+(data.discount?' ('+data.discount+'% OFF)':''),
+      sellerName: data.sellerName,
+      price: data.price,
+      fromApproved: true
+    });
+    sel.value = '';
+    renderHamperBaseItems();
+  }catch(e){ showToast('সমস্যা হয়েছে','red'); }
 }
 
 function addHamperBaseItem(){
