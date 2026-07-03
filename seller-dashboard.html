@@ -788,9 +788,33 @@ select.form-input{cursor:pointer;}
           <!-- Product Select -->
           <div class="form-group" style="margin-bottom:12px;">
             <label>আপনার কোন পণ্যটি add করতে চান?</label>
-            <select class="form-input" id="festReqProduct" onchange="onFestProductSelect()">
+            <select class="form-input" id="festReqProduct" onchange="onFestProductSelect()" style="margin-bottom:8px;">
               <option value="">-- পণ্য select করুন --</option>
+              <option value="__new__">➕ নতুন পণ্য যোগ করুন</option>
             </select>
+
+            <!-- New product fields (shown when __new__ selected) -->
+            <div id="festNewProductFields" style="display:none;background:#fff;border-radius:10px;padding:12px;border:1.5px solid var(--border);">
+              <div style="font-size:.75rem;font-weight:700;color:var(--navy);margin-bottom:8px;">➕ নতুন Festival পণ্য</div>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>পণ্যের নাম (বাংলা)</label>
+                  <input type="text" class="form-input" id="festNewNameBn" placeholder="যেমন: পূজার মিষ্টি সেট">
+                </div>
+                <div class="form-group">
+                  <label>মূল্য (₹)</label>
+                  <input type="number" class="form-input" id="festNewPrice" placeholder="200">
+                </div>
+                <div class="form-group">
+                  <label>Category</label>
+                  <input type="text" class="form-input" id="festNewCategory" placeholder="food / clothing / gift">
+                </div>
+                <div class="form-group">
+                  <label>Image URL (Optional)</label>
+                  <input type="text" class="form-input" id="festNewImage" placeholder="Cloudinary URL">
+                </div>
+              </div>
+            </div>
           </div>
 
           <!-- Selected product preview -->
@@ -1448,15 +1472,17 @@ select.form-input{cursor:pointer;}
           </label>
         </div>
 
-        <!-- Festival Tag -->
+        <!-- Festival Tags (Multiple) -->
         <div class="form-group" style="background:linear-gradient(135deg,rgba(181,69,27,.08),rgba(232,134,58,.08));border-radius:12px;padding:12px;margin-top:4px;">
-          <label style="color:var(--navy);font-weight:700;">🎊 Festival Tag (Optional)</label>
-          <select class="form-input" id="fFestivalTag" style="margin-top:6px;">
-            <option value="">কোনো festival নেই</option>
-          </select>
-          <div style="font-size:.68rem;color:var(--muted);margin-top:6px;">
-            💡 Select করলে সেই festival এর page এ automatically দেখাবে। Admin approval লাগবে না।
+          <label style="color:var(--navy);font-weight:700;">🎊 Festival Tags (Optional)</label>
+          <div style="font-size:.68rem;color:var(--muted);margin-bottom:8px;margin-top:4px;">
+            একাধিক festival select করতে পারবেন — সব festival এর page এ দেখাবে
           </div>
+          <div id="fFestivalTagsWrap" style="display:flex;flex-direction:column;gap:6px;">
+            <div style="font-size:.75rem;color:var(--muted);">Festival load হচ্ছে...</div>
+          </div>
+          <!-- Hidden input for backward compat -->
+          <input type="hidden" id="fFestivalTag" value="">
         </div>
         <!-- Offer note when discount already set -->
         <div id="offerNote" style="font-size:.72rem;color:var(--muted);margin-bottom:8px">
@@ -1909,6 +1935,7 @@ function renderProducts(){
       '</div>'+
       '<div class="prod-actions">'+
         (!isRemoved?'<button class="btn-sm btn-outline" onclick="editProduct(\''+p.id+'\')">✏️</button>':'')+
+        (!isRemoved?'<button class="btn-sm" style="background:#fff4ec;color:var(--orange);border:1px solid var(--orange);font-size:.7rem;" onclick="quickAddToFestival(\''+p.id+'\')">🎊</button>':'')+
         '<button class="btn-sm btn-red" onclick="deleteProduct(\''+p.id+'\')">🗑️</button>'+
       '</div></div>';
   }).join('');
@@ -1942,7 +1969,10 @@ function openProductModal(editIdParam){
     calcDiscount();
     loadOfferFields(p);
     loadCategoryFields(p);
-    loadFestivalTagDropdown(p.festivalTag||'');
+    // festivalTags array বা পুরোনো festivalTag string দুটোই handle করো
+    var tags = p.festivalTags||[];
+    if(!tags.length && p.festivalTag) tags = [p.festivalTag];
+    loadFestivalTagDropdown(tags);
   } else {
     document.getElementById('modalTitle').textContent='নতুন পণ্য যোগ করুন / Add Product';
     ['fNameBn','fNameEn','fStock','fMrp','fPrice','fDesc','fPrep'].forEach(function(id){
@@ -1951,7 +1981,7 @@ function openProductModal(editIdParam){
     document.getElementById('fUnit').value='piece';
     clearOfferFields();
     clearCategoryFields();
-    loadFestivalTagDropdown('');
+    loadFestivalTagDropdown([]);
   }
   document.getElementById('productModal').style.display='flex';
 }
@@ -2026,12 +2056,14 @@ async function saveProduct(){
 
   // Offer data
   var offerActive=document.getElementById('fOfferActive').checked;
-  var festivalTagVal = document.getElementById('fFestivalTag').value||'';
+  var festivalTags = getFestivalTags(); // array of selected festival keys
+  var festivalTagVal = festivalTags.length===1 ? festivalTags[0] : (festivalTags.length>1 ? festivalTags[0] : '');
   var offerData={
     offerActive:offerActive,
     offerLabel:offerActive?document.getElementById('fOfferLabel').value:'',
     couponCode:offerActive?document.getElementById('fCouponCode').value:'',
-    festivalTag: festivalTagVal,  // offer এর সাথে independent
+    festivalTag: festivalTagVal,    // backward compat — first tag
+    festivalTags: festivalTags,     // new — all tags
     offerEndTime:offerActive?getOfferEndTimestamp():null,
   };
 
@@ -3773,6 +3805,28 @@ var sellerFestivalCats = [];
 var selectedFestivalKey = '';
 var selectedFestivalConditions = {};
 
+// Product card থেকে directly festival section এ যাও
+function quickAddToFestival(productId){
+  // Festival tab এ যাও
+  goPage('festival', document.getElementById('nb-festival'));
+  // একটু wait করো তারপর product pre-select করো
+  setTimeout(function(){
+    if(!sellerFestivalCats.length){
+      showToast('আগে Admin কে festival তৈরি করতে বলুন','red');
+      return;
+    }
+    // প্রথম active festival এ form খোলো
+    var firstFest = sellerFestivalCats[0];
+    openFestivalRequestForm(firstFest.key, firstFest.name);
+    // Product pre-select করো
+    setTimeout(function(){
+      var sel = document.getElementById('festReqProduct');
+      if(sel) sel.value = productId;
+      onFestProductSelect();
+    }, 200);
+  }, 300);
+}
+
 function loadSellerFestivalSection(){
   // Active festivals load করো
   db.collection('cities').doc(CITY).collection('settings').doc('festivalCategories')
@@ -3850,13 +3904,21 @@ function closeFestivalRequestForm(){
 function onFestProductSelect(){
   var productId = document.getElementById('festReqProduct').value;
   var preview = document.getElementById('festReqProductPreview');
-  if(!productId){ preview.style.display='none'; return; }
+  var newFields = document.getElementById('festNewProductFields');
+
+  if(productId==='__new__'){
+    if(newFields) newFields.style.display='block';
+    if(preview) preview.style.display='none';
+    return;
+  }
+  if(newFields) newFields.style.display='none';
+  if(!productId){ if(preview) preview.style.display='none'; return; }
   var p = products.find(function(x){ return x.id===productId; });
   if(!p){ return; }
   document.getElementById('festReqProductImg').src = p.imageUrl||(p.images&&p.images[0])||'';
   document.getElementById('festReqProductName').textContent = p.nameBn||p.name||'পণ্য';
   document.getElementById('festReqProductPrice').textContent = '₹'+(p.price||0);
-  preview.style.display = 'flex';
+  if(preview) preview.style.display='flex';
 }
 
 function checkFestivalConditions(){
@@ -3901,19 +3963,10 @@ function submitFestivalRequest(){
   if(!productId){ showToast('পণ্য select করুন','red'); return; }
   if(!selectedFestivalKey){ showToast('Festival select করুন','red'); return; }
 
-  var p = products.find(function(x){ return x.id===productId; });
-  if(!p){ showToast('পণ্য পাওয়া যায়নি','red'); return; }
-
   var meetsCondition = checkFestivalConditions();
   var festName = sellerFestivalCats.find(function(f){ return f.key===selectedFestivalKey; });
 
   var requestData = {
-    productId: productId,
-    productName: p.nameBn||p.name||'পণ্য',
-    imageUrl: festImage || p.imageUrl||(p.images&&p.images[0])||'',
-    originalImageUrl: p.imageUrl||(p.images&&p.images[0])||'',
-    price: p.price||0,
-    festivalPrice: festPrice || p.price||0,
     shopId: auth.currentUser.uid,
     shopName: SD.shopName||'দোকান',
     festivalKey: selectedFestivalKey,
@@ -3926,6 +3979,57 @@ function submitFestivalRequest(){
     status: meetsCondition ? 'pending' : 'special_request',
     submittedAt: new Date().toISOString()
   };
+
+  if(productId==='__new__'){
+    // নতুন product এর data নাও
+    var newName = document.getElementById('festNewNameBn').value.trim();
+    var newPrice = parseInt(document.getElementById('festNewPrice').value)||0;
+    var newCategory = document.getElementById('festNewCategory').value.trim();
+    var newImage = document.getElementById('festNewImage').value.trim();
+    if(!newName){ showToast('পণ্যের নাম দিন','red'); return; }
+    if(!newPrice){ showToast('মূল্য দিন','red'); return; }
+
+    // প্রথমে product save করো তারপর request পাঠাও
+    var newProductData = {
+      nameBn: newName, name: newName,
+      price: newPrice, mrp: newPrice,
+      category: newCategory||'other',
+      imageUrl: festImage||newImage||'',
+      stock: stock||10,
+      festivalTag: selectedFestivalKey,
+      festivalTags: [selectedFestivalKey],
+      discount: discount,
+      isNewFestivalProduct: true,
+      createdAt: new Date().toISOString()
+    };
+
+    db.collection('cities').doc(CITY).collection('sellers').doc(auth.currentUser.uid)
+      .collection('products').add(newProductData).then(function(ref){
+        requestData.productId = ref.id;
+        requestData.productName = newName;
+        requestData.imageUrl = festImage||newImage||'';
+        requestData.price = newPrice;
+        requestData.festivalPrice = festPrice||newPrice;
+        requestData.isNewProduct = true;
+        return db.collection('cities').doc(CITY).collection('festivalRequests').add(requestData);
+      }).then(function(){
+        closeFestivalRequestForm();
+        loadMyFestivalRequests();
+        showToast('🎊 নতুন পণ্য ও Festival request পাঠানো হয়েছে!','green');
+      }).catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
+    return;
+  }
+
+  // Existing product
+  var p = products.find(function(x){ return x.id===productId; });
+  if(!p){ showToast('পণ্য পাওয়া যায়নি','red'); return; }
+
+  requestData.productId = productId;
+  requestData.productName = p.nameBn||p.name||'পণ্য';
+  requestData.imageUrl = festImage||p.imageUrl||(p.images&&p.images[0])||'';
+  requestData.originalImageUrl = p.imageUrl||(p.images&&p.images[0])||'';
+  requestData.price = p.price||0;
+  requestData.festivalPrice = festPrice||p.price||0;
 
   db.collection('cities').doc(CITY).collection('festivalRequests').add(requestData)
     .then(function(){
@@ -3993,35 +4097,50 @@ function renderMyFestivalRequests(list){
   }).join('');
 }
 
-function loadFestivalTagDropdown(currentTag){
-  var sel = document.getElementById('fFestivalTag');
-  if(!sel) return;
-  sel.innerHTML = '<option value="">কোনো festival নেই</option>';
-  // Cached festivals use করো (sellerFestivalCats) or load করো
+function loadFestivalTagDropdown(currentTags){
+  // currentTags can be string (old) or array (new)
+  var selectedTags = Array.isArray(currentTags) ? currentTags : (currentTags ? [currentTags] : []);
+  var wrap = document.getElementById('fFestivalTagsWrap');
+  if(!wrap) return;
+
   var cats = sellerFestivalCats.length ? sellerFestivalCats : [];
   if(!cats.length){
-    // একবার load করো
     db.collection('cities').doc(CITY).collection('settings').doc('festivalCategories')
       .get().then(function(doc){
         cats = doc.exists ? (doc.data().festivals||[]).filter(function(f){ return f.active; }) : [];
         sellerFestivalCats = cats;
-        cats.forEach(function(f){
-          var opt = document.createElement('option');
-          opt.value = f.key;
-          opt.textContent = f.emoji+' '+f.name;
-          if(f.key===currentTag) opt.selected=true;
-          sel.appendChild(opt);
-        });
-      }).catch(function(){});
+        renderFestivalTagCheckboxes(wrap, cats, selectedTags);
+      }).catch(function(){
+        wrap.innerHTML='<div style="font-size:.75rem;color:var(--muted);">Festival load হয়নি</div>';
+      });
   } else {
-    cats.forEach(function(f){
-      var opt = document.createElement('option');
-      opt.value = f.key;
-      opt.textContent = f.emoji+' '+f.name;
-      if(f.key===currentTag) opt.selected=true;
-      sel.appendChild(opt);
-    });
+    renderFestivalTagCheckboxes(wrap, cats, selectedTags);
   }
+}
+
+function renderFestivalTagCheckboxes(wrap, cats, selectedTags){
+  if(!cats.length){
+    wrap.innerHTML='<div style="font-size:.75rem;color:var(--muted);">কোনো active festival নেই</div>';
+    return;
+  }
+  wrap.innerHTML = cats.map(function(f){
+    var checked = selectedTags.indexOf(f.key)>-1 ? 'checked' : '';
+    var bg = 'linear-gradient(135deg,'+f.color1+','+f.color2+')';
+    return '<label style="display:flex;align-items:center;gap:10px;cursor:pointer;'+
+      'background:#fff;border-radius:8px;padding:8px 10px;border:1.5px solid var(--border);">'+
+      '<input type="checkbox" class="fest-tag-cb" value="'+f.key+'" '+checked+' '+
+        'style="width:16px;height:16px;accent-color:var(--orange);cursor:pointer;">'+
+      '<div style="width:24px;height:24px;border-radius:6px;background:'+bg+';display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0;">'+f.emoji+'</div>'+
+      '<span style="font-size:.8rem;font-weight:600;color:var(--navy);">'+f.name+'</span>'+
+    '</label>';
+  }).join('');
+}
+
+function getFestivalTags(){
+  // Returns array of selected festival keys
+  var tags = [];
+  document.querySelectorAll('.fest-tag-cb:checked').forEach(function(cb){ tags.push(cb.value); });
+  return tags;
 }
 
 function fireNewOrderNotification(o){
