@@ -1514,22 +1514,6 @@ select.form-input{cursor:pointer;}
               placeholder="যেমন: RAHIM20 (customer এই code দিলে offer পাবে)"
               oninput="this.value=this.value.toUpperCase();updateOfferPreview()">
           </div>
-          <!-- FESTIVAL TAG -->
-          <div class="form-group">
-            <label>🎊 Festival Tag (optional)</label>
-            <select class="form-input" id="fFestivalTag" onchange="updateOfferPreview()">
-              <option value="">কোনো festival নয় / No festival</option>
-              <option value="durga_puja">🎊 দুর্গাপূজা স্পেশাল</option>
-              <option value="eid">🌙 ঈদ স্পেশাল</option>
-              <option value="poila_boishakh">🌸 পহেলা বৈশাখ স্পেশাল</option>
-              <option value="christmas">🎄 Christmas Special</option>
-              <option value="new_year">🎆 New Year Special</option>
-              <option value="general">🎁 General Festival Offer</option>
-            </select>
-            <div style="font-size:.72rem;color:var(--muted);margin-top:4px;">
-              💡 Festival tag দিলে customer homepage এর festival banner এ এই পণ্য দেখাবে।
-            </div>
-          </div>
           <!-- Preview -->
           <div id="offerPreview" style="background:#fff;border-radius:8px;padding:10px;
             border:1px solid rgba(26,138,74,.2);margin-top:10px">
@@ -3004,7 +2988,7 @@ function clearOfferFields(){
   document.getElementById('fOfferDuration').value='1d';
   document.getElementById('fOfferLabel').value='Flash Sale';
   document.getElementById('fCouponCode').value='';
-  document.getElementById('fFestivalTag').value='';
+  // festival tag removed
 }
 
 function loadOfferFields(p){
@@ -3013,7 +2997,7 @@ function loadOfferFields(p){
   document.getElementById('offerFields').style.display='block';
   document.getElementById('fOfferLabel').value=p.offerLabel||'Flash Sale';
   document.getElementById('fCouponCode').value=p.couponCode||'';
-  document.getElementById('fFestivalTag').value=p.festivalTag||'';
+  // festival tag removed
   if(p.offerEndTime){
     document.getElementById('fOfferDuration').value='custom';
     document.getElementById('customEndGroup').style.display='block';
