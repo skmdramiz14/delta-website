@@ -944,6 +944,46 @@ button,input,select{font-family:'DM Sans',sans-serif;}
         </div>
       </div>
 
+      <!-- Hamper Pre-conditions (STRICT — no exceptions) -->
+      <div class="add-zone-card" style="margin-bottom:16px;border-left:3px solid #C84B11;">
+        <div style="font-size:.85rem;font-weight:700;color:var(--navy);margin-bottom:4px;">🎁 Hamper Pre-conditions — Strict (কোনো exception নেই)</div>
+        <div style="font-size:.72rem;color:var(--muted);margin-bottom:12px;">
+          এই conditions না মিললে product hamper এ qualify করবে না — কোনো special request option নেই। Festival condition এর চেয়ে কঠোর রাখুন।
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:10px;">
+          <div>
+            <label style="font-size:.7rem;color:var(--muted);font-weight:600;">ন্যূনতম Discount (%)</label>
+            <input type="number" class="form-input" id="hamperCondDiscount" value="15" min="0" max="90" style="margin-top:4px;">
+          </div>
+          <div>
+            <label style="font-size:.7rem;color:var(--muted);font-weight:600;">ন্যূনতম Stock</label>
+            <input type="number" class="form-input" id="hamperCondStock" value="50" min="0" style="margin-top:4px;">
+          </div>
+          <div>
+            <label style="font-size:.7rem;color:var(--muted);font-weight:600;">সর্বোচ্চ Price (₹)</label>
+            <input type="number" class="form-input" id="hamperCondMaxPrice" value="500" min="0" style="margin-top:4px;">
+          </div>
+          <div>
+            <label style="font-size:.7rem;color:var(--muted);font-weight:600;">Allowed Categories</label>
+            <input type="text" class="form-input" id="hamperCondCategories" placeholder="food,gift,clothing,pooja" style="margin-top:4px;">
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button class="btn-sm btn-orange" onclick="saveHamperConditions()">💾 Save করুন</button>
+          <span id="hamperCondStatus" style="font-size:.72rem;color:var(--muted);"></span>
+        </div>
+      </div>
+
+      <!-- Hamper Requests from Sellers -->
+      <div class="add-zone-card" style="margin-bottom:16px;">
+        <div style="font-size:.85rem;font-weight:700;color:var(--navy);margin-bottom:4px;">
+          📦 Hamper Product Requests
+          <span id="hamperReqCount" style="font-size:.72rem;color:var(--muted);font-weight:400;margin-left:8px;"></span>
+        </div>
+        <div style="font-size:.72rem;color:var(--muted);margin-bottom:12px;">Sellers যে products hamper এ add করতে চেয়েছে এবং conditions মিলিয়েছে</div>
+        <div id="hamperReqList"><div style="color:var(--muted);font-size:.82rem;">লোড হচ্ছে...</div></div>
+      </div>
+
       <!-- Active Festivals List -->
       <div class="add-zone-card" style="margin-bottom:16px;">
         <div style="font-size:.85rem;font-weight:700;color:var(--navy);margin-bottom:12px;">📋 সব Festivals</div>
@@ -4062,6 +4102,7 @@ function loadFestivalManagement(){
   loadFestivalCategories();
   loadFestivalPendingProducts();
   loadHampersManagement();
+  loadHamperRequests();
   // Festival conditions load করো
   db.collection('cities').doc(CITY).collection('settings').doc('festivalConditions')
     .get().then(function(doc){
@@ -4071,6 +4112,139 @@ function loadFestivalManagement(){
         if(d.minStock) document.getElementById('festCondStock').value = d.minStock;
         if(d.allowedCategories) document.getElementById('festCondCategories').value = d.allowedCategories.join(',');
       }
+    }).catch(function(){});
+  // Hamper conditions load করো
+  db.collection('cities').doc(CITY).collection('settings').doc('hamperConditions')
+    .get().then(function(doc){
+      if(doc.exists){
+        var d = doc.data();
+        if(d.minDiscount) document.getElementById('hamperCondDiscount').value = d.minDiscount;
+        if(d.minStock) document.getElementById('hamperCondStock').value = d.minStock;
+        if(d.maxPrice) document.getElementById('hamperCondMaxPrice').value = d.maxPrice;
+        if(d.allowedCategories) document.getElementById('hamperCondCategories').value = d.allowedCategories.join(',');
+      }
+    }).catch(function(){});
+}
+
+function saveHamperConditions(){
+  var minDiscount = parseInt(document.getElementById('hamperCondDiscount').value)||15;
+  var minStock = parseInt(document.getElementById('hamperCondStock').value)||50;
+  var maxPrice = parseInt(document.getElementById('hamperCondMaxPrice').value)||500;
+  var catStr = document.getElementById('hamperCondCategories').value.trim();
+  var allowedCategories = catStr ? catStr.split(',').map(function(c){return c.trim().toLowerCase();}).filter(Boolean) : [];
+
+  db.collection('cities').doc(CITY).collection('settings').doc('hamperConditions')
+    .set({
+      minDiscount: minDiscount,
+      minStock: minStock,
+      maxPrice: maxPrice,
+      allowedCategories: allowedCategories,
+      updatedAt: new Date().toISOString()
+    }).then(function(){
+      document.getElementById('hamperCondStatus').textContent = '✅ সেভ হয়েছে';
+      setTimeout(function(){ document.getElementById('hamperCondStatus').textContent=''; },3000);
+      showToast('Hamper conditions সেভ হয়েছে ✅','green');
+    }).catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
+}
+
+function loadHamperRequests(){
+  db.collection('cities').doc(CITY).collection('hamperRequests')
+    .where('status','==','qualified').get()
+    .then(function(snap){
+      var list = [];
+      snap.forEach(function(d){ list.push(Object.assign({id:d.id},d.data())); });
+      list.sort(function(a,b){ return new Date(b.submittedAt||0)-new Date(a.submittedAt||0); });
+      var countEl = document.getElementById('hamperReqCount');
+      if(countEl) countEl.textContent = list.length ? list.length+'টি qualified' : '';
+      renderHamperRequests(list);
+    }).catch(function(){});
+}
+
+function renderHamperRequests(list){
+  var wrap = document.getElementById('hamperReqList');
+  if(!list.length){
+    wrap.innerHTML='<div style="color:var(--muted);font-size:.82rem;">কোনো qualified hamper request নেই।</div>';
+    return;
+  }
+  wrap.innerHTML = list.map(function(r){
+    var img = r.imageUrl||'';
+    return '<div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px;'+
+      'display:flex;gap:12px;margin-bottom:10px;align-items:flex-start;">'+
+      (img?'<img src="'+img+'" style="width:56px;height:56px;object-fit:cover;border-radius:10px;flex-shrink:0;">':
+        '<div style="width:56px;height:56px;background:var(--sand);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;">🎁</div>')+
+      '<div style="flex:1;min-width:0;">'+
+        '<div style="font-size:.88rem;font-weight:700;color:var(--navy);">'+r.productName+'</div>'+
+        '<div style="font-size:.72rem;color:var(--muted);margin-bottom:4px;">'+
+          '🏪 '+r.shopName+' · ₹'+r.price+
+          (r.hamperDiscount?' · '+r.hamperDiscount+'% OFF':'')+
+          ' · Stock: '+r.hamperStock+
+        '</div>'+
+        (r.hamperDesc?'<div style="font-size:.72rem;color:var(--muted);font-style:italic;">'+r.hamperDesc+'</div>':'')+
+      '</div>'+
+      '<div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">'+
+        '<span style="background:var(--green2);color:var(--green);font-size:.65rem;font-weight:700;padding:3px 8px;border-radius:8px;">✅ Qualified</span>'+
+        '<button class="btn-sm" style="background:#e8f4ff;color:#0984e3;font-size:.72rem;" '+
+          'onclick="addHamperReqToPool(\''+r.id+'\')">🎁 Pool এ যোগ করুন</button>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+function addHamperReqToPool(reqId){
+  // hamperApproved = true করো — hamper create form এ দেখাবে
+  db.collection('cities').doc(CITY).collection('hamperRequests').doc(reqId).update({
+    status: 'approved',
+    approvedAt: new Date().toISOString()
+  }).then(function(){
+    showToast('Hamper pool এ যোগ হয়েছে ✅','green');
+    loadHamperRequests();
+    // Approved products dropdown refresh করো
+    loadApprovedHamperProducts();
+  }).catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
+}
+
+function loadApprovedHamperProducts(){
+  var sel = document.getElementById('hApprovedProductSelect');
+  if(!sel) return;
+  sel.innerHTML = '<option value="">-- Approved product select করুন --</option>';
+
+  // hamperRequests থেকে approved নাও
+  db.collection('cities').doc(CITY).collection('hamperRequests')
+    .where('status','==','approved').get()
+    .then(function(snap){
+      snap.forEach(function(d){
+        var r = d.data();
+        var opt = document.createElement('option');
+        opt.value = JSON.stringify({
+          name: r.productName,
+          sellerName: r.shopName,
+          price: r.price,
+          discount: r.hamperDiscount,
+          stock: r.hamperStock
+        });
+        opt.textContent = r.productName+' — ₹'+r.price+
+          (r.hamperDiscount?' ('+r.hamperDiscount+'% OFF)':'')+
+          ' | '+r.shopName+' | Stock: '+r.hamperStock;
+        sel.appendChild(opt);
+      });
+    }).catch(function(){});
+
+  // festivalRequests থেকেও approved নাও (আগের flow)
+  db.collection('cities').doc(CITY).collection('festivalRequests')
+    .where('status','==','approved').get()
+    .then(function(snap){
+      snap.forEach(function(d){
+        var r = d.data();
+        var opt = document.createElement('option');
+        opt.value = JSON.stringify({
+          name: r.productName,
+          sellerName: r.shopName,
+          price: r.price,
+          discount: r.festivalDiscount
+        });
+        opt.textContent = r.productName+' [Festival] — ₹'+r.price+' | '+r.shopName;
+        sel.appendChild(opt);
+      });
     }).catch(function(){});
 }
 
