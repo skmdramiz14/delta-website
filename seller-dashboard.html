@@ -812,12 +812,21 @@ select.form-input{cursor:pointer;}
               <label>Festival Stock</label>
               <input type="number" class="form-input" id="festReqStock" min="1" placeholder="কতটি available">
             </div>
+            <div class="form-group">
+              <label>Festival বিশেষ মূল্য (₹) — Optional</label>
+              <input type="number" class="form-input" id="festReqPrice" placeholder="আলাদা festival price (না দিলে original দাম)">
+            </div>
+            <div class="form-group">
+              <label>Festival বিশেষ বিবরণ — Optional</label>
+              <input type="text" class="form-input" id="festReqDesc" placeholder="যেমন: পূজার বিশেষ প্যাকেজিং সহ">
+            </div>
           </div>
 
-          <!-- Festival Description -->
+          <!-- Festival Image -->
           <div class="form-group" style="margin-bottom:12px;">
-            <label>Festival বিশেষ বিবরণ (Optional)</label>
-            <input type="text" class="form-input" id="festReqDesc" placeholder="যেমন: পূজার বিশেষ প্যাকেজিং সহ">
+            <label>Festival বিশেষ Image URL — Optional</label>
+            <input type="text" class="form-input" id="festReqImage" placeholder="Festival এর জন্য আলাদা image URL (Cloudinary)">
+            <div style="font-size:.68rem;color:var(--muted);margin-top:4px;">না দিলে product এর original image ব্যবহার হবে</div>
           </div>
 
           <!-- Note to Admin (if condition not met) -->
@@ -3852,13 +3861,28 @@ function onFestProductSelect(){
 
 function checkFestivalConditions(){
   var discount = parseInt(document.getElementById('festReqDiscount').value)||0;
+  var stock = parseInt(document.getElementById('festReqStock').value)||0;
+  var productId = document.getElementById('festReqProduct').value;
+  var p = products.find(function(x){ return x.id===productId; });
+  var productCategory = p ? (p.category||p.categoryMain||'').toLowerCase() : '';
+
   var minDiscount = selectedFestivalConditions.minDiscount||10;
+  var minStock = selectedFestivalConditions.minStock||0;
+  var allowedCats = selectedFestivalConditions.allowedCategories||[];
+
   var noteSection = document.getElementById('festReqNoteSection');
   var condMsg = document.getElementById('festReqConditionMsg');
+  var issues = [];
 
-  if(discount < minDiscount){
+  if(discount < minDiscount) issues.push('ন্যূনতম '+minDiscount+'% discount দিতে হবে (আপনি দিচ্ছেন '+discount+'%)');
+  if(minStock>0 && stock < minStock) issues.push('ন্যূনতম '+minStock+' stock দিতে হবে');
+  if(allowedCats.length>0 && productCategory && !allowedCats.some(function(c){ return productCategory.indexOf(c)>-1; })){
+    issues.push('এই category ('+productCategory+') এই festival এ allowed না। Allowed: '+allowedCats.join(', '));
+  }
+
+  if(issues.length>0){
     noteSection.style.display = 'block';
-    condMsg.textContent = 'এই festival এ ন্যূনতম '+minDiscount+'% discount দিতে হবে। আপনি দিচ্ছেন '+discount+'%। Admin কে special request পাঠাতে পারেন।';
+    condMsg.textContent = issues.join(' · ');
     return false;
   }
   noteSection.style.display = 'none';
@@ -3871,6 +3895,8 @@ function submitFestivalRequest(){
   var stock = parseInt(document.getElementById('festReqStock').value)||0;
   var desc = document.getElementById('festReqDesc').value.trim();
   var note = document.getElementById('festReqNote').value.trim();
+  var festPrice = parseInt(document.getElementById('festReqPrice').value)||0;
+  var festImage = document.getElementById('festReqImage').value.trim();
 
   if(!productId){ showToast('পণ্য select করুন','red'); return; }
   if(!selectedFestivalKey){ showToast('Festival select করুন','red'); return; }
@@ -3884,8 +3910,10 @@ function submitFestivalRequest(){
   var requestData = {
     productId: productId,
     productName: p.nameBn||p.name||'পণ্য',
-    imageUrl: p.imageUrl||(p.images&&p.images[0])||'',
+    imageUrl: festImage || p.imageUrl||(p.images&&p.images[0])||'',
+    originalImageUrl: p.imageUrl||(p.images&&p.images[0])||'',
     price: p.price||0,
+    festivalPrice: festPrice || p.price||0,
     shopId: auth.currentUser.uid,
     shopName: SD.shopName||'দোকান',
     festivalKey: selectedFestivalKey,
