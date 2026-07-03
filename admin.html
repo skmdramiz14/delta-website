@@ -4266,7 +4266,11 @@ function renderFestivalPendingProducts(list){
 function approveFestivalProduct(reqId, shopId, productId, festivalKey){
   var batch = db.batch();
   var productRef = db.collection('cities').doc(CITY).collection('sellers').doc(shopId).collection('products').doc(productId);
-  batch.update(productRef, {festivalTag: festivalKey, festivalApproved: true});
+  batch.update(productRef, {
+    festivalTag: festivalKey,
+    festivalTags: firebase.firestore.FieldValue.arrayUnion(festivalKey),
+    festivalApproved: true
+  });
   var reqRef = db.collection('cities').doc(CITY).collection('festivalRequests').doc(reqId);
   batch.update(reqRef, {
     status:'approved',
