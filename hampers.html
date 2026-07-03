@@ -134,6 +134,16 @@ body.lang-bn .lang-en{display:none!important;}
   .hamper-grid{grid-template-columns:1fr!important;}
   .hap-items{flex-wrap:wrap;}
   .hap-tag{font-size:.64rem;}
+  .hap-banner{min-height:110px;}
+  .hap-art{font-size:2.8rem;}
+  .hap-price{font-size:1rem;}
+  .hap-add-btn{padding:9px 12px;font-size:.82rem;}
+  .filter-bar{padding:10px 12px;}
+}
+@media(max-width:360px){
+  .hap-body{padding:12px;}
+  .hap-name{font-size:.95rem;}
+  .hamper-grid{gap:10px;}
 }
 </style>
 </head>
@@ -340,7 +350,11 @@ function buildHamperCard(h){
     : 'linear-gradient(135deg,#b5451b,#f07018,#e8a030)';
   var festEmoji = f ? f.emoji : '🎊';
   var festName = f ? f.name : (h.festivalTag||'');
-  var stockPct = h.stock>0 ? Math.min(100, Math.round(((h.soldCount||0)/((h.stock||0)+(h.soldCount||0)))*100)) : 100;
+  var stockPct = 0;
+  var totalEver = (h.stock||0) + (h.soldCount||0);
+  if(totalEver > 0){
+    stockPct = Math.round(((h.soldCount||0) / totalEver) * 100);
+  }
 
   // Base items
   var baseItemsHTML = (h.baseItems||[]).slice(0,4).map(function(item){
