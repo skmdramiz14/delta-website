@@ -632,6 +632,8 @@ select.form-input{cursor:pointer;}
         <span class="nav-badge" id="pendingBadge" style="display:none">0</span></button>
       <button class="nav-btn" id="nb-festival" onclick="goPage('festival',this)">
         <span class="nicon">🎊</span><span data-lang-bn="উৎসব" data-lang-en="Festival">উৎসব</span></button>
+      <button class="nav-btn" id="nb-hamper" onclick="goPage('hamper',this)">
+        <span class="nicon">🎁</span><span data-lang-bn="হ্যাম্পার" data-lang-en="Hamper">হ্যাম্পার</span></button>
       <div class="sb-nav-section" data-lang-bn="সেটিংস" data-lang-en="SETTINGS">সেটিংস</div>
       <button class="nav-btn" id="nb-profile" onclick="goPage('profile',this)">
         <span class="nicon">🏪</span><span data-lang-bn="শপ প্রোফাইল" data-lang-en="Shop Profile">শপ প্রোফাইল</span></button>
@@ -874,6 +876,77 @@ select.form-input{cursor:pointer;}
         <div style="background:#fff;border-radius:14px;border:1px solid var(--border);padding:16px;">
           <div style="font-size:.82rem;font-weight:700;color:var(--navy);margin-bottom:12px;">📋 আমার Festival Requests</div>
           <div id="myFestivalRequests">
+            <div style="color:var(--muted);font-size:.78rem;text-align:center;padding:12px;">লোড হচ্ছে...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ HAMPER PAGE ═══ -->
+      <div class="page" id="page-hamper">
+        <div class="sec-head">
+          <div class="sec-title">🎁 হ্যাম্পার Section
+            <small>আপনার product hamper এ add করুন</small>
+          </div>
+        </div>
+
+        <!-- Conditions Display -->
+        <div id="hamperCondDisplay" style="background:linear-gradient(135deg,rgba(200,75,17,.08),rgba(232,160,32,.08));border-radius:14px;padding:16px;margin-bottom:16px;">
+          <div style="font-size:.82rem;font-weight:700;color:var(--navy);margin-bottom:8px;">📋 Hamper Qualification Criteria</div>
+          <div id="hamperCondList" style="font-size:.78rem;color:var(--muted);">লোড হচ্ছে...</div>
+          <div style="font-size:.7rem;color:var(--orange);margin-top:8px;font-weight:600;">
+            ⚠️ এই criteria strict — কোনো exception নেই। সব condition মিলিয়ে submit করুন।
+          </div>
+        </div>
+
+        <!-- Submit Form -->
+        <div id="hamperSubmitForm" style="background:#fff;border-radius:16px;border:1px solid var(--border);padding:16px;margin-bottom:16px;">
+          <div style="font-size:.85rem;font-weight:700;color:var(--navy);margin-bottom:14px;">🎁 Hamper এ Product Submit করুন</div>
+
+          <div class="form-group" style="margin-bottom:12px;">
+            <label>পণ্য select করুন</label>
+            <select class="form-input" id="hamperProdSelect" onchange="onHamperProdSelect()">
+              <option value="">-- পণ্য select করুন --</option>
+            </select>
+          </div>
+
+          <!-- Product Preview -->
+          <div id="hamperProdPreview" style="display:none;background:var(--sand);border-radius:10px;padding:10px 12px;margin-bottom:12px;display:flex;gap:10px;align-items:center;">
+            <img id="hamperProdImg" src="" style="width:48px;height:48px;object-fit:cover;border-radius:8px;">
+            <div>
+              <div id="hamperProdName" style="font-size:.82rem;font-weight:700;color:var(--navy);"></div>
+              <div id="hamperProdPrice" style="font-size:.78rem;color:var(--orange);"></div>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Hamper Discount (%) <span style="color:var(--red);font-size:.7rem;">*ন্যূনতম মিলতে হবে</span></label>
+              <input type="number" class="form-input" id="hamperProdDiscount" min="0" max="90" placeholder="যেমন: 20">
+            </div>
+            <div class="form-group">
+              <label>Available Stock <span style="color:var(--red);font-size:.7rem;">*ন্যূনতম মিলতে হবে</span></label>
+              <input type="number" class="form-input" id="hamperProdStock" min="0" placeholder="যেমন: 100">
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom:14px;">
+            <label>Hamper বিশেষ বিবরণ (Optional)</label>
+            <input type="text" class="form-input" id="hamperProdDesc" placeholder="যেমন: বিশেষ প্যাকেজিং সহ">
+          </div>
+
+          <!-- Condition Check Result -->
+          <div id="hamperCondResult" style="display:none;padding:10px 12px;border-radius:10px;margin-bottom:12px;font-size:.78rem;"></div>
+
+          <button onclick="submitHamperProduct()"
+            style="width:100%;padding:12px;background:var(--navy);color:#fff;border:none;border-radius:12px;font-weight:700;cursor:pointer;">
+            🎁 Submit করুন
+          </button>
+        </div>
+
+        <!-- My Hamper Submissions -->
+        <div style="background:#fff;border-radius:14px;border:1px solid var(--border);padding:16px;">
+          <div style="font-size:.82rem;font-weight:700;color:var(--navy);margin-bottom:12px;">📋 আমার Hamper Requests</div>
+          <div id="myHamperRequests">
             <div style="color:var(--muted);font-size:.78rem;text-align:center;padding:12px;">লোড হচ্ছে...</div>
           </div>
         </div>
@@ -1777,7 +1850,8 @@ var PAGE_TITLES = {
   performance: {bn:'পারফরম্যান্স', en:'Performance'},
   qr:        {bn:'QR কোড', en:'QR Code'},
   support:   {bn:'সাহায্য কেন্দ্র', en:'Support'},
-  festival:  {bn:'উৎসব Section', en:'Festival Section'}
+  festival:  {bn:'উৎসব Section', en:'Festival Section'},
+  hamper:    {bn:'হ্যাম্পার Section', en:'Hamper Section'}
 };
 
 function setLang(lang){
@@ -1843,6 +1917,7 @@ function goPage(page,btnEl){
   if(page==='performance')renderPerformance();
   if(page==='support')loadMyTickets();
   if(page==='festival')loadSellerFestivalSection();
+  if(page==='hamper')loadSellerHamperSection();
   closeSidebar();
 }
 
@@ -3788,6 +3863,188 @@ function quickAddToFestival(productId){
       onFestProductSelect();
     }, 200);
   }, 300);
+}
+
+// ── HAMPER SECTION ──
+var hamperConditions = {minDiscount:15, minStock:50, maxPrice:500, allowedCategories:[]};
+
+function loadSellerHamperSection(){
+  // Conditions load করো
+  db.collection('cities').doc(CITY).collection('settings').doc('hamperConditions')
+    .get().then(function(doc){
+      if(doc.exists) hamperConditions = Object.assign({minDiscount:15,minStock:50,maxPrice:500,allowedCategories:[]}, doc.data());
+      renderHamperConditions();
+    }).catch(function(){ renderHamperConditions(); });
+
+  // Products populate করো
+  var sel = document.getElementById('hamperProdSelect');
+  if(sel){
+    sel.innerHTML = '<option value="">-- পণ্য select করুন --</option>';
+    products.filter(function(p){ return !p.adminRemoved; }).forEach(function(p){
+      var opt = document.createElement('option');
+      opt.value = p.id;
+      opt.textContent = (p.nameBn||p.name||'পণ্য')+' — ₹'+(p.price||0);
+      sel.appendChild(opt);
+    });
+  }
+
+  loadMyHamperRequests();
+}
+
+function renderHamperConditions(){
+  var wrap = document.getElementById('hamperCondList');
+  if(!wrap) return;
+  var items = [
+    '✅ ন্যূনতম <strong>'+hamperConditions.minDiscount+'%</strong> discount দিতে হবে',
+    '✅ ন্যূনতম <strong>'+hamperConditions.minStock+'</strong> units stock থাকতে হবে',
+    '✅ সর্বোচ্চ মূল্য <strong>₹'+hamperConditions.maxPrice+'</strong> এর মধ্যে হতে হবে',
+  ];
+  if(hamperConditions.allowedCategories && hamperConditions.allowedCategories.length){
+    items.push('✅ Allowed categories: <strong>'+hamperConditions.allowedCategories.join(', ')+'</strong>');
+  }
+  wrap.innerHTML = items.map(function(i){ return '<div style="margin-bottom:4px;">'+i+'</div>'; }).join('');
+}
+
+function onHamperProdSelect(){
+  var productId = document.getElementById('hamperProdSelect').value;
+  var preview = document.getElementById('hamperProdPreview');
+  if(!productId){ preview.style.display='none'; return; }
+  var p = products.find(function(x){ return x.id===productId; });
+  if(!p){ return; }
+  document.getElementById('hamperProdImg').src = p.imageUrl||(p.images&&p.images[0])||'';
+  document.getElementById('hamperProdName').textContent = p.nameBn||p.name||'পণ্য';
+  document.getElementById('hamperProdPrice').textContent = 'মূল্য: ₹'+(p.price||0);
+  preview.style.display = 'flex';
+  // Auto-check conditions
+  checkHamperConditions();
+}
+
+function checkHamperConditions(){
+  var productId = document.getElementById('hamperProdSelect').value;
+  var discount = parseInt(document.getElementById('hamperProdDiscount').value)||0;
+  var stock = parseInt(document.getElementById('hamperProdStock').value)||0;
+  var p = products.find(function(x){ return x.id===productId; });
+  var price = p ? (p.price||0) : 0;
+  var category = p ? (p.category||p.categoryMain||'').toLowerCase() : '';
+
+  var resultEl = document.getElementById('hamperCondResult');
+  var issues = [];
+
+  if(discount < hamperConditions.minDiscount)
+    issues.push('Discount কম — ন্যূনতম '+hamperConditions.minDiscount+'% দিতে হবে');
+  if(stock < hamperConditions.minStock)
+    issues.push('Stock কম — ন্যূনতম '+hamperConditions.minStock+' units দিতে হবে');
+  if(hamperConditions.maxPrice > 0 && price > hamperConditions.maxPrice)
+    issues.push('মূল্য বেশি — সর্বোচ্চ ₹'+hamperConditions.maxPrice+' হতে হবে');
+  if(hamperConditions.allowedCategories && hamperConditions.allowedCategories.length > 0){
+    var allowed = hamperConditions.allowedCategories.some(function(c){ return category.indexOf(c)>-1; });
+    if(!allowed) issues.push('Category allowed না — Allowed: '+hamperConditions.allowedCategories.join(', '));
+  }
+
+  resultEl.style.display = 'block';
+  if(issues.length === 0){
+    resultEl.style.background = 'var(--green2)';
+    resultEl.style.color = 'var(--green)';
+    resultEl.innerHTML = '✅ সব condition মিলেছে! Submit করতে পারবেন।';
+    return true;
+  } else {
+    resultEl.style.background = 'var(--red2)';
+    resultEl.style.color = 'var(--red)';
+    resultEl.innerHTML = '❌ Qualify করেনি:<br>• '+issues.join('<br>• ');
+    return false;
+  }
+}
+
+function submitHamperProduct(){
+  var productId = document.getElementById('hamperProdSelect').value;
+  var discount = parseInt(document.getElementById('hamperProdDiscount').value)||0;
+  var stock = parseInt(document.getElementById('hamperProdStock').value)||0;
+  var desc = document.getElementById('hamperProdDesc').value.trim();
+
+  if(!productId){ showToast('পণ্য select করুন','red'); return; }
+
+  // Strict condition check — no exception
+  var passes = checkHamperConditions();
+  if(!passes){
+    showToast('❌ Condition মিলছে না — submit করা যাবে না','red');
+    return;
+  }
+
+  var p = products.find(function(x){ return x.id===productId; });
+  if(!p){ showToast('পণ্য পাওয়া যায়নি','red'); return; }
+
+  db.collection('cities').doc(CITY).collection('hamperRequests').add({
+    productId: productId,
+    productName: p.nameBn||p.name||'পণ্য',
+    imageUrl: p.imageUrl||(p.images&&p.images[0])||'',
+    price: p.price||0,
+    category: p.category||p.categoryMain||'',
+    shopId: auth.currentUser.uid,
+    shopName: SD.shopName||'দোকান',
+    hamperDiscount: discount,
+    hamperStock: stock,
+    hamperDesc: desc,
+    status: 'qualified', // strict — condition মিললে directly qualified
+    submittedAt: new Date().toISOString()
+  }).then(function(){
+    // Form reset
+    document.getElementById('hamperProdSelect').value='';
+    document.getElementById('hamperProdDiscount').value='';
+    document.getElementById('hamperProdStock').value='';
+    document.getElementById('hamperProdDesc').value='';
+    document.getElementById('hamperProdPreview').style.display='none';
+    document.getElementById('hamperCondResult').style.display='none';
+    loadMyHamperRequests();
+    showToast('🎁 Hamper এ submit হয়েছে! Admin pool এ যোগ হবে।','green');
+  }).catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
+}
+
+function loadMyHamperRequests(){
+  if(!auth.currentUser) return;
+  db.collection('cities').doc(CITY).collection('hamperRequests')
+    .where('shopId','==',auth.currentUser.uid)
+    .get().then(function(snap){
+      var list = [];
+      snap.forEach(function(d){ list.push(Object.assign({id:d.id},d.data())); });
+      list.sort(function(a,b){ return new Date(b.submittedAt||0)-new Date(a.submittedAt||0); });
+      renderMyHamperRequests(list);
+    }).catch(function(){});
+}
+
+function renderMyHamperRequests(list){
+  var wrap = document.getElementById('myHamperRequests');
+  if(!list.length){
+    wrap.innerHTML='<div style="color:var(--muted);font-size:.78rem;text-align:center;padding:12px;">এখনো কোনো hamper request নেই।</div>';
+    return;
+  }
+  var statusLabel = {
+    qualified:'✅ Qualified — Admin pool এ আছে',
+    approved:'🎁 Hamper এ Include হয়েছে',
+    rejected:'❌ Include হয়নি'
+  };
+  var statusColor = {
+    qualified:'var(--green)', approved:'#0984e3', rejected:'var(--red)'
+  };
+  var statusBg = {
+    qualified:'var(--green2)', approved:'#e8f4ff', rejected:'var(--red2)'
+  };
+
+  wrap.innerHTML = list.map(function(r){
+    return '<div style="display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);">'+
+      (r.imageUrl?'<img src="'+r.imageUrl+'" style="width:44px;height:44px;object-fit:cover;border-radius:8px;flex-shrink:0;">':
+        '<div style="width:44px;height:44px;background:var(--sand);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;">🎁</div>')+
+      '<div style="flex:1;min-width:0;">'+
+        '<div style="font-size:.82rem;font-weight:600;color:var(--navy);">'+r.productName+'</div>'+
+        '<div style="font-size:.7rem;color:var(--muted);">₹'+r.price+
+          (r.hamperDiscount?' · '+r.hamperDiscount+'% OFF':'')+
+          ' · Stock: '+r.hamperStock+
+        '</div>'+
+      '</div>'+
+      '<span style="background:'+(statusBg[r.status]||'var(--sand)')+';color:'+(statusColor[r.status]||'var(--muted)')+';'+
+        'font-size:.65rem;font-weight:700;padding:3px 8px;border-radius:10px;flex-shrink:0;text-align:center;">'+
+        (statusLabel[r.status]||r.status)+'</span>'+
+    '</div>';
+  }).join('');
 }
 
 function loadSellerFestivalSection(){
