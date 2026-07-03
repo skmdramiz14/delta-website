@@ -1472,18 +1472,6 @@ select.form-input{cursor:pointer;}
           </label>
         </div>
 
-        <!-- Festival Tags (Multiple) -->
-        <div class="form-group" style="background:linear-gradient(135deg,rgba(181,69,27,.08),rgba(232,134,58,.08));border-radius:12px;padding:12px;margin-top:4px;">
-          <label style="color:var(--navy);font-weight:700;">🎊 Festival Tags (Optional)</label>
-          <div style="font-size:.68rem;color:var(--muted);margin-bottom:8px;margin-top:4px;">
-            একাধিক festival select করতে পারবেন — সব festival এর page এ দেখাবে
-          </div>
-          <div id="fFestivalTagsWrap" style="display:flex;flex-direction:column;gap:6px;">
-            <div style="font-size:.75rem;color:var(--muted);">Festival load হচ্ছে...</div>
-          </div>
-          <!-- Hidden input for backward compat -->
-          <input type="hidden" id="fFestivalTag" value="">
-        </div>
         <!-- Offer note when discount already set -->
         <div id="offerNote" style="font-size:.72rem;color:var(--muted);margin-bottom:8px">
           💡 MRP থেকে discount ইতিমধ্যে calculate হচ্ছে।
@@ -1969,10 +1957,6 @@ function openProductModal(editIdParam){
     calcDiscount();
     loadOfferFields(p);
     loadCategoryFields(p);
-    // festivalTags array বা পুরোনো festivalTag string দুটোই handle করো
-    var tags = p.festivalTags||[];
-    if(!tags.length && p.festivalTag) tags = [p.festivalTag];
-    loadFestivalTagDropdown(tags);
   } else {
     document.getElementById('modalTitle').textContent='নতুন পণ্য যোগ করুন / Add Product';
     ['fNameBn','fNameEn','fStock','fMrp','fPrice','fDesc','fPrep'].forEach(function(id){
@@ -1981,7 +1965,6 @@ function openProductModal(editIdParam){
     document.getElementById('fUnit').value='piece';
     clearOfferFields();
     clearCategoryFields();
-    loadFestivalTagDropdown([]);
   }
   document.getElementById('productModal').style.display='flex';
 }
@@ -2056,14 +2039,10 @@ async function saveProduct(){
 
   // Offer data
   var offerActive=document.getElementById('fOfferActive').checked;
-  var festivalTags = getFestivalTags(); // array of selected festival keys
-  var festivalTagVal = festivalTags.length===1 ? festivalTags[0] : (festivalTags.length>1 ? festivalTags[0] : '');
   var offerData={
     offerActive:offerActive,
     offerLabel:offerActive?document.getElementById('fOfferLabel').value:'',
     couponCode:offerActive?document.getElementById('fCouponCode').value:'',
-    festivalTag: festivalTagVal,    // backward compat — first tag
-    festivalTags: festivalTags,     // new — all tags
     offerEndTime:offerActive?getOfferEndTimestamp():null,
   };
 
