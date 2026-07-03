@@ -4264,18 +4264,19 @@ function renderFestivalPendingProducts(list){
 }
 
 function approveFestivalProduct(reqId, shopId, productId, festivalKey){
-  // Product এ festivalTag set করো
   var batch = db.batch();
   var productRef = db.collection('cities').doc(CITY).collection('sellers').doc(shopId).collection('products').doc(productId);
   batch.update(productRef, {festivalTag: festivalKey, festivalApproved: true});
-  // Request status update করো
   var reqRef = db.collection('cities').doc(CITY).collection('festivalRequests').doc(reqId);
-  batch.update(reqRef, {status:'approved', reviewedAt: new Date().toISOString()});
-  // Seller notification
+  batch.update(reqRef, {
+    status:'approved',
+    adminNote: 'অনুমোদিত — আপনার পণ্য Festival এ যোগ হয়েছে।',
+    reviewedAt: new Date().toISOString()
+  });
   var sellerRef = db.collection('cities').doc(CITY).collection('sellers').doc(shopId);
   batch.update(sellerRef, {lastAdminNotification:{
     type:'festival_approved',
-    message:'আপনার পণ্য Festival এ অনুমোদিত হয়েছে! 🎊 এখন festival page এ দেখাবে।',
+    message:'✅ অনুমোদিত! আপনার পণ্য Festival এ যোগ হয়েছে। 🎊 এখন festival page এ দেখাবে।',
     at: new Date().toISOString(), read: false
   }});
   batch.commit().then(function(){
@@ -4289,11 +4290,16 @@ function rejectFestivalProduct(reqId, shopId){
   if(reason===null) return;
   var batch = db.batch();
   var reqRef = db.collection('cities').doc(CITY).collection('festivalRequests').doc(reqId);
-  batch.update(reqRef, {status:'rejected', rejectReason: reason||'', reviewedAt: new Date().toISOString()});
+  batch.update(reqRef, {
+    status:'rejected',
+    adminNote: reason||'আমরা দুঃখিত, এটা listing হবে না।',
+    rejectReason: reason||'',
+    reviewedAt: new Date().toISOString()
+  });
   var sellerRef = db.collection('cities').doc(CITY).collection('sellers').doc(shopId);
   batch.update(sellerRef, {lastAdminNotification:{
     type:'festival_rejected',
-    message:'আমরা দুঃখিত, আপনার পণ্য festival এ listing হবে না।'+(reason?' কারণ: '+reason:'')+' অন্য পণ্য listing করুন। ধন্যবাদ।',
+    message:'❌ আমরা দুঃখিত, এটা listing হবে না।'+(reason?' কারণ: '+reason:'')+' অন্য পণ্য listing করুন। ধন্যবাদ।',
     at: new Date().toISOString(), read: false
   }});
   batch.commit().then(function(){
