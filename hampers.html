@@ -535,14 +535,46 @@ function placeHamperOrder(){
   btn.textContent = 'অর্ডার হচ্ছে...';
 
   db.collection('hamperOrders').add(orderData).then(function(ref){
+    var hamperOrderId = ref.id;
+
     // Stock update করো
     db.collection('hampers').doc(currentOrderHamper.id).update({
       stock: firebase.firestore.FieldValue.increment(-1),
       soldCount: firebase.firestore.FieldValue.increment(1)
     }).catch(function(){});
 
+    // Add-on orders → respective sellers এর কাছে পাঠাও
+    if(selectedAddOns.length > 0){
+      var addOnByShop = {};
+      selectedAddOns.forEach(function(a){
+        if(!addOnByShop[a.shopId]) addOnByShop[a.shopId] = [];
+        addOnByShop[a.shopId].push(a);
+      });
+      Object.keys(addOnByShop).forEach(function(shopId){
+        var items = addOnByShop[shopId];
+        var addOnTotal = items.reduce(function(s,i){return s+i.price;},0);
+        db.collection('cities').doc('manteswar').collection('sellers').doc(shopId)
+          .collection('orders').add({
+            customerId:'hamper_customer',
+            customerName:'Hamper Customer',
+            customerMobile: phone,
+            deliveryAddress: addr,
+            items: items.map(function(i){return i.name+' ×1';}).join(', '),
+            itemsDetail: items.map(function(i){return {name:i.name,qty:1,price:i.price};}),
+            total: addOnTotal,
+            deliveryCharge: 0,
+            grandTotal: addOnTotal,
+            paymentMethod: 'cod',
+            hamperOrderId: hamperOrderId,
+            isHamperAddOn: true,
+            status: 'confirmed',
+            createdAt: new Date().toISOString()
+          }).catch(function(){});
+      });
+    }
+
     closeOrderModal();
-    showOrderSuccess(ref.id, totalPrice);
+    showOrderSuccess(hamperOrderId, totalPrice);
   }).catch(function(e){
     btn.disabled = false;
     btn.textContent = '✅ অর্ডার নিশ্চিত করুন';
