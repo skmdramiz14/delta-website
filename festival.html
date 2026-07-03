@@ -331,8 +331,29 @@ body{
 /* Mobile */
 @media(max-width:480px){
   .hero-title{font-size:1.9rem;}
-  .product-grid{gap:10px;}
+  .product-grid{
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+  }
+  .hamper-grid{
+    width:100%;
+  }
+  .hamper-card{
+    width:calc(85vw);
+    min-width:240px;
+  }
   .floating-cart{left:16px;right:16px;transform:none;min-width:unset;}
+  .tab-btn{
+    padding:12px 12px;
+    font-size:.76rem;
+  }
+  .hero{padding:32px 16px 0;}
+  .content{padding:0 3% 80px;}
+}
+
+@media(max-width:360px){
+  .product-grid{grid-template-columns:1fr;}
+  .hero-title{font-size:1.6rem;}
 }
 </style>
 </head>
@@ -886,15 +907,23 @@ function filterFestival(cat, btn){
   activeCategory = cat;
   document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});
   if(btn) btn.classList.add('active');
+
   if(cat==='all'){
     filteredProducts = allFestProducts.slice();
   } else {
     filteredProducts = allFestProducts.filter(function(p){
-      return (p.category||p.categoryMain||'').indexOf(cat) > -1 ||
-             (p.nameBn||p.name||'').indexOf(cat) > -1;
+      var pCat = (p.category||p.categoryMain||p.categorySub||'').toLowerCase();
+      var pName = (p.nameBn||p.nameEn||p.name||'').toLowerCase();
+      var catLower = cat.toLowerCase();
+      return pCat.indexOf(catLower)>-1 || pName.indexOf(catLower)>-1 ||
+             (p.searchTags||[]).some(function(t){ return t.toLowerCase().indexOf(catLower)>-1; });
     });
   }
   renderProducts();
+
+  // Empty state দেখাও যদি কিছু না থাকে
+  var countEl = document.getElementById('productCount');
+  if(countEl) countEl.textContent = filteredProducts.length+'টি পণ্য';
 }
 
 function renderProducts(){
