@@ -339,6 +339,12 @@ button,input,select{font-family:'DM Sans',sans-serif;}
     <button class="tab-btn" id="tab-products" onclick="goTab('products',this)">
       📦 Product Moderation
     </button>
+    <button class="tab-btn" id="tab-festivals" onclick="goTab('festivals',this)">
+      🎊 Festival Management
+    </button>
+    <button class="tab-btn" id="tab-hamperorders" onclick="goTab('hamperorders',this)">
+      🎁 Hamper Orders
+    </button>
   </nav>
 
   <div class="content">
@@ -907,9 +913,181 @@ button,input,select{font-family:'DM Sans',sans-serif;}
       </div>
     </div>
 
+    <!-- ═══ FESTIVAL MANAGEMENT PAGE ═══ -->
+    <div class="page" id="page-festivals">
+      <div class="sec-head">
+        <div class="sec-title">🎊 Festival Management
+          <small>Festival categories তৈরি করুন ও products approve করুন</small>
+        </div>
+      </div>
+
+      <!-- Create New Festival -->
+      <div class="add-zone-card" style="margin-bottom:16px;">
+        <div style="font-size:.85rem;font-weight:700;color:var(--navy);margin-bottom:12px;">➕ নতুন Festival Category তৈরি করুন</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+          <div>
+            <label style="font-size:.72rem;color:var(--muted);font-weight:600;">Festival নাম (বাংলা)</label>
+            <input type="text" class="form-input" id="festCatName" placeholder="যেমন: দুর্গাপূজা স্পেশাল">
+          </div>
+          <div>
+            <label style="font-size:.72rem;color:var(--muted);font-weight:600;">Festival Key (English, no spaces)</label>
+            <input type="text" class="form-input" id="festCatKey" placeholder="যেমন: durga_puja">
+          </div>
+          <div>
+            <label style="font-size:.72rem;color:var(--muted);font-weight:600;">Festival তারিখ</label>
+            <input type="date" class="form-input" id="festCatDate">
+          </div>
+          <div>
+            <label style="font-size:.72rem;color:var(--muted);font-weight:600;">Emoji</label>
+            <input type="text" class="form-input" id="festCatEmoji" placeholder="🎊" maxlength="4">
+          </div>
+          <div>
+            <label style="font-size:.72rem;color:var(--muted);font-weight:600;">Color (from)</label>
+            <input type="color" class="form-input" id="festCatColor1" value="#b5451b" style="height:42px;padding:4px;">
+          </div>
+          <div>
+            <label style="font-size:.72rem;color:var(--muted);font-weight:600;">Color (to)</label>
+            <input type="color" class="form-input" id="festCatColor2" value="#e8863a" style="height:42px;padding:4px;">
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;">
+          <button class="btn-sm btn-orange" onclick="saveFestivalCategory()">💾 Festival তৈরি করুন</button>
+          <span id="festCatStatus" style="font-size:.72rem;color:var(--muted);"></span>
+        </div>
+      </div>
+
+      <!-- Festival Conditions -->
+      <div class="add-zone-card" style="margin-bottom:16px;">
+        <div style="font-size:.85rem;font-weight:700;color:var(--navy);margin-bottom:12px;">⚙️ Festival Conditions — Seller দের জন্য</div>
+        <div style="font-size:.72rem;color:var(--muted);margin-bottom:10px;">Seller যদি এই condition মেনে festival product add করে তাহলে directly approve হবে। না মিললে special request যাবে।</div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+          <div>
+            <label style="font-size:.7rem;color:var(--muted);">ন্যূনতম Discount (%)</label>
+            <input type="number" class="form-input" id="festCondDiscount" value="10" min="0" max="90" style="width:100px;margin-top:4px;">
+          </div>
+          <button class="btn-sm btn-orange" style="margin-top:20px;" onclick="saveFestivalConditions()">💾 Save করুন</button>
+          <span id="festCondStatus" style="font-size:.72rem;color:var(--muted);margin-top:20px;"></span>
+        </div>
+      </div>
+
+      <!-- Active Festivals List -->
+      <div class="add-zone-card" style="margin-bottom:16px;">
+        <div style="font-size:.85rem;font-weight:700;color:var(--navy);margin-bottom:12px;">📋 সব Festivals</div>
+        <div id="festivalCatList"><div style="color:var(--muted);font-size:.82rem;">লোড হচ্ছে...</div></div>
+      </div>
+
+      <!-- Pending Festival Products -->
+      <div class="add-zone-card" style="margin-bottom:16px;">
+        <div style="font-size:.85rem;font-weight:700;color:var(--navy);margin-bottom:4px;">
+          ⏳ Pending Festival Products
+          <span id="festPendingCount" style="font-size:.72rem;color:var(--muted);font-weight:400;margin-left:8px;"></span>
+        </div>
+        <div style="font-size:.72rem;color:var(--muted);margin-bottom:12px;">Sellers যে products festival এ add করতে চেয়েছে — approve বা reject করুন</div>
+        <div id="festPendingList"><div style="color:var(--muted);font-size:.82rem;">লোড হচ্ছে...</div></div>
+      </div>
+
+      <!-- Hampers Management -->
+      <div class="add-zone-card">
+        <div style="font-size:.85rem;font-weight:700;color:var(--navy);margin-bottom:12px;">🎁 Hampers Management</div>
+
+        <!-- Create Hamper -->
+        <div style="background:var(--sand);border-radius:12px;padding:14px;margin-bottom:14px;">
+          <div style="font-size:.78rem;font-weight:700;color:var(--navy);margin-bottom:10px;">➕ নতুন Hamper তৈরি করুন</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+            <div>
+              <label style="font-size:.68rem;color:var(--muted);">Hamper নাম</label>
+              <input class="form-input" id="hName" placeholder="যেমন: পূজা উপহার বাক্স" style="margin-top:3px;">
+            </div>
+            <div>
+              <label style="font-size:.68rem;color:var(--muted);">দাম (₹)</label>
+              <input type="number" class="form-input" id="hPrice" placeholder="599" style="margin-top:3px;">
+            </div>
+            <div>
+              <label style="font-size:.68rem;color:var(--muted);">Festival</label>
+              <select class="form-input" id="hFestivalTag" style="margin-top:3px;">
+                <option value="">-- Festival select করুন --</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:.68rem;color:var(--muted);">Stock</label>
+              <input type="number" class="form-input" id="hStock" placeholder="50" style="margin-top:3px;">
+            </div>
+            <div class="full" style="grid-column:1/-1;">
+              <label style="font-size:.68rem;color:var(--muted);">Emoji / Image URL</label>
+              <div style="display:flex;gap:8px;margin-top:3px;">
+                <input class="form-input" id="hEmoji" placeholder="🎁 অথবা Image URL" style="flex:1;">
+              </div>
+            </div>
+            <div class="full" style="grid-column:1/-1;">
+              <label style="font-size:.68rem;color:var(--muted);">Description</label>
+              <input class="form-input" id="hDesc" placeholder="Hamper এর বিবরণ" style="margin-top:3px;">
+            </div>
+          </div>
+
+          <!-- Base Items -->
+          <div style="margin-bottom:10px;">
+            <div style="font-size:.72rem;font-weight:700;color:var(--navy);margin-bottom:6px;">📦 Base Items (Pre-arranged sellers থেকে)</div>
+            <div id="hBaseItems" style="display:flex;flex-direction:column;gap:6px;margin-bottom:6px;"></div>
+            <div style="display:flex;gap:6px;">
+              <input class="form-input" id="hBaseItemName" placeholder="Item নাম (যেমন: রসগোল্লা ৫০০গ্রাম)" style="flex:2;">
+              <input class="form-input" id="hBaseItemSeller" placeholder="Seller নাম" style="flex:1;">
+              <button class="btn-sm" style="background:var(--navy);color:#fff;" onclick="addHamperBaseItem()">+ Add</button>
+            </div>
+          </div>
+
+          <!-- Add-on Products -->
+          <div style="margin-bottom:10px;">
+            <div style="font-size:.72rem;font-weight:700;color:var(--navy);margin-bottom:6px;">✨ Add-on Products (DELTA listing থেকে)</div>
+            <div id="hAddOnList" style="display:flex;flex-direction:column;gap:6px;margin-bottom:6px;"></div>
+            <select class="form-input" id="hAddOnSelect" style="margin-bottom:6px;">
+              <option value="">-- Product select করুন --</option>
+            </select>
+            <button class="btn-sm" style="background:var(--orange);color:#fff;" onclick="addHamperAddOn()">+ Add-on যোগ করুন</button>
+          </div>
+
+          <button class="btn-sm btn-green" onclick="saveHamper()">💾 Hamper Save করুন</button>
+          <span id="hamperSaveStatus" style="font-size:.72rem;color:var(--muted);margin-left:8px;"></span>
+        </div>
+
+        <!-- Existing Hampers -->
+        <div>
+          <div style="font-size:.78rem;font-weight:700;color:var(--navy);margin-bottom:10px;">📋 সব Hampers</div>
+          <div id="hampersList"><div style="color:var(--muted);font-size:.82rem;">লোড হচ্ছে...</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ HAMPER ORDERS PAGE ═══ -->
+    <div class="page" id="page-hamperorders">
+      <div class="sec-head">
+        <div class="sec-title">🎁 Hamper Orders
+          <small>Customers এর hamper orders — coordinate করে deliver করুন</small>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-row" style="margin-bottom:16px;">
+        <div class="stat-card"><div class="stat-num" id="hoTotal">0</div><div class="stat-label">মোট Orders</div></div>
+        <div class="stat-card"><div class="stat-num" id="hoPending">0</div><div class="stat-label">⏳ Pending</div></div>
+        <div class="stat-card"><div class="stat-num" id="hoDelivered">0</div><div class="stat-label">✅ Delivered</div></div>
+      </div>
+
+      <!-- Filter -->
+      <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+        <button class="btn-sm active" id="hoFilterAll" onclick="filterHamperOrders('all',this)" style="background:var(--navy);color:#fff;">সব</button>
+        <button class="btn-sm" id="hoFilterPending" onclick="filterHamperOrders('pending',this)">⏳ Pending</button>
+        <button class="btn-sm" id="hoFilterConfirmed" onclick="filterHamperOrders('confirmed',this)">✅ Confirmed</button>
+        <button class="btn-sm" id="hoFilterDelivered" onclick="filterHamperOrders('delivered',this)">📦 Delivered</button>
+        <button class="btn-sm" onclick="loadHamperOrders()" style="background:var(--sand);color:var(--navy);margin-left:auto;">↺ Refresh</button>
+      </div>
+
+      <div id="hamperOrdersList" style="display:flex;flex-direction:column;gap:10px;">
+        <div style="color:var(--muted);font-size:.85rem;padding:20px;text-align:center;">Tab click করলে লোড হবে</div>
+      </div>
+    </div>
+
   </div>
 </div>
-
 <script>
 var FB_CFG = {
   apiKey:"AIzaSyA6TrrnCMwv1aa1WPqGvTVWlnieB2pVOEU",
@@ -1021,6 +1199,8 @@ function goTab(tab, btn){
   if(tab==='categories') loadCategoryConfig();
   if(tab==='flashsale') loadFlashSaleData();
   if(tab==='products') loadModProducts();
+  if(tab==='festivals') loadFestivalManagement();
+  if(tab==='hamperorders') loadHamperOrders();
 }
 
 // ═══ DATA LOADING ═══
@@ -3770,7 +3950,577 @@ function exportRecon(){
       o.createdAt?new Date(o.createdAt).toLocaleDateString('en-IN'):''
     ]);
   });
-  var csv = rows.map(function(r){return r.join(',');}).join('\n');
+// ═══ HAMPER ORDERS ═══
+var allHamperOrders = [];
+var hamperOrderFilter = 'all';
+
+function loadHamperOrders(){
+  var wrap = document.getElementById('hamperOrdersList');
+  wrap.innerHTML = '<div style="color:var(--muted);font-size:.85rem;padding:20px;text-align:center;">লোড হচ্ছে...</div>';
+
+  db.collection('hamperOrders').orderBy('createdAt','desc').get()
+    .then(function(snap){
+      allHamperOrders = [];
+      snap.forEach(function(d){ allHamperOrders.push(Object.assign({id:d.id},d.data())); });
+      updateHamperOrderStats();
+      renderHamperOrders();
+    }).catch(function(e){ wrap.innerHTML='<div style="color:var(--red);padding:20px;">লোড সমস্যা: '+e.message+'</div>'; });
+}
+
+function updateHamperOrderStats(){
+  document.getElementById('hoTotal').textContent = allHamperOrders.length;
+  document.getElementById('hoPending').textContent = allHamperOrders.filter(function(o){return o.status==='pending';}).length;
+  document.getElementById('hoDelivered').textContent = allHamperOrders.filter(function(o){return o.status==='delivered';}).length;
+}
+
+function filterHamperOrders(filter, btn){
+  hamperOrderFilter = filter;
+  document.querySelectorAll('#page-hamperorders .btn-sm').forEach(function(b){
+    b.style.background=''; b.style.color='';
+  });
+  if(btn){ btn.style.background='var(--navy)'; btn.style.color='#fff'; }
+  renderHamperOrders();
+}
+
+function renderHamperOrders(){
+  var wrap = document.getElementById('hamperOrdersList');
+  var list = hamperOrderFilter==='all'
+    ? allHamperOrders
+    : allHamperOrders.filter(function(o){ return o.status===hamperOrderFilter; });
+
+  if(!list.length){
+    wrap.innerHTML='<div style="color:var(--muted);font-size:.85rem;padding:20px;text-align:center;">কোনো order নেই।</div>';
+    return;
+  }
+
+  var statusMap = {
+    pending:{label:'⏳ Pending',cls:'background:#fff4ec;color:var(--orange)'},
+    confirmed:{label:'✅ Confirmed',cls:'background:var(--green2);color:var(--green)'},
+    preparing:{label:'🔄 Preparing',cls:'background:#e8f4ff;color:#0984e3'},
+    delivered:{label:'📦 Delivered',cls:'background:var(--green2);color:var(--green)'},
+    cancelled:{label:'❌ Cancelled',cls:'background:var(--red2);color:var(--red)'}
+  };
+
+  wrap.innerHTML = list.map(function(o){
+    var sm = statusMap[o.status]||statusMap.pending;
+    var time = o.createdAt ? new Date(o.createdAt).toLocaleString('bn-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) : '—';
+    var baseItemsText = (o.baseItems||[]).map(function(i){return i.name;}).join(', ');
+    var addOnsText = (o.selectedAddOns||[]).map(function(a){return a.name;}).join(', ');
+
+    return '<div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:16px;'+
+      'border-left:3px solid '+(o.status==='delivered'?'var(--green)':o.status==='pending'?'var(--orange)':'var(--border)')+'">' +
+
+      // Header
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">'+
+        '<div style="font-weight:700;color:var(--navy);">'+(o.hamperEmoji||'🎁')+' '+o.hamperName+'</div>'+
+        '<span style="'+sm.cls+';padding:3px 10px;border-radius:10px;font-size:.72rem;font-weight:700;">'+sm.label+'</span>'+
+      '</div>'+
+
+      // Details
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:.78rem;margin-bottom:10px;">'+
+        '<div><span style="color:var(--muted);">Order ID</span><br><strong>#'+o.id.slice(-6).toUpperCase()+'</strong></div>'+
+        '<div><span style="color:var(--muted);">সময়</span><br><strong>'+time+'</strong></div>'+
+        '<div><span style="color:var(--muted);">📍 ঠিকানা</span><br><strong>'+o.deliveryAddress+'</strong></div>'+
+        '<div><span style="color:var(--muted);">📞 Phone</span><br><a href="tel:'+o.customerPhone+'" style="color:var(--orange);font-weight:700;">'+o.customerPhone+'</a></div>'+
+        '<div><span style="color:var(--muted);">Base Items</span><br><span style="color:var(--muted);">'+baseItemsText+'</span></div>'+
+        (addOnsText?'<div><span style="color:var(--muted);">Add-ons</span><br><span style="color:var(--orange);">'+addOnsText+'</span></div>':'')+
+        '<div><span style="color:var(--muted);">Payment</span><br><strong>💵 COD</strong></div>'+
+        '<div><span style="color:var(--muted);">মোট</span><br><strong style="color:var(--orange);font-size:1rem;">₹'+o.totalPrice+'</strong></div>'+
+      '</div>'+
+
+      // Actions
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;">'+
+        (o.status==='pending'
+          ? '<button class="btn-sm btn-green" onclick="updateHamperOrder(\''+o.id+'\',\'confirmed\')">✅ Confirm</button>'+
+            '<button class="btn-sm btn-red" onclick="updateHamperOrder(\''+o.id+'\',\'cancelled\')">❌ Cancel</button>'
+          : '')+
+        (o.status==='confirmed'
+          ? '<button class="btn-sm btn-yellow" onclick="updateHamperOrder(\''+o.id+'\',\'preparing\')">🔄 Preparing</button>'
+          : '')+
+        (o.status==='preparing'
+          ? '<button class="btn-sm btn-orange" onclick="updateHamperOrder(\''+o.id+'\',\'delivered\')">📦 Delivered</button>'
+          : '')+
+        '<button class="btn-sm" style="background:#e8f4ff;color:#0984e3;" '+
+          'onclick="sendHamperWhatsApp(\''+o.customerPhone+'\',\''+o.hamperName.replace(/'/g,"\\'")+'\','+o.totalPrice+')">'+
+          '💬 WhatsApp</button>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+function updateHamperOrder(orderId, newStatus){
+  db.collection('hamperOrders').doc(orderId).update({
+    status: newStatus, updatedAt: new Date().toISOString()
+  }).then(function(){
+    var o = allHamperOrders.find(function(x){return x.id===orderId;});
+    if(o) o.status = newStatus;
+    updateHamperOrderStats();
+    renderHamperOrders();
+    showToast('Order '+newStatus+' করা হয়েছে ✅','green');
+  }).catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
+}
+
+function sendHamperWhatsApp(phone, hamperName, total){
+  var msg = '🎁 আপনার DELTA Hamper Order confirm হয়েছে!\n\n'+
+    'Hamper: '+hamperName+'\n'+
+    'মোট: ₹'+total+' (Cash on Delivery)\n\n'+
+    'শীঘ্রই delivery দেওয়া হবে। ধন্যবাদ! 🙏';
+  window.open('https://wa.me/91'+phone.replace(/\D/g,'')+'?text='+encodeURIComponent(msg),'_blank');
+}
+
+// ═══ FESTIVAL MANAGEMENT ═══
+var allFestivalCats = [];
+
+function loadFestivalManagement(){
+  loadFestivalCategories();
+  loadFestivalPendingProducts();
+  loadHampersManagement();
+  // Festival conditions load করো
+  db.collection('cities').doc(CITY).collection('settings').doc('festivalConditions')
+    .get().then(function(doc){
+      if(doc.exists && doc.data().minDiscount){
+        document.getElementById('festCondDiscount').value = doc.data().minDiscount;
+      }
+    }).catch(function(){});
+}
+
+function saveFestivalConditions(){
+  var minDiscount = parseInt(document.getElementById('festCondDiscount').value)||10;
+  db.collection('cities').doc(CITY).collection('settings').doc('festivalConditions')
+    .set({minDiscount: minDiscount, updatedAt: new Date().toISOString()})
+    .then(function(){
+      document.getElementById('festCondStatus').textContent = '✅ সেভ হয়েছে';
+      setTimeout(function(){ document.getElementById('festCondStatus').textContent=''; },3000);
+      showToast('Festival conditions সেভ হয়েছে ✅','green');
+    }).catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
+}
+
+function loadFestivalCategories(){
+  db.collection('cities').doc(CITY).collection('settings').doc('festivalCategories')
+    .get().then(function(doc){
+      allFestivalCats = doc.exists ? (doc.data().festivals||[]) : [];
+      renderFestivalCategories();
+    }).catch(function(e){ showToast('লোড সমস্যা: '+e.message,'red'); });
+}
+
+function renderFestivalCategories(){
+  var wrap = document.getElementById('festivalCatList');
+  if(!allFestivalCats.length){
+    wrap.innerHTML = '<div style="color:var(--muted);font-size:.82rem;padding:12px 0;">এখনো কোনো festival তৈরি হয়নি।</div>';
+    return;
+  }
+  wrap.innerHTML = allFestivalCats.map(function(f, idx){
+    var bg = 'linear-gradient(135deg,'+f.color1+','+f.color2+')';
+    var daysLeft = f.date ? Math.max(0,Math.ceil((new Date(f.date)-new Date())/86400000)) : '—';
+    return '<div style="background:#fff;border:1px solid var(--border);border-radius:12px;margin-bottom:8px;overflow:hidden;">'+
+      // Main row
+      '<div style="display:flex;align-items:center;gap:12px;padding:12px;">'+
+        '<div style="width:44px;height:44px;border-radius:10px;background:'+bg+';display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;">'+f.emoji+'</div>'+
+        '<div style="flex:1;">'+
+          '<div style="font-size:.88rem;font-weight:700;color:var(--navy);">'+f.name+'</div>'+
+          '<div style="font-size:.72rem;color:var(--muted);">Key: '+f.key+' · '+f.date+(daysLeft!=='—'?' · '+daysLeft+' দিন বাকি':'')+'</div>'+
+        '</div>'+
+        '<div style="display:flex;gap:6px;">'+
+          '<button class="btn-sm" style="background:#e8f4ff;color:#0984e3;font-size:.72rem;" onclick="toggleFestivalEditForm('+idx+')">✏️ Edit</button>'+
+          '<button class="btn-sm '+(f.active?'btn-green':'')+'" style="font-size:.72rem;" onclick="toggleFestivalActive('+idx+')">'+
+            (f.active?'✅ Active':'⏸ Inactive')+'</button>'+
+          '<button class="btn-sm btn-red" style="font-size:.72rem;" onclick="deleteFestivalCategory('+idx+')">🗑️</button>'+
+        '</div>'+
+      '</div>'+
+      // Inline Edit Form (hidden by default)
+      '<div id="festEditForm_'+idx+'" style="display:none;background:var(--sand);padding:14px;border-top:1px solid var(--border);">'+
+        '<div style="font-size:.75rem;font-weight:700;color:var(--navy);margin-bottom:10px;">✏️ Edit করুন</div>'+
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">'+
+          '<div><label style="font-size:.68rem;color:var(--muted);">নাম</label>'+
+            '<input class="form-input" id="festEdit_name_'+idx+'" value="'+f.name.replace(/"/g,'&quot;')+'" style="margin-top:3px;"></div>'+
+          '<div><label style="font-size:.68rem;color:var(--muted);">Emoji</label>'+
+            '<input class="form-input" id="festEdit_emoji_'+idx+'" value="'+f.emoji+'" maxlength="4" style="margin-top:3px;"></div>'+
+          '<div><label style="font-size:.68rem;color:var(--muted);">তারিখ</label>'+
+            '<input type="date" class="form-input" id="festEdit_date_'+idx+'" value="'+f.date+'" style="margin-top:3px;"></div>'+
+          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">'+
+            '<div><label style="font-size:.68rem;color:var(--muted);">Color 1</label>'+
+              '<input type="color" class="form-input" id="festEdit_c1_'+idx+'" value="'+f.color1+'" style="margin-top:3px;height:38px;padding:3px;"></div>'+
+            '<div><label style="font-size:.68rem;color:var(--muted);">Color 2</label>'+
+              '<input type="color" class="form-input" id="festEdit_c2_'+idx+'" value="'+f.color2+'" style="margin-top:3px;height:38px;padding:3px;"></div>'+
+          '</div>'+
+        '</div>'+
+        '<div style="display:flex;gap:8px;">'+
+          '<button class="btn-sm btn-orange" onclick="saveFestivalEdit('+idx+')">💾 Save</button>'+
+          '<button class="btn-sm" style="background:var(--border);color:var(--muted);" onclick="toggleFestivalEditForm('+idx+')">বাতিল</button>'+
+        '</div>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+function toggleFestivalEditForm(idx){
+  var form = document.getElementById('festEditForm_'+idx);
+  if(form) form.style.display = form.style.display==='none' ? 'block' : 'none';
+}
+
+function saveFestivalEdit(idx){
+  var name = document.getElementById('festEdit_name_'+idx).value.trim();
+  var emoji = document.getElementById('festEdit_emoji_'+idx).value.trim()||'🎊';
+  var date = document.getElementById('festEdit_date_'+idx).value;
+  var color1 = document.getElementById('festEdit_c1_'+idx).value;
+  var color2 = document.getElementById('festEdit_c2_'+idx).value;
+
+  if(!name){ showToast('নাম দিন','red'); return; }
+
+  allFestivalCats[idx] = Object.assign({}, allFestivalCats[idx], {
+    name:name, emoji:emoji, date:date, color1:color1, color2:color2,
+    updatedAt: new Date().toISOString()
+  });
+
+  db.collection('cities').doc(CITY).collection('settings').doc('festivalCategories')
+    .set({festivals: allFestivalCats, updatedAt: new Date().toISOString()})
+    .then(function(){
+      renderFestivalCategories();
+      showToast(name+' update হয়েছে ✅','green');
+    }).catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
+}
+
+function saveFestivalCategory(){
+  var name = document.getElementById('festCatName').value.trim();
+  var key = document.getElementById('festCatKey').value.trim().replace(/\s+/g,'_').toLowerCase();
+  var date = document.getElementById('festCatDate').value;
+  var emoji = document.getElementById('festCatEmoji').value.trim()||'🎊';
+  var color1 = document.getElementById('festCatColor1').value;
+  var color2 = document.getElementById('festCatColor2').value;
+
+  if(!name||!key){ showToast('নাম এবং key দিন','red'); return; }
+  if(allFestivalCats.find(function(f){return f.key===key;})){
+    showToast('এই key আগেই আছে','red'); return;
+  }
+
+  allFestivalCats.push({name:name, key:key, date:date, emoji:emoji, color1:color1, color2:color2, active:true, createdAt:new Date().toISOString()});
+
+  db.collection('cities').doc(CITY).collection('settings').doc('festivalCategories')
+    .set({festivals: allFestivalCats, updatedAt: new Date().toISOString()})
+    .then(function(){
+      renderFestivalCategories();
+      // Form clear করো
+      ['festCatName','festCatKey','festCatEmoji'].forEach(function(id){ document.getElementById(id).value=''; });
+      document.getElementById('festCatStatus').textContent = '✅ Festival তৈরি হয়েছে';
+      setTimeout(function(){ document.getElementById('festCatStatus').textContent=''; },3000);
+      showToast(name+' festival তৈরি হয়েছে ✅','green');
+    }).catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
+}
+
+function toggleFestivalActive(idx){
+  allFestivalCats[idx].active = !allFestivalCats[idx].active;
+  db.collection('cities').doc(CITY).collection('settings').doc('festivalCategories')
+    .set({festivals: allFestivalCats, updatedAt: new Date().toISOString()})
+    .then(function(){ renderFestivalCategories(); showToast('Festival status update হয়েছে ✅','green'); })
+    .catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
+}
+
+function deleteFestivalCategory(idx){
+  var f = allFestivalCats[idx];
+  if(!confirm('"'+f.name+'" delete করবেন? Festival page এ আর দেখাবে না।')) return;
+  allFestivalCats.splice(idx,1);
+  db.collection('cities').doc(CITY).collection('settings').doc('festivalCategories')
+    .set({festivals: allFestivalCats, updatedAt: new Date().toISOString()})
+    .then(function(){ renderFestivalCategories(); showToast('Festival delete হয়েছে','green'); })
+    .catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
+}
+
+function loadFestivalPendingProducts(){
+  db.collection('cities').doc(CITY).collection('festivalRequests')
+    .where('status','==','pending').get()
+    .then(function(snap){
+      var list = [];
+      snap.forEach(function(d){ list.push(Object.assign({id:d.id},d.data())); });
+      list.sort(function(a,b){ return new Date(b.submittedAt||0)-new Date(a.submittedAt||0); });
+      renderFestivalPendingProducts(list);
+    }).catch(function(e){ console.warn('Festival requests load error:', e.message); });
+}
+
+function renderFestivalPendingProducts(list){
+  var wrap = document.getElementById('festPendingList');
+  var countEl = document.getElementById('festPendingCount');
+  if(countEl) countEl.textContent = list.length ? list.length+'টি pending' : '';
+  if(!list.length){
+    wrap.innerHTML = '<div style="color:var(--muted);font-size:.82rem;padding:12px 0;">কোনো pending request নেই।</div>';
+    return;
+  }
+  wrap.innerHTML = list.map(function(r){
+    var img = r.imageUrl||'';
+    return '<div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px;display:flex;gap:12px;margin-bottom:10px;align-items:flex-start;">'+
+      (img?'<img src="'+img+'" style="width:60px;height:60px;object-fit:cover;border-radius:10px;flex-shrink:0;">':
+        '<div style="width:60px;height:60px;background:var(--sand);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;">🛍️</div>')+
+      '<div style="flex:1;min-width:0;">'+
+        '<div style="font-size:.88rem;font-weight:700;color:var(--navy);">'+r.productName+'</div>'+
+        '<div style="font-size:.72rem;color:var(--muted);margin-bottom:4px;">🏪 '+r.shopName+' · 🎊 '+r.festivalName+'</div>'+
+        '<div style="font-size:.8rem;">₹'+r.price+
+          (r.festivalDiscount?' · <span style="color:var(--green);">'+r.festivalDiscount+'% OFF</span>':'')+
+        '</div>'+
+        (r.note?'<div style="font-size:.72rem;color:var(--muted);margin-top:4px;font-style:italic;">Seller: "'+r.note+'"</div>':'')+
+      '</div>'+
+      '<div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">'+
+        '<button class="btn-sm btn-green" style="font-size:.72rem;" onclick="approveFestivalProduct(\''+r.id+'\',\''+r.shopId+'\',\''+r.productId+'\',\''+r.festivalKey+'\')">✅ Approve</button>'+
+        '<button class="btn-sm btn-red" style="font-size:.72rem;" onclick="rejectFestivalProduct(\''+r.id+'\',\''+r.shopId+'\')">❌ Reject</button>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+function approveFestivalProduct(reqId, shopId, productId, festivalKey){
+  // Product এ festivalTag set করো
+  var batch = db.batch();
+  var productRef = db.collection('cities').doc(CITY).collection('sellers').doc(shopId).collection('products').doc(productId);
+  batch.update(productRef, {festivalTag: festivalKey, festivalApproved: true});
+  // Request status update করো
+  var reqRef = db.collection('cities').doc(CITY).collection('festivalRequests').doc(reqId);
+  batch.update(reqRef, {status:'approved', reviewedAt: new Date().toISOString()});
+  // Seller notification
+  var sellerRef = db.collection('cities').doc(CITY).collection('sellers').doc(shopId);
+  batch.update(sellerRef, {lastAdminNotification:{
+    type:'festival_approved',
+    message:'আপনার পণ্য Festival এ অনুমোদিত হয়েছে! 🎊 এখন festival page এ দেখাবে।',
+    at: new Date().toISOString(), read: false
+  }});
+  batch.commit().then(function(){
+    showToast('Product festival এ approved ✅','green');
+    loadFestivalPendingProducts();
+  }).catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
+}
+
+function rejectFestivalProduct(reqId, shopId){
+  var reason = prompt('Reject করার কারণ লিখুন (Seller কে জানানো হবে):');
+  if(reason===null) return;
+  var batch = db.batch();
+  var reqRef = db.collection('cities').doc(CITY).collection('festivalRequests').doc(reqId);
+  batch.update(reqRef, {status:'rejected', rejectReason: reason||'', reviewedAt: new Date().toISOString()});
+  var sellerRef = db.collection('cities').doc(CITY).collection('sellers').doc(shopId);
+  batch.update(sellerRef, {lastAdminNotification:{
+    type:'festival_rejected',
+    message:'আমরা দুঃখিত, আপনার পণ্য festival এ listing হবে না।'+(reason?' কারণ: '+reason:'')+' অন্য পণ্য listing করুন। ধন্যবাদ।',
+    at: new Date().toISOString(), read: false
+  }});
+  batch.commit().then(function(){
+    showToast('Request reject হয়েছে','green');
+    loadFestivalPendingProducts();
+  }).catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
+}
+
+// ═══ HAMPERS MANAGEMENT ═══
+var allHampers = [];
+var hamperBaseItems = []; // temp array for current hamper being created
+var hamperAddOns = []; // temp array for add-on productIds
+var editingHamperId = null;
+
+function loadHampersManagement(){
+  // Festival dropdown populate করো
+  var sel = document.getElementById('hFestivalTag');
+  if(sel){
+    sel.innerHTML = '<option value="">-- Festival select করুন --</option>';
+    allFestivalCats.forEach(function(f){
+      var opt = document.createElement('option');
+      opt.value = f.key;
+      opt.textContent = f.emoji+' '+f.name;
+      sel.appendChild(opt);
+    });
+  }
+
+  // Add-on products dropdown populate করো
+  var addOnSel = document.getElementById('hAddOnSelect');
+  if(addOnSel){
+    addOnSel.innerHTML = '<option value="">-- Product select করুন --</option>';
+    allSellers.forEach(function(s){
+      db.collection('cities').doc(CITY).collection('sellers').doc(s.id)
+        .collection('products').get().then(function(snap){
+          snap.forEach(function(pd){
+            var p = pd.data();
+            if(p.adminRemoved) return;
+            var opt = document.createElement('option');
+            opt.value = pd.id+'|'+s.id;
+            opt.textContent = (p.nameBn||p.name||'পণ্য')+' — ₹'+(p.price||0)+' ('+s.shopName+')';
+            addOnSel.appendChild(opt);
+          });
+        });
+    });
+  }
+
+  // Existing hampers load করো
+  db.collection('hampers').orderBy('createdAt','desc').get()
+    .then(function(snap){
+      allHampers = [];
+      snap.forEach(function(d){ allHampers.push(Object.assign({id:d.id},d.data())); });
+      renderHampersList();
+    }).catch(function(){ renderHampersList(); });
+}
+
+function addHamperBaseItem(){
+  var name = document.getElementById('hBaseItemName').value.trim();
+  var seller = document.getElementById('hBaseItemSeller').value.trim();
+  if(!name){ showToast('Item নাম দিন','red'); return; }
+  hamperBaseItems.push({name:name, sellerName:seller||'DELTA'});
+  document.getElementById('hBaseItemName').value='';
+  document.getElementById('hBaseItemSeller').value='';
+  renderHamperBaseItems();
+}
+
+function renderHamperBaseItems(){
+  var wrap = document.getElementById('hBaseItems');
+  if(!hamperBaseItems.length){ wrap.innerHTML=''; return; }
+  wrap.innerHTML = hamperBaseItems.map(function(item, idx){
+    return '<div style="display:flex;align-items:center;gap:8px;background:#fff;padding:8px 10px;border-radius:8px;">'+
+      '<span style="flex:1;font-size:.78rem;">📦 '+item.name+' <span style="color:var(--muted);">('+item.sellerName+')</span></span>'+
+      '<button onclick="removeHamperBaseItem('+idx+')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:1rem;">×</button>'+
+    '</div>';
+  }).join('');
+}
+
+function removeHamperBaseItem(idx){
+  hamperBaseItems.splice(idx,1);
+  renderHamperBaseItems();
+}
+
+function addHamperAddOn(){
+  var val = document.getElementById('hAddOnSelect').value;
+  if(!val){ showToast('Product select করুন','red'); return; }
+  var parts = val.split('|');
+  var productId = parts[0]; var shopId = parts[1];
+  if(hamperAddOns.find(function(a){ return a.productId===productId; })){
+    showToast('এই product আগেই যোগ হয়েছে','red'); return;
+  }
+  var selEl = document.getElementById('hAddOnSelect');
+  var optText = selEl.options[selEl.selectedIndex].text;
+  hamperAddOns.push({productId:productId, shopId:shopId, label:optText});
+  renderHamperAddOns();
+  document.getElementById('hAddOnSelect').value='';
+}
+
+function renderHamperAddOns(){
+  var wrap = document.getElementById('hAddOnList');
+  if(!hamperAddOns.length){ wrap.innerHTML=''; return; }
+  wrap.innerHTML = hamperAddOns.map(function(a, idx){
+    return '<div style="display:flex;align-items:center;gap:8px;background:#fff;padding:8px 10px;border-radius:8px;">'+
+      '<span style="flex:1;font-size:.78rem;">✨ '+a.label+'</span>'+
+      '<button onclick="removeHamperAddOn('+idx+')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:1rem;">×</button>'+
+    '</div>';
+  }).join('');
+}
+
+function removeHamperAddOn(idx){
+  hamperAddOns.splice(idx,1);
+  renderHamperAddOns();
+}
+
+function saveHamper(){
+  var name = document.getElementById('hName').value.trim();
+  var price = parseInt(document.getElementById('hPrice').value)||0;
+  var festivalTag = document.getElementById('hFestivalTag').value;
+  var stock = parseInt(document.getElementById('hStock').value)||0;
+  var emoji = document.getElementById('hEmoji').value.trim()||'🎁';
+  var desc = document.getElementById('hDesc').value.trim();
+
+  if(!name){ showToast('Hamper নাম দিন','red'); return; }
+  if(!price){ showToast('দাম দিন','red'); return; }
+  if(!festivalTag){ showToast('Festival select করুন','red'); return; }
+  if(!hamperBaseItems.length){ showToast('অন্তত একটা Base Item দিন','red'); return; }
+
+  var isImg = emoji.startsWith('http');
+  var data = {
+    name: name, price: price, festivalTag: festivalTag,
+    stock: stock, soldCount: 0,
+    imageUrl: isImg ? emoji : '', emoji: isImg ? '🎁' : emoji,
+    description: desc,
+    baseItems: hamperBaseItems,
+    addOns: hamperAddOns,
+    active: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+
+  var statusEl = document.getElementById('hamperSaveStatus');
+  var prom = editingHamperId
+    ? db.collection('hampers').doc(editingHamperId).update(data)
+    : db.collection('hampers').add(data);
+
+  prom.then(function(){
+    hamperBaseItems=[]; hamperAddOns=[]; editingHamperId=null;
+    ['hName','hPrice','hEmoji','hDesc','hStock'].forEach(function(id){ document.getElementById(id).value=''; });
+    document.getElementById('hFestivalTag').value='';
+    renderHamperBaseItems(); renderHamperAddOns();
+    if(statusEl) statusEl.textContent='✅ Hamper সেভ হয়েছে';
+    setTimeout(function(){ if(statusEl) statusEl.textContent=''; },3000);
+    loadHampersManagement();
+    showToast(name+' hamper সেভ হয়েছে ✅','green');
+  }).catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
+}
+
+function renderHampersList(){
+  var wrap = document.getElementById('hampersList');
+  if(!allHampers.length){
+    wrap.innerHTML='<div style="color:var(--muted);font-size:.82rem;">এখনো কোনো hamper নেই।</div>';
+    return;
+  }
+  wrap.innerHTML = allHampers.map(function(h){
+    var festName = allFestivalCats.find(function(f){return f.key===h.festivalTag;});
+    return '<div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:8px;display:flex;gap:12px;align-items:flex-start;">'+
+      '<div style="width:52px;height:52px;border-radius:10px;background:linear-gradient(135deg,#FDF0DC,#F5DDB0);'+
+        'display:flex;align-items:center;justify-content:center;font-size:'+(h.imageUrl?'0':'1.6rem')+';flex-shrink:0;overflow:hidden;">'+
+        (h.imageUrl?'<img src="'+h.imageUrl+'" style="width:100%;height:100%;object-fit:cover;">':h.emoji||'🎁')+'</div>'+
+      '<div style="flex:1;min-width:0;">'+
+        '<div style="font-size:.88rem;font-weight:700;color:var(--navy);">'+h.name+'</div>'+
+        '<div style="font-size:.72rem;color:var(--muted);margin-bottom:4px;">'+
+          '₹'+h.price+' · 🎊 '+(festName?festName.name:h.festivalTag)+
+          ' · Stock: '+h.stock+' · Sold: '+(h.soldCount||0)+
+        '</div>'+
+        '<div style="font-size:.7rem;color:var(--muted);">'+
+          '📦 Base: '+(h.baseItems||[]).map(function(i){return i.name;}).join(', ')+'</div>'+
+        (h.addOns&&h.addOns.length?'<div style="font-size:.7rem;color:var(--orange);">✨ Add-ons: '+h.addOns.length+'টি</div>':'')+
+      '</div>'+
+      '<div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">'+
+        '<button class="btn-sm" style="background:#e8f4ff;color:#0984e3;font-size:.72rem;" onclick="editHamper(\''+h.id+'\')">✏️ Edit</button>'+
+        '<button class="btn-sm '+(h.active?'btn-green':'')+'" style="font-size:.72rem;" onclick="toggleHamperActive(\''+h.id+'\','+(h.active?'false':'true')+')">'+
+          (h.active?'✅ Active':'⏸ Inactive')+'</button>'+
+        '<button class="btn-sm btn-red" style="font-size:.72rem;" onclick="deleteHamper(\''+h.id+'\')">🗑️</button>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+function editHamper(id){
+  var h = allHampers.find(function(x){ return x.id===id; });
+  if(!h) return;
+  editingHamperId = id;
+  hamperBaseItems = (h.baseItems||[]).slice();
+  hamperAddOns = (h.addOns||[]).slice();
+  document.getElementById('hName').value = h.name||'';
+  document.getElementById('hPrice').value = h.price||'';
+  document.getElementById('hFestivalTag').value = h.festivalTag||'';
+  document.getElementById('hStock').value = h.stock||'';
+  document.getElementById('hEmoji').value = h.imageUrl||h.emoji||'🎁';
+  document.getElementById('hDesc').value = h.description||'';
+  renderHamperBaseItems(); renderHamperAddOns();
+  document.getElementById('hName').scrollIntoView({behavior:'smooth'});
+  showToast('Hamper load হয়েছে — edit করে Save করুন','green');
+}
+
+function toggleHamperActive(id, active){
+  db.collection('hampers').doc(id).update({active:active, updatedAt:new Date().toISOString()})
+    .then(function(){
+      var h = allHampers.find(function(x){return x.id===id;});
+      if(h) h.active=active;
+      renderHampersList();
+      showToast('Hamper '+(active?'active':'inactive')+' হয়েছে ✅','green');
+    }).catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
+}
+
+function deleteHamper(id){
+  if(!confirm('এই hamper delete করবেন?')) return;
+  db.collection('hampers').doc(id).delete()
+    .then(function(){
+      allHampers = allHampers.filter(function(h){return h.id!==id;});
+      renderHampersList();
+      showToast('Hamper delete হয়েছে','green');
+    }).catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
+}
+
+// CSV Export শেষে
   var blob = new Blob([csv],{type:'text/csv'});
   var a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
