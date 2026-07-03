@@ -234,6 +234,22 @@ button,input,select{font-family:'DM Sans',sans-serif;}
     </div>
 
     <div class="card-grid" id="ordersListWrap"></div>
+
+    <!-- HAMPER ORDERS SECTION -->
+    <div style="margin-top:28px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+        <div class="sec-title">🎁 Hamper Orders</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button class="filter-pill active" id="hoPillAll" onclick="setHamperFilter('all',this)">সব</button>
+          <button class="filter-pill" onclick="setHamperFilter('pending',this)">⏳ Pending</button>
+          <button class="filter-pill" onclick="setHamperFilter('confirmed',this)">✅ Confirmed</button>
+          <button class="filter-pill" onclick="setHamperFilter('delivered',this)">📦 Delivered</button>
+        </div>
+      </div>
+      <div id="hamperOrdersWrap" style="display:flex;flex-direction:column;gap:10px;">
+        <div style="color:var(--muted);font-size:.85rem;text-align:center;padding:20px;">লোড হচ্ছে...</div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -288,6 +304,7 @@ function initFirebase(){
             hideLoading(); showApp();
             loadPerKmRate();
             loadAllOrders();
+            loadHamperOrdersOM();
           } else {
             auth.signOut(); hideLoading(); showAuth();
             var err=document.getElementById('loginErr');
@@ -309,6 +326,100 @@ function initFirebase(){
 
 function hideLoading(){ document.getElementById('loadingScreen').style.display='none'; }
 function showAuth(){ document.getElementById('authScreen').style.display='flex'; document.getElementById('appScreen').style.display='none'; }
+// ═══ HAMPER ORDERS ═══
+var allHamperOrdersOM = [];
+var hamperFilterOM = 'all';
+
+function loadHamperOrdersOM(){
+  db.collection('hamperOrders').orderBy('createdAt','desc').get()
+    .then(function(snap){
+      allHamperOrdersOM = [];
+      snap.forEach(function(d){ allHamperOrdersOM.push(Object.assign({id:d.id},d.data())); });
+      renderHamperOrdersOM();
+    }).catch(function(e){ console.warn('Hamper orders load error:', e.message); });
+}
+
+function setHamperFilter(filter, btn){
+  hamperFilterOM = filter;
+  document.querySelectorAll('#hamperOrdersWrap ~ * .filter-pill, #hamperOrdersWrap').forEach(function(){});
+  // Filter pills update
+  document.querySelectorAll('[onclick*="setHamperFilter"]').forEach(function(b){
+    b.classList.remove('active');
+  });
+  if(btn) btn.classList.add('active');
+  renderHamperOrdersOM();
+}
+
+function renderHamperOrdersOM(){
+  var wrap = document.getElementById('hamperOrdersWrap');
+  var list = hamperFilterOM==='all'
+    ? allHamperOrdersOM
+    : allHamperOrdersOM.filter(function(o){ return o.status===hamperFilterOM; });
+
+  if(!list.length){
+    wrap.innerHTML='<div style="color:var(--muted);font-size:.82rem;text-align:center;padding:20px;">কোনো hamper order নেই।</div>';
+    return;
+  }
+
+  var statusMap={
+    pending:{label:'⏳ Pending',bg:'#fff4ec',color:'var(--orange)'},
+    confirmed:{label:'✅ Confirmed',bg:'var(--green2)',color:'var(--green)'},
+    preparing:{label:'🔄 Preparing',bg:'#e8f4ff',color:'#0984e3'},
+    delivered:{label:'📦 Delivered',bg:'var(--green2)',color:'var(--green)'},
+    cancelled:{label:'❌ Cancelled',bg:'var(--red2)',color:'var(--red)'}
+  };
+
+  wrap.innerHTML = list.map(function(o){
+    var sm = statusMap[o.status]||statusMap.pending;
+    var time = o.createdAt ? new Date(o.createdAt).toLocaleString('bn-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) : '—';
+    var addOnsText = (o.selectedAddOns||[]).map(function(a){return a.name;}).join(', ');
+
+    return '<div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px;'+
+      'border-left:3px solid '+(o.status==='delivered'?'var(--green)':o.status==='pending'?'var(--orange)':'var(--border)')+'">' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">'+
+        '<div style="font-weight:700;color:var(--navy);font-size:.9rem;">'+(o.hamperEmoji||'🎁')+' '+o.hamperName+'</div>'+
+        '<span style="background:'+sm.bg+';color:'+sm.color+';padding:3px 10px;border-radius:10px;font-size:.72rem;font-weight:700;">'+sm.label+'</span>'+
+      '</div>'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:.78rem;margin-bottom:10px;">'+
+        '<div><span style="color:var(--muted);">Order ID</span><br><strong>#'+o.id.slice(-6).toUpperCase()+'</strong></div>'+
+        '<div><span style="color:var(--muted);">সময়</span><br><strong>'+time+'</strong></div>'+
+        '<div><span style="color:var(--muted);">📍 ঠিকানা</span><br><strong>'+o.deliveryAddress+'</strong></div>'+
+        '<div><span style="color:var(--muted);">📞 Phone</span><br>'+
+          '<a href="tel:'+o.customerPhone+'" style="color:var(--orange);font-weight:700;">'+o.customerPhone+'</a></div>'+
+        (addOnsText?'<div style="grid-column:1/-1;"><span style="color:var(--muted);">Add-ons</span><br><span style="color:var(--orange);">'+addOnsText+'</span></div>':'')+
+        '<div><span style="color:var(--muted);">মোট</span><br><strong style="color:var(--orange);">₹'+o.totalPrice+'</strong></div>'+
+        '<div><span style="color:var(--muted);">Payment</span><br><strong>💵 COD</strong></div>'+
+      '</div>'+
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;">'+
+        (o.status==='pending'
+          ? '<button class="btn-sm" style="background:var(--green2);color:var(--green);" onclick="updateHamperOrderOM(\''+o.id+'\',\'confirmed\')">✅ Confirm</button>'+
+            '<button class="btn-sm" style="background:var(--red2);color:var(--red);" onclick="updateHamperOrderOM(\''+o.id+'\',\'cancelled\')">❌ Cancel</button>'
+          : '')+
+        (o.status==='confirmed'
+          ? '<button class="btn-sm" style="background:#e8f4ff;color:#0984e3;" onclick="updateHamperOrderOM(\''+o.id+'\',\'preparing\')">🔄 Preparing</button>'
+          : '')+
+        (o.status==='preparing'
+          ? '<button class="btn-sm" style="background:var(--green2);color:var(--green);" onclick="updateHamperOrderOM(\''+o.id+'\',\'delivered\')">📦 Delivered</button>'
+          : '')+
+        '<button class="btn-sm" style="background:#e8f0fe;color:#3f51b5;" '+
+          'onclick="window.open(\'https://wa.me/91'+'"+(o.customerPhone||"").replace(/\\D/g,"")+"\'?text=\'🎁 আপনার DELTA Hamper Order (₹'+o.totalPrice+') শীঘ্রই deliver করা হবে। ধন্যবাদ!\',\'_blank\')">'+
+          '💬 WhatsApp</button>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+function updateHamperOrderOM(orderId, newStatus){
+  db.collection('hamperOrders').doc(orderId).update({
+    status: newStatus, updatedAt: new Date().toISOString()
+  }).then(function(){
+    var o = allHamperOrdersOM.find(function(x){return x.id===orderId;});
+    if(o) o.status = newStatus;
+    renderHamperOrdersOM();
+    showToast('Hamper order '+newStatus+' ✅');
+  }).catch(function(e){ showToast('সমস্যা: '+e.message); });
+}
+
 function showApp(){ document.getElementById('authScreen').style.display='none'; document.getElementById('appScreen').style.display='block'; }
 function showToast(msg,type){
   var e=document.getElementById('toastEl'); e.textContent=msg;
