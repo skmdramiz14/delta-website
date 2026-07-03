@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Festival Hampers — DELTA</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 :root{
@@ -162,12 +164,8 @@ body.lang-bn .lang-en{display:none!important;}
 </div>
 
 <!-- FILTER BAR -->
-<div class="filter-bar">
+<div class="filter-bar" id="filterBar">
   <div class="fpill active" onclick="filterHamper('all',this)">🎊 <span class="lang-bn">সব উৎসব</span><span class="lang-en">All Festivals</span></div>
-  <div class="fpill" onclick="filterHamper('durga_puja',this)">🪔 <span class="lang-bn">দুর্গাপূজা</span><span class="lang-en">Durga Puja</span></div>
-  <div class="fpill" onclick="filterHamper('eid',this)">🌙 <span class="lang-bn">ঈদ</span><span class="lang-en">Eid</span></div>
-  <div class="fpill" onclick="filterHamper('poila_boishakh',this)">🌸 <span class="lang-bn">পহেলা বৈশাখ</span><span class="lang-en">Poila Boishakh</span></div>
-  <div class="fpill" onclick="filterHamper('kali_puja',this)">🌺 <span class="lang-bn">কালীপূজা</span><span class="lang-en">Kali Puja</span></div>
 </div>
 
 <!-- MAIN -->
@@ -176,208 +174,11 @@ body.lang-bn .lang-en{display:none!important;}
   <div class="section-title"><span class="lang-bn">সব হ্যাম্পার</span><span class="lang-en">All Hampers</span></div>
 
   <div class="hamper-grid" id="hamperGrid">
-
-    <!-- 1: Durga Puja Grand Hamper -->
-    <div class="hap-card" data-festival="durga_puja">
-      <div class="hap-banner" style="background:linear-gradient(135deg,#b5451b,#f07018,#e8a030);">
-        <div class="hap-tags">
-          <span class="hap-tag festival">🪔 <span class="lang-bn">দুর্গাপূজা</span><span class="lang-en">Festival</span></span>
-          <span class="hap-tag gift">🎁 <span class="lang-bn">গিফটযোগ্য</span><span class="lang-en">Giftable</span></span>
-        </div>
-        <div class="hap-art">🪔</div>
-        <div class="hap-timer"><span class="hap-timer-dot"></span><span class="lang-bn">শীঘ্রই আসছে</span><span class="lang-en">Hurry! Offer ends in</span></div>
-      </div>
-      <div class="hap-body">
-        <div class="hap-festival-label"><span class="lang-bn">দুর্গাপূজা</span><span class="lang-en">DURGA PUJA</span></div>
-        <div class="hap-name"><span class="lang-bn">পূজা গ্র্যান্ড হ্যাম্পার</span><span class="lang-en">Durga Puja Grand Hamper</span></div>
-        <div class="hap-desc"><span class="lang-bn">মন্তেশ্বরের সেরা কৃষকদের তাজা পণ্য দিয়ে তৈরি পরিবারের পূজার উপহার বাক্স।</span><span class="lang-en">Celebrate Maa Durga with the freshest produce from our Manteswar farmers. A complete festive basket for your family puja and feast.</span></div>
-        <div class="hap-items">
-          <span class="hap-item">🌾 <span class="lang-bn">গোবিন্দভোগ চাল</span><span class="lang-en">Gobindobhog Rice</span></span>
-          <span class="hap-item">🍌 <span class="lang-bn">মিষ্টি কলা</span><span class="lang-en">Sweet Bananas</span></span>
-          <span class="hap-item">🥥 <span class="lang-bn">নারকেল</span><span class="lang-en">Coconut</span></span>
-          <span class="hap-item">🫒 <span class="lang-bn">সরিষার তেল</span><span class="lang-en">Mustard Oil</span></span>
-          <span class="hap-item hap-more">+4 <span class="lang-bn">আরও</span><span class="lang-en">more</span></span>
-        </div>
-        <div class="hap-price-row">
-          <div class="hap-prices"><span class="hap-price">₹699</span><span class="hap-orig">₹920</span><span class="hap-off">24% off</span></div>
-          <div class="hap-sold">🔥 <span class="lang-bn">৩৪ টি বিক্রি</span><span class="lang-en">34 sold</span></div>
-        </div>
-        <div class="hap-stock-bar"><div class="hap-stock-fill" style="width:68%;"></div></div>
-        <div class="hap-stock-label"><span class="lang-bn">মাত্র ১৬টি বাকি</span><span class="lang-en">Only 16 left</span></div>
-        <div class="hap-actions">
-          <button class="hap-preview-btn" onclick="showToast('👁️ Preview coming soon!')">👁️</button>
-          <button class="hap-add-btn" onclick="showToast(currentLang==='bn'?'পূজা হ্যাম্পার শীঘ্রই অর্ডার করা যাবে! 🎁':'Puja Hamper ordering coming soon! 🎁','green')">🛒 <span class="lang-bn">যোগ করুন</span><span class="lang-en">Add</span></button>
-        </div>
-      </div>
+    <!-- Dynamic cards load হবে Firestore থেকে -->
+    <div style="grid-column:1/-1;text-align:center;padding:40px 20px;color:var(--muted);">
+      <div style="font-size:2rem;margin-bottom:8px;">🎁</div>
+      <div style="font-size:.88rem;">লোড হচ্ছে...</div>
     </div>
-
-    <!-- 2: Puja Mini Basket -->
-    <div class="hap-card" data-festival="durga_puja">
-      <div class="hap-banner" style="background:linear-gradient(135deg,#c0392b,#e74c3c,#f39c12);">
-        <div class="hap-tags">
-          <span class="hap-tag festival">🪔 <span class="lang-bn">দুর্গাপূজা</span><span class="lang-en">Festival</span></span>
-          <span class="hap-tag gift">🎁 <span class="lang-bn">গিফট</span><span class="lang-en">Gift</span></span>
-        </div>
-        <div class="hap-art">🌸</div>
-        <div class="hap-timer"><span class="hap-timer-dot"></span><span class="lang-bn">শীঘ্রই আসছে</span><span class="lang-en">Hurry! Offer ends in</span></div>
-      </div>
-      <div class="hap-body">
-        <div class="hap-festival-label"><span class="lang-bn">দুর্গাপূজা</span><span class="lang-en">DURGA PUJA</span></div>
-        <div class="hap-name"><span class="lang-bn">পূজা মিনি বাস্কেট</span><span class="lang-en">Puja Mini Basket</span></div>
-        <div class="hap-desc"><span class="lang-bn">প্রতিবেশী বা ছোট পরিবারের জন্য চিন্তাশীল ছোট উপহার বাস্কেট — পূজায় উপহার দেওয়ার জন্য আদর্শ।</span><span class="lang-en">A thoughtful smaller hamper — perfect as a gift for neighbours or for a small puja at home.</span></div>
-        <div class="hap-items">
-          <span class="hap-item">🌾 <span class="lang-bn">গোবিন্দভোগ চাল</span><span class="lang-en">Gobindobhog Rice</span></span>
-          <span class="hap-item">🍌 <span class="lang-bn">কলা</span><span class="lang-en">Bananas</span></span>
-          <span class="hap-item">🫒 <span class="lang-bn">সরিষার তেল</span><span class="lang-en">Mustard Oil</span></span>
-          <span class="hap-item">🌿 <span class="lang-bn">হলুদ</span><span class="lang-en">Turmeric</span></span>
-          <span class="hap-item hap-more">+1 <span class="lang-bn">আরও</span><span class="lang-en">more</span></span>
-        </div>
-        <div class="hap-price-row">
-          <div class="hap-prices"><span class="hap-price">₹399</span><span class="hap-orig">₹520</span><span class="hap-off">23% off</span></div>
-          <div class="hap-sold">🔥 <span class="lang-bn">১৮ টি বিক্রি</span><span class="lang-en">18 sold</span></div>
-        </div>
-        <div class="hap-stock-bar"><div class="hap-stock-fill" style="width:45%;"></div></div>
-        <div class="hap-stock-label"><span class="lang-bn">মাত্র ২২টি বাকি</span><span class="lang-en">Only 22 left</span></div>
-        <div class="hap-actions">
-          <button class="hap-preview-btn" onclick="showToast('👁️ Preview coming soon!')">👁️</button>
-          <button class="hap-add-btn" onclick="showToast(currentLang==='bn'?'মিনি বাস্কেট শীঘ্রই! 🎁':'Mini Basket coming soon! 🎁','green')">🛒 <span class="lang-bn">যোগ করুন</span><span class="lang-en">Add</span></button>
-        </div>
-      </div>
-    </div>
-
-    <!-- 3: Eid Mubarak Hamper -->
-    <div class="hap-card" data-festival="eid">
-      <div class="hap-banner" style="background:linear-gradient(135deg,#1a237e,#283593,#1565c0);">
-        <div class="hap-tags">
-          <span class="hap-tag eid">🌙 <span class="lang-bn">ঈদ স্পেশাল</span><span class="lang-en">Eid Special</span></span>
-          <span class="hap-tag gift">🎁 <span class="lang-bn">গিফটযোগ্য</span><span class="lang-en">Giftable</span></span>
-        </div>
-        <div class="hap-art">🌙</div>
-        <div class="hap-timer"><span class="hap-timer-dot"></span><span class="lang-bn">শীঘ্রই আসছে</span><span class="lang-en">Hurry! Offer ends in</span></div>
-      </div>
-      <div class="hap-body">
-        <div class="hap-festival-label" style="color:#1565c0;"><span class="lang-bn">ঈদ</span><span class="lang-en">EID</span></div>
-        <div class="hap-name"><span class="lang-bn">ঈদ মোবারক হ্যাম্পার</span><span class="lang-en">Eid Mubarak Hamper</span></div>
-        <div class="hap-desc"><span class="lang-bn">বিরিয়ানি, কোরমা ও শীর খুরমার জন্য তাজা উপকরণ — আমাদের খামার থেকে ভালোবাসা সহ।</span><span class="lang-en">A blessed Eid with the finest fresh ingredients for biryani, korma and sheer khurma — sourced from our farms with love.</span></div>
-        <div class="hap-items">
-          <span class="hap-item">🌾 <span class="lang-bn">গোবিন্দভোগ চাল</span><span class="lang-en">Gobindobhog Rice</span></span>
-          <span class="hap-item">🧅 <span class="lang-bn">পেঁয়াজ</span><span class="lang-en">Onions</span></span>
-          <span class="hap-item">🧄 <span class="lang-bn">রসুন</span><span class="lang-en">Garlic</span></span>
-          <span class="hap-item">🍅 <span class="lang-bn">টমেটো</span><span class="lang-en">Tomatoes</span></span>
-          <span class="hap-item hap-more">+3 <span class="lang-bn">আরও</span><span class="lang-en">more</span></span>
-        </div>
-        <div class="hap-price-row">
-          <div class="hap-prices"><span class="hap-price">₹599</span><span class="hap-orig">₹790</span><span class="hap-off">24% off</span></div>
-          <div class="hap-sold">🔥 <span class="lang-bn">২২ টি বিক্রি</span><span class="lang-en">22 sold</span></div>
-        </div>
-        <div class="hap-stock-bar"><div class="hap-stock-fill" style="width:48%;background:#1565c0;"></div></div>
-        <div class="hap-stock-label"><span class="lang-bn">মাত্র ২৩টি বাকি</span><span class="lang-en">Only 23 left</span></div>
-        <div class="hap-actions">
-          <button class="hap-preview-btn" onclick="showToast('👁️ Preview coming soon!')">👁️</button>
-          <button class="hap-add-btn" style="background:#1565c0;" onclick="showToast(currentLang==='bn'?'ঈদ হ্যাম্পার শীঘ্রই! 🌙':'Eid Hamper coming soon! 🌙','green')">🛒 <span class="lang-bn">যোগ করুন</span><span class="lang-en">Add</span></button>
-        </div>
-      </div>
-    </div>
-
-    <!-- 4: Poila Boishakh -->
-    <div class="hap-card" data-festival="poila_boishakh">
-      <div class="hap-banner" style="background:linear-gradient(135deg,#1b5e20,#2e7d32,#388e3c);">
-        <div class="hap-tags">
-          <span class="hap-tag gift">🌸 <span class="lang-bn">পহেলা বৈশাখ</span><span class="lang-en">Poila Boishakh</span></span>
-          <span class="hap-tag limited">⭐ <span class="lang-bn">সীমিত</span><span class="lang-en">Limited</span></span>
-        </div>
-        <div class="hap-art">🎋</div>
-        <div class="hap-timer"><span class="hap-timer-dot"></span><span class="lang-bn">শীঘ্রই আসছে</span><span class="lang-en">Hurry! Offer ends in</span></div>
-      </div>
-      <div class="hap-body">
-        <div class="hap-festival-label" style="color:#2e7d32;"><span class="lang-bn">পহেলা বৈশাখ</span><span class="lang-en">POILA BOISHAKH</span></div>
-        <div class="hap-name"><span class="lang-bn">বৈশাখী হ্যাম্পার</span><span class="lang-en">Poila Boishakh Hamper</span></div>
-        <div class="hap-desc"><span class="lang-bn">নববর্ষে বাংলার ঐতিহ্য সম্মান করে — ঐতিহ্যবাহী পণ্য, হেরিটেজ চাল এবং মন্তেশ্বরের স্বাদ।</span><span class="lang-en">Celebrate Bengali New Year that honours our roots — traditional produce, heritage rice, and the tastes of Manteswar.</span></div>
-        <div class="hap-items">
-          <span class="hap-item">🌾 <span class="lang-bn">গোবিন্দভোগ চাল</span><span class="lang-en">Gobindobhog Rice</span></span>
-          <span class="hap-item">🥭 <span class="lang-bn">মিষ্টি আম</span><span class="lang-en">Sweet Mango</span></span>
-          <span class="hap-item">🐟 <span class="lang-bn">ইলিশ মাছ</span><span class="lang-en">Hilsa Fish (Ilish)</span></span>
-          <span class="hap-item">🫒 <span class="lang-bn">সরিষার তেল</span><span class="lang-en">Mustard Oil</span></span>
-          <span class="hap-item hap-more">+3 <span class="lang-bn">আরও</span><span class="lang-en">more</span></span>
-        </div>
-        <div class="hap-price-row">
-          <div class="hap-prices"><span class="hap-price">₹749</span><span class="hap-orig">₹980</span><span class="hap-off">24% off</span></div>
-          <div class="hap-sold">🔥 <span class="lang-bn">২৮ টি বিক্রি</span><span class="lang-en">28 sold</span></div>
-        </div>
-        <div class="hap-stock-bar"><div class="hap-stock-fill" style="width:47%;background:#2e7d32;"></div></div>
-        <div class="hap-stock-label"><span class="lang-bn">মাত্র ৩২টি বাকি</span><span class="lang-en">Only 32 left</span></div>
-        <div class="hap-actions">
-          <button class="hap-preview-btn" onclick="showToast('👁️ Preview coming soon!')">👁️</button>
-          <button class="hap-add-btn" style="background:#2e7d32;" onclick="showToast(currentLang==='bn'?'বৈশাখী হ্যাম্পার শীঘ্রই! 🌸':'Boishakhi Hamper coming soon! 🌸','green')">🛒 <span class="lang-bn">যোগ করুন</span><span class="lang-en">Add</span></button>
-        </div>
-      </div>
-    </div>
-
-    <!-- 5: Eid ul-Adha -->
-    <div class="hap-card" data-festival="eid">
-      <div class="hap-banner" style="background:linear-gradient(135deg,#1b5e20,#2e7d32,#1565c0);">
-        <div class="hap-tags">
-          <span class="hap-tag eid">⭐ <span class="lang-bn">ঈদুল আযহা</span><span class="lang-en">Eid ul-Adha</span></span>
-        </div>
-        <div class="hap-art">⭐</div>
-        <div class="hap-timer"><span class="hap-timer-dot"></span><span class="lang-bn">শীঘ্রই আসছে</span><span class="lang-en">Hurry! Offer ends in</span></div>
-      </div>
-      <div class="hap-body">
-        <div class="hap-festival-label" style="color:#1565c0;"><span class="lang-bn">ঈদুল আযহা</span><span class="lang-en">EID UL-ADHA</span></div>
-        <div class="hap-name"><span class="lang-bn">ঈদুল আযহা ফিস্ট বক্স</span><span class="lang-en">Eid ul-Adha Feast Box</span></div>
-        <div class="hap-desc"><span class="lang-bn">কোরবানির উৎসবের জন্য সব দরকার — সুগন্ধী চাল, তাজা সবজি এবং মশলা — সরাসরি মাঠ থেকে।</span><span class="lang-en">Everything you need for the Qurbani feast — aromatic rice, fresh vegetables and spices for the most memorable meal.</span></div>
-        <div class="hap-items">
-          <span class="hap-item">🌾 <span class="lang-bn">গোবিন্দভোগ চাল</span><span class="lang-en">Gobindobhog Rice</span></span>
-          <span class="hap-item">🧅 <span class="lang-bn">পেঁয়াজ</span><span class="lang-en">Onions</span></span>
-          <span class="hap-item">🍅 <span class="lang-bn">টমেটো</span><span class="lang-en">Tomatoes</span></span>
-          <span class="hap-item hap-more">+2 <span class="lang-bn">আরও</span><span class="lang-en">more</span></span>
-        </div>
-        <div class="hap-price-row">
-          <div class="hap-prices"><span class="hap-price">₹499</span><span class="hap-orig">₹650</span><span class="hap-off">23% off</span></div>
-          <div class="hap-sold">🔥 <span class="lang-bn">১২ টি বিক্রি</span><span class="lang-en">12 sold</span></div>
-        </div>
-        <div class="hap-stock-bar"><div class="hap-stock-fill" style="width:34%;background:#1565c0;"></div></div>
-        <div class="hap-stock-label"><span class="lang-bn">মাত্র ২৩টি বাকি</span><span class="lang-en">Only 23 left</span></div>
-        <div class="hap-actions">
-          <button class="hap-preview-btn" onclick="showToast('👁️ Preview coming soon!')">👁️</button>
-          <button class="hap-add-btn" style="background:#1565c0;" onclick="showToast(currentLang==='bn'?'ঈদুল আযহা বক্স শীঘ্রই! ⭐':'Eid ul-Adha Box coming soon! ⭐','green')">🛒 <span class="lang-bn">যোগ করুন</span><span class="lang-en">Add</span></button>
-        </div>
-      </div>
-    </div>
-
-    <!-- 6: Kali Puja -->
-    <div class="hap-card" data-festival="kali_puja">
-      <div class="hap-banner" style="background:linear-gradient(135deg,#4a148c,#6a1b9a,#7b1fa2);">
-        <div class="hap-tags">
-          <span class="hap-tag kali">🌺 <span class="lang-bn">কালীপূজা</span><span class="lang-en">Kali Puja</span></span>
-          <span class="hap-tag gift">🎁 <span class="lang-bn">গিফট</span><span class="lang-en">Gift</span></span>
-        </div>
-        <div class="hap-art">🌸</div>
-        <div class="hap-timer"><span class="hap-timer-dot"></span><span class="lang-bn">শীঘ্রই আসছে</span><span class="lang-en">Hurry! Offer ends in</span></div>
-      </div>
-      <div class="hap-body">
-        <div class="hap-festival-label" style="color:#7b1fa2;"><span class="lang-bn">কালীপূজা</span><span class="lang-en">KALI PUJA</span></div>
-        <div class="hap-name"><span class="lang-bn">কালীপূজা স্পেশাল বক্স</span><span class="lang-en">Kali Puja Special Box</span></div>
-        <div class="hap-desc"><span class="lang-bn">পবিত্র পূজার উপকরণ — পদ্মফুল, চাল, কলা এবং নারকেল সহ দীপাবলির উৎসবের সামগ্রী।</span><span class="lang-en">Mark Diwali and Kali Puja with a hamper full of sacred and festive essentials — lotus flowers, rice, and puja offerings.</span></div>
-        <div class="hap-items">
-          <span class="hap-item">🌾 <span class="lang-bn">গোবিন্দভোগ চাল</span><span class="lang-en">Gobindobhog Rice</span></span>
-          <span class="hap-item">🍌 <span class="lang-bn">কলা</span><span class="lang-en">Bananas</span></span>
-          <span class="hap-item">🥥 <span class="lang-bn">নারকেল</span><span class="lang-en">Coconut</span></span>
-          <span class="hap-item hap-more">+2 <span class="lang-bn">আরও</span><span class="lang-en">more</span></span>
-        </div>
-        <div class="hap-price-row">
-          <div class="hap-prices"><span class="hap-price">₹449</span><span class="hap-orig">₹590</span><span class="hap-off">24% off</span></div>
-          <div class="hap-sold">🔥 <span class="lang-bn">৯ টি বিক্রি</span><span class="lang-en">9 sold</span></div>
-        </div>
-        <div class="hap-stock-bar"><div class="hap-stock-fill" style="width:30%;background:#7b1fa2;"></div></div>
-        <div class="hap-stock-label"><span class="lang-bn">মাত্র ২১টি বাকি</span><span class="lang-en">Only 21 left</span></div>
-        <div class="hap-actions">
-          <button class="hap-preview-btn" onclick="showToast('👁️ Preview coming soon!')">👁️</button>
-          <button class="hap-add-btn" style="background:#7b1fa2;" onclick="showToast(currentLang==='bn'?'কালীপূজা বক্স শীঘ্রই! 🌺':'Kali Puja Box coming soon! 🌺','green')">🛒 <span class="lang-bn">যোগ করুন</span><span class="lang-en">Add</span></button>
-        </div>
-      </div>
-    </div>
-
   </div><!-- end hamperGrid -->
 
 </div>
@@ -385,14 +186,378 @@ body.lang-bn .lang-en{display:none!important;}
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
+<!-- ORDER MODAL -->
+<div id="orderModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;
+  background:rgba(10,31,53,.85);z-index:9999;align-items:center;justify-content:center;
+  padding:20px;box-sizing:border-box;">
+  <div style="background:#fff;border-radius:20px;padding:24px;max-width:420px;width:100%;
+    max-height:90vh;overflow-y:auto;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <div style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:900;color:var(--navy);">
+        🎁 Hamper অর্ডার করুন
+      </div>
+      <button onclick="closeOrderModal()" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--muted);">×</button>
+    </div>
+
+    <!-- Hamper Summary -->
+    <div id="orderModalSummary" style="background:var(--sand);border-radius:12px;padding:12px;margin-bottom:16px;"></div>
+
+    <!-- Add-ons selector (if any) -->
+    <div id="orderModalAddOns" style="display:none;margin-bottom:16px;">
+      <div style="font-size:.78rem;font-weight:700;color:var(--navy);margin-bottom:8px;">✨ Add-ons যোগ করবেন?</div>
+      <div id="orderModalAddOnList"></div>
+    </div>
+
+    <!-- Delivery Details -->
+    <div style="margin-bottom:12px;">
+      <label style="font-size:.78rem;font-weight:700;color:var(--navy);display:block;margin-bottom:6px;">📍 ডেলিভারি ঠিকানা</label>
+      <input type="text" id="orderAddress" class="hap-input" placeholder="গ্রাম, পাড়া, ঠিকানা লিখুন..."
+        style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:10px;font-size:.85rem;font-family:'DM Sans',sans-serif;">
+    </div>
+    <div style="margin-bottom:16px;">
+      <label style="font-size:.78rem;font-weight:700;color:var(--navy);display:block;margin-bottom:6px;">📞 ফোন নম্বর</label>
+      <input type="tel" id="orderPhone" class="hap-input" placeholder="আপনার ফোন নম্বর"
+        style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:10px;font-size:.85rem;font-family:'DM Sans',sans-serif;">
+    </div>
+
+    <!-- Total -->
+    <div style="background:linear-gradient(135deg,#b5451b,#e8863a);border-radius:12px;padding:14px;margin-bottom:16px;
+      display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <div style="font-size:.7rem;color:rgba(255,255,255,.8);">মোট মূল্য</div>
+        <div style="font-size:1.3rem;font-weight:900;color:#fff;" id="orderTotal">₹0</div>
+      </div>
+      <div style="font-size:.72rem;color:rgba(255,255,255,.8);text-align:right;">
+        💵 Cash on Delivery<br>ডেলিভারিতে টাকা দিন
+      </div>
+    </div>
+
+    <button onclick="placeHamperOrder()"
+      style="width:100%;padding:14px;background:var(--navy);color:#fff;border:none;
+      border-radius:12px;font-weight:800;font-size:.92rem;cursor:pointer;">
+      ✅ অর্ডার নিশ্চিত করুন
+    </button>
+    <div style="font-size:.7rem;color:var(--muted);text-align:center;margin-top:10px;">
+      DELTA Admin আপনার সাথে যোগাযোগ করবেন
+    </div>
+  </div>
+</div>
+
 <script>
-var currentLang='bn';
+// Firebase
+var fbcfg={apiKey:"AIzaSyA6TrrnCMwv1aa1WPqGvTVWlnieB2pVOEU",authDomain:"delta-platform-82fc0.firebaseapp.com",projectId:"delta-platform-82fc0",storageBucket:"delta-platform-82fc0.firebasestorage.app",messagingSenderId:"444904180433",appId:"1:444904180433:web:6706eba4d73a30cd67d3f0"};
+if(!firebase.apps.length){ firebase.initializeApp(fbcfg); }
+var db = firebase.firestore();
+var CITY = 'manteswar';
+
+var currentLang = 'bn';
+var allHampers = [];
+var festivalCats = [];
+var addOnCache = {};
+var cart = [];
+try{ cart = JSON.parse(localStorage.getItem('deltaCart')||'[]'); }catch(e){}
 
 function setLang(l){
   currentLang=l;
   document.body.className='lang-'+l;
   document.getElementById('langBn').classList.toggle('active',l==='bn');
   document.getElementById('langEn').classList.toggle('active',l==='en');
+}
+
+// Init
+window.addEventListener('load', function(){
+  loadFestivalFilters();
+  loadHampers();
+});
+
+function loadFestivalFilters(){
+  db.collection('cities').doc(CITY).collection('settings').doc('festivalCategories')
+    .get().then(function(doc){
+      festivalCats = doc.exists ? (doc.data().festivals||[]).filter(function(f){return f.active;}) : [];
+      var bar = document.getElementById('filterBar');
+      // Default pills যদি Firestore এ কিছু না থাকে
+      if(!festivalCats.length){
+        bar.innerHTML =
+          '<div class="fpill active" onclick="filterHamper(\'all\',this)">🎊 <span class="lang-bn">সব উৎসব</span><span class="lang-en">All Festivals</span></div>'+
+          '<div class="fpill" onclick="filterHamper(\'durga_puja\',this)">🪔 <span class="lang-bn">দুর্গাপূজা</span><span class="lang-en">Durga Puja</span></div>'+
+          '<div class="fpill" onclick="filterHamper(\'eid\',this)">🌙 <span class="lang-bn">ঈদ</span><span class="lang-en">Eid</span></div>'+
+          '<div class="fpill" onclick="filterHamper(\'poila_boishakh\',this)">🌸 <span class="lang-bn">পহেলা বৈশাখ</span><span class="lang-en">Poila Boishakh</span></div>'+
+          '<div class="fpill" onclick="filterHamper(\'kali_puja\',this)">🌺 <span class="lang-bn">কালীপূজা</span><span class="lang-en">Kali Puja</span></div>';
+        return;
+      }
+      bar.innerHTML = '<div class="fpill active" onclick="filterHamper(\'all\',this)">🎊 <span class="lang-bn">সব উৎসব</span><span class="lang-en">All Festivals</span></div>';
+      festivalCats.forEach(function(f){
+        var d = document.createElement('div');
+        d.className = 'fpill';
+        d.innerHTML = f.emoji+' '+f.name;
+        d.onclick = (function(key){ return function(){ filterHamper(key, d); }; })(f.key);
+        bar.appendChild(d);
+      });
+    }).catch(function(){});
+}
+
+function loadHampers(){
+  db.collection('hampers').where('active','==',true).get()
+    .then(function(snap){
+      allHampers = [];
+      snap.forEach(function(d){ allHampers.push(Object.assign({id:d.id},d.data())); });
+      allHampers.sort(function(a,b){ return new Date(b.createdAt||0)-new Date(a.createdAt||0); });
+
+      if(!allHampers.length){ showDefaultHampers(); return; }
+
+      // Preload add-ons
+      var addOnRefs = [];
+      allHampers.forEach(function(h){
+        (h.addOns||[]).forEach(function(a){ if(a.productId&&a.shopId) addOnRefs.push(a); });
+      });
+      preloadAddOns(addOnRefs, function(){ renderAllHampers(); });
+    }).catch(function(){ showDefaultHampers(); });
+}
+
+function preloadAddOns(refs, cb){
+  if(!refs.length){ cb(); return; }
+  var proms = refs.map(function(a){
+    return db.collection('cities').doc(CITY).collection('sellers').doc(a.shopId)
+      .collection('products').doc(a.productId).get()
+      .then(function(d){
+        if(d.exists) addOnCache[a.productId] = Object.assign({id:d.id,shopId:a.shopId},d.data());
+      }).catch(function(){});
+  });
+  Promise.all(proms).then(cb);
+}
+
+function renderAllHampers(){
+  var grid = document.getElementById('hamperGrid');
+  if(!allHampers.length){ showDefaultHampers(); return; }
+  grid.innerHTML = '';
+  allHampers.forEach(function(h){ grid.innerHTML += buildHamperCard(h); });
+}
+
+function buildHamperCard(h){
+  var f = festivalCats.find(function(x){return x.key===h.festivalTag;});
+  var bg = f
+    ? 'linear-gradient(135deg,'+f.color1+','+f.color2+')'
+    : 'linear-gradient(135deg,#b5451b,#f07018,#e8a030)';
+  var festEmoji = f ? f.emoji : '🎊';
+  var festName = f ? f.name : (h.festivalTag||'');
+  var stockPct = h.stock>0 ? Math.min(100, Math.round(((h.soldCount||0)/((h.stock||0)+(h.soldCount||0)))*100)) : 100;
+
+  // Base items
+  var baseItemsHTML = (h.baseItems||[]).slice(0,4).map(function(item){
+    return '<span class="hap-item">'+item.name+'</span>';
+  }).join('');
+  var extraCount = (h.baseItems||[]).length - 4;
+  if(extraCount > 0) baseItemsHTML += '<span class="hap-item hap-more">+'+extraCount+' আরও</span>';
+
+  // Add-ons
+  var addOnHTML = '';
+  var validAddOns = (h.addOns||[]).filter(function(a){ return addOnCache[a.productId]; });
+  if(validAddOns.length){
+    addOnHTML = '<div style="border-top:1px solid var(--border);padding-top:8px;margin-top:8px;">'+
+      '<div style="font-size:.68rem;font-weight:700;color:var(--orange);margin-bottom:6px;">✨ Add-ons (Optional)</div>'+
+      validAddOns.map(function(a){
+        var p = addOnCache[a.productId];
+        var name = p.nameBn||p.name||'পণ্য';
+        return '<label style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;cursor:pointer;font-size:.75rem;">'+
+          '<span style="display:flex;align-items:center;gap:6px;">'+
+            '<input type="checkbox" class="hap-addon-cb" data-hid="'+h.id+'" '+
+              'data-pid="'+a.productId+'" data-sid="'+a.shopId+'" '+
+              'data-price="'+(p.price||0)+'" data-name="'+name.replace(/"/g,'&quot;')+'" '+
+              'onchange="updateHamperTotal(\''+h.id+'\','+h.price+')" '+
+              'style="width:15px;height:15px;accent-color:var(--orange);">'+
+            name+'</span>'+
+          '<span style="color:var(--orange);font-weight:700;flex-shrink:0;">+₹'+(p.price||0)+'</span>'+
+        '</label>';
+      }).join('')+
+    '</div>';
+  }
+
+  return '<div class="hap-card" id="hcard_'+h.id+'" data-festival="'+(h.festivalTag||'')+'">'+
+    '<div class="hap-banner" style="background:'+bg+';">'+
+      '<div class="hap-tags">'+
+        '<span class="hap-tag festival">'+festEmoji+' '+festName+'</span>'+
+        (h.stock<10&&h.stock>0?'<span class="hap-tag limited">⚡ সীমিত</span>':'')+
+      '</div>'+
+      '<div class="hap-art">'+(h.emoji||'🎁')+'</div>'+
+      '<div class="hap-timer"><span class="hap-timer-dot"></span><span class="lang-bn">অর্ডার করুন</span><span class="lang-en">Order Now</span></div>'+
+    '</div>'+
+    '<div class="hap-body">'+
+      '<div class="hap-festival-label">'+festName.toUpperCase()+'</div>'+
+      '<div class="hap-name">'+h.name+'</div>'+
+      (h.description?'<div class="hap-desc">'+h.description+'</div>':'')+
+      '<div class="hap-items">'+baseItemsHTML+'</div>'+
+      addOnHTML+
+      '<div class="hap-price-row">'+
+        '<div class="hap-prices">'+
+          '<span class="hap-price" id="hprice_'+h.id+'" data-base="'+h.price+'">₹'+h.price+'</span>'+
+        '</div>'+
+        '<div class="hap-sold">🔥 <span class="lang-bn">'+(h.soldCount||0)+' টি বিক্রি</span><span class="lang-en">'+(h.soldCount||0)+' sold</span></div>'+
+      '</div>'+
+      (h.stock>0
+        ? '<div class="hap-stock-bar"><div class="hap-stock-fill" style="width:'+stockPct+'%;"></div></div>'+
+          '<div class="hap-stock-label"><span class="lang-bn">মাত্র '+h.stock+'টি বাকি</span><span class="lang-en">Only '+h.stock+' left</span></div>'
+        : '<div class="hap-stock-label" style="color:var(--red);">স্টক শেষ</div>')+
+      '<div class="hap-actions">'+
+        '<button class="hap-preview-btn" onclick="showToast(\'👁️ Preview coming soon!\')">👁️</button>'+
+        (h.stock>0
+          ? '<button class="hap-add-btn" onclick="addHamperToCart(\''+h.id+'\',\''+h.name.replace(/'/g,"\\'")+'\','+h.price+')">🛒 <span class="lang-bn">যোগ করুন</span><span class="lang-en">Add</span></button>'
+          : '<button class="hap-add-btn" style="opacity:.5;cursor:not-allowed;" disabled><span class="lang-bn">স্টক শেষ</span><span class="lang-en">Out of Stock</span></button>')+
+      '</div>'+
+    '</div>'+
+  '</div>';
+}
+
+function updateHamperTotal(hamperId, basePrice){
+  var card = document.getElementById('hcard_'+hamperId);
+  if(!card) return;
+  var addOnTotal = 0;
+  card.querySelectorAll('.hap-addon-cb:checked').forEach(function(cb){
+    addOnTotal += parseInt(cb.dataset.price)||0;
+  });
+  var priceEl = document.getElementById('hprice_'+hamperId);
+  if(priceEl) priceEl.textContent = '₹'+(basePrice+addOnTotal);
+}
+
+// ── ORDER FLOW ──
+var currentOrderHamper = null;
+
+function addHamperToCart(hamperId, hamperName, basePrice){
+  // Cart এর বদলে Order Modal খুলব
+  var h = allHampers.find(function(x){ return x.id===hamperId; }) ||
+          {id:hamperId, name:hamperName, price:basePrice, addOns:[], baseItems:[]};
+  openOrderModal(h);
+}
+
+function openOrderModal(h){
+  currentOrderHamper = h;
+  document.getElementById('orderModal').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+
+  // Summary
+  document.getElementById('orderModalSummary').innerHTML =
+    '<div style="font-size:.88rem;font-weight:700;color:var(--navy);margin-bottom:4px;">'+(h.emoji||'🎁')+' '+h.name+'</div>'+
+    '<div style="font-size:.72rem;color:var(--muted);">'+
+      (h.baseItems||[]).map(function(i){return '✓ '+i.name;}).join(' · ')+
+    '</div>';
+
+  // Add-ons
+  var validAddOns = (h.addOns||[]).filter(function(a){ return addOnCache[a.productId]; });
+  if(validAddOns.length){
+    document.getElementById('orderModalAddOns').style.display = 'block';
+    document.getElementById('orderModalAddOnList').innerHTML = validAddOns.map(function(a){
+      var p = addOnCache[a.productId];
+      var name = p.nameBn||p.name||'পণ্য';
+      return '<label style="display:flex;align-items:center;justify-content:space-between;'+
+        'padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer;font-size:.78rem;">'+
+        '<span style="display:flex;align-items:center;gap:8px;">'+
+          '<input type="checkbox" class="modal-addon-cb" '+
+            'data-hid="'+h.id+'" data-pid="'+a.productId+'" data-sid="'+a.shopId+'" '+
+            'data-price="'+(p.price||0)+'" data-name="'+name.replace(/"/g,'&quot;')+'" '+
+            'onchange="updateModalTotal()" '+
+            'style="width:16px;height:16px;accent-color:var(--orange);">'+
+          name+'</span>'+
+        '<span style="color:var(--orange);font-weight:700;">+₹'+(p.price||0)+'</span>'+
+      '</label>';
+    }).join('');
+  } else {
+    document.getElementById('orderModalAddOns').style.display = 'none';
+  }
+
+  // Total set করো
+  document.getElementById('orderTotal').textContent = '₹'+h.price;
+}
+
+function updateModalTotal(){
+  if(!currentOrderHamper) return;
+  var addOnTotal = 0;
+  document.querySelectorAll('.modal-addon-cb:checked').forEach(function(cb){
+    addOnTotal += parseInt(cb.dataset.price)||0;
+  });
+  document.getElementById('orderTotal').textContent = '₹'+(currentOrderHamper.price+addOnTotal);
+}
+
+function closeOrderModal(){
+  document.getElementById('orderModal').style.display = 'none';
+  document.body.style.overflow = '';
+  currentOrderHamper = null;
+}
+
+function placeHamperOrder(){
+  var addr = document.getElementById('orderAddress').value.trim();
+  var phone = document.getElementById('orderPhone').value.trim();
+  if(!addr){ alert('ঠিকানা দিন'); return; }
+  if(!phone){ alert('ফোন নম্বর দিন'); return; }
+  if(!currentOrderHamper) return;
+
+  // Selected add-ons collect করো
+  var selectedAddOns = [];
+  document.querySelectorAll('.modal-addon-cb:checked').forEach(function(cb){
+    selectedAddOns.push({
+      productId:cb.dataset.pid, shopId:cb.dataset.sid,
+      name:cb.dataset.name, price:parseInt(cb.dataset.price)||0
+    });
+  });
+
+  var totalPrice = currentOrderHamper.price + selectedAddOns.reduce(function(s,a){return s+a.price;},0);
+
+  var orderData = {
+    hamperId: currentOrderHamper.id,
+    hamperName: currentOrderHamper.name,
+    hamperEmoji: currentOrderHamper.emoji||'🎁',
+    festivalTag: currentOrderHamper.festivalTag||'',
+    baseItems: currentOrderHamper.baseItems||[],
+    selectedAddOns: selectedAddOns,
+    basePrice: currentOrderHamper.price,
+    totalPrice: totalPrice,
+    deliveryAddress: addr,
+    customerPhone: phone,
+    status: 'pending',
+    paymentMethod: 'cod',
+    createdAt: new Date().toISOString()
+  };
+
+  var btn = document.querySelector('#orderModal button:last-of-type');
+  btn.disabled = true;
+  btn.textContent = 'অর্ডার হচ্ছে...';
+
+  db.collection('hamperOrders').add(orderData).then(function(ref){
+    // Stock update করো
+    db.collection('hampers').doc(currentOrderHamper.id).update({
+      stock: firebase.firestore.FieldValue.increment(-1),
+      soldCount: firebase.firestore.FieldValue.increment(1)
+    }).catch(function(){});
+
+    closeOrderModal();
+    showOrderSuccess(ref.id, totalPrice);
+  }).catch(function(e){
+    btn.disabled = false;
+    btn.textContent = '✅ অর্ডার নিশ্চিত করুন';
+    alert('সমস্যা হয়েছে: '+e.message);
+  });
+}
+
+function showOrderSuccess(orderId, total){
+  var shortId = '#'+orderId.slice(-6).toUpperCase();
+  var div = document.createElement('div');
+  div.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(10,31,53,.9);'+
+    'z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;';
+  div.innerHTML =
+    '<div style="background:#fff;border-radius:20px;padding:32px 24px;max-width:380px;width:100%;text-align:center;">'+
+      '<div style="font-size:3rem;margin-bottom:12px;">🎉</div>'+
+      '<div style="font-family:\'Playfair Display\',serif;font-size:1.3rem;font-weight:900;color:var(--navy);margin-bottom:8px;">অর্ডার সফল হয়েছে!</div>'+
+      '<div style="font-size:.88rem;color:var(--muted);margin-bottom:16px;">আপনার অর্ডার ID: <strong style="color:var(--navy);">'+shortId+'</strong></div>'+
+      '<div style="background:#eef9f0;border-radius:12px;padding:14px;margin-bottom:16px;font-size:.82rem;color:#1a8a4a;">'+
+        '✅ DELTA Admin শীঘ্রই আপনার সাথে যোগাযোগ করবেন<br>'+
+        '💵 ডেলিভারিতে ₹'+total+' দিন (Cash on Delivery)'+
+      '</div>'+
+      '<button onclick="this.parentElement.parentElement.remove()" '+
+        'style="width:100%;padding:12px;background:var(--navy);color:#fff;border:none;border-radius:12px;font-weight:700;cursor:pointer;">'+
+        'ঠিক আছে, ধন্যবাদ!'+
+      '</button>'+
+    '</div>';
+  document.body.appendChild(div);
+  // Reload করো stock update দেখাতে
+  setTimeout(function(){ loadHampers(); }, 1000);
 }
 
 function filterHamper(festival,el){
@@ -405,6 +570,31 @@ function filterHamper(festival,el){
       card.classList.add('hidden');
     }
   });
+}
+
+function showDefaultHampers(){
+  // Firestore এ hampers না থাকলে default static cards দেখাও
+  allHampers = [
+    {id:'d1',name:'পূজা গ্র্যান্ড হ্যাম্পার',emoji:'🪔',description:'মন্তেশ্বরের সেরা কৃষকদের তাজা পণ্য',
+      baseItems:[{name:'গোবিন্দভোগ চাল'},{name:'মিষ্টি কলা'},{name:'নারকেল'},{name:'সরিষার তেল'}],
+      addOns:[],price:699,stock:16,soldCount:34,festivalTag:'durga_puja',active:true},
+    {id:'d2',name:'পূজা মিনি বাস্কেট',emoji:'🌸',description:'প্রতিবেশী বা ছোট পরিবারের জন্য',
+      baseItems:[{name:'গোবিন্দভোগ চাল'},{name:'কলা'},{name:'সরিষার তেল'},{name:'হলুদ'}],
+      addOns:[],price:399,stock:22,soldCount:18,festivalTag:'durga_puja',active:true},
+    {id:'d3',name:'ঈদ মোবারক হ্যাম্পার',emoji:'🌙',description:'বিরিয়ানি ও কোরমার জন্য তাজা উপকরণ',
+      baseItems:[{name:'গোবিন্দভোগ চাল'},{name:'পেঁয়াজ'},{name:'রসুন'},{name:'টমেটো'}],
+      addOns:[],price:599,stock:23,soldCount:22,festivalTag:'eid',active:true},
+    {id:'d4',name:'বৈশাখী হ্যাম্পার',emoji:'🎋',description:'নববর্ষে বাংলার ঐতিহ্য সম্মান করে',
+      baseItems:[{name:'গোবিন্দভোগ চাল'},{name:'মিষ্টি আম'},{name:'ইলিশ মাছ'},{name:'সরিষার তেল'}],
+      addOns:[],price:749,stock:32,soldCount:28,festivalTag:'poila_boishakh',active:true},
+    {id:'d5',name:'ঈদুল আযহা ফিস্ট বক্স',emoji:'⭐',description:'কোরবানির উৎসবের জন্য সব দরকার',
+      baseItems:[{name:'গোবিন্দভোগ চাল'},{name:'পেঁয়াজ'},{name:'টমেটো'}],
+      addOns:[],price:499,stock:23,soldCount:12,festivalTag:'eid',active:true},
+    {id:'d6',name:'কালীপূজা স্পেশাল বক্স',emoji:'🌸',description:'পবিত্র পূজার উপকরণ',
+      baseItems:[{name:'গোবিন্দভোগ চাল'},{name:'কলা'},{name:'নারকেল'}],
+      addOns:[],price:449,stock:21,soldCount:9,festivalTag:'kali_puja',active:true},
+  ];
+  renderAllHampers();
 }
 
 function showToast(msg,type){
