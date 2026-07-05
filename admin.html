@@ -3974,9 +3974,16 @@ function exportRecon(){
       o.createdAt?new Date(o.createdAt).toLocaleDateString('en-IN'):''
     ]);
   });
+  var csv = rows.map(function(r){return r.join(',');}).join('\n');
+  var blob = new Blob([csv],{type:'text/csv'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'DELTA-COD-Reconciliation-'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();
+  showToast('CSV export হয়েছে ✅','green');
+}
+
 // ═══ HAMPER ORDERS ═══
-var allHamperOrders = [];
-var hamperOrderFilter = 'all';
 
 function loadHamperOrders(){
   var wrap = document.getElementById('hamperOrdersList');
@@ -4093,7 +4100,6 @@ function sendHamperWhatsApp(phone, hamperName, total){
 }
 
 // ═══ FESTIVAL MANAGEMENT ═══
-var allFestivalCats = [];
 
 function loadFestivalManagement(){
   loadFestivalCategories();
@@ -4487,10 +4493,6 @@ function rejectFestivalProduct(reqId, shopId){
 }
 
 // ═══ HAMPERS MANAGEMENT ═══
-var allHampers = [];
-var hamperBaseItems = []; // temp array for current hamper being created
-var hamperAddOns = []; // temp array for add-on productIds
-var editingHamperId = null;
 
 function loadHampersManagement(){
   // Festival dropdown populate করো
@@ -4748,15 +4750,6 @@ function deleteHamper(id){
     }).catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
 }
 
-// CSV Export শেষে
-  var blob = new Blob([csv],{type:'text/csv'});
-  var a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'DELTA-COD-Reconciliation-'+new Date().toISOString().slice(0,10)+'.csv';
-  a.click();
-  showToast('CSV export হয়েছে ✅','green');
-}
-
 // Ensure critical functions are globally accessible
 window.loadHamperManagement = loadHamperManagement;
 window.loadHamperOrders = loadHamperOrders;
@@ -4764,6 +4757,28 @@ window.loadFestivalManagement = loadFestivalManagement;
 window.renderHamperOrders = renderHamperOrders;
 window.renderHampersList = renderHampersList;
 window.updateHamperOrderStats = updateHamperOrderStats;
+window.saveHamperConditions = saveHamperConditions;
+window.saveFestivalConditions = saveFestivalConditions;
+window.saveFestivalCategory = saveFestivalCategory;
+window.toggleFestivalActive = toggleFestivalActive;
+window.deleteFestivalCategory = deleteFestivalCategory;
+window.toggleFestivalEditForm = toggleFestivalEditForm;
+window.saveFestivalEdit = saveFestivalEdit;
+window.approveFestivalProduct = approveFestivalProduct;
+window.rejectFestivalProduct = rejectFestivalProduct;
+window.addHamperReqToPool = addHamperReqToPool;
+window.saveHamper = saveHamper;
+window.editHamper = editHamper;
+window.deleteHamper = deleteHamper;
+window.toggleHamperActive = toggleHamperActive;
+window.addHamperBaseItem = addHamperBaseItem;
+window.removeHamperBaseItem = removeHamperBaseItem;
+window.addHamperAddOn = addHamperAddOn;
+window.removeHamperAddOn = removeHamperAddOn;
+window.addApprovedProductToBase = addApprovedProductToBase;
+window.updateHamperOrder = updateHamperOrder;
+window.sendHamperWhatsApp = sendHamperWhatsApp;
+window.filterHamperOrders = filterHamperOrders;
 </script>
 </body>
 </html>
