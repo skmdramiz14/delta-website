@@ -1204,8 +1204,7 @@ function goTab(tab, btn){
   // Early-defined wrapper functions to avoid undefined errors
   if(!window._hamperTabsReady){
     window.loadHamperManagement = function(){
-      loadHampersManagement();
-      loadHamperRequests();
+      // Load hamper conditions
       db.collection('cities').doc(CITY).collection('settings').doc('hamperConditions')
         .get().then(function(doc){
           if(!doc.exists) return;
@@ -1215,6 +1214,62 @@ function goTab(tab, btn){
           if(d.maxPrice) document.getElementById('hamperCondMaxPrice').value = d.maxPrice;
           if(d.allowedCategories) document.getElementById('hamperCondCategories').value = d.allowedCategories.join(',');
         }).catch(function(){});
+      // Load hamper requests
+      db.collection('cities').doc(CITY).collection('hamperRequests')
+        .where('status','==','qualified').get()
+        .then(function(snap){
+          var list = [];
+          snap.forEach(function(d){ list.push(Object.assign({id:d.id},d.data())); });
+          var countEl = document.getElementById('hamperReqCount');
+          if(countEl) countEl.textContent = list.length ? list.length+'টি qualified' : '';
+          var wrap = document.getElementById('hamperReqList');
+          if(!wrap) return;
+          if(!list.length){ wrap.innerHTML='<div style="color:var(--muted);font-size:.82rem;">কোনো qualified hamper request নেই।</div>'; return; }
+          wrap.innerHTML = list.map(function(r){
+            return '<div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px;display:flex;gap:12px;margin-bottom:10px;align-items:center;">'+
+              '<div style="flex:1;"><div style="font-size:.88rem;font-weight:700;color:var(--navy);">'+r.productName+'</div>'+
+              '<div style="font-size:.72rem;color:var(--muted);">🏪 '+r.shopName+' · ₹'+r.price+(r.hamperDiscount?' · '+r.hamperDiscount+'% OFF':'')+' · Stock: '+r.hamperStock+'</div></div>'+
+              '<button class="btn-sm" style="background:#e8f4ff;color:#0984e3;font-size:.72rem;" onclick="addHamperReqToPool(\''+r.id+'\')">🎁 Pool এ যোগ করুন</button>'+
+            '</div>';
+          }).join('');
+        }).catch(function(){});
+      // Load hampers list and populate dropdowns
+      var festSel = document.getElementById('hFestivalTag');
+      if(festSel){
+        festSel.innerHTML = '<option value="">-- Festival select করুন --</option>';
+        allFestivalCats.forEach(function(f){
+          var opt = document.createElement('option');
+          opt.value = f.key; opt.textContent = f.emoji+' '+f.name;
+          festSel.appendChild(opt);
+        });
+      }
+      // Load approved products for base items
+      loadApprovedHamperProducts();
+      // Load add-on products
+      var addOnSel = document.getElementById('hAddOnSelect');
+      if(addOnSel){
+        addOnSel.innerHTML = '<option value="">-- Product select করুন --</option>';
+        allSellers.forEach(function(s){
+          db.collection('cities').doc(CITY).collection('sellers').doc(s.id)
+            .collection('products').get().then(function(snap){
+              snap.forEach(function(pd){
+                var p = pd.data();
+                if(p.adminRemoved) return;
+                var opt = document.createElement('option');
+                opt.value = pd.id+'|'+s.id;
+                opt.textContent = (p.nameBn||p.name||'পণ্য')+' — ₹'+(p.price||0)+' ('+s.shopName+')';
+                addOnSel.appendChild(opt);
+              });
+            });
+        });
+      }
+      // Load existing hampers
+      db.collection('hampers').orderBy('createdAt','desc').get()
+        .then(function(snap){
+          allHampers = [];
+          snap.forEach(function(d){ allHampers.push(Object.assign({id:d.id},d.data())); });
+          renderHampersList();
+        }).catch(function(){ renderHampersList(); });
     };
     window.loadHamperOrders = function(){
       var wrap = document.getElementById('hamperOrdersList');
