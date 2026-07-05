@@ -1301,8 +1301,33 @@ function goTab(tab, btn){
         .then(function(snap){
           allHampers = [];
           snap.forEach(function(d){ allHampers.push(Object.assign({id:d.id},d.data())); });
-          renderHampersList();
-        }).catch(function(){ renderHampersList(); });
+          // Render hampers list inline
+          var wrap = document.getElementById('hampersList');
+          if(!wrap) return;
+          if(!allHampers.length){ wrap.innerHTML='<div style="color:var(--muted);font-size:.82rem;">এখনো কোনো hamper নেই।</div>'; return; }
+          wrap.innerHTML = allHampers.map(function(h){
+            var festName = allFestivalCats.find(function(f){return f.key===h.festivalTag;});
+            return '<div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:8px;display:flex;gap:12px;align-items:flex-start;">'+
+              '<div style="width:52px;height:52px;border-radius:10px;background:linear-gradient(135deg,#FDF0DC,#F5DDB0);display:flex;align-items:center;justify-content:center;font-size:'+(h.imageUrl?'0':'1.6rem')+';flex-shrink:0;overflow:hidden;">'+
+                (h.imageUrl?'<img src="'+h.imageUrl+'" style="width:100%;height:100%;object-fit:cover;">':h.emoji||'🎁')+'</div>'+
+              '<div style="flex:1;min-width:0;">'+
+                '<div style="font-size:.88rem;font-weight:700;color:var(--navy);">'+h.name+'</div>'+
+                '<div style="font-size:.72rem;color:var(--muted);">₹'+h.price+' · '+(festName?festName.name:h.festivalTag||'—')+' · Stock: '+h.stock+' · Sold: '+(h.soldCount||0)+'</div>'+
+                '<div style="font-size:.7rem;color:var(--muted);">📦 '+(h.baseItems||[]).map(function(i){return i.name;}).join(', ')+'</div>'+
+                (h.addOns&&h.addOns.length?'<div style="font-size:.7rem;color:var(--orange);">✨ Add-ons: '+h.addOns.length+'টি</div>':'')+
+              '</div>'+
+              '<div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">'+
+                '<button class="btn-sm" style="background:#e8f4ff;color:#0984e3;font-size:.72rem;" onclick="editHamper(\''+h.id+'\')">✏️ Edit</button>'+
+                '<button class="btn-sm '+(h.active?'btn-green':'')+'" style="font-size:.72rem;" onclick="toggleHamperActive(\''+h.id+'\','+(h.active?'false':'true')+')">'+
+                  (h.active?'✅ Active':'⏸ Inactive')+'</button>'+
+                '<button class="btn-sm btn-red" style="font-size:.72rem;" onclick="deleteHamper(\''+h.id+'\')">🗑️</button>'+
+              '</div>'+
+            '</div>';
+          }).join('');
+        }).catch(function(){ 
+          var wrap = document.getElementById('hampersList');
+          if(wrap) wrap.innerHTML='<div style="color:var(--muted);font-size:.82rem;">লোড সমস্যা হয়েছে।</div>';
+        });
     };
     window.loadHamperOrders = function(){
       var wrap = document.getElementById('hamperOrdersList');
@@ -1316,8 +1341,74 @@ function goTab(tab, btn){
         }).catch(function(e){ if(wrap) wrap.innerHTML='<div style="color:var(--red);padding:20px;">লোড সমস্যা: '+e.message+'</div>'; });
     };
     window.loadFestivalManagement = function(){
-      loadFestivalCategories();
-      loadFestivalPendingProducts();
+      // Load festival categories
+      db.collection('cities').doc(CITY).collection('settings').doc('festivalCategories')
+        .get().then(function(doc){
+          allFestivalCats = doc.exists ? (doc.data().festivals||[]) : [];
+          var wrap = document.getElementById('festivalCatList');
+          if(!wrap) return;
+          if(!allFestivalCats.length){ wrap.innerHTML='<div style="color:var(--muted);font-size:.82rem;padding:12px 0;">এখনো কোনো festival তৈরি হয়নি।</div>'; return; }
+          wrap.innerHTML = allFestivalCats.map(function(f,idx){
+            var bg='linear-gradient(135deg,'+f.color1+','+f.color2+')';
+            var daysLeft=f.date?Math.max(0,Math.ceil((new Date(f.date)-new Date())/86400000)):'—';
+            return '<div style="background:#fff;border:1px solid var(--border);border-radius:12px;margin-bottom:8px;overflow:hidden;">'+
+              '<div style="display:flex;align-items:center;gap:12px;padding:12px;">'+
+                '<div style="width:44px;height:44px;border-radius:10px;background:'+bg+';display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;">'+f.emoji+'</div>'+
+                '<div style="flex:1;"><div style="font-size:.88rem;font-weight:700;color:var(--navy);">'+f.name+'</div>'+
+                '<div style="font-size:.72rem;color:var(--muted);">Key: '+f.key+' · '+f.date+(daysLeft!=='—'?' · '+daysLeft+' দিন বাকি':'')+'</div></div>'+
+                '<div style="display:flex;gap:6px;">'+
+                  '<button class="btn-sm" style="background:#e8f4ff;color:#0984e3;font-size:.72rem;" onclick="toggleFestivalEditForm('+idx+')">✏️ Edit</button>'+
+                  '<button class="btn-sm '+(f.active?'btn-green':'')+'" style="font-size:.72rem;" onclick="toggleFestivalActive('+idx+')">'+(f.active?'✅ Active':'⏸ Inactive')+'</button>'+
+                  '<button class="btn-sm btn-red" style="font-size:.72rem;" onclick="deleteFestivalCategory('+idx+')">🗑️</button>'+
+                '</div>'+
+              '</div>'+
+              '<div id="festEditForm_'+idx+'" style="display:none;background:var(--sand);padding:14px;border-top:1px solid var(--border);">'+
+                '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">'+
+                  '<div><label style="font-size:.68rem;color:var(--muted);">নাম</label><input class="form-input" id="festEdit_name_'+idx+'" value="'+f.name.replace(/"/g,'&quot;')+'" style="margin-top:3px;"></div>'+
+                  '<div><label style="font-size:.68rem;color:var(--muted);">Emoji</label><input class="form-input" id="festEdit_emoji_'+idx+'" value="'+f.emoji+'" maxlength="4" style="margin-top:3px;"></div>'+
+                  '<div><label style="font-size:.68rem;color:var(--muted);">তারিখ</label><input type="date" class="form-input" id="festEdit_date_'+idx+'" value="'+f.date+'" style="margin-top:3px;"></div>'+
+                  '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">'+
+                    '<div><label style="font-size:.68rem;color:var(--muted);">Color 1</label><input type="color" class="form-input" id="festEdit_c1_'+idx+'" value="'+f.color1+'" style="margin-top:3px;height:38px;padding:3px;"></div>'+
+                    '<div><label style="font-size:.68rem;color:var(--muted);">Color 2</label><input type="color" class="form-input" id="festEdit_c2_'+idx+'" value="'+f.color2+'" style="margin-top:3px;height:38px;padding:3px;"></div>'+
+                  '</div>'+
+                '</div>'+
+                '<div style="display:flex;gap:8px;">'+
+                  '<button class="btn-sm btn-orange" onclick="saveFestivalEdit('+idx+')">💾 Save</button>'+
+                  '<button class="btn-sm" style="background:var(--border);color:var(--muted);" onclick="toggleFestivalEditForm('+idx+')">বাতিল</button>'+
+                '</div>'+
+              '</div>'+
+            '</div>';
+          }).join('');
+        }).catch(function(){});
+      // Load pending festival products
+      db.collection('cities').doc(CITY).collection('festivalRequests')
+        .where('status','==','pending').get()
+        .then(function(snap){
+          var list = [];
+          snap.forEach(function(d){ list.push(Object.assign({id:d.id},d.data())); });
+          var countEl = document.getElementById('festPendingCount');
+          if(countEl) countEl.textContent = list.length ? list.length+'টি pending' : '';
+          var wrap = document.getElementById('festPendingList');
+          if(!wrap) return;
+          if(!list.length){ wrap.innerHTML='<div style="color:var(--muted);font-size:.82rem;padding:12px 0;">কোনো pending request নেই।</div>'; return; }
+          wrap.innerHTML = list.map(function(r){
+            return '<div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px;display:flex;gap:12px;margin-bottom:10px;align-items:flex-start;">'+
+              (r.imageUrl?'<img src="'+r.imageUrl+'" style="width:60px;height:60px;object-fit:cover;border-radius:10px;flex-shrink:0;">':
+                '<div style="width:60px;height:60px;background:var(--sand);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;">🛍️</div>')+
+              '<div style="flex:1;min-width:0;">'+
+                '<div style="font-size:.88rem;font-weight:700;color:var(--navy);">'+r.productName+'</div>'+
+                '<div style="font-size:.72rem;color:var(--muted);margin-bottom:4px;">🏪 '+r.shopName+' · 🎊 '+r.festivalName+'</div>'+
+                '<div style="font-size:.8rem;">₹'+r.price+(r.festivalDiscount?' · <span style="color:var(--green);">'+r.festivalDiscount+'% OFF</span>':'')+'</div>'+
+                (r.note?'<div style="font-size:.72rem;color:var(--muted);margin-top:4px;font-style:italic;">Seller: "'+r.note+'"</div>':'')+
+              '</div>'+
+              '<div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">'+
+                '<button class="btn-sm btn-green" style="font-size:.72rem;" onclick="approveFestivalProduct(\''+r.id+'\',\''+r.shopId+'\',\''+r.productId+'\',\''+r.festivalKey+'\')">✅ Approve</button>'+
+                '<button class="btn-sm btn-red" style="font-size:.72rem;" onclick="rejectFestivalProduct(\''+r.id+'\',\''+r.shopId+'\')">❌ Reject</button>'+
+              '</div>'+
+            '</div>';
+          }).join('');
+        }).catch(function(){});
+      // Load festival conditions
       db.collection('cities').doc(CITY).collection('settings').doc('festivalConditions')
         .get().then(function(doc){
           if(!doc.exists) return;
