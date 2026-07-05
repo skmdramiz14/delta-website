@@ -1336,7 +1336,13 @@ function goTab(tab, btn){
         .then(function(snap){
           allHamperOrders = [];
           snap.forEach(function(d){ allHamperOrders.push(Object.assign({id:d.id},d.data())); });
-          updateHamperOrderStats();
+          // Update stats inline
+          var total = allHamperOrders.length;
+          var pending = allHamperOrders.filter(function(o){return o.status==='pending';}).length;
+          var delivered = allHamperOrders.filter(function(o){return o.status==='delivered';}).length;
+          var t=document.getElementById('hoTotal'); if(t) t.textContent=total;
+          var p=document.getElementById('hoPending'); if(p) p.textContent=pending;
+          var dv=document.getElementById('hoDelivered'); if(dv) dv.textContent=delivered;
           renderHamperOrders();
         }).catch(function(e){ if(wrap) wrap.innerHTML='<div style="color:var(--red);padding:20px;">লোড সমস্যা: '+e.message+'</div>'; });
     };
