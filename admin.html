@@ -342,8 +342,11 @@ button,input,select{font-family:'DM Sans',sans-serif;}
     <button class="tab-btn" id="tab-festivals" onclick="goTab('festivals',this)">
       🎊 Festival Management
     </button>
+    <button class="tab-btn" id="tab-hampers" onclick="goTab('hampers',this)">
+      🎁 Hamper Management
+    </button>
     <button class="tab-btn" id="tab-hamperorders" onclick="goTab('hamperorders',this)">
-      🎁 Hamper Orders
+      📦 Hamper Orders
     </button>
   </nav>
 
@@ -944,11 +947,20 @@ button,input,select{font-family:'DM Sans',sans-serif;}
         </div>
       </div>
 
-      <!-- Hamper Pre-conditions (STRICT — no exceptions) -->
+
+    <!-- ═══ HAMPER MANAGEMENT PAGE ═══ -->
+    <div class="page" id="page-hampers">
+      <div class="sec-head">
+        <div class="sec-title">🎁 Hamper Management
+          <small>Hamper conditions, product pool ও packages manage করুন</small>
+        </div>
+      </div>
+
+      <!-- Hamper Pre-conditions -->
       <div class="add-zone-card" style="margin-bottom:16px;border-left:3px solid #C84B11;">
-        <div style="font-size:.85rem;font-weight:700;color:var(--navy);margin-bottom:4px;">🎁 Hamper Pre-conditions — Strict (কোনো exception নেই)</div>
+        <div style="font-size:.85rem;font-weight:700;color:var(--navy);margin-bottom:4px;">⚙️ Hamper Pre-conditions — Strict (কোনো exception নেই)</div>
         <div style="font-size:.72rem;color:var(--muted);margin-bottom:12px;">
-          এই conditions না মিললে product hamper এ qualify করবে না — কোনো special request option নেই। Festival condition এর চেয়ে কঠোর রাখুন।
+          এই conditions না মিললে product hamper এ qualify করবে না। Festival condition এর চেয়ে কঠোর রাখুন।
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:10px;">
           <div>
@@ -974,39 +986,20 @@ button,input,select{font-family:'DM Sans',sans-serif;}
         </div>
       </div>
 
-      <!-- Hamper Requests from Sellers -->
+      <!-- Hamper Product Requests (Seller Pool) -->
       <div class="add-zone-card" style="margin-bottom:16px;">
         <div style="font-size:.85rem;font-weight:700;color:var(--navy);margin-bottom:4px;">
-          📦 Hamper Product Requests
+          📦 Seller Hamper Requests — Qualified Pool
           <span id="hamperReqCount" style="font-size:.72rem;color:var(--muted);font-weight:400;margin-left:8px;"></span>
         </div>
-        <div style="font-size:.72rem;color:var(--muted);margin-bottom:12px;">Sellers যে products hamper এ add করতে চেয়েছে এবং conditions মিলিয়েছে</div>
+        <div style="font-size:.72rem;color:var(--muted);margin-bottom:12px;">Sellers এর qualified products — hamper এ include করতে "Pool এ যোগ করুন" চাপুন</div>
         <div id="hamperReqList"><div style="color:var(--muted);font-size:.82rem;">লোড হচ্ছে...</div></div>
       </div>
 
-      <!-- Active Festivals List -->
+      <!-- Hampers Create/Edit -->
       <div class="add-zone-card" style="margin-bottom:16px;">
-        <div style="font-size:.85rem;font-weight:700;color:var(--navy);margin-bottom:12px;">📋 সব Festivals</div>
-        <div id="festivalCatList"><div style="color:var(--muted);font-size:.82rem;">লোড হচ্ছে...</div></div>
-      </div>
-
-      <!-- Pending Festival Products -->
-      <div class="add-zone-card" style="margin-bottom:16px;">
-        <div style="font-size:.85rem;font-weight:700;color:var(--navy);margin-bottom:4px;">
-          ⏳ Pending Festival Products
-          <span id="festPendingCount" style="font-size:.72rem;color:var(--muted);font-weight:400;margin-left:8px;"></span>
-        </div>
-        <div style="font-size:.72rem;color:var(--muted);margin-bottom:12px;">Sellers যে products festival এ add করতে চেয়েছে — approve বা reject করুন</div>
-        <div id="festPendingList"><div style="color:var(--muted);font-size:.82rem;">লোড হচ্ছে...</div></div>
-      </div>
-
-      <!-- Hampers Management -->
-      <div class="add-zone-card">
-        <div style="font-size:.85rem;font-weight:700;color:var(--navy);margin-bottom:12px;">🎁 Hampers Management</div>
-
-        <!-- Create Hamper -->
+        <div style="font-size:.85rem;font-weight:700;color:var(--navy);margin-bottom:12px;">➕ নতুন Hamper তৈরি করুন</div>
         <div style="background:var(--sand);border-radius:12px;padding:14px;margin-bottom:14px;">
-          <div style="font-size:.78rem;font-weight:700;color:var(--navy);margin-bottom:10px;">➕ নতুন Hamper তৈরি করুন</div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
             <div>
               <label style="font-size:.68rem;color:var(--muted);">Hamper নাম</label>
@@ -1028,9 +1021,7 @@ button,input,select{font-family:'DM Sans',sans-serif;}
             </div>
             <div class="full" style="grid-column:1/-1;">
               <label style="font-size:.68rem;color:var(--muted);">Emoji / Image URL</label>
-              <div style="display:flex;gap:8px;margin-top:3px;">
-                <input class="form-input" id="hEmoji" placeholder="🎁 অথবা Image URL" style="flex:1;">
-              </div>
+              <input class="form-input" id="hEmoji" placeholder="🎁 অথবা Image URL" style="margin-top:3px;">
             </div>
             <div class="full" style="grid-column:1/-1;">
               <label style="font-size:.68rem;color:var(--muted);">Description</label>
@@ -1038,31 +1029,27 @@ button,input,select{font-family:'DM Sans',sans-serif;}
             </div>
           </div>
 
-          <!-- Base Items -->
+          <!-- Base Items from Pool -->
           <div style="margin-bottom:10px;">
-            <div style="font-size:.72rem;font-weight:700;color:var(--navy);margin-bottom:6px;">📦 Base Items (Pre-arranged sellers থেকে)</div>
-
-            <!-- Approved festival products থেকে select -->
+            <div style="font-size:.72rem;font-weight:700;color:var(--navy);margin-bottom:6px;">📦 Base Items</div>
             <div style="background:#e8f4ff;border-radius:10px;padding:10px;margin-bottom:8px;">
-              <div style="font-size:.7rem;color:#0984e3;font-weight:700;margin-bottom:6px;">✅ Approved Festival Products থেকে select করুন</div>
+              <div style="font-size:.7rem;color:#0984e3;font-weight:700;margin-bottom:6px;">✅ Qualified Pool থেকে select করুন</div>
               <div style="display:flex;gap:6px;">
                 <select class="form-input" id="hApprovedProductSelect" style="flex:1;">
-                  <option value="">-- Approved product select করুন --</option>
+                  <option value="">-- Product select করুন --</option>
                 </select>
                 <button class="btn-sm" style="background:#0984e3;color:#fff;" onclick="addApprovedProductToBase()">+ Add</button>
               </div>
             </div>
-
-            <!-- Manual add -->
             <div id="hBaseItems" style="display:flex;flex-direction:column;gap:6px;margin-bottom:6px;"></div>
             <div style="display:flex;gap:6px;">
-              <input class="form-input" id="hBaseItemName" placeholder="Item নাম (manually যোগ করুন)" style="flex:2;">
+              <input class="form-input" id="hBaseItemName" placeholder="Manually যোগ করুন" style="flex:2;">
               <input class="form-input" id="hBaseItemSeller" placeholder="Seller নাম" style="flex:1;">
               <button class="btn-sm" style="background:var(--navy);color:#fff;" onclick="addHamperBaseItem()">+ Add</button>
             </div>
           </div>
 
-          <!-- Add-on Products -->
+          <!-- Add-ons -->
           <div style="margin-bottom:10px;">
             <div style="font-size:.72rem;font-weight:700;color:var(--navy);margin-bottom:6px;">✨ Add-on Products (DELTA listing থেকে)</div>
             <div id="hAddOnList" style="display:flex;flex-direction:column;gap:6px;margin-bottom:6px;"></div>
@@ -1227,6 +1214,7 @@ function goTab(tab, btn){
   if(tab==='flashsale') loadFlashSaleData();
   if(tab==='products') loadModProducts();
   if(tab==='festivals') loadFestivalManagement();
+  if(tab==='hampers') loadHamperManagement();
   if(tab==='hamperorders') loadHamperOrders();
 }
 
@@ -4101,8 +4089,6 @@ var allFestivalCats = [];
 function loadFestivalManagement(){
   loadFestivalCategories();
   loadFestivalPendingProducts();
-  loadHampersManagement();
-  loadHamperRequests();
   // Festival conditions load করো
   db.collection('cities').doc(CITY).collection('settings').doc('festivalConditions')
     .get().then(function(doc){
@@ -4113,6 +4099,11 @@ function loadFestivalManagement(){
         if(d.allowedCategories) document.getElementById('festCondCategories').value = d.allowedCategories.join(',');
       }
     }).catch(function(){});
+}
+
+function loadHamperManagement(){
+  loadHampersManagement();
+  loadHamperRequests();
   // Hamper conditions load করো
   db.collection('cities').doc(CITY).collection('settings').doc('hamperConditions')
     .get().then(function(doc){
