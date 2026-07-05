@@ -1115,6 +1115,14 @@ var CITY = 'manteswar';
 var ADMIN_UID = 'j0KgzF3bRFa1e8kTlJThnStnhLs1';
 var auth, db, allSellers = [], allRequests = [], sellerFilter = 'all';
 
+// Global state variables — declared early to avoid undefined errors
+var allFestivalCats = [];
+var allHampers = [];
+var allHamperOrders = [];
+var hamperBaseItems = [];
+var hamperAddOns = [];
+var editingHamperId = null;
+
 (function(){
   var scripts=[
     'https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js',
@@ -1237,7 +1245,7 @@ function goTab(tab, btn){
       var festSel = document.getElementById('hFestivalTag');
       if(festSel){
         festSel.innerHTML = '<option value="">-- Festival select করুন --</option>';
-        allFestivalCats.forEach(function(f){
+        (window.allFestivalCats||[]).forEach(function(f){
           var opt = document.createElement('option');
           opt.value = f.key; opt.textContent = f.emoji+' '+f.name;
           festSel.appendChild(opt);
