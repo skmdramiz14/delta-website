@@ -1201,6 +1201,46 @@ function doLogout(){
 
 // ═══ TABS ═══
 function goTab(tab, btn){
+  // Early-defined wrapper functions to avoid undefined errors
+  if(!window._hamperTabsReady){
+    window.loadHamperManagement = function(){
+      loadHampersManagement();
+      loadHamperRequests();
+      db.collection('cities').doc(CITY).collection('settings').doc('hamperConditions')
+        .get().then(function(doc){
+          if(!doc.exists) return;
+          var d = doc.data();
+          if(d.minDiscount) document.getElementById('hamperCondDiscount').value = d.minDiscount;
+          if(d.minStock) document.getElementById('hamperCondStock').value = d.minStock;
+          if(d.maxPrice) document.getElementById('hamperCondMaxPrice').value = d.maxPrice;
+          if(d.allowedCategories) document.getElementById('hamperCondCategories').value = d.allowedCategories.join(',');
+        }).catch(function(){});
+    };
+    window.loadHamperOrders = function(){
+      var wrap = document.getElementById('hamperOrdersList');
+      if(wrap) wrap.innerHTML = '<div style="color:var(--muted);font-size:.85rem;padding:20px;text-align:center;">লোড হচ্ছে...</div>';
+      db.collection('hamperOrders').orderBy('createdAt','desc').get()
+        .then(function(snap){
+          allHamperOrders = [];
+          snap.forEach(function(d){ allHamperOrders.push(Object.assign({id:d.id},d.data())); });
+          updateHamperOrderStats();
+          renderHamperOrders();
+        }).catch(function(e){ if(wrap) wrap.innerHTML='<div style="color:var(--red);padding:20px;">লোড সমস্যা: '+e.message+'</div>'; });
+    };
+    window.loadFestivalManagement = function(){
+      loadFestivalCategories();
+      loadFestivalPendingProducts();
+      db.collection('cities').doc(CITY).collection('settings').doc('festivalConditions')
+        .get().then(function(doc){
+          if(!doc.exists) return;
+          var d = doc.data();
+          if(d.minDiscount) document.getElementById('festCondDiscount').value = d.minDiscount;
+          if(d.minStock) document.getElementById('festCondStock').value = d.minStock;
+          if(d.allowedCategories) document.getElementById('festCondCategories').value = d.allowedCategories.join(',');
+        }).catch(function(){});
+    };
+    window._hamperTabsReady = true;
+  }
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
   document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});
   document.getElementById('page-'+tab).classList.add('active');
