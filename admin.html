@@ -4850,7 +4850,7 @@ function removeHamperAddOn(idx){
 function saveHamper(){
   var name = document.getElementById('hName').value.trim();
   var price = parseInt(document.getElementById('hPrice').value)||0;
-  var festivalTag = document.getElementById('hFestivalTag').value;
+  var festivalTag = (document.getElementById('hFestivalTag')||{}).value||'';
   var stock = parseInt(document.getElementById('hStock').value)||0;
   var emoji = document.getElementById('hEmoji').value.trim()||'🎁';
   var desc = document.getElementById('hDesc').value.trim();
@@ -4881,7 +4881,7 @@ function saveHamper(){
   prom.then(function(){
     hamperBaseItems=[]; hamperAddOns=[]; editingHamperId=null;
     ['hName','hPrice','hEmoji','hDesc','hStock'].forEach(function(id){ document.getElementById(id).value=''; });
-    document.getElementById('hFestivalTag').value='';
+    var hft = document.getElementById('hFestivalTag'); if(hft) hft.value='';
     renderHamperBaseItems(); renderHamperAddOns();
     if(statusEl) statusEl.textContent='✅ Hamper সেভ হয়েছে';
     setTimeout(function(){ if(statusEl) statusEl.textContent=''; },3000);
