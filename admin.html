@@ -1251,8 +1251,33 @@ function goTab(tab, btn){
           festSel.appendChild(opt);
         });
       }
-      // Load approved products for base items
-      loadApprovedHamperProducts();
+      // Load approved products for base items dropdown
+      var approvedSel = document.getElementById('hApprovedProductSelect');
+      if(approvedSel){
+        approvedSel.innerHTML = '<option value="">-- Approved product select করুন --</option>';
+        db.collection('cities').doc(CITY).collection('hamperRequests')
+          .where('status','==','approved').get()
+          .then(function(snap){
+            snap.forEach(function(d){
+              var r = d.data();
+              var opt = document.createElement('option');
+              opt.value = JSON.stringify({name:r.productName,sellerName:r.shopName,price:r.price,discount:r.hamperDiscount,stock:r.hamperStock});
+              opt.textContent = r.productName+' — ₹'+r.price+(r.hamperDiscount?' ('+r.hamperDiscount+'% OFF)':'')+' | '+r.shopName;
+              approvedSel.appendChild(opt);
+            });
+          }).catch(function(){});
+        db.collection('cities').doc(CITY).collection('festivalRequests')
+          .where('status','==','approved').get()
+          .then(function(snap){
+            snap.forEach(function(d){
+              var r = d.data();
+              var opt = document.createElement('option');
+              opt.value = JSON.stringify({name:r.productName,sellerName:r.shopName,price:r.price,discount:r.festivalDiscount});
+              opt.textContent = r.productName+' [Festival] — ₹'+r.price+' | '+r.shopName;
+              approvedSel.appendChild(opt);
+            });
+          }).catch(function(){});
+      }
       // Load add-on products
       var addOnSel = document.getElementById('hAddOnSelect');
       if(addOnSel){
