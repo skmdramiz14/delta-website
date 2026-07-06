@@ -1390,15 +1390,18 @@ function renderCartDrawer(){
   }
 
   var total = list.reduce(function(s,i){ return s+i.price*(i.qty||1); },0);
-
-  // Hampers আর add-ons আলাদা করো
   var hampers = list.filter(function(i){ return !i.isAddOn; });
   var addOns = list.filter(function(i){ return i.isAddOn; });
 
   body.innerHTML = hampers.map(function(h){
-    // এই hamper এর add-ons খুঁজো
     var hAddOns = addOns.filter(function(a){ return a.hamperId===h.id; });
     var hamperTotal = h.price*(h.qty||1) + hAddOns.reduce(function(s,a){return s+a.price;},0);
+
+    // Available add-ons for this hamper (not yet added)
+    var hamperData = allHampers.find(function(x){ return x.id===h.id; });
+    var availableAddOns = hamperData ? (hamperData.addOns||[]).filter(function(a){
+      return addOnProductsCache[a.productId] && !hAddOns.find(function(ea){ return ea.id===a.productId; });
+    }) : [];
 
     return '<div style="border-bottom:1px solid var(--border);padding-bottom:12px;margin-bottom:12px;">'+
       // Main hamper
@@ -1408,7 +1411,8 @@ function renderCartDrawer(){
         '<span class="ci-price">₹'+h.price*(h.qty||1)+'</span>'+
         '<button class="ci-remove" onclick="removeFromCart(\''+h.id+'\')">×</button>'+
       '</div>'+
-      // Add-ons indented
+
+      // Added add-ons
       hAddOns.map(function(a){
         return '<div style="display:flex;align-items:center;gap:8px;padding:5px 0 5px 28px;">'+
           '<span style="font-size:.75rem;color:var(--orange);">✨</span>'+
@@ -1417,23 +1421,59 @@ function renderCartDrawer(){
           '<button onclick="removeFromCart(\''+a.id+'\')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:.9rem;padding:0 4px;">×</button>'+
         '</div>';
       }).join('')+
-      // Subtotal if add-ons exist
+
+      // Subtotal
       (hAddOns.length?
-        '<div style="display:flex;justify-content:flex-end;padding-top:6px;padding-right:30px;font-size:.78rem;font-weight:700;color:var(--navy);">'+
+        '<div style="display:flex;justify-content:flex-end;padding:4px 30px 4px 0;font-size:.78rem;font-weight:700;color:var(--navy);">'+
           'Subtotal: ₹'+hamperTotal+
         '</div>':'')+
+
+      // Available add-ons to add
+      (availableAddOns.length?
+        '<div style="margin-top:8px;padding:10px 12px;background:#fff4ec;border-radius:10px;border:1px dashed var(--orange);">'+
+          '<div style="font-size:.72rem;font-weight:700;color:var(--orange);margin-bottom:8px;">✨ Add-on যোগ করবেন?</div>'+
+          availableAddOns.map(function(a){
+            var p = addOnProductsCache[a.productId];
+            var name = p.nameBn||p.name||'পণ্য';
+            return '<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(240,112,24,.15);">'+
+              '<span style="font-size:.78rem;color:var(--navy);">'+name+'</span>'+
+              '<div style="display:flex;align-items:center;gap:8px;">'+
+                '<span style="font-size:.78rem;font-weight:700;color:var(--orange);">+₹'+p.price+'</span>'+
+                '<button onclick="addAddonFromCart(\''+h.id+'\',\''+a.productId+'\',\''+a.shopId+'\',\''+name.replace(/'/g,"\\'")+'\',' +p.price+')" '+
+                  'style="background:var(--orange);color:#fff;border:none;padding:4px 10px;border-radius:6px;font-size:.72rem;font-weight:700;cursor:pointer;">+ Add</button>'+
+              '</div>'+
+            '</div>';
+          }).join('')+
+        '</div>'
+        : '')+
     '</div>';
   }).join('');
 
   foot.innerHTML =
     '<div style="display:flex;justify-content:space-between;margin-bottom:12px;font-weight:800;font-size:1rem;color:var(--navy);">'+
-      '<span>মোট</span><span>₹'+total+'</span>'+
+      '<span>মোট</span><span id="cartTotalDisplay">₹'+total+'</span>'+
     '</div>'+
     '<div style="margin-bottom:8px;">'+
       '<input type="text" id="cartAddress" placeholder="ডেলিভারি ঠিকানা" style="width:100%;padding:11px;border:1.5px solid var(--border);border-radius:8px;font-size:.82rem;margin-bottom:8px;box-sizing:border-box;">'+
       '<input type="tel" id="cartPhone" placeholder="ফোন নম্বর" style="width:100%;padding:11px;border:1.5px solid var(--border);border-radius:8px;font-size:.82rem;box-sizing:border-box;">'+
     '</div>'+
     '<button onclick="checkoutCart()" style="width:100%;padding:13px;background:var(--navy);color:#fff;border:none;border-radius:10px;font-weight:800;cursor:pointer;">✅ অর্ডার নিশ্চিত করুন (COD)</button>';
+}
+
+function addAddonFromCart(hamperId, productId, shopId, name, price){
+  var cartList = getCart();
+  var ex = cartList.find(function(i){ return i.id===productId && i.isAddOn; });
+  if(ex){ showToast('এই add-on আগেই যোগ হয়েছে','green'); return; }
+  cartList.push({
+    id: productId, shopId: shopId,
+    name: name, price: price,
+    qty: 1, emoji: '✨',
+    isAddOn: true, hamperId: hamperId
+  });
+  saveCart(cartList);
+  updateCartIcon();
+  renderCartDrawer();
+  showToast('✅ '+name+' যোগ হয়েছে!','green');
 }
 
 function checkoutCart(){
