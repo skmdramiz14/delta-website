@@ -115,34 +115,32 @@ body.lang-bn .lang-en{display:none!important;}
 @media(max-width:768px){
   html,body{overflow-x:hidden;}
   .main{padding:16px 12px;}
-  .hamper-grid{grid-template-columns:1fr 1fr;gap:12px;}
-  .hap-name{font-size:.9rem;}
-  .hap-body{padding:10px;}
-  .hap-banner{min-height:120px;}
-  .hap-desc{display:none;} /* mobile এ description hide */
+  .hamper-grid{grid-template-columns:1fr;gap:16px;}
+  .hap-name{font-size:1rem;}
+  .hap-body{padding:14px;}
+  .hap-banner{min-height:150px;}
 }
 
 @media(max-width:480px){
-  .hamper-grid{grid-template-columns:1fr 1fr!important;gap:10px;}
-  .hero-banner{padding:20px 16px 30px;}
-  .hero-title{font-size:1.4rem;}
-  .hero-sub{font-size:.78rem;}
+  .hamper-grid{grid-template-columns:1fr!important;}
+  .hero-banner{padding:24px 16px 36px;}
+  .hero-title{font-size:1.5rem;}
+  .hero-sub{font-size:.8rem;}
   .filter-bar{padding:10px 12px;}
-  .fpill{padding:6px 10px;font-size:.76rem;}
-  .hap-banner{min-height:110px;}
-  .hap-art{font-size:2.2rem;}
-  .hap-body{padding:10px;}
-  .hap-name{font-size:.85rem;}
-  .hap-price{font-size:1rem;}
-  .hap-add-btn{padding:9px;font-size:.8rem;}
-  .hap-sold{display:none;}
-  .section-title{font-size:1.1rem;}
+  .fpill{padding:7px 12px;font-size:.78rem;}
+  .hap-banner{min-height:150px;}
+  .hap-art{font-size:3rem;}
+  .hap-body{padding:14px;}
+  .hap-name{font-size:1rem;}
+  .hap-price{font-size:1.1rem;}
+  .hap-add-btn{padding:11px;font-size:.85rem;}
+  .section-title{font-size:1.2rem;}
 }
 
 @media(max-width:360px){
-  .hamper-grid{gap:8px;}
-  .hap-body{padding:8px;}
-  .hap-name{font-size:.8rem;}
+  .hamper-grid{gap:12px;}
+  .hap-body{padding:12px;}
+  .hap-name{font-size:.95rem;}
 }
 
 /* ── CART ICON (nav) ── */
@@ -319,6 +317,10 @@ body.lang-bn .lang-en{display:none!important;}
   <div class="dp-body">
     <div class="dp-badges" id="dpBadges"></div>
     <div class="dp-name" id="dpName"></div>
+
+    <!-- Brief description below name -->
+    <div id="dpBriefDesc" style="font-size:.85rem;color:var(--muted);line-height:1.6;margin-bottom:12px;display:none;"></div>
+
     <div class="dp-rating-row">
       <span class="dp-stars" id="dpStars">☆☆☆☆☆</span>
       <span class="dp-rating-count" id="dpRatingCount">এখনো কোনো রিভিউ নেই</span>
@@ -329,8 +331,15 @@ body.lang-bn .lang-en{display:none!important;}
       <span class="dp-orig-price" id="dpOrigPrice" style="display:none;"></span>
       <span class="dp-discount-tag" id="dpDiscountTag" style="display:none;"></span>
     </div>
+    <div id="dpDiscountValidity" style="display:none;font-size:.72rem;color:var(--orange);margin-bottom:8px;"></div>
     <div class="dp-price-note">💵 Cash on Delivery • মূল্যে সব কর অন্তর্ভুক্ত</div>
     <div id="dpSocialProof" style="display:none;background:#fff4ec;border:1px solid rgba(240,112,24,.25);border-radius:10px;padding:9px 12px;margin-bottom:16px;font-size:.78rem;color:var(--orange);font-weight:700;"></div>
+
+    <!-- Add-ons — উপরে নিয়ে আসা -->
+    <div class="dp-section" id="dpAddOnsSection" style="display:none;">
+      <div class="dp-section-title">✨ Optional Add-ons (নিজে পছন্দ করে যুক্ত করুন)</div>
+      <div id="dpAddOns"></div>
+    </div>
 
     <!-- Top Highlights -->
     <div class="dp-section">
@@ -344,12 +353,6 @@ body.lang-bn .lang-en{display:none!important;}
       <div id="dpBaseItems"></div>
     </div>
 
-    <!-- Add-ons -->
-    <div class="dp-section" id="dpAddOnsSection" style="display:none;">
-      <div class="dp-section-title">✨ Optional Add-ons (নিজে পছন্দ করে যুক্ত করুন)</div>
-      <div id="dpAddOns"></div>
-    </div>
-
     <!-- Specifications -->
     <div class="dp-section">
       <div class="dp-section-title">📋 Product Specification</div>
@@ -358,7 +361,7 @@ body.lang-bn .lang-en{display:none!important;}
 
     <!-- About / From DELTA -->
     <div class="dp-section">
-      <div class="dp-section-title">🏷️ Shop থেকে / DELTA কিউরেটেড সম্পর্কে</div>
+      <div class="dp-section-title" id="dpAboutTitle">🏷️ DELTA কিউরেটেড সম্পর্কে</div>
       <div id="dpAbout"></div>
       <div class="dp-report-link" onclick="reportIssueCurrent()">⚠️ এই প্রোডাক্ট নিয়ে সমস্যা রিপোর্ট করুন</div>
     </div>
@@ -945,7 +948,32 @@ function openDetailPage(hamperId){
     discEl.style.display = 'none';
   }
 
-  // Highlights (fallback auto-generated from data if none saved)
+  // Brief description below name
+  var briefEl = document.getElementById('dpBriefDesc');
+  if(h.description && briefEl){
+    briefEl.textContent = h.description;
+    briefEl.style.display = 'block';
+  } else if(briefEl){
+    briefEl.style.display = 'none';
+  }
+
+  // Discount validity
+  var validEl = document.getElementById('dpDiscountValidity');
+  if(validEl){
+    if(h.discountValidUntil){
+      var diff = Math.max(0, Math.ceil((new Date(h.discountValidUntil)-new Date())/86400000));
+      validEl.style.display = 'block';
+      validEl.textContent = '⏰ এই দামে মাত্র '+diff+' দিন বাকি ('+h.discountValidUntil+' পর্যন্ত)';
+    } else {
+      validEl.style.display = 'none';
+    }
+  }
+
+  // About title
+  var aboutTitle = document.getElementById('dpAboutTitle');
+  if(aboutTitle && h.aboutTitle){
+    aboutTitle.textContent = h.aboutTitle;
+  }
   var highlights = h.highlights && h.highlights.length ? h.highlights : [
     'মন্তেশ্বরের স্থানীয় কৃষক ও বিক্রেতাদের কাছ থেকে সংগ্রহ করা',
     (h.baseItems||[]).length + 'টি সতেজ আইটেম দিয়ে সাজানো',
