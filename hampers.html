@@ -116,32 +116,33 @@ body.lang-bn .lang-en{display:none!important;}
   html,body{overflow-x:hidden;}
   .main{padding:16px 12px;}
   .hamper-grid{grid-template-columns:1fr 1fr;gap:12px;}
-  .hap-name{font-size:.95rem;}
-  .hap-body{padding:12px;}
+  .hap-name{font-size:.9rem;}
+  .hap-body{padding:10px;}
   .hap-banner{min-height:120px;}
+  .hap-desc{display:none;} /* mobile এ description hide */
 }
 
 @media(max-width:480px){
-  .hamper-grid{grid-template-columns:1fr!important;}
-  .hero-banner{padding:24px 16px 36px;}
-  .hero-title{font-size:1.5rem;}
-  .hero-sub{font-size:.8rem;}
+  .hamper-grid{grid-template-columns:1fr 1fr!important;gap:10px;}
+  .hero-banner{padding:20px 16px 30px;}
+  .hero-title{font-size:1.4rem;}
+  .hero-sub{font-size:.78rem;}
   .filter-bar{padding:10px 12px;}
-  .fpill{padding:7px 12px;font-size:.78rem;}
-  .hap-banner{min-height:140px;}
-  .hap-art{font-size:2.8rem;}
-  .hap-body{padding:14px;}
-  .hap-name{font-size:1rem;}
-  .hap-price{font-size:1.1rem;}
-  .hap-add-btn{padding:11px;font-size:.85rem;}
-  .section-title{font-size:1.2rem;}
+  .fpill{padding:6px 10px;font-size:.76rem;}
+  .hap-banner{min-height:110px;}
+  .hap-art{font-size:2.2rem;}
+  .hap-body{padding:10px;}
+  .hap-name{font-size:.85rem;}
+  .hap-price{font-size:1rem;}
+  .hap-add-btn{padding:9px;font-size:.8rem;}
+  .hap-sold{display:none;}
+  .section-title{font-size:1.1rem;}
 }
 
 @media(max-width:360px){
-  .hamper-grid{gap:10px;}
-  .hap-body{padding:12px;}
-  .hap-name{font-size:.92rem;}
-  .hap-price{font-size:1rem;}
+  .hamper-grid{gap:8px;}
+  .hap-body{padding:8px;}
+  .hap-name{font-size:.8rem;}
 }
 
 /* ── CART ICON (nav) ── */
@@ -286,6 +287,13 @@ body.lang-bn .lang-en{display:none!important;}
 
 </div>
 
+<!-- SCROLL TO TOP -->
+<button id="scrollTopBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})"
+  style="display:none;position:fixed;bottom:80px;right:20px;width:44px;height:44px;
+  background:var(--navy);color:#fff;border:none;border-radius:50%;font-size:1.2rem;
+  cursor:pointer;z-index:500;box-shadow:0 4px 16px rgba(0,0,0,.25);
+  align-items:center;justify-content:center;">↑</button>
+
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
@@ -295,12 +303,13 @@ body.lang-bn .lang-en{display:none!important;}
     <button class="dp-icon-btn" onclick="closeDetailPage()">←</button>
     <div class="dp-topbar-actions">
       <button class="dp-icon-btn" id="dpWishlistBtn" onclick="toggleWishlistCurrent()">♡</button>
+      <button class="dp-icon-btn" onclick="shareHamperWhatsApp()" title="WhatsApp এ শেয়ার করুন">💬</button>
       <button class="dp-icon-btn" onclick="reportIssueCurrent()">⚠️</button>
     </div>
   </div>
 
-  <!-- Image slider -->
-  <div class="dp-slider" id="dpSlider">
+  <!-- Image slider — compressed height -->
+  <div class="dp-slider" id="dpSlider" style="max-height:260px;aspect-ratio:unset;height:260px;">
     <div class="dp-slider-track" id="dpSliderTrack"></div>
     <div class="dp-dots" id="dpDots"></div>
     <button class="dp-nav-btn dp-nav-prev" onclick="dpSlide(-1)">‹</button>
@@ -472,6 +481,24 @@ var festivalCats = [];
 var addOnCache = {};
 var cart = [];
 try{ cart = JSON.parse(localStorage.getItem('deltaCart')||'[]'); }catch(e){}
+
+// Scroll to top button
+window.addEventListener('scroll', function(){
+  var btn = document.getElementById('scrollTopBtn');
+  if(btn) btn.style.display = window.scrollY > 300 ? 'flex' : 'none';
+});
+
+// WhatsApp share
+function shareHamperWhatsApp(){
+  var h = window._currentDpHamper;
+  if(!h) return;
+  var msg = '🎁 দেখো এই দারুণ Hamper!\n\n'+
+    h.name+'\n'+
+    (h.description?h.description+'\n':'')+
+    '💰 মাত্র ₹'+h.price+'\n\n'+
+    'DELTA তে অর্ডার করো: deltaapp.in/hampers.html';
+  window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
+}
 
 function setLang(l){
   currentLang=l;
@@ -684,8 +711,21 @@ function openOrderModal(h){
     document.getElementById('orderModalAddOns').style.display = 'none';
   }
 
-  // Total set করো
-  document.getElementById('orderTotal').textContent = '₹'+h.price;
+  // Total set করো — preselected add-ons থাকলে সেটা দেখাও
+  var preselected = h._preselectedAddOns||[];
+  var preTotal = preselected.reduce(function(s,a){return s+a.price;},0);
+  document.getElementById('orderTotal').textContent = '₹'+(h.price+preTotal);
+
+  // Preselected add-ons check করো
+  if(preselected.length){
+    setTimeout(function(){
+      document.querySelectorAll('.modal-addon-cb').forEach(function(cb){
+        var isPreselected = preselected.some(function(a){ return a.productId===cb.dataset.pid; });
+        if(isPreselected) cb.checked = true;
+      });
+      updateModalTotal();
+    }, 100);
+  }
 }
 
 function updateModalTotal(){
@@ -870,6 +910,7 @@ var dpSelectedStars = 0;
 function openDetailPage(hamperId){
   var h = allHampers.find(function(x){ return x.id===hamperId; });
   if(!h) return;
+  window._currentDpHamper = h;
   currentDetailHamper = h;
   dpSlideIndex = 0;
 
@@ -931,17 +972,27 @@ function openDetailPage(hamperId){
       }).join('')
     : '<div style="font-size:.78rem;color:var(--muted);">কোনো item নেই।</div>';
 
-  // Add-ons
+  // Add-ons with checkboxes
   var validAddOns = (h.addOns||[]).filter(function(a){ return addOnCache[a.productId]; });
   var addOnsSec = document.getElementById('dpAddOnsSection');
   if(validAddOns.length){
     addOnsSec.style.display = 'block';
     document.getElementById('dpAddOns').innerHTML = validAddOns.map(function(a){
       var p = addOnCache[a.productId];
-      return '<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(240,112,24,.15);">'+
-        '<span style="font-size:.82rem;color:var(--navy);">'+(p.nameBn||p.name||'পণ্য')+'</span>'+
-        '<span style="font-size:.78rem;font-weight:700;color:var(--orange);">+₹'+(p.price||0)+'</span>'+
-      '</div>';
+      var name = p.nameBn||p.name||'পণ্য';
+      return '<label style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer;">'+
+        '<span style="display:flex;align-items:center;gap:10px;">'+
+          '<input type="checkbox" class="dp-addon-cb" data-pid="'+a.productId+'" data-sid="'+a.shopId+'" '+
+            'data-price="'+(p.price||0)+'" data-name="'+name.replace(/"/g,'&quot;')+'" '+
+            'onchange="updateDpTotal()" '+
+            'style="width:18px;height:18px;accent-color:var(--orange);cursor:pointer;">'+
+          '<span>'+
+            '<div style="font-size:.85rem;color:var(--navy);font-weight:600;">'+name+'</div>'+
+            (p.description?'<div style="font-size:.72rem;color:var(--muted);">'+p.description.slice(0,50)+'</div>':'')+
+          '</span>'+
+        '</span>'+
+        '<span style="font-size:.85rem;font-weight:800;color:var(--orange);flex-shrink:0;margin-left:10px;">+₹'+(p.price||0)+'</span>'+
+      '</label>';
     }).join('');
   } else {
     addOnsSec.style.display = 'none';
@@ -951,7 +1002,7 @@ function openDetailPage(hamperId){
   var specs = h.specs || {};
   var specRows = [
     ['ওজন / পরিমাণ', specs.weight || ((h.baseItems||[]).length+' আইটেম')],
-    ['উপলক্ষ্য', festName],
+    ['উপলক্ষ্য', specs.occasion || festName],
     ['তাজা রাখার সময়', specs.shelfLife || '২৪-৪৮ ঘণ্টা (তাজা পণ্য)'],
     ['ডেলিভারি সময়', specs.deliveryTime || '৩০-৬০ মিনিট (Manteswar এলাকায়)'],
     ['পেমেন্ট পদ্ধতি', 'Cash on Delivery (COD)']
@@ -1241,15 +1292,54 @@ function removeFromCart(id){
   renderCartDrawer();
 }
 
+function updateDpTotal(){
+  if(!currentDetailHamper) return;
+  var addOnTotal = 0;
+  document.querySelectorAll('.dp-addon-cb:checked').forEach(function(cb){
+    addOnTotal += parseInt(cb.dataset.price)||0;
+  });
+  var total = currentDetailHamper.price + addOnTotal;
+  var buyBtn = document.querySelector('.dp-btn-buy');
+  if(buyBtn) buyBtn.textContent = '⚡ এখনই কিনুন — ₹'+total;
+}
+
+function getDpSelectedAddOns(){
+  var addOns = [];
+  document.querySelectorAll('.dp-addon-cb:checked').forEach(function(cb){
+    addOns.push({
+      productId: cb.dataset.pid,
+      shopId: cb.dataset.sid,
+      name: cb.dataset.name,
+      price: parseInt(cb.dataset.price)||0
+    });
+  });
+  return addOns;
+}
+
 function dpAddToCart(){
   if(!currentDetailHamper) return;
   addToCart(currentDetailHamper);
+  var addOns = getDpSelectedAddOns();
+  addOns.forEach(function(a){
+    // Add-on কে cart এ যোগ করো
+    var cartList = getCart();
+    var ex = cartList.find(function(i){ return i.id===a.productId; });
+    if(ex){ ex.qty++; } else {
+      cartList.push({id:a.productId, shopId:a.shopId, name:a.name, price:a.price, qty:1, isAddOn:true, hamperId:currentDetailHamper.id});
+    }
+    saveCart(cartList);
+  });
+  updateCartIcon();
+  showToast('✅ কার্টে যোগ হয়েছে!', 'green');
 }
 
 function dpBuyNow(){
   if(!currentDetailHamper) return;
+  var addOns = getDpSelectedAddOns();
   closeDetailPage();
-  openOrderModal(currentDetailHamper);
+  // Order modal এ pass করো selected add-ons সহ
+  var h = Object.assign({}, currentDetailHamper, {_preselectedAddOns: addOns});
+  openOrderModal(h);
 }
 
 function openCartDrawer(){
