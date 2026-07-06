@@ -656,10 +656,30 @@ select.form-input{cursor:pointer;}
     <header class="topbar">
       <div class="topbar-title" id="pageTitle">ড্যাশবোর্ড</div>
       <div class="topbar-right">
+        <!-- Notification Bell -->
+        <div style="position:relative;cursor:pointer;" onclick="toggleNotificationPanel()">
+          <div style="font-size:1.2rem;">🔔</div>
+          <div id="notifBadge" style="display:none;position:absolute;top:-4px;right:-6px;
+            background:var(--red);color:#fff;font-size:.6rem;font-weight:800;
+            min-width:16px;height:16px;border-radius:10px;display:flex;align-items:center;justify-content:center;padding:0 3px;">0</div>
+        </div>
         <div class="online-pill"><div class="online-dot"></div>Online</div>
         <div style="font-size:.75rem;color:var(--muted)" id="todayDate"></div>
       </div>
     </header>
+
+    <!-- Notification Panel -->
+    <div id="notifPanel" style="display:none;position:fixed;top:60px;right:16px;width:320px;max-height:400px;
+      background:#fff;border-radius:14px;border:1px solid var(--border);box-shadow:0 8px 32px rgba(0,0,0,.15);
+      z-index:1000;overflow-y:auto;">
+      <div style="padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+        <div style="font-size:.85rem;font-weight:700;color:var(--navy);">🔔 Notifications</div>
+        <button onclick="markAllNotifRead()" style="font-size:.7rem;color:var(--orange);background:none;border:none;cursor:pointer;font-weight:600;">সব পড়া হয়েছে</button>
+      </div>
+      <div id="notifList" style="padding:8px 0;">
+        <div style="text-align:center;padding:20px;color:var(--muted);font-size:.78rem;">লোড হচ্ছে...</div>
+      </div>
+    </div>
 
     <div class="content">
 
@@ -873,15 +893,240 @@ select.form-input{cursor:pointer;}
         </div>
 
         <!-- My Festival Submissions -->
-        <div style="background:#fff;border-radius:14px;border:1px solid var(--border);padding:16px;">
+        <div style="background:#fff;border-radius:14px;border:1px solid var(--border);padding:16px;margin-bottom:16px;">
           <div style="font-size:.82rem;font-weight:700;color:var(--navy);margin-bottom:12px;">📋 আমার Festival Requests</div>
           <div id="myFestivalRequests">
             <div style="color:var(--muted);font-size:.78rem;text-align:center;padding:12px;">লোড হচ্ছে...</div>
           </div>
         </div>
-      </div>
 
-      <!-- ═══ HAMPER PAGE ═══ -->
+        <!-- Coupon Section -->
+        <div style="background:#fff;border-radius:14px;border:1px solid var(--border);padding:16px;">
+          <div style="font-size:.85rem;font-weight:700;color:var(--navy);margin-bottom:14px;">🎟️ Festival Coupon তৈরি করুন</div>
+
+          <!-- Create Coupon Form -->
+          <div style="background:var(--sand);border-radius:12px;padding:14px;margin-bottom:14px;">
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Coupon Code <span style="color:var(--red);font-size:.7rem;">*required</span></label>
+                <input type="text" class="form-input" id="cpnCode" placeholder="যেমন: PUJA20" style="text-transform:uppercase;" oninput="this.value=this.value.toUpperCase().replace(/\s/g,'')">
+              </div>
+              <div class="form-group">
+                <label>Coupon Type</label>
+                <select class="form-input" id="cpnType" onchange="updateCouponPreview()">
+                  <option value="percent">% Discount</option>
+                  <option value="flat">Flat Off (₹)</option>
+                  <option value="bogo">Buy 1 Get 1 Free</option>
+                </select>
+              </div>
+              <div class="form-group" id="cpnValueGroup">
+                <label>Discount Value</label>
+                <input type="number" class="form-input" id="cpnValue" placeholder="যেমন: 20" oninput="updateCouponPreview()">
+              </div>
+              <div class="form-group">
+                <label>ন্যূনতম Order (₹)</label>
+                <input type="number" class="form-input" id="cpnMinOrder" placeholder="যেমন: 100">
+              </div>
+              <div class="form-group">
+                <label>সর্বোচ্চ Uses</label>
+                <input type="number" class="form-input" id="cpnMaxUses" placeholder="যেমন: 50">
+              </div>
+              <div class="form-group">
+                <label>Valid Until</label>
+                <input type="date" class="form-input" id="cpnValidUntil">
+              </div>
+              <div class="form-group">
+                <label>Festival</label>
+                <select class="form-input" id="cpnFestival">
+                  <option value="">-- Festival select করুন --</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Description (Optional)</label>
+                <input type="text" class="form-input" id="cpnDesc" placeholder="যেমন: পূজায় ২০% ছাড়">
+              </div>
+            </div>
+
+            <!-- Preview -->
+            <div id="cpnPreview" style="background:#fff;border-radius:10px;padding:12px;margin:10px 0;border:2px dashed var(--orange);display:none;">
+              <div style="font-size:.7rem;color:var(--muted);margin-bottom:4px;">Preview:</div>
+              <div id="cpnPreviewText" style="font-size:.88rem;font-weight:700;color:var(--orange);"></div>
+            </div>
+
+            <button onclick="createCoupon()" class="btn-sm btn-orange" style="width:100%;justify-content:center;">🎟️ Coupon তৈরি করুন</button>
+          </div>
+
+          <!-- My Coupons List -->
+          <div>
+            <div style="font-size:.78rem;font-weight:700;color:var(--navy);margin-bottom:10px;">📋 আমার Coupons</div>
+            <div id="myCouponsList">
+              <div style="color:var(--muted);font-size:.78rem;text-align:center;padding:12px;">লোড হচ্ছে...</div>
+            </div>
+          </div>
+          <!-- Seller Package Curation -->
+          <div style="background:#fff;border-radius:14px;border:1px solid var(--border);padding:16px;margin-top:16px;">
+            <div style="font-size:.85rem;font-weight:700;color:var(--navy);margin-bottom:14px;">📦 Festival Package তৈরি করুন</div>
+
+            <div style="background:linear-gradient(135deg,rgba(9,132,227,.08),rgba(0,184,148,.08));border-radius:12px;padding:14px;margin-bottom:14px;">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>Package নাম <span style="color:var(--red);font-size:.7rem;">*required</span></label>
+                  <input type="text" class="form-input" id="pkgName" placeholder="যেমন: পূজা স্পেশাল কম্বো">
+                </div>
+                <div class="form-group">
+                  <label>Festival</label>
+                  <select class="form-input" id="pkgFestival">
+                    <option value="">-- Festival select করুন --</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Product Selection -->
+              <div style="margin-bottom:10px;">
+                <label style="font-size:.78rem;font-weight:600;color:var(--navy);display:block;margin-bottom:6px;">📦 Package এ কোন Products থাকবে?</label>
+                <div style="display:flex;gap:8px;margin-bottom:8px;">
+                  <select class="form-input" id="pkgProductSelect" style="flex:1;">
+                    <option value="">-- Product select করুন --</option>
+                  </select>
+                  <input type="number" id="pkgProductQty" class="form-input" style="width:70px;" placeholder="Qty" min="1" value="1">
+                  <button class="btn-sm" onclick="addPkgItem()" style="background:var(--navy);color:#fff;">+ Add</button>
+                </div>
+                <div id="pkgItemsList" style="display:flex;flex-direction:column;gap:6px;"></div>
+              </div>
+
+              <!-- Price -->
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>Package মূল্য (₹) <span style="font-size:.68rem;color:var(--muted);">— auto calculate হবে</span></label>
+                  <input type="number" class="form-input" id="pkgPrice" placeholder="Auto calculate">
+                  <div id="pkgAutoPrice" style="font-size:.72rem;color:var(--green);margin-top:4px;"></div>
+                </div>
+                <div class="form-group">
+                  <label>Package Discount (%)</label>
+                  <input type="number" class="form-input" id="pkgDiscount" placeholder="যেমন: 10" min="0" max="90" oninput="calcPkgPrice()">
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Package Description</label>
+                <textarea class="form-input" id="pkgDesc" rows="2" placeholder="Package এর বিবরণ" style="resize:vertical;"></textarea>
+              </div>
+              <div class="form-group">
+                <label>Package Image URL (Optional)</label>
+                <input type="text" class="form-input" id="pkgImage" placeholder="Cloudinary URL">
+              </div>
+
+              <button onclick="createPackage()" class="btn-sm" style="background:linear-gradient(135deg,#0984e3,#00b894);color:#fff;width:100%;justify-content:center;margin-top:8px;">📦 Package Submit করুন (Admin approval লাগবে)</button>
+            </div>
+
+            <!-- My Packages -->
+            <div style="font-size:.78rem;font-weight:700;color:var(--navy);margin-bottom:10px;">📋 আমার Packages</div>
+            <div id="myPackagesList">
+              <div style="color:var(--muted);font-size:.78rem;text-align:center;padding:12px;">লোড হচ্ছে...</div>
+            </div>
+          </div>
+          <div style="background:#fff;border-radius:14px;border:1px solid var(--border);padding:16px;margin-top:16px;">
+            <div style="font-size:.85rem;font-weight:700;color:var(--navy);margin-bottom:14px;">🏆 Contest / Giveaway তৈরি করুন</div>
+
+            <div style="background:linear-gradient(135deg,rgba(123,31,162,.08),rgba(194,24,91,.08));border-radius:12px;padding:14px;margin-bottom:14px;">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>Contest Title</label>
+                  <input type="text" class="form-input" id="contestTitle" placeholder="যেমন: পূজার Lucky Draw">
+                </div>
+                <div class="form-group">
+                  <label>Prize / পুরস্কার</label>
+                  <input type="text" class="form-input" id="contestPrize" placeholder="যেমন: ₹500 Gift Voucher">
+                </div>
+                <div class="form-group">
+                  <label>Contest Type</label>
+                  <select class="form-input" id="contestType">
+                    <option value="lucky_draw">🎰 Lucky Draw (random winner)</option>
+                    <option value="first_n">🥇 প্রথম N জন buyer</option>
+                    <option value="min_order">💰 ন্যূনতম order amount</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label id="contestCondLabel">Condition Value</label>
+                  <input type="number" class="form-input" id="contestCondValue" placeholder="যেমন: 10">
+                </div>
+                <div class="form-group">
+                  <label>Festival</label>
+                  <select class="form-input" id="contestFestival">
+                    <option value="">-- Festival select করুন --</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Valid Until</label>
+                  <input type="date" class="form-input" id="contestValidUntil">
+                </div>
+              </div>
+              <div class="form-group" style="margin-top:8px;">
+                <label>Contest Details (customer দেখবে)</label>
+                <textarea class="form-input" id="contestDetails" rows="3" placeholder="যেমন: এই পণ্য কিনলে পূজার Lucky Draw এ নাম উঠবে। বিজয়ী ঘোষণা হবে অক্টোবর ২২ তারিখে।" style="resize:vertical;"></textarea>
+              </div>
+              <button onclick="createContest()" class="btn-sm" style="background:linear-gradient(135deg,#7b1fa2,#c2185b);color:#fff;width:100%;justify-content:center;margin-top:8px;">🏆 Contest তৈরি করুন</button>
+            </div>
+
+            <!-- My Contests -->
+            <div style="font-size:.78rem;font-weight:700;color:var(--navy);margin-bottom:10px;">📋 আমার Contests</div>
+            <div id="myContestsList">
+              <div style="color:var(--muted);font-size:.78rem;text-align:center;padding:12px;">লোড হচ্ছে...</div>
+            </div>
+          </div>
+
+          <!-- Seller Package Section -->
+          <div style="background:#fff;border-radius:14px;border:1px solid var(--border);padding:16px;margin-top:16px;">
+            <div style="font-size:.85rem;font-weight:700;color:var(--navy);margin-bottom:14px;">📦 নিজের Package তৈরি করুন</div>
+
+            <div style="background:linear-gradient(135deg,rgba(10,31,53,.06),rgba(240,112,24,.06));border-radius:12px;padding:14px;margin-bottom:14px;">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>Package নাম</label>
+                  <input type="text" class="form-input" id="pkgName" placeholder="যেমন: পূজা স্পেশাল কম্বো">
+                </div>
+                <div class="form-group">
+                  <label>Package Price (₹)</label>
+                  <input type="number" class="form-input" id="pkgPrice" placeholder="যেমন: 299">
+                </div>
+                <div class="form-group">
+                  <label>Festival</label>
+                  <select class="form-input" id="pkgFestival">
+                    <option value="">-- Festival select করুন --</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Stock</label>
+                  <input type="number" class="form-input" id="pkgStock" placeholder="যেমন: 20">
+                </div>
+              </div>
+              <div class="form-group" style="margin-top:8px;">
+                <label>Package Description</label>
+                <input type="text" class="form-input" id="pkgDesc" placeholder="যেমন: ৩টি তাজা সবজি + ১টি মাছ একসাথে">
+              </div>
+              <!-- Package Items -->
+              <div style="margin-top:12px;">
+                <div style="font-size:.75rem;font-weight:700;color:var(--navy);margin-bottom:8px;">📦 Package এ কী কী থাকবে?</div>
+                <div id="pkgItemsList" style="display:flex;flex-direction:column;gap:6px;margin-bottom:8px;"></div>
+                <div style="display:flex;gap:6px;">
+                  <select class="form-input" id="pkgProductSelect" style="flex:1;">
+                    <option value="">-- আপনার product select করুন --</option>
+                  </select>
+                  <input type="number" class="form-input" id="pkgProductQty" placeholder="qty" style="width:70px;" min="1" value="1">
+                  <button onclick="addPkgItem()" class="btn-sm" style="background:var(--navy);color:#fff;">+ Add</button>
+                </div>
+              </div>
+              <button onclick="createSellerPackage()" class="btn-sm btn-orange" style="width:100%;justify-content:center;margin-top:12px;">📦 Package তৈরি করুন</button>
+            </div>
+
+            <!-- My Packages -->
+            <div style="font-size:.78rem;font-weight:700;color:var(--navy);margin-bottom:10px;">📋 আমার Packages</div>
+            <div id="myPackagesList">
+              <div style="color:var(--muted);font-size:.78rem;text-align:center;padding:12px;">লোড হচ্ছে...</div>
+            </div>
+          </div>
+        </div>
+      </div>
       <div class="page" id="page-hamper">
         <div class="sec-head">
           <div class="sec-title">🎁 হ্যাম্পার Section
@@ -1692,7 +1937,7 @@ function initFirebase(){
     firebase.initializeApp(FB_CFG);
     auth = firebase.auth(); db = firebase.firestore();
     auth.onAuthStateChanged(function(u){
-      if(u){ CU = u; loadSellerData(); }
+      if(u){ CU = u; loadSellerData(); loadNotifications(); }
       else{ hideLoading(); showAuth(); }
     });
   }catch(e){ hideLoading(); showAuth(); showToast('Firebase error: '+e.message,'red'); }
@@ -4047,6 +4292,364 @@ function renderMyHamperRequests(list){
   }).join('');
 }
 
+// ── SELLER PACKAGE SYSTEM ──
+var pkgItems = [];
+
+function loadPackageFestivalDropdown(){
+  var sel = document.getElementById('pkgFestival');
+  if(!sel) return;
+  sel.innerHTML = '<option value="">-- Festival select করুন --</option>';
+  sellerFestivalCats.forEach(function(f){
+    var opt = document.createElement('option');
+    opt.value = f.key; opt.textContent = f.emoji+' '+f.name;
+    sel.appendChild(opt);
+  });
+  var prodSel = document.getElementById('pkgProductSelect');
+  if(prodSel){
+    prodSel.innerHTML = '<option value="">-- আপনার product select করুন --</option>';
+    products.filter(function(p){ return !p.adminRemoved; }).forEach(function(p){
+      var opt = document.createElement('option');
+      opt.value = JSON.stringify({id:p.id, name:p.nameBn||p.name||'পণ্য', price:p.price||0, img:p.imageUrl||''});
+      opt.textContent = (p.nameBn||p.name||'পণ্য')+' — ₹'+(p.price||0);
+      prodSel.appendChild(opt);
+    });
+  }
+}
+
+function addPkgItem(){
+  var sel = document.getElementById('pkgProductSelect');
+  var qty = parseInt(document.getElementById('pkgProductQty').value)||1;
+  if(!sel.value){ showToast('Product select করুন','red'); return; }
+  try{
+    var p = JSON.parse(sel.value);
+    if(pkgItems.find(function(i){ return i.id===p.id; })){ showToast('এই product আগেই আছে','red'); return; }
+    pkgItems.push({id:p.id, name:p.name, price:p.price, img:p.img, qty:qty});
+    sel.value=''; document.getElementById('pkgProductQty').value='1';
+    renderPkgItems();
+    var total = pkgItems.reduce(function(s,i){ return s+i.price*i.qty; },0);
+    var pkgPriceEl = document.getElementById('pkgPrice');
+    if(pkgPriceEl && !pkgPriceEl.value) pkgPriceEl.value = Math.round(total*0.9);
+  }catch(e){ showToast('সমস্যা হয়েছে','red'); }
+}
+
+function renderPkgItems(){
+  var wrap = document.getElementById('pkgItemsList');
+  if(!wrap) return;
+  if(!pkgItems.length){ wrap.innerHTML=''; return; }
+  wrap.innerHTML = pkgItems.map(function(item, idx){
+    return '<div style="display:flex;align-items:center;gap:8px;background:#fff;padding:8px 10px;border-radius:8px;border:1px solid var(--border);">'+
+      (item.img?'<img src="'+item.img+'" style="width:32px;height:32px;object-fit:cover;border-radius:6px;flex-shrink:0;">':
+        '<div style="width:32px;height:32px;background:var(--sand);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.9rem;">📦</div>')+
+      '<span style="flex:1;font-size:.78rem;">'+item.name+' × '+item.qty+'</span>'+
+      '<span style="font-size:.75rem;color:var(--orange);">₹'+(item.price*item.qty)+'</span>'+
+      '<button onclick="removePkgItem('+idx+')" style="background:none;border:none;color:var(--red,#c0392b);cursor:pointer;font-size:1rem;">×</button>'+
+    '</div>';
+  }).join('');
+}
+
+function removePkgItem(idx){ pkgItems.splice(idx,1); renderPkgItems(); }
+
+function createSellerPackage(){
+  var name = document.getElementById('pkgName').value.trim();
+  var price = parseInt(document.getElementById('pkgPrice').value)||0;
+  var festivalKey = document.getElementById('pkgFestival').value;
+  var stock = parseInt(document.getElementById('pkgStock').value)||10;
+  var desc = document.getElementById('pkgDesc').value.trim();
+  if(!name){ showToast('Package নাম দিন','red'); return; }
+  if(!price){ showToast('Package price দিন','red'); return; }
+  if(!festivalKey){ showToast('Festival select করুন','red'); return; }
+  if(!pkgItems.length){ showToast('অন্তত একটা product যোগ করুন','red'); return; }
+  var originalTotal = pkgItems.reduce(function(s,i){ return s+i.price*i.qty; },0);
+  db.collection('cities').doc(CITY).collection('sellerPackages').add({
+    name:name, price:price, originalPrice:originalTotal,
+    savings:Math.max(0,originalTotal-price), festivalKey:festivalKey,
+    stock:stock, soldCount:0, description:desc, items:pkgItems,
+    shopId:auth.currentUser.uid, shopName:SD.shopName||'দোকান',
+    imageUrl:pkgItems[0]&&pkgItems[0].img?pkgItems[0].img:'',
+    active:true, status:'pending', createdAt:new Date().toISOString()
+  }).then(function(){
+    showToast('📦 Package submit হয়েছে! Admin approve করলে festival page এ দেখাবে।','green');
+    pkgItems=[];
+    ['pkgName','pkgPrice','pkgStock','pkgDesc'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
+    var pf=document.getElementById('pkgFestival'); if(pf) pf.value='';
+    renderPkgItems(); loadMyPackages();
+  }).catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
+}
+
+function loadMyPackages(){
+  if(!auth.currentUser) return;
+  db.collection('cities').doc(CITY).collection('sellerPackages')
+    .where('shopId','==',auth.currentUser.uid).get()
+    .then(function(snap){
+      var list=[];
+      snap.forEach(function(d){ list.push(Object.assign({id:d.id},d.data())); });
+      list.sort(function(a,b){ return new Date(b.createdAt||0)-new Date(a.createdAt||0); });
+      var wrap=document.getElementById('myPackagesList');
+      if(!wrap) return;
+      if(!list.length){ wrap.innerHTML='<div style="color:var(--muted);font-size:.78rem;text-align:center;padding:12px;">কোনো package নেই।</div>'; return; }
+      var sLabel={pending:'⏳ Pending',approved:'✅ Approved',rejected:'❌ Rejected'};
+      var sColor={pending:'var(--orange)',approved:'var(--green)',rejected:'var(--red,#c0392b)'};
+      var sBg={pending:'#fff4ec',approved:'var(--green2)',rejected:'var(--red2,#fdf0f0)'};
+      wrap.innerHTML=list.map(function(pkg){
+        return '<div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:8px;display:flex;gap:10px;align-items:flex-start;">'+
+          (pkg.imageUrl?'<img src="'+pkg.imageUrl+'" style="width:48px;height:48px;object-fit:cover;border-radius:8px;flex-shrink:0;">':
+            '<div style="width:48px;height:48px;background:var(--sand);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;">📦</div>')+
+          '<div style="flex:1;min-width:0;">'+
+            '<div style="font-size:.85rem;font-weight:700;color:var(--navy);">'+pkg.name+'</div>'+
+            '<div style="font-size:.72rem;color:var(--muted);">₹'+pkg.price+
+              (pkg.savings>0?' · সাশ্রয়: ₹'+pkg.savings:'')+
+            '</div>'+
+            '<div style="font-size:.7rem;color:var(--muted);">'+(pkg.items||[]).map(function(i){ return i.name+' ×'+i.qty; }).join(' + ')+'</div>'+
+          '</div>'+
+          '<span style="background:'+(sBg[pkg.status]||'var(--sand)')+';color:'+(sColor[pkg.status]||'var(--muted)')+';font-size:.65rem;font-weight:700;padding:3px 8px;border-radius:8px;flex-shrink:0;">'+
+            (sLabel[pkg.status]||pkg.status)+'</span>'+
+        '</div>';
+      }).join('');
+    }).catch(function(){});
+}
+
+// ── SELLER PACKAGE CURATION ──
+var pkgItems = []; // [{productId, name, price, qty}]
+
+function loadPkgDropdowns(){
+  // Festival dropdown
+  var festSel = document.getElementById('pkgFestival');
+  if(festSel){
+    festSel.innerHTML = '<option value="">-- Festival select করুন --</option>';
+    sellerFestivalCats.forEach(function(f){
+      var opt = document.createElement('option');
+      opt.value = f.key; opt.textContent = f.emoji+' '+f.name;
+      festSel.appendChild(opt);
+    });
+  }
+  // Product dropdown — seller এর নিজের products
+  var prodSel = document.getElementById('pkgProductSelect');
+  if(prodSel && auth.currentUser){
+    prodSel.innerHTML = '<option value="">-- Product select করুন --</option>';
+    db.collection('cities').doc(CITY).collection('sellers').doc(auth.currentUser.uid)
+      .collection('products').get().then(function(snap){
+        snap.forEach(function(d){
+          var p = d.data();
+          if(p.adminRemoved) return;
+          var opt = document.createElement('option');
+          opt.value = d.id+'|'+(p.nameBn||p.name||'পণ্য')+'|'+(p.price||0);
+          opt.textContent = (p.nameBn||p.name||'পণ্য')+' — ₹'+(p.price||0);
+          prodSel.appendChild(opt);
+        });
+      });
+  }
+}
+
+function addPkgItem(){
+  var sel = document.getElementById('pkgProductSelect');
+  var qty = parseInt(document.getElementById('pkgProductQty').value)||1;
+  if(!sel.value){ showToast('Product select করুন','red'); return; }
+  var parts = sel.value.split('|');
+  var productId = parts[0], name = parts[1], price = parseInt(parts[2])||0;
+
+  if(pkgItems.find(function(i){ return i.productId===productId; })){
+    showToast('এই product আগেই যোগ হয়েছে','red'); return;
+  }
+  pkgItems.push({productId:productId, name:name, price:price, qty:qty});
+  sel.value='';
+  document.getElementById('pkgProductQty').value='1';
+  renderPkgItems();
+  calcPkgPrice();
+}
+
+function renderPkgItems(){
+  var wrap = document.getElementById('pkgItemsList');
+  if(!pkgItems.length){ wrap.innerHTML=''; return; }
+  wrap.innerHTML = pkgItems.map(function(item,i){
+    return '<div style="display:flex;align-items:center;gap:8px;background:var(--sand);padding:8px 10px;border-radius:8px;">'+
+      '<span style="flex:1;font-size:.78rem;">'+item.name+' × '+item.qty+'</span>'+
+      '<span style="font-size:.78rem;font-weight:700;color:var(--orange);">₹'+(item.price*item.qty)+'</span>'+
+      '<button onclick="removePkgItem('+i+')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:1rem;">×</button>'+
+    '</div>';
+  }).join('');
+}
+
+function removePkgItem(idx){
+  pkgItems.splice(idx,1);
+  renderPkgItems();
+  calcPkgPrice();
+}
+
+function calcPkgPrice(){
+  var subtotal = pkgItems.reduce(function(s,i){ return s+i.price*i.qty; },0);
+  var disc = parseInt(document.getElementById('pkgDiscount').value)||0;
+  var finalPrice = Math.round(subtotal*(1-disc/100));
+  var priceInput = document.getElementById('pkgPrice');
+  var autoEl = document.getElementById('pkgAutoPrice');
+  if(subtotal){
+    priceInput.value = finalPrice;
+    autoEl.textContent = 'Original: ₹'+subtotal+(disc?' → ₹'+finalPrice+' ('+disc+'% off)':'');
+  }
+}
+
+function createPackage(){
+  var name = document.getElementById('pkgName').value.trim();
+  var festivalKey = document.getElementById('pkgFestival').value;
+  var price = parseInt(document.getElementById('pkgPrice').value)||0;
+  var discount = parseInt(document.getElementById('pkgDiscount').value)||0;
+  var desc = document.getElementById('pkgDesc').value.trim();
+  var image = document.getElementById('pkgImage').value.trim();
+
+  if(!name){ showToast('Package নাম দিন','red'); return; }
+  if(!festivalKey){ showToast('Festival select করুন','red'); return; }
+  if(!pkgItems.length){ showToast('অন্তত একটা product যোগ করুন','red'); return; }
+  if(!price){ showToast('দাম দিন','red'); return; }
+
+  var pkgData = {
+    name: name,
+    festivalKey: festivalKey,
+    items: pkgItems,
+    price: price,
+    originalPrice: pkgItems.reduce(function(s,i){return s+i.price*i.qty;},0),
+    discount: discount,
+    description: desc,
+    imageUrl: image,
+    shopId: auth.currentUser.uid,
+    shopName: SD.shopName||'দোকান',
+    status: 'pending',
+    active: false,
+    soldCount: 0,
+    createdAt: new Date().toISOString()
+  };
+
+  db.collection('cities').doc(CITY).collection('sellerPackages').add(pkgData)
+    .then(function(){
+      showToast('📦 Package submit হয়েছে — Admin approval এর অপেক্ষায়','green');
+      pkgItems=[];
+      ['pkgName','pkgPrice','pkgDiscount','pkgDesc','pkgImage'].forEach(function(id){
+        var el=document.getElementById(id); if(el) el.value='';
+      });
+      document.getElementById('pkgItemsList').innerHTML='';
+      document.getElementById('pkgAutoPrice').textContent='';
+      loadMyPackages();
+    }).catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
+}
+
+function loadMyPackages(){
+  if(!auth.currentUser) return;
+  db.collection('cities').doc(CITY).collection('sellerPackages')
+    .where('shopId','==',auth.currentUser.uid)
+    .get().then(function(snap){
+      var list=[];
+      snap.forEach(function(d){ list.push(Object.assign({id:d.id},d.data())); });
+      list.sort(function(a,b){ return new Date(b.createdAt||0)-new Date(a.createdAt||0); });
+      renderMyPackages(list);
+    }).catch(function(){});
+}
+
+function renderMyPackages(list){
+  var wrap = document.getElementById('myPackagesList');
+  if(!list.length){
+    wrap.innerHTML='<div style="color:var(--muted);font-size:.78rem;text-align:center;padding:12px;">কোনো package নেই।</div>';
+    return;
+  }
+  var statusStyle = {
+    pending:'background:#fff4ec;color:var(--orange)',
+    approved:'background:var(--green2);color:var(--green)',
+    rejected:'background:var(--red2);color:var(--red)'
+  };
+  var statusLabel = {pending:'⏳ Pending',approved:'✅ Approved',rejected:'❌ Rejected'};
+  wrap.innerHTML = list.map(function(p){
+    return '<div style="background:#fff;border:1.5px solid var(--border);border-radius:12px;padding:12px;margin-bottom:8px;">'+
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">'+
+        '<div style="font-size:.85rem;font-weight:700;color:var(--navy);">📦 '+p.name+'</div>'+
+        '<span style="font-size:.65rem;font-weight:700;padding:3px 8px;border-radius:8px;'+(statusStyle[p.status]||statusStyle.pending)+';">'+
+          (statusLabel[p.status]||'⏳ Pending')+'</span>'+
+      '</div>'+
+      '<div style="font-size:.75rem;color:var(--muted);margin-bottom:4px;">'+
+        '₹'+p.price+(p.discount?' ('+p.discount+'% off)':'')+' · '+
+        (p.items||[]).map(function(i){return i.name;}).join(', ')+
+      '</div>'+
+      (p.status==='rejected'&&p.adminNote?
+        '<div style="font-size:.72rem;color:var(--red);margin-top:4px;">Admin: '+p.adminNote+'</div>':'')+'</div>';
+  }).join('');
+}
+
+// ── CONTEST / GIVEAWAY SYSTEM ──
+function loadContestFestivalDropdown(){
+  var sel = document.getElementById('contestFestival');
+  if(!sel) return;
+  sel.innerHTML = '<option value="">-- Festival select করুন --</option>';
+  sellerFestivalCats.forEach(function(f){
+    var opt = document.createElement('option');
+    opt.value = f.key; opt.textContent = f.emoji+' '+f.name;
+    sel.appendChild(opt);
+  });
+  var typeEl = document.getElementById('contestType');
+  var condLabel = document.getElementById('contestCondLabel');
+  if(typeEl && condLabel){
+    typeEl.onchange = function(){
+      var type = typeEl.value;
+      if(type==='lucky_draw') condLabel.textContent = 'Lucky Draw Entry (min order ₹)';
+      else if(type==='first_n') condLabel.textContent = 'প্রথম কত জন? (N)';
+      else condLabel.textContent = 'ন্যূনতম Order Amount (₹)';
+    };
+  }
+}
+
+function createContest(){
+  var title = document.getElementById('contestTitle').value.trim();
+  var prize = document.getElementById('contestPrize').value.trim();
+  var type = document.getElementById('contestType').value;
+  var condValue = parseInt(document.getElementById('contestCondValue').value)||0;
+  var festivalKey = document.getElementById('contestFestival').value;
+  var validUntil = document.getElementById('contestValidUntil').value;
+  var details = document.getElementById('contestDetails').value.trim();
+  if(!title){ showToast('Contest title দিন','red'); return; }
+  if(!prize){ showToast('পুরস্কার লিখুন','red'); return; }
+  if(!festivalKey){ showToast('Festival select করুন','red'); return; }
+  db.collection('cities').doc(CITY).collection('contests').add({
+    title:title, prize:prize, type:type, condValue:condValue,
+    festivalKey:festivalKey, shopId:auth.currentUser.uid,
+    shopName:SD.shopName||'দোকান', details:details||'',
+    validUntil:validUntil||'', participants:[], winners:[],
+    active:true, announced:false, createdAt:new Date().toISOString()
+  }).then(function(){
+    showToast('🏆 Contest তৈরি হয়েছে!','green');
+    ['contestTitle','contestPrize','contestCondValue','contestValidUntil','contestDetails'].forEach(function(id){
+      var el=document.getElementById(id); if(el) el.value='';
+    });
+    loadMyContests();
+  }).catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
+}
+
+function loadMyContests(){
+  if(!auth.currentUser) return;
+  db.collection('cities').doc(CITY).collection('contests')
+    .where('shopId','==',auth.currentUser.uid).get()
+    .then(function(snap){
+      var list=[]; snap.forEach(function(d){ list.push(Object.assign({id:d.id},d.data())); });
+      list.sort(function(a,b){ return new Date(b.createdAt||0)-new Date(a.createdAt||0); });
+      var wrap=document.getElementById('myContestsList');
+      if(!wrap) return;
+      if(!list.length){ wrap.innerHTML='<div style="color:var(--muted);font-size:.78rem;text-align:center;padding:12px;">কোনো contest নেই।</div>'; return; }
+      var tLabel={lucky_draw:'🎰 Lucky Draw',first_n:'🥇 First N',min_order:'💰 Min Order'};
+      wrap.innerHTML=list.map(function(c){
+        var isExpired=c.validUntil&&new Date(c.validUntil)<new Date();
+        return '<div style="background:#fff;border:1.5px solid '+(c.active&&!isExpired?'#7b1fa2':'var(--border)')+';border-radius:12px;padding:12px;margin-bottom:8px;">'+
+          '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">'+
+            '<div style="font-size:.85rem;font-weight:700;color:var(--navy);">🏆 '+c.title+'</div>'+
+            '<span style="font-size:.65rem;font-weight:700;padding:3px 8px;border-radius:8px;background:'+(c.active&&!isExpired?'rgba(123,31,162,.1)':'var(--sand)')+';color:'+(c.active&&!isExpired?'#7b1fa2':'var(--muted)')+';">'+
+              (isExpired?'মেয়াদ শেষ':c.active?'✅ Active':'⏸ Off')+'</span>'+
+          '</div>'+
+          '<div style="font-size:.75rem;color:var(--muted);">🎁 '+c.prize+' · '+(tLabel[c.type]||c.type)+' · 👥 '+(c.participants||[]).length+'</div>'+
+          '<button onclick="toggleContestActive(\''+c.id+'\','+(c.active?'false':'true')+')" class="btn-sm '+(c.active?'btn-green':'')+'" style="font-size:.7rem;margin-top:8px;">'+(c.active?'✅ Active':'⏸ Off')+'</button>'+
+        '</div>';
+      }).join('');
+    }).catch(function(){});
+}
+
+function toggleContestActive(id, active){
+  db.collection('cities').doc(CITY).collection('contests').doc(id).update({active:active})
+    .then(function(){ loadMyContests(); showToast('Contest update হয়েছে','green'); })
+    .catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
+}
+
 function loadSellerFestivalSection(){
   db.collection('cities').doc(CITY).collection('settings').doc('festivalCategories')
     .get({source:'server'}).then(function(doc){
@@ -4054,11 +4657,17 @@ function loadSellerFestivalSection(){
         ? (doc.data().festivals||[]).filter(function(f){ return f.active; })
         : [];
       renderSellerFestivals();
+      loadCouponFestivalDropdown();
+      loadContestFestivalDropdown();
+      loadPkgDropdowns();
     }).catch(function(){
       document.getElementById('sellerFestivalList').innerHTML =
         '<div style="color:var(--muted);font-size:.82rem;text-align:center;padding:20px;">Festival তথ্য লোড হয়নি।</div>';
     });
   loadMyFestivalRequests();
+  loadMyCoupons();
+  loadMyContests();
+  loadMyPackages();
 }
 
 function renderSellerFestivals(){
@@ -4090,6 +4699,214 @@ function renderSellerFestivals(){
           'padding:8px 14px;border-radius:20px;font-size:.78rem;font-weight:700;">+ পণ্য add করুন</div>'+
       '</div>';
     }).join('');
+}
+
+// ── NOTIFICATION SYSTEM ──
+var notifListener = null;
+
+function loadNotifications(){
+  if(!auth.currentUser) return;
+  var uid = auth.currentUser.uid;
+
+  // Real-time listener
+  notifListener = db.collection('cities').doc(CITY).collection('sellers').doc(uid)
+    .collection('notifications')
+    .orderBy('createdAt','desc')
+    .limit(20)
+    .onSnapshot(function(snap){
+      var notifs = [];
+      snap.forEach(function(d){ notifs.push(Object.assign({id:d.id},d.data())); });
+      var unread = notifs.filter(function(n){return !n.read;}).length;
+
+      // Badge update
+      var badge = document.getElementById('notifBadge');
+      if(badge){
+        badge.textContent = unread;
+        badge.style.display = unread ? 'flex' : 'none';
+      }
+
+      // Render notification list
+      renderNotifications(notifs);
+    }, function(){});
+}
+
+function renderNotifications(notifs){
+  var wrap = document.getElementById('notifList');
+  if(!wrap) return;
+  if(!notifs.length){
+    wrap.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:.78rem;">কোনো notification নেই</div>';
+    return;
+  }
+  wrap.innerHTML = notifs.map(function(n){
+    var time = n.createdAt ? new Date(n.createdAt).toLocaleString('bn-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) : '';
+    return '<div style="padding:12px 16px;border-bottom:1px solid var(--border);'+
+      'background:'+(n.read?'#fff':'#fff9f0')+';cursor:pointer;" '+
+      'onclick="markNotifRead(\''+n.id+'\')" >'+
+      '<div style="font-size:.82rem;font-weight:'+(n.read?'500':'700')+';color:var(--navy);margin-bottom:2px;">'+n.title+'</div>'+
+      '<div style="font-size:.75rem;color:var(--muted);line-height:1.4;">'+n.message+'</div>'+
+      '<div style="font-size:.68rem;color:var(--muted);margin-top:4px;">'+time+'</div>'+
+    '</div>';
+  }).join('');
+}
+
+function toggleNotificationPanel(){
+  var panel = document.getElementById('notifPanel');
+  panel.style.display = panel.style.display==='none' ? 'block' : 'none';
+}
+
+function markNotifRead(notifId){
+  if(!auth.currentUser) return;
+  db.collection('cities').doc(CITY).collection('sellers').doc(auth.currentUser.uid)
+    .collection('notifications').doc(notifId).update({read:true})
+    .catch(function(){});
+}
+
+function markAllNotifRead(){
+  if(!auth.currentUser) return;
+  db.collection('cities').doc(CITY).collection('sellers').doc(auth.currentUser.uid)
+    .collection('notifications').where('read','==',false).get()
+    .then(function(snap){
+      var batch = db.batch();
+      snap.forEach(function(d){ batch.update(d.ref,{read:true}); });
+      return batch.commit();
+    }).then(function(){
+      document.getElementById('notifPanel').style.display='none';
+    }).catch(function(){});
+}
+
+// Panel বাইরে click করলে বন্ধ হবে
+document.addEventListener('click', function(e){
+  var panel = document.getElementById('notifPanel');
+  var bell = e.target.closest('[onclick="toggleNotificationPanel()"]');
+  if(panel && panel.style.display==='block' && !panel.contains(e.target) && !bell){
+    panel.style.display='none';
+  }
+});
+
+// ── COUPON SYSTEM ──
+function updateCouponPreview(){
+  var type = document.getElementById('cpnType').value;
+  var value = parseInt(document.getElementById('cpnValue').value)||0;
+  var code = document.getElementById('cpnCode').value||'CODE';
+  var preview = document.getElementById('cpnPreview');
+  var previewText = document.getElementById('cpnPreviewText');
+  var valueGroup = document.getElementById('cpnValueGroup');
+
+  if(type==='bogo'){
+    valueGroup.style.display='none';
+    previewText.textContent = '🎟️ '+code+' — Buy 1 Get 1 Free!';
+  } else {
+    valueGroup.style.display='block';
+    if(type==='percent') previewText.textContent = '🎟️ '+code+' — '+value+'% ছাড় পাবেন';
+    else previewText.textContent = '🎟️ '+code+' — ₹'+value+' ছাড় পাবেন';
+  }
+  preview.style.display = code ? 'block' : 'none';
+}
+
+function loadCouponFestivalDropdown(){
+  var sel = document.getElementById('cpnFestival');
+  if(!sel) return;
+  sel.innerHTML = '<option value="">-- Festival select করুন --</option>';
+  sellerFestivalCats.forEach(function(f){
+    var opt = document.createElement('option');
+    opt.value = f.key;
+    opt.textContent = f.emoji+' '+f.name;
+    sel.appendChild(opt);
+  });
+}
+
+function createCoupon(){
+  var code = document.getElementById('cpnCode').value.trim().toUpperCase();
+  var type = document.getElementById('cpnType').value;
+  var value = parseInt(document.getElementById('cpnValue').value)||0;
+  var minOrder = parseInt(document.getElementById('cpnMinOrder').value)||0;
+  var maxUses = parseInt(document.getElementById('cpnMaxUses').value)||100;
+  var validUntil = document.getElementById('cpnValidUntil').value;
+  var festivalKey = document.getElementById('cpnFestival').value;
+  var desc = document.getElementById('cpnDesc').value.trim();
+
+  if(!code){ showToast('Coupon code দিন','red'); return; }
+  if(type!=='bogo' && !value){ showToast('Discount value দিন','red'); return; }
+  if(!festivalKey){ showToast('Festival select করুন','red'); return; }
+
+  var couponData = {
+    code: code,
+    type: type,
+    value: value,
+    minOrder: minOrder,
+    maxUses: maxUses,
+    usedCount: 0,
+    validUntil: validUntil||'',
+    festivalKey: festivalKey,
+    shopId: auth.currentUser.uid,
+    shopName: SD.shopName||'দোকান',
+    description: desc||'',
+    active: true,
+    createdAt: new Date().toISOString()
+  };
+
+  // Coupon code টা document ID হিসেবে use করো
+  db.collection('cities').doc(CITY).collection('coupons').doc(code).set(couponData)
+    .then(function(){
+      showToast('🎟️ Coupon তৈরি হয়েছে: '+code,'green');
+      // Form clear
+      ['cpnCode','cpnValue','cpnMinOrder','cpnMaxUses','cpnValidUntil','cpnDesc'].forEach(function(id){
+        var el = document.getElementById(id); if(el) el.value='';
+      });
+      document.getElementById('cpnPreview').style.display='none';
+      loadMyCoupons();
+    }).catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
+}
+
+function loadMyCoupons(){
+  if(!auth.currentUser) return;
+  db.collection('cities').doc(CITY).collection('coupons')
+    .where('shopId','==',auth.currentUser.uid)
+    .get().then(function(snap){
+      var list = [];
+      snap.forEach(function(d){ list.push(Object.assign({id:d.id},d.data())); });
+      list.sort(function(a,b){ return new Date(b.createdAt||0)-new Date(a.createdAt||0); });
+      renderMyCoupons(list);
+    }).catch(function(){});
+}
+
+function renderMyCoupons(list){
+  var wrap = document.getElementById('myCouponsList');
+  if(!list.length){
+    wrap.innerHTML='<div style="color:var(--muted);font-size:.78rem;text-align:center;padding:12px;">কোনো coupon নেই।</div>';
+    return;
+  }
+  var typeLabel = {percent:'% ছাড়', flat:'₹ ছাড়', bogo:'Buy 1 Get 1'};
+  wrap.innerHTML = list.map(function(c){
+    var isExpired = c.validUntil && new Date(c.validUntil)<new Date();
+    var daysLeft = c.validUntil ? Math.max(0,Math.ceil((new Date(c.validUntil)-new Date())/86400000)) : null;
+    return '<div style="background:#fff;border:1.5px solid '+(isExpired?'var(--border)':'var(--orange)')+';border-radius:12px;padding:12px;margin-bottom:8px;'+
+      'display:flex;align-items:center;gap:12px;opacity:'+(isExpired?.6:1)+';">'+
+      '<div style="background:'+(isExpired?'var(--sand)':'#fff4ec')+';border-radius:8px;padding:8px 12px;text-align:center;flex-shrink:0;">'+
+        '<div style="font-size:1rem;font-weight:900;color:'+(isExpired?'var(--muted)':'var(--orange)')+';">'+c.code+'</div>'+
+        '<div style="font-size:.65rem;color:var(--muted);">'+(c.type==='bogo'?'BOGO':(c.value+(c.type==='percent'?'%':'₹')+' OFF'))+'</div>'+
+      '</div>'+
+      '<div style="flex:1;min-width:0;">'+
+        '<div style="font-size:.78rem;font-weight:600;color:var(--navy);">'+
+          (c.type==='bogo'?'Buy 1 Get 1 Free':c.value+(c.type==='percent'?'% ছাড়':' টাকা ছাড়'))+
+        '</div>'+
+        '<div style="font-size:.7rem;color:var(--muted);">'+
+          (c.minOrder?'ন্যূনতম ₹'+c.minOrder+' · ':'')+
+          'ব্যবহার: '+c.usedCount+'/'+c.maxUses+
+          (daysLeft!==null?' · '+(isExpired?'মেয়াদ শেষ':daysLeft+' দিন বাকি'):'')+
+        '</div>'+
+      '</div>'+
+      '<button onclick="toggleCouponActive(\''+c.id+'\','+(c.active?'false':'true')+')" '+
+        'class="btn-sm '+(c.active&&!isExpired?'btn-green':'')+'" style="font-size:.7rem;flex-shrink:0;">'+
+        (c.active&&!isExpired?'✅ Active':'⏸ Off')+'</button>'+
+    '</div>';
+  }).join('');
+}
+
+function toggleCouponActive(couponId, active){
+  db.collection('cities').doc(CITY).collection('coupons').doc(couponId).update({active:active})
+    .then(function(){ loadMyCoupons(); showToast('Coupon update হয়েছে','green'); })
+    .catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
 }
 
 function autoCalcFestPrice(){
