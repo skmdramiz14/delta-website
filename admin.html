@@ -1083,6 +1083,19 @@ button,input,select{font-family:'DM Sans',sans-serif;}
                 <input class="form-input" id="hSpecOccasion" placeholder="যেমন: দুর্গাপূজা" style="margin-top:4px;">
               </div>
             </div>
+
+            <!-- Discount Validity -->
+            <div style="margin-bottom:10px;">
+              <label style="font-size:.7rem;color:var(--muted);font-weight:600;">⏰ Discount Valid Until (তারিখ)</label>
+              <input type="date" class="form-input" id="hDiscountValidity" style="margin-top:4px;">
+              <div style="font-size:.68rem;color:var(--muted);margin-top:3px;">এই তারিখ পর্যন্ত PDP এ countdown দেখাবে</div>
+            </div>
+
+            <!-- About Section -->
+            <div style="margin-bottom:10px;">
+              <label style="font-size:.7rem;color:var(--muted);font-weight:600;">🏷️ About Section Title</label>
+              <input class="form-input" id="hAboutTitle" placeholder="যেমন: DELTA কিউরেটেড সম্পর্কে" style="margin-top:4px;">
+            </div>
           </div>
 
           <!-- Base Items from Pool -->
@@ -1160,6 +1173,17 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 
       <div id="hamperOrdersList" style="display:flex;flex-direction:column;gap:10px;">
         <div style="color:var(--muted);font-size:.85rem;padding:20px;text-align:center;">Tab click করলে লোড হবে</div>
+      </div>
+
+      <!-- Reviews Management -->
+      <div class="add-zone-card" style="margin-top:20px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <div style="font-size:.85rem;font-weight:700;color:var(--navy);">💬 Hamper Reviews Management</div>
+          <button class="btn-sm" onclick="loadAllHamperReviews()" style="background:var(--sand);color:var(--navy);">↺ Load Reviews</button>
+        </div>
+        <div id="hamperReviewsList">
+          <div style="color:var(--muted);font-size:.82rem;">"Load Reviews" চাপুন</div>
+        </div>
       </div>
     </div>
 
@@ -4046,6 +4070,63 @@ function exportRecon(){
   showToast('CSV export হয়েছে ✅','green');
 }
 
+// ═══ HAMPER REVIEWS MANAGEMENT ═══
+function loadAllHamperReviews(){
+  var wrap = document.getElementById('hamperReviewsList');
+  wrap.innerHTML = '<div style="color:var(--muted);font-size:.82rem;">লোড হচ্ছে...</div>';
+
+  // সব hampers এর reviews load করো
+  db.collection('hampers').get().then(function(snap){
+    var allReviews = [];
+    var proms = [];
+    snap.forEach(function(hDoc){
+      var hamperName = hDoc.data().name||'Hamper';
+      var p = db.collection('hampers').doc(hDoc.id).collection('reviews')
+        .orderBy('createdAt','desc').get()
+        .then(function(rSnap){
+          rSnap.forEach(function(r){
+            allReviews.push(Object.assign({id:r.id, hamperId:hDoc.id, hamperName:hamperName}, r.data()));
+          });
+        });
+      proms.push(p);
+    });
+    return Promise.all(proms).then(function(){ return allReviews; });
+  }).then(function(allReviews){
+    if(!allReviews.length){
+      wrap.innerHTML = '<div style="color:var(--muted);font-size:.82rem;">কোনো review নেই।</div>';
+      return;
+    }
+    wrap.innerHTML = allReviews.map(function(r){
+      var stars = '★'.repeat(r.rating||0)+'☆'.repeat(5-(r.rating||0));
+      return '<div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:8px;display:flex;gap:12px;align-items:flex-start;">'+
+        '<div style="flex:1;">'+
+          '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">'+
+            '<span style="font-size:.9rem;color:#f5a623;">'+stars+'</span>'+
+            '<span style="font-size:.72rem;color:var(--muted);">'+r.hamperName+'</span>'+
+          '</div>'+
+          '<div style="font-size:.82rem;font-weight:600;color:var(--navy);">'+r.name+'</div>'+
+          '<div style="font-size:.8rem;color:var(--muted);margin-top:2px;">'+r.text+'</div>'+
+          '<div style="font-size:.68rem;color:var(--muted);margin-top:4px;">'+
+            (r.createdAt?new Date(r.createdAt).toLocaleDateString('bn-IN'):'')+
+          '</div>'+
+        '</div>'+
+        '<button class="btn-sm btn-red" style="flex-shrink:0;" onclick="deleteHamperReview(\''+r.hamperId+'\',\''+r.id+'\')">🗑️ Delete</button>'+
+      '</div>';
+    }).join('');
+  }).catch(function(e){ wrap.innerHTML='<div style="color:var(--red);">Error: '+e.message+'</div>'; });
+}
+
+function deleteHamperReview(hamperId, reviewId){
+  if(!confirm('এই review delete করবেন?')) return;
+  db.collection('hampers').doc(hamperId).collection('reviews').doc(reviewId).delete()
+    .then(function(){
+      showToast('Review delete হয়েছে ✅','green');
+      loadAllHamperReviews();
+    }).catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
+}
+window.deleteHamperReview = deleteHamperReview;
+window.loadAllHamperReviews = loadAllHamperReviews;
+
 // ═══ HAMPER ORDERS ═══
 
 function loadHamperOrders(){
@@ -4818,6 +4899,8 @@ function saveHamper(){
     deliveryTime: (document.getElementById('hSpecDelivery').value||'').trim(),
     occasion: (document.getElementById('hSpecOccasion').value||'').trim()
   };
+  var discountValidUntil = (document.getElementById('hDiscountValidity').value||'').trim();
+  var aboutTitle = (document.getElementById('hAboutTitle').value||'').trim();
 
   var data = {
     name: name, price: price, festivalTag: festivalTag,
@@ -4828,6 +4911,8 @@ function saveHamper(){
     description: desc,
     highlights: highlights,
     specs: specs,
+    discountValidUntil: discountValidUntil,
+    aboutTitle: aboutTitle,
     baseItems: hamperBaseItems,
     addOns: hamperAddOns,
     active: true,
@@ -4843,7 +4928,8 @@ function saveHamper(){
   prom.then(function(){
     hamperBaseItems=[]; hamperAddOns=[]; editingHamperId=null;
     ['hName','hPrice','hEmoji','hDesc','hStock','hImg1','hImg2','hImg3',
-     'hHighlights','hSpecWeight','hSpecShelfLife','hSpecDelivery','hSpecOccasion'].forEach(function(id){
+     'hHighlights','hSpecWeight','hSpecShelfLife','hSpecDelivery','hSpecOccasion',
+     'hDiscountValidity','hAboutTitle'].forEach(function(id){
       var el = document.getElementById(id); if(el) el.value='';
     });
     var hft = document.getElementById('hFestivalTag'); if(hft) hft.value='';
@@ -4911,6 +4997,8 @@ function editHamper(id){
   var ssl=document.getElementById('hSpecShelfLife'); if(ssl) ssl.value=specs.shelfLife||'';
   var sd=document.getElementById('hSpecDelivery'); if(sd) sd.value=specs.deliveryTime||'';
   var so=document.getElementById('hSpecOccasion'); if(so) so.value=specs.occasion||'';
+  var dv=document.getElementById('hDiscountValidity'); if(dv) dv.value=h.discountValidUntil||'';
+  var at=document.getElementById('hAboutTitle'); if(at) at.value=h.aboutTitle||'';
   renderHamperBaseItems(); renderHamperAddOns();
   document.getElementById('hName').scrollIntoView({behavior:'smooth'});
   showToast('Hamper load হয়েছে — edit করে Save করুন','green');
