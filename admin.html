@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="bn">
 <head>
 <meta charset="UTF-8">
@@ -945,6 +945,39 @@ button,input,select{font-family:'DM Sans',sans-serif;}
           <button class="btn-sm btn-orange" onclick="saveFestivalConditions()">💾 Save করুন</button>
           <span id="festCondStatus" style="font-size:.72rem;color:var(--muted);"></span>
         </div>
+      </div>
+
+      <!-- Coupon Management -->
+      <div class="add-zone-card" style="margin-bottom:16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <div style="font-size:.85rem;font-weight:700;color:var(--navy);">
+            🎟️ Coupon Management
+            <span id="activeCouponCount" style="font-size:.72rem;color:var(--muted);font-weight:400;margin-left:8px;"></span>
+          </div>
+          <button class="btn-sm" onclick="loadAllCouponsAdmin()" style="background:var(--sand);color:var(--navy);">↺ Load</button>
+        </div>
+        <div id="allCouponsAdminList"><div style="color:var(--muted);font-size:.82rem;">"Load" চাপুন</div></div>
+      </div>
+
+      <!-- Seller Package Approval -->
+      <div class="add-zone-card" style="margin-bottom:16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <div style="font-size:.85rem;font-weight:700;color:var(--navy);">
+            📦 Seller Packages
+            <span id="pendingPkgCount" style="font-size:.72rem;color:var(--orange);font-weight:400;margin-left:8px;"></span>
+          </div>
+          <button class="btn-sm" onclick="loadSellerPackagesAdmin()" style="background:var(--sand);color:var(--navy);">↺ Load</button>
+        </div>
+        <div id="sellerPackagesAdminList"><div style="color:var(--muted);font-size:.82rem;">"Load" চাপুন</div></div>
+      </div>
+
+      <!-- Contest Management -->
+      <div class="add-zone-card" style="margin-bottom:16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <div style="font-size:.85rem;font-weight:700;color:var(--navy);">🏆 Contest Management</div>
+          <button class="btn-sm" onclick="loadAllContests()" style="background:var(--sand);color:var(--navy);">↺ Load</button>
+        </div>
+        <div id="allContestsList"><div style="color:var(--muted);font-size:.82rem;">"Load" চাপুন</div></div>
       </div>
 
       <!-- Active Festivals List -->
@@ -4242,6 +4275,219 @@ function sendHamperWhatsApp(phone, hamperName, total){
     'শীঘ্রই delivery দেওয়া হবে। ধন্যবাদ! 🙏';
   window.open('https://wa.me/91'+phone.replace(/\D/g,'')+'?text='+encodeURIComponent(msg),'_blank');
 }
+
+// ═══ COUPON MANAGEMENT (ADMIN) ═══
+function loadAllCouponsAdmin(){
+  var wrap = document.getElementById('allCouponsAdminList');
+  var countEl = document.getElementById('activeCouponCount');
+  wrap.innerHTML = '<div style="color:var(--muted);font-size:.82rem;">লোড হচ্ছে...</div>';
+
+  db.collection('cities').doc(CITY).collection('coupons')
+    .orderBy('createdAt','desc').get()
+    .then(function(snap){
+      var list=[];
+      snap.forEach(function(d){ list.push(Object.assign({id:d.id},d.data())); });
+      var active = list.filter(function(c){return c.active;}).length;
+      if(countEl) countEl.textContent = active+' active · '+list.length+' total';
+      if(!list.length){ wrap.innerHTML='<div style="color:var(--muted);font-size:.82rem;">কোনো coupon নেই।</div>'; return; }
+
+      var typeLabel={percent:'% ছাড়',flat:'₹ ছাড়',bogo:'Buy 1 Get 1'};
+      wrap.innerHTML = list.map(function(c){
+        var isExpired = c.validUntil && new Date(c.validUntil)<new Date();
+        var usagePct = c.maxUses ? Math.round(c.usedCount/c.maxUses*100) : 0;
+        return '<div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:8px;">'+
+          '<div style="display:flex;align-items:center;gap:12px;">'+
+            // Coupon code badge
+            '<div style="background:'+(c.active&&!isExpired?'#fff4ec':'var(--sand)')+';border-radius:8px;padding:8px 12px;text-align:center;flex-shrink:0;min-width:80px;">'+
+              '<div style="font-size:.95rem;font-weight:900;color:'+(c.active&&!isExpired?'var(--orange)':'var(--muted)')+';">'+c.code+'</div>'+
+              '<div style="font-size:.62rem;color:var(--muted);">'+(c.type==='bogo'?'BOGO':(c.value+(c.type==='percent'?'%':'₹')+' OFF'))+'</div>'+
+            '</div>'+
+            // Details
+            '<div style="flex:1;min-width:0;">'+
+              '<div style="font-size:.82rem;font-weight:700;color:var(--navy);">'+
+                (c.type==='bogo'?'Buy 1 Get 1 Free':c.value+(c.type==='percent'?'% ছাড়':'₹ ছাড়'))+
+              '</div>'+
+              '<div style="font-size:.7rem;color:var(--muted);">'+
+                '🏪 '+c.shopName+' · 🎊 '+c.festivalKey+
+                (c.minOrder?' · Min: ₹'+c.minOrder:'')+
+                (c.validUntil?' · '+(isExpired?'<span style="color:var(--red);">মেয়াদ শেষ</span>':c.validUntil):'')+
+              '</div>'+
+              // Usage bar
+              '<div style="margin-top:6px;">'+
+                '<div style="display:flex;justify-content:space-between;font-size:.68rem;color:var(--muted);margin-bottom:2px;">'+
+                  '<span>ব্যবহার: '+c.usedCount+'/'+c.maxUses+'</span>'+
+                  '<span>'+usagePct+'%</span>'+
+                '</div>'+
+                '<div style="height:4px;background:var(--sand);border-radius:4px;overflow:hidden;">'+
+                  '<div style="height:100%;width:'+usagePct+'%;background:'+(usagePct>=80?'var(--red)':'var(--orange)')+';border-radius:4px;"></div>'+
+                '</div>'+
+              '</div>'+
+            '</div>'+
+            // Actions
+            '<div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">'+
+              '<button class="btn-sm '+(c.active&&!isExpired?'btn-green':'')+'" style="font-size:.7rem;" onclick="toggleCouponAdmin(\''+c.id+'\','+(c.active?'false':'true')+')">'+
+                (c.active&&!isExpired?'✅ Active':'⏸ Off')+'</button>'+
+              '<button class="btn-sm btn-red" style="font-size:.7rem;" onclick="deleteCouponAdmin(\''+c.id+'\',\''+c.code+'\')">🗑️</button>'+
+            '</div>'+
+          '</div>'+
+        '</div>';
+      }).join('');
+    }).catch(function(e){ wrap.innerHTML='<div style="color:var(--red);">Error: '+e.message+'</div>'; });
+}
+
+function toggleCouponAdmin(couponId, active){
+  db.collection('cities').doc(CITY).collection('coupons').doc(couponId).update({active:active})
+    .then(function(){ showToast('Coupon update হয়েছে ✅','green'); loadAllCouponsAdmin(); })
+    .catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
+}
+
+function deleteCouponAdmin(couponId, code){
+  if(!confirm('"'+code+'" coupon delete করবেন?')) return;
+  db.collection('cities').doc(CITY).collection('coupons').doc(couponId).delete()
+    .then(function(){ showToast('Coupon delete হয়েছে','green'); loadAllCouponsAdmin(); })
+    .catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
+}
+window.loadAllCouponsAdmin = loadAllCouponsAdmin;
+window.toggleCouponAdmin = toggleCouponAdmin;
+window.deleteCouponAdmin = deleteCouponAdmin;
+
+// ═══ SELLER PACKAGE APPROVAL (ADMIN) ═══
+function loadSellerPackagesAdmin(){
+  var wrap = document.getElementById('sellerPackagesAdminList');
+  var countEl = document.getElementById('pendingPkgCount');
+  wrap.innerHTML = '<div style="color:var(--muted);font-size:.82rem;">লোড হচ্ছে...</div>';
+  db.collection('cities').doc(CITY).collection('sellerPackages')
+    .orderBy('createdAt','desc').get()
+    .then(function(snap){
+      var list=[];
+      snap.forEach(function(d){ list.push(Object.assign({id:d.id},d.data())); });
+      var pending = list.filter(function(p){return p.status==='pending';}).length;
+      if(countEl) countEl.textContent = pending?pending+'টি pending':'';
+      if(!list.length){ wrap.innerHTML='<div style="color:var(--muted);font-size:.82rem;">কোনো package নেই।</div>'; return; }
+      wrap.innerHTML = list.map(function(p){
+        var statusBadge = p.status==='approved'
+          ? '<span style="background:var(--green2);color:var(--green);font-size:.65rem;font-weight:700;padding:3px 8px;border-radius:8px;">✅ Approved</span>'
+          : p.status==='rejected'
+          ? '<span style="background:var(--red2);color:var(--red);font-size:.65rem;font-weight:700;padding:3px 8px;border-radius:8px;">❌ Rejected</span>'
+          : '<span style="background:#fff4ec;color:var(--orange);font-size:.65rem;font-weight:700;padding:3px 8px;border-radius:8px;">⏳ Pending</span>';
+
+        return '<div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;">'+
+          '<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;">'+
+            '<div>'+
+              '<div style="font-size:.88rem;font-weight:700;color:var(--navy);">📦 '+p.name+'</div>'+
+              '<div style="font-size:.72rem;color:var(--muted);">🏪 '+p.shopName+' · ₹'+p.price+(p.discount?' ('+p.discount+'% off)':'')+' · '+p.festivalKey+'</div>'+
+            '</div>'+
+            statusBadge+
+          '</div>'+
+          '<div style="font-size:.72rem;color:var(--muted);margin-bottom:8px;">'+
+            '📦 Items: '+(p.items||[]).map(function(i){return i.name+' ×'+i.qty;}).join(', ')+
+          '</div>'+
+          (p.description?'<div style="font-size:.72rem;color:var(--muted);margin-bottom:8px;font-style:italic;">'+p.description+'</div>':'')+
+          (p.status==='pending'?
+            '<div style="display:flex;gap:8px;">'+
+              '<button class="btn-sm btn-green" style="font-size:.72rem;" onclick="approveSellerPackage(\''+p.id+'\')">✅ Approve</button>'+
+              '<button class="btn-sm btn-red" style="font-size:.72rem;" onclick="rejectSellerPackage(\''+p.id+'\')">❌ Reject</button>'+
+            '</div>':'')+
+        '</div>';
+      }).join('');
+    }).catch(function(e){ wrap.innerHTML='<div style="color:var(--red);">Error: '+e.message+'</div>'; });
+}
+
+function approveSellerPackage(pkgId){
+  db.collection('cities').doc(CITY).collection('sellerPackages').doc(pkgId).update({
+    status:'approved', active:true, approvedAt:new Date().toISOString()
+  }).then(function(){
+    showToast('Package approved ✅','green');
+    loadSellerPackagesAdmin();
+  }).catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
+}
+
+function rejectSellerPackage(pkgId){
+  var note = prompt('Reject করার কারণ (Seller কে জানানো হবে):');
+  if(note===null) return;
+  db.collection('cities').doc(CITY).collection('sellerPackages').doc(pkgId).update({
+    status:'rejected', active:false,
+    adminNote: note||'Approved হয়নি',
+    rejectedAt:new Date().toISOString()
+  }).then(function(){
+    showToast('Package rejected','green');
+    loadSellerPackagesAdmin();
+  }).catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
+}
+window.loadSellerPackagesAdmin = loadSellerPackagesAdmin;
+window.approveSellerPackage = approveSellerPackage;
+window.rejectSellerPackage = rejectSellerPackage;
+
+// ═══ CONTEST MANAGEMENT (ADMIN) ═══
+function loadAllContests(){
+  var wrap = document.getElementById('allContestsList');
+  wrap.innerHTML = '<div style="color:var(--muted);font-size:.82rem;">লোড হচ্ছে...</div>';
+  db.collection('cities').doc(CITY).collection('contests')
+    .orderBy('createdAt','desc').get()
+    .then(function(snap){
+      var list = [];
+      snap.forEach(function(d){ list.push(Object.assign({id:d.id},d.data())); });
+      if(!list.length){ wrap.innerHTML='<div style="color:var(--muted);font-size:.82rem;">কোনো contest নেই।</div>'; return; }
+      wrap.innerHTML = list.map(function(c){
+        var participants = c.participants||[];
+        var winners = c.winners||[];
+        return '<div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;">'+
+          '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">'+
+            '<div style="font-size:.88rem;font-weight:700;color:var(--navy);">🏆 '+c.title+'</div>'+
+            '<span style="font-size:.65rem;font-weight:700;padding:3px 8px;border-radius:8px;background:'+(c.active?'var(--green2)':'var(--sand)')+';color:'+(c.active?'var(--green)':'var(--muted)')+';">'+
+              (c.active?'✅ Active':'⏸ Off')+'</span>'+
+          '</div>'+
+          '<div style="font-size:.75rem;color:var(--muted);margin-bottom:8px;">'+
+            '🏪 '+c.shopName+' · 🎁 পুরস্কার: <strong>'+c.prize+'</strong> · '+
+            '👥 '+participants.length+' participants'+
+            (c.validUntil?' · '+c.validUntil:'')+
+          '</div>'+
+          // Participants list
+          (participants.length?
+            '<div style="background:var(--sand);border-radius:8px;padding:8px;margin-bottom:8px;max-height:120px;overflow-y:auto;">'+
+              participants.map(function(p,i){
+                return '<div style="font-size:.72rem;color:var(--navy);padding:2px 0;">'+
+                  (i+1)+'. '+p.phone+' — '+p.productName+
+                '</div>';
+              }).join('')+
+            '</div>':'')+
+          // Winners
+          (winners.length?
+            '<div style="background:var(--green2);border-radius:8px;padding:8px;margin-bottom:8px;">'+
+              '<div style="font-size:.7rem;font-weight:700;color:var(--green);margin-bottom:4px;">🏆 Winners:</div>'+
+              winners.map(function(w){ return '<div style="font-size:.72rem;color:var(--navy);">'+w+'</div>'; }).join('')+
+            '</div>':'')+
+          '<div style="display:flex;gap:6px;flex-wrap:wrap;">'+
+            '<button class="btn-sm" style="background:#e8f7ee;color:var(--green);font-size:.72rem;" onclick="announceWinner(\''+c.id+'\')">🏆 Winner Announce</button>'+
+            '<button class="btn-sm btn-red" style="font-size:.72rem;" onclick="deleteContest(\''+c.id+'\')">🗑️ Delete</button>'+
+          '</div>'+
+        '</div>';
+      }).join('');
+    }).catch(function(e){ wrap.innerHTML='<div style="color:var(--red);">Error: '+e.message+'</div>'; });
+}
+
+function announceWinner(contestId){
+  var winner = prompt('Winner এর phone number লিখুন:');
+  if(!winner) return;
+  db.collection('cities').doc(CITY).collection('contests').doc(contestId).update({
+    winners: firebase.firestore.FieldValue.arrayUnion(winner),
+    announced: true,
+    active: false
+  }).then(function(){
+    showToast('🏆 Winner announce হয়েছে!','green');
+    loadAllContests();
+  }).catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
+}
+
+function deleteContest(contestId){
+  if(!confirm('এই contest delete করবেন?')) return;
+  db.collection('cities').doc(CITY).collection('contests').doc(contestId).delete()
+    .then(function(){ showToast('Contest delete হয়েছে','green'); loadAllContests(); })
+    .catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
+}
+window.loadAllContests = loadAllContests;
+window.announceWinner = announceWinner;
+window.deleteContest = deleteContest;
 
 // ═══ FESTIVAL MANAGEMENT ═══
 
