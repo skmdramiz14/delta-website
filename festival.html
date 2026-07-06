@@ -452,6 +452,15 @@ body{
   </div>
 
   <!-- Festival Products -->
+  <!-- Seller Packages -->
+  <div id="sellerPkgSection" style="display:none;">
+    <div class="sec-head">
+      <h2>📦 বিশেষ কম্বো প্যাকেজ</h2>
+      <span class="count" id="pkgCount">লোড হচ্ছে...</span>
+    </div>
+    <div class="product-grid" id="sellerPkgGrid"></div>
+  </div>
+
   <div id="productsSection">
     <div class="sec-head">
       <h2>✨ উৎসব অফার</h2>
@@ -469,12 +478,57 @@ body{
 </div>
 
 <!-- FLOATING CART -->
-<div class="floating-cart" id="floatingCart" onclick="goToCart()">
+<div class="floating-cart" id="floatingCart" onclick="openCartModal()">
   <div style="display:flex;align-items:center;gap:10px;">
     <div class="cart-count" id="floatCartCount">0</div>
     <span>কার্ট দেখুন</span>
   </div>
   <div class="cart-total" id="floatCartTotal">₹0</div>
+</div>
+
+<!-- CART MODAL -->
+<div id="festCartModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;
+  background:rgba(10,31,53,.85);z-index:9999;align-items:flex-end;justify-content:center;">
+  <div style="background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:480px;max-height:85vh;overflow-y:auto;padding:20px;box-sizing:border-box;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <div style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:900;color:var(--navy);">🛒 আপনার কার্ট</div>
+      <button onclick="closeCartModal()" style="background:var(--sand);border:none;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:1rem;">×</button>
+    </div>
+    <div id="festCartItems" style="margin-bottom:16px;"></div>
+    <!-- Coupon -->
+    <div style="background:var(--sand);border-radius:12px;padding:12px;margin-bottom:16px;">
+      <div style="font-size:.78rem;font-weight:700;color:var(--navy);margin-bottom:8px;">🎟️ Coupon Code আছে?</div>
+      <div style="display:flex;gap:8px;">
+        <input type="text" id="festCouponInput" placeholder="Coupon code লিখুন" oninput="this.value=this.value.toUpperCase()"
+          style="flex:1;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:.85rem;text-transform:uppercase;">
+        <button onclick="applyCoupon()" style="background:var(--orange);color:#fff;border:none;padding:10px 16px;border-radius:8px;font-weight:700;cursor:pointer;">Apply</button>
+      </div>
+      <div id="festCouponMsg" style="font-size:.75rem;margin-top:6px;display:none;"></div>
+    </div>
+    <!-- Summary -->
+    <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:16px;">
+      <div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:6px;">
+        <span style="color:var(--muted);">Subtotal</span><span id="festCartSubtotal">₹0</span>
+      </div>
+      <div id="festDiscountRow" style="display:none;justify-content:space-between;font-size:.82rem;margin-bottom:6px;color:var(--green);">
+        <span>🎟️ Coupon Discount</span><span id="festDiscountAmt">-₹0</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:1rem;font-weight:800;color:var(--navy);border-top:1px solid var(--border);padding-top:8px;margin-top:6px;">
+        <span>মোট</span><span id="festCartTotal">₹0</span>
+      </div>
+    </div>
+    <!-- Delivery -->
+    <div style="margin-bottom:12px;">
+      <input type="text" id="festCartAddress" placeholder="📍 ডেলিভারি ঠিকানা"
+        style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:10px;font-size:.85rem;margin-bottom:8px;box-sizing:border-box;">
+      <input type="tel" id="festCartPhone" placeholder="📞 ফোন নম্বর"
+        style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:10px;font-size:.85rem;box-sizing:border-box;">
+    </div>
+    <button onclick="placeFestOrder()" style="width:100%;padding:14px;background:var(--navy);color:#fff;border:none;border-radius:12px;font-weight:800;font-size:.92rem;cursor:pointer;">
+      ✅ অর্ডার নিশ্চিত করুন (COD)
+    </button>
+    <div style="font-size:.7rem;color:var(--muted);text-align:center;margin-top:8px;">ডেলিভারিতে টাকা দিন</div>
+  </div>
 </div>
 
 <script>
@@ -603,8 +657,13 @@ function loadFestivalData(){
   }).then(function(){
     document.getElementById('statProducts').textContent = prodCount+'+';
     filteredProducts = allFestProducts.slice();
-    renderProducts();
+    loadFestivalCoupons(function(){
+      loadFestivalContests(function(){
+        renderProducts();
+      });
+    });
     loadHampers();
+    loadSellerPackages();
   }).catch(function(e){
     showNoFirebase();
   });
@@ -929,6 +988,111 @@ function filterFestival(cat, btn){
   if(countEl) countEl.textContent = filteredProducts.length+'টি পণ্য';
 }
 
+// ── FESTIVAL COUPONS ──
+var festivalCoupons = []; // cache: all coupons for this festival
+
+// ── CONTESTS ──
+var festivalContests = [];
+
+function loadFestivalContests(cb){
+  db.collection('cities').doc(CITY).collection('contests')
+    .where('festivalKey','==',FESTIVAL_TYPE)
+    .where('active','==',true)
+    .get().then(function(snap){
+      festivalContests = [];
+      snap.forEach(function(d){ festivalContests.push(Object.assign({id:d.id},d.data())); });
+      if(cb) cb();
+    }).catch(function(){ if(cb) cb(); });
+}
+
+function getContestsForShop(shopId){
+  return festivalContests.filter(function(c){
+    return c.shopId===shopId &&
+           (!c.validUntil || new Date(c.validUntil)>=new Date());
+  });
+}
+
+function joinContest(contestId, shopId, productName){
+  var phone = prompt('আপনার ফোন নম্বর দিন (Contest entry র জন্য):');
+  if(!phone) return;
+  phone = phone.trim();
+  if(phone.length < 10){ alert('সঠিক ফোন নম্বর দিন'); return; }
+
+  db.collection('cities').doc(CITY).collection('contests').doc(contestId).update({
+    participants: firebase.firestore.FieldValue.arrayUnion({
+      phone: phone,
+      productName: productName,
+      joinedAt: new Date().toISOString()
+    })
+  }).then(function(){
+    showAddedToast('🏆 Contest এ যোগ হয়েছে! Lucky Draw এ সুযোগ আছে।');
+  }).catch(function(e){ alert('সমস্যা: '+e.message); });
+}
+
+// ── SELLER PACKAGES ──
+function loadSellerPackages(){
+  db.collection('cities').doc(CITY).collection('sellerPackages')
+    .where('festivalKey','==',FESTIVAL_TYPE)
+    .where('active','==',true)
+    .get().then(function(snap){
+      var pkgs=[];
+      snap.forEach(function(d){ pkgs.push(Object.assign({id:d.id},d.data())); });
+      if(!pkgs.length){ return; }
+
+      document.getElementById('sellerPkgSection').style.display='block';
+      document.getElementById('pkgCount').textContent = pkgs.length+'টি প্যাকেজ';
+
+      var grid = document.getElementById('sellerPkgGrid');
+      grid.innerHTML = pkgs.map(function(p){
+        var img = p.imageUrl||'';
+        var savings = p.originalPrice ? (p.originalPrice-p.price) : 0;
+        return '<div class="product-card">'+
+          (img?'<div class="product-img"><img src="'+img+'"></div>':
+            '<div class="product-img" style="background:linear-gradient(135deg,#e8f4ff,#dbeeff);font-size:2.5rem;display:flex;align-items:center;justify-content:center;">📦</div>')+
+          '<div class="product-body">'+
+            '<div class="product-shop">🏪 '+p.shopName+'</div>'+
+            '<div class="festival-tag">📦 কম্বো প্যাকেজ</div>'+
+            '<div class="product-name">'+p.name+'</div>'+
+            '<div style="font-size:.72rem;color:var(--muted);margin-bottom:6px;">'+
+              (p.items||[]).map(function(i){return '✓ '+i.name+' ×'+i.qty;}).join(' · ')+
+            '</div>'+
+            (savings>0?'<div style="font-size:.72rem;color:var(--green);margin-bottom:4px;">💰 ₹'+savings+' সাশ্রয়!</div>':'')+
+            '<div class="product-price-row">'+
+              '<span class="product-price">₹'+p.price+'</span>'+
+              (p.originalPrice&&p.originalPrice>p.price?'<span class="product-mrp">₹'+p.originalPrice+'</span>':'')+
+              (p.discount?'<span class="product-disc">'+p.discount+'% OFF</span>':'')+
+            '</div>'+
+            '<button class="add-btn" onclick="addPkgToCart(\''+p.id+'\',\''+p.name.replace(/'/g,"\\'")+'\','+p.price+',\''+p.shopId+'\',\''+img+'\')">+ কার্টে যোগ করুন</button>'+
+          '</div>'+
+        '</div>';
+      }).join('');
+    }).catch(function(){});
+}
+
+function addPkgToCart(pkgId, name, price, shopId, img){
+  addToCart(pkgId, shopId, name, price, img);
+  showAddedToast(name);
+}
+
+function loadFestivalCoupons(cb){
+  db.collection('cities').doc(CITY).collection('coupons')
+    .where('festivalKey','==',FESTIVAL_TYPE)
+    .where('active','==',true)
+    .get().then(function(snap){
+      festivalCoupons = [];
+      snap.forEach(function(d){ festivalCoupons.push(Object.assign({id:d.id},d.data())); });
+      if(cb) cb();
+    }).catch(function(){ if(cb) cb(); });
+}
+
+function getCouponsForShop(shopId){
+  return festivalCoupons.filter(function(c){
+    return c.shopId===shopId &&
+           (!c.validUntil || new Date(c.validUntil)>=new Date()) &&
+           c.usedCount < c.maxUses;
+  });
+}
+
 function renderProducts(){
   var grid = document.getElementById('productGrid');
   var countEl = document.getElementById('productCount');
@@ -948,12 +1112,34 @@ function renderProducts(){
     var mrp = p.mrp||0;
     var disc = p.discount||0;
     var img = p.imageUrl||(p.images&&p.images[0])||'';
+
+    // Coupon badges for this seller
+    var shopCoupons = getCouponsForShop(p.shopId);
+    var couponBadges = shopCoupons.map(function(c){
+      if(c.type==='bogo')
+        return '<div style="background:linear-gradient(135deg,#7b1fa2,#c2185b);color:#fff;font-size:.65rem;font-weight:700;padding:3px 8px;border-radius:6px;margin-bottom:4px;display:inline-block;">🎁 1 কিনলে 1 ফ্রি · কোড: '+c.code+'</div>';
+      if(c.type==='percent')
+        return '<div style="background:#e8f7ee;color:#1a8a4a;font-size:.65rem;font-weight:700;padding:3px 8px;border-radius:6px;margin-bottom:4px;display:inline-block;">🎟️ কোড '+c.code+' দিয়ে আরো '+c.value+'% ছাড়</div>';
+      if(c.type==='flat')
+        return '<div style="background:#fff4ec;color:var(--orange);font-size:.65rem;font-weight:700;padding:3px 8px;border-radius:6px;margin-bottom:4px;display:inline-block;">🎟️ কোড '+c.code+' দিয়ে ₹'+c.value+' ছাড়</div>';
+      return '';
+    }).join('');
+
+    // Contest badges for this seller
+    var shopContests = getContestsForShop(p.shopId);
+    var contestBadges = shopContests.map(function(c){
+      return '<div style="background:linear-gradient(135deg,#7b1fa2,#c2185b);color:#fff;font-size:.65rem;font-weight:700;padding:3px 8px;border-radius:6px;margin-bottom:4px;display:inline-block;cursor:pointer;" '+
+        'onclick="event.stopPropagation();joinContest(\''+c.id+'\',\''+p.shopId+'\',\''+name.replace(/'/g,"\\'")+'\')">'+
+        '🏆 '+c.title+' — পুরস্কার: '+c.prize+'</div>';
+    }).join('');
+
     return '<div class="product-card" onclick="openProduct(\''+p.id+'\',\''+p.shopId+'\')">'+
       '<div class="product-img">'+(img?'<img src="'+img+'" alt="'+name+'">':'🛍️')+'</div>'+
       '<div class="product-body">'+
         '<div class="product-shop">🏪 '+p.shopName+'</div>'+
         (p.festivalTag===FESTIVAL_TYPE?'<div class="festival-tag">🎊 পূজা অফার</div>':'')+
         '<div class="product-name">'+name+'</div>'+
+        ((couponBadges||contestBadges)?'<div style="margin-bottom:6px;">'+couponBadges+contestBadges+'</div>':'')+
         '<div class="product-price-row">'+
           '<span class="product-price">₹'+price+'</span>'+
           (mrp&&mrp>price?'<span class="product-mrp">₹'+mrp+'</span>':'')+ 
@@ -993,8 +1179,204 @@ function updateCartUI(){
   }
 }
 
+// ── CART MODAL ──
+var appliedCoupon = null;
+
+function openCartModal(){
+  renderFestCartItems();
+  document.getElementById('festCartModal').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeCartModal(){
+  document.getElementById('festCartModal').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+function renderFestCartItems(){
+  var wrap = document.getElementById('festCartItems');
+  if(!cart.length){
+    wrap.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);">কার্ট খালি</div>';
+    updateCartSummary();
+    return;
+  }
+  wrap.innerHTML = cart.map(function(item){
+    return '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);">'+
+      (item.img?'<img src="'+item.img+'" style="width:44px;height:44px;object-fit:cover;border-radius:8px;flex-shrink:0;">':
+        '<div style="width:44px;height:44px;background:var(--sand);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;">🛍️</div>')+
+      '<div style="flex:1;min-width:0;">'+
+        '<div style="font-size:.82rem;font-weight:600;color:var(--navy);">'+item.name+'</div>'+
+        '<div style="font-size:.75rem;color:var(--orange);">₹'+item.price+' × '+item.qty+'</div>'+
+      '</div>'+
+      '<div style="font-size:.85rem;font-weight:700;color:var(--navy);">₹'+(item.price*item.qty)+'</div>'+
+      '<button onclick="removeFromFestCart(\''+item.id+'\')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;padding:0 4px;">×</button>'+
+    '</div>';
+  }).join('');
+  updateCartSummary();
+}
+
+function removeFromFestCart(id){
+  cart = cart.filter(function(i){ return i.id!==id; });
+  try{ localStorage.setItem('festCart_'+FESTIVAL_TYPE, JSON.stringify(cart)); }catch(e){}
+  updateCart();
+  renderFestCartItems();
+}
+
+function updateCartSummary(){
+  var subtotal = cart.reduce(function(s,i){ return s+i.price*i.qty; },0);
+  var discount = 0;
+
+  if(appliedCoupon){
+    if(appliedCoupon.type==='percent') discount = Math.round(subtotal*appliedCoupon.value/100);
+    else if(appliedCoupon.type==='flat') discount = Math.min(appliedCoupon.value, subtotal);
+    else if(appliedCoupon.type==='bogo'){
+      // Lowest priced item free
+      var prices = cart.map(function(i){ return i.price; }).sort(function(a,b){return a-b;});
+      discount = prices[0]||0;
+    }
+    document.getElementById('festDiscountRow').style.display = 'flex';
+    document.getElementById('festDiscountAmt').textContent = '-₹'+discount;
+  } else {
+    document.getElementById('festDiscountRow').style.display = 'none';
+  }
+
+  document.getElementById('festCartSubtotal').textContent = '₹'+subtotal;
+  document.getElementById('festCartTotal').textContent = '₹'+(subtotal-discount);
+}
+
+// ── COUPON APPLY ──
+function applyCoupon(){
+  var code = (document.getElementById('festCouponInput').value||'').trim().toUpperCase();
+  var msgEl = document.getElementById('festCouponMsg');
+  if(!code){ showCouponMsg('Coupon code দিন','red'); return; }
+
+  var subtotal = cart.reduce(function(s,i){ return s+i.price*i.qty; },0);
+
+  db.collection('cities').doc(CITY).collection('coupons').doc(code).get()
+    .then(function(doc){
+      if(!doc.exists){ showCouponMsg('❌ এই coupon পাওয়া যায়নি','red'); return; }
+      var c = doc.data();
+
+      // Validations
+      if(!c.active){ showCouponMsg('❌ এই coupon inactive','red'); return; }
+      if(c.validUntil && new Date(c.validUntil)<new Date()){ showCouponMsg('❌ এই coupon এর মেয়াদ শেষ','red'); return; }
+      if(c.usedCount>=c.maxUses){ showCouponMsg('❌ এই coupon এর সব uses শেষ','red'); return; }
+      if(c.minOrder && subtotal<c.minOrder){ showCouponMsg('❌ ন্যূনতম ₹'+c.minOrder+' order লাগবে','red'); return; }
+      if(c.festivalKey && c.festivalKey!==FESTIVAL_TYPE){ showCouponMsg('❌ এই coupon এই festival এ valid না','red'); return; }
+
+      // Apply
+      appliedCoupon = c;
+      updateCartSummary();
+
+      var label = c.type==='percent' ? c.value+'% ছাড়'
+                : c.type==='flat' ? '₹'+c.value+' ছাড়'
+                : 'Buy 1 Get 1 Free';
+      showCouponMsg('✅ '+code+' applied — '+label,'green');
+    }).catch(function(e){ showCouponMsg('সমস্যা: '+e.message,'red'); });
+}
+
+function showCouponMsg(msg, type){
+  var el = document.getElementById('festCouponMsg');
+  el.textContent = msg;
+  el.style.display = 'block';
+  el.style.color = type==='green' ? 'var(--green)' : 'var(--red,#c0392b)';
+}
+
+// ── PLACE ORDER ──
+function placeFestOrder(){
+  var addr = document.getElementById('festCartAddress').value.trim();
+  var phone = document.getElementById('festCartPhone').value.trim();
+  if(!cart.length){ showAddedToast('কার্ট খালি'); return; }
+  if(!addr){ alert('ঠিকানা দিন'); return; }
+  if(!phone){ alert('ফোন নম্বর দিন'); return; }
+
+  var subtotal = cart.reduce(function(s,i){ return s+i.price*i.qty; },0);
+  var discount = 0;
+  if(appliedCoupon){
+    if(appliedCoupon.type==='percent') discount = Math.round(subtotal*appliedCoupon.value/100);
+    else if(appliedCoupon.type==='flat') discount = Math.min(appliedCoupon.value, subtotal);
+    else if(appliedCoupon.type==='bogo'){
+      var prices = cart.map(function(i){ return i.price; }).sort(function(a,b){return a-b;});
+      discount = prices[0]||0;
+    }
+  }
+  var total = subtotal - discount;
+
+  // Group by seller
+  var byShop = {};
+  cart.forEach(function(item){
+    if(!byShop[item.shopId]) byShop[item.shopId] = [];
+    byShop[item.shopId].push(item);
+  });
+
+  var btn = document.querySelector('#festCartModal button:last-of-type');
+  btn.disabled = true; btn.textContent = 'অর্ডার হচ্ছে...';
+
+  var proms = Object.keys(byShop).map(function(shopId){
+    var items = byShop[shopId];
+    var shopTotal = items.reduce(function(s,i){ return s+i.price*i.qty; },0);
+    return db.collection('cities').doc(CITY).collection('sellers').doc(shopId)
+      .collection('orders').add({
+        items: items.map(function(i){ return i.name+' ×'+i.qty; }).join(', '),
+        itemsDetail: items,
+        total: shopTotal,
+        grandTotal: shopId===Object.keys(byShop)[0] ? total : shopTotal,
+        deliveryCharge: total>=399?0:30,
+        deliveryAddress: addr,
+        customerMobile: phone,
+        paymentMethod: 'cod',
+        couponCode: appliedCoupon ? appliedCoupon.code : '',
+        couponDiscount: discount,
+        festivalKey: FESTIVAL_TYPE,
+        status: 'pending',
+        createdAt: new Date().toISOString()
+      });
+  });
+
+  Promise.all(proms).then(function(){
+    // Coupon use count বাড়াও + seller notification পাঠাও
+    if(appliedCoupon){
+      db.collection('cities').doc(CITY).collection('coupons').doc(appliedCoupon.code).update({
+        usedCount: firebase.firestore.FieldValue.increment(1)
+      }).catch(function(){});
+
+      // Seller notification
+      db.collection('cities').doc(CITY).collection('sellers').doc(appliedCoupon.shopId)
+        .collection('notifications').add({
+          type: 'coupon_used',
+          title: '🎟️ Coupon ব্যবহার হয়েছে!',
+          message: '"'+appliedCoupon.code+'" coupon দিয়ে ₹'+discount+' ছাড়ে order হয়েছে।',
+          couponCode: appliedCoupon.code,
+          discount: discount,
+          read: false,
+          createdAt: new Date().toISOString()
+        }).catch(function(){});
+    }
+    cart = []; appliedCoupon = null;
+    try{ localStorage.removeItem('festCart_'+FESTIVAL_TYPE); }catch(e){}
+    updateCart();
+    closeCartModal();
+    showOrderSuccessToast();
+  }).catch(function(e){
+    btn.disabled=false; btn.textContent='✅ অর্ডার নিশ্চিত করুন (COD)';
+    alert('সমস্যা: '+e.message);
+  });
+}
+
+function showOrderSuccessToast(){
+  var div = document.createElement('div');
+  div.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);'+
+    'background:#fff;border-radius:20px;padding:28px 24px;text-align:center;z-index:9999;'+
+    'box-shadow:0 8px 32px rgba(0,0,0,.2);max-width:320px;width:90%;';
+  div.innerHTML = '<div style="font-size:2.5rem;margin-bottom:8px;">🎉</div>'+
+    '<div style="font-family:\'Playfair Display\',serif;font-size:1.2rem;font-weight:900;color:var(--navy);margin-bottom:8px;">অর্ডার সফল!</div>'+
+    '<div style="font-size:.82rem;color:var(--muted);margin-bottom:16px;">Seller শীঘ্রই confirm করবেন</div>'+
+    '<button onclick="this.parentElement.remove()" style="background:var(--navy);color:#fff;border:none;padding:10px 24px;border-radius:10px;font-weight:700;cursor:pointer;">ঠিক আছে</button>';
+  document.body.appendChild(div);
+}
+
 function goToCart(){
-  window.location.href = 'index.html#cart';
+  openCartModal();
 }
 
 function showAddedToast(name){
