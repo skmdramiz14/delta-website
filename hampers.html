@@ -387,15 +387,18 @@ function buildHamperCard(h){
   }
 
   return '<div class="hap-card" id="hcard_'+h.id+'" data-festival="'+(h.festivalTag||'')+'">'+
-    '<div class="hap-banner" style="background:'+bg+';">'+
+    '<div class="hap-banner" style="background:'+bg+';padding:0;overflow:hidden;position:relative;">'+
+      (h.imageUrl
+        ? '<img src="'+h.imageUrl+'" style="width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;opacity:.85;">'+
+          '<div style="position:relative;z-index:1;padding:18px;display:flex;flex-direction:column;justify-content:space-between;height:100%;">'
+        : '<div style="padding:18px;display:flex;flex-direction:column;justify-content:space-between;height:100%;">')+
       '<div class="hap-tags">'+
         '<span class="hap-tag festival">'+festEmoji+' '+festName+'</span>'+
         (h.stock<10&&h.stock>0?'<span class="hap-tag limited">⚡ সীমিত</span>':'')+
       '</div>'+
-      '<div class="hap-art">'+(h.imageUrl
-        ? '<img src="'+h.imageUrl+'" style="width:80px;height:80px;object-fit:cover;border-radius:12px;margin:0 auto;display:block;">'
-        : (h.emoji||'🎁'))+'</div>'+
+      '<div class="hap-art">'+(h.imageUrl?'':h.emoji||'🎁')+'</div>'+
       '<div class="hap-timer"><span class="hap-timer-dot"></span><span class="lang-bn">অর্ডার করুন</span><span class="lang-en">Order Now</span></div>'+
+      '</div>'+
     '</div>'+
     '<div class="hap-body">'+
       '<div class="hap-festival-label">'+festName.toUpperCase()+'</div>'+
