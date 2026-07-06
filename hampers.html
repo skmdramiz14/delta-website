@@ -1364,10 +1364,9 @@ function dpAddToCart(){
 function dpBuyNow(){
   if(!currentDetailHamper) return;
   var addOns = getDpSelectedAddOns();
-  closeDetailPage();
-  // Order modal এ pass করো selected add-ons সহ
   var h = Object.assign({}, currentDetailHamper, {_preselectedAddOns: addOns});
-  openOrderModal(h);
+  closeDetailPage(); // currentDetailHamper null হয়ে যাবে এর পরে
+  openOrderModal(h); // তাই আগেই h save করেছি
 }
 
 function openCartDrawer(){
