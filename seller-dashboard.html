@@ -832,15 +832,15 @@ select.form-input{cursor:pointer;}
           <div class="form-grid">
             <div class="form-group">
               <label>Festival Discount (%)</label>
-              <input type="number" class="form-input" id="festReqDiscount" min="0" max="90" placeholder="যেমন: 15">
+              <input type="number" class="form-input" id="festReqDiscount" min="0" max="90" placeholder="যেমন: 20" oninput="autoCalcFestPrice()">
             </div>
             <div class="form-group">
               <label>Festival Stock</label>
               <input type="number" class="form-input" id="festReqStock" min="1" placeholder="কতটি available">
             </div>
             <div class="form-group">
-              <label>Festival বিশেষ মূল্য (₹) — Optional</label>
-              <input type="number" class="form-input" id="festReqPrice" placeholder="আলাদা festival price (না দিলে original দাম)">
+              <label>Festival মূল্য (₹) <span style="font-size:.68rem;color:var(--green);">auto calculate</span></label>
+              <input type="number" class="form-input" id="festReqPrice" placeholder="Discount দিলে auto fill হবে">
             </div>
             <div class="form-group">
               <label>Festival বিশেষ বিবরণ — Optional</label>
@@ -4090,6 +4090,17 @@ function renderSellerFestivals(){
           'padding:8px 14px;border-radius:20px;font-size:.78rem;font-weight:700;">+ পণ্য add করুন</div>'+
       '</div>';
     }).join('');
+}
+
+function autoCalcFestPrice(){
+  var productId = document.getElementById('festReqProduct').value;
+  var discount = parseInt(document.getElementById('festReqDiscount').value)||0;
+  if(!productId || !discount) return;
+  var p = products.find(function(x){ return x.id===productId; });
+  if(!p) return;
+  var originalPrice = p.price||0;
+  var festPrice = Math.round(originalPrice * (1 - discount/100));
+  document.getElementById('festReqPrice').value = festPrice;
 }
 
 function openFestivalRequestForm(key, name){
