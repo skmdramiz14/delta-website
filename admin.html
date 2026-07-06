@@ -348,9 +348,6 @@ button,input,select{font-family:'DM Sans',sans-serif;}
     <button class="tab-btn" id="tab-hamperorders" onclick="goTab('hamperorders',this)">
       📦 Hamper Orders
     </button>
-    <button class="tab-btn" id="tab-hamperreviews" onclick="goTab('hamperreviews',this)">
-      💬 Hamper Reviews <span class="tab-count zero" id="countHReviews">0</span>
-    </button>
   </nav>
 
   <div class="content">
@@ -1039,12 +1036,52 @@ button,input,select{font-family:'DM Sans',sans-serif;}
               <input type="number" class="form-input" id="hStock" placeholder="50" style="margin-top:3px;">
             </div>
             <div class="full" style="grid-column:1/-1;">
-              <label style="font-size:.68rem;color:var(--muted);">Emoji / Image URL</label>
-              <input class="form-input" id="hEmoji" placeholder="🎁 অথবা Image URL" style="margin-top:3px;">
+              <label style="font-size:.68rem;color:var(--muted);">Emoji (image না থাকলে)</label>
+              <input class="form-input" id="hEmoji" placeholder="🎁" style="margin-top:3px;max-width:80px;">
+            </div>
+            <div class="full" style="grid-column:1/-1;">
+              <label style="font-size:.68rem;color:var(--muted);font-weight:600;">📸 Images (Slider এর জন্য — Cloudinary URL)</label>
+              <div style="display:flex;flex-direction:column;gap:6px;margin-top:4px;">
+                <input class="form-input" id="hImg1" placeholder="Image 1 URL (Main)">
+                <input class="form-input" id="hImg2" placeholder="Image 2 URL (optional)">
+                <input class="form-input" id="hImg3" placeholder="Image 3 URL (optional)">
+              </div>
+              <div style="font-size:.68rem;color:var(--muted);margin-top:4px;">💡 Cloudinary থেকে URL copy করুন। Image 1 card এ দেখাবে।</div>
             </div>
             <div class="full" style="grid-column:1/-1;">
               <label style="font-size:.68rem;color:var(--muted);">Description</label>
               <input class="form-input" id="hDesc" placeholder="Hamper এর বিবরণ" style="margin-top:3px;">
+            </div>
+          </div>
+
+          <!-- PDP Content Fields -->
+          <div style="border-top:1px solid var(--border);padding-top:12px;margin-top:4px;">
+            <div style="font-size:.78rem;font-weight:700;color:var(--navy);margin-bottom:10px;">📋 PDP Content (Detail Page এ দেখাবে)</div>
+
+            <!-- Top Highlights -->
+            <div style="margin-bottom:10px;">
+              <label style="font-size:.7rem;color:var(--muted);font-weight:600;">✨ Top Highlights (প্রতি লাইনে একটা)</label>
+              <textarea class="form-input" id="hHighlights" rows="4" placeholder="যেমন:&#10;পূজার জন্য বিশেষভাবে কিউরেটেড&#10;১০০% লোকাল পণ্য&#10;গ্যারান্টিযুক্ত তাজা পণ্য" style="margin-top:4px;resize:vertical;font-size:.8rem;"></textarea>
+            </div>
+
+            <!-- Specifications -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+              <div>
+                <label style="font-size:.7rem;color:var(--muted);font-weight:600;">ওজন / পরিমাণ</label>
+                <input class="form-input" id="hSpecWeight" placeholder="যেমন: ২ কেজি" style="margin-top:4px;">
+              </div>
+              <div>
+                <label style="font-size:.7rem;color:var(--muted);font-weight:600;">তাজা রাখার সময়</label>
+                <input class="form-input" id="hSpecShelfLife" placeholder="যেমন: ২৪-৪৮ ঘণ্টা" style="margin-top:4px;">
+              </div>
+              <div>
+                <label style="font-size:.7rem;color:var(--muted);font-weight:600;">ডেলিভারি সময়</label>
+                <input class="form-input" id="hSpecDelivery" placeholder="যেমন: ৩০-৬০ মিনিট" style="margin-top:4px;">
+              </div>
+              <div>
+                <label style="font-size:.7rem;color:var(--muted);font-weight:600;">উপলক্ষ্য</label>
+                <input class="form-input" id="hSpecOccasion" placeholder="যেমন: দুর্গাপূজা" style="margin-top:4px;">
+              </div>
             </div>
           </div>
 
@@ -1126,23 +1163,6 @@ button,input,select{font-family:'DM Sans',sans-serif;}
       </div>
     </div>
 
-    <!-- ═══ HAMPER REVIEWS MODERATION PAGE ═══ -->
-    <div class="page" id="page-hamperreviews">
-      <div class="sec-head">
-        <div class="sec-title">💬 Hamper Reviews
-          <small>Guest customers কোনো login ছাড়াই review দেয় — অনুপযুক্ত review এখান থেকে মুছুন</small>
-        </div>
-      </div>
-
-      <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
-        <button class="btn-sm" onclick="loadHamperReviews()" style="background:var(--sand);color:var(--navy);">↺ Refresh</button>
-      </div>
-
-      <div id="hamperReviewsList" style="display:flex;flex-direction:column;gap:10px;">
-        <div style="color:var(--muted);font-size:.85rem;padding:20px;text-align:center;">Tab click করলে লোড হবে</div>
-      </div>
-    </div>
-
   </div>
 </div>
 <script>
@@ -1162,7 +1182,6 @@ var auth, db, allSellers = [], allRequests = [], sellerFilter = 'all';
 var allFestivalCats = [];
 var allHampers = [];
 var allHamperOrders = [];
-var allHamperReviews = [];
 var hamperBaseItems = [];
 var hamperAddOns = [];
 var editingHamperId = null;
@@ -1268,7 +1287,6 @@ function goTab(tab, btn){
   if(tab==='festivals') loadFestivalManagement();
   if(tab==='hampers') loadHamperManagement();
   if(tab==='hamperorders') loadHamperOrders();
-  if(tab==='hamperreviews') loadHamperReviews();
 }
 
 // ═══ DATA LOADING ═══
@@ -4136,61 +4154,6 @@ function updateHamperOrder(orderId, newStatus){
   }).catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
 }
 
-// ═══ HAMPER REVIEWS (MODERATION) ═══
-
-function loadHamperReviews(){
-  var wrap = document.getElementById('hamperReviewsList');
-  wrap.innerHTML = '<div style="color:var(--muted);font-size:.85rem;padding:20px;text-align:center;">লোড হচ্ছে...</div>';
-
-  db.collection('hamperReviews').orderBy('createdAt','desc').get()
-    .then(function(snap){
-      allHamperReviews = [];
-      snap.forEach(function(d){ allHamperReviews.push(Object.assign({id:d.id},d.data())); });
-      var countEl = document.getElementById('countHReviews');
-      countEl.textContent = allHamperReviews.length;
-      countEl.classList.toggle('zero', allHamperReviews.length===0);
-      renderHamperReviews();
-    }).catch(function(e){
-      wrap.innerHTML = '<div style="color:var(--red);padding:20px;">লোড সমস্যা: '+e.message+
-        '<br><small style="color:var(--muted);">Firestore Rules-এ hamperReviews collection-এর জন্য read/write rule যোগ করা আছে কিনা চেক করুন।</small></div>';
-    });
-}
-
-function renderHamperReviews(){
-  var wrap = document.getElementById('hamperReviewsList');
-  if(!allHamperReviews.length){
-    wrap.innerHTML = '<div style="color:var(--muted);font-size:.85rem;padding:20px;text-align:center;">কোনো review নেই।</div>';
-    return;
-  }
-  wrap.innerHTML = allHamperReviews.map(function(r){
-    var time = r.createdAt ? new Date(r.createdAt).toLocaleString('bn-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) : '—';
-    var stars = '★'.repeat(r.rating||0)+'☆'.repeat(5-(r.rating||0));
-    return '<div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:16px;">'+
-      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">'+
-        '<div style="font-weight:700;color:var(--navy);">'+(r.name||'অজ্ঞাত ক্রেতা')+'</div>'+
-        '<span style="color:#f5a623;font-size:.85rem;">'+stars+'</span>'+
-      '</div>'+
-      '<div style="font-size:.82rem;color:var(--charcoal);margin-bottom:8px;line-height:1.5;">'+(r.comment||'<i style="color:var(--muted);">কোনো লেখা নেই</i>')+'</div>'+
-      '<div style="display:flex;align-items:center;justify-content:space-between;font-size:.72rem;color:var(--muted);">'+
-        '<span>Hamper ID: '+(r.hamperId||'—')+' • '+time+'</span>'+
-        '<button class="btn-sm btn-red" onclick="deleteHamperReview(\''+r.id+'\')">🗑️ Delete</button>'+
-      '</div>'+
-    '</div>';
-  }).join('');
-}
-
-function deleteHamperReview(reviewId){
-  if(!confirm('এই review মুছে ফেলবেন? এটা ফিরিয়ে আনা যাবে না।')) return;
-  db.collection('hamperReviews').doc(reviewId).delete().then(function(){
-    allHamperReviews = allHamperReviews.filter(function(r){ return r.id!==reviewId; });
-    var countEl = document.getElementById('countHReviews');
-    countEl.textContent = allHamperReviews.length;
-    countEl.classList.toggle('zero', allHamperReviews.length===0);
-    renderHamperReviews();
-    showToast('Review মুছে ফেলা হয়েছে ✅','green');
-  }).catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
-}
-
 function sendHamperWhatsApp(phone, hamperName, total){
   var msg = '🎁 আপনার DELTA Hamper Order confirm হয়েছে!\n\n'+
     'Hamper: '+hamperName+'\n'+
@@ -4835,17 +4798,36 @@ function saveHamper(){
   var emoji = document.getElementById('hEmoji').value.trim()||'🎁';
   var desc = document.getElementById('hDesc').value.trim();
 
+  // Multiple images
+  var img1 = (document.getElementById('hImg1')||{}).value||'';
+  var img2 = (document.getElementById('hImg2')||{}).value||'';
+  var img3 = (document.getElementById('hImg3')||{}).value||'';
+  var images = [img1, img2, img3].filter(function(u){ return u.trim(); });
+  var mainImageUrl = images[0]||'';
+
   if(!name){ showToast('Hamper নাম দিন','red'); return; }
   if(!price){ showToast('দাম দিন','red'); return; }
   if(!festivalTag){ showToast('Festival select করুন','red'); return; }
   if(!hamperBaseItems.length){ showToast('অন্তত একটা Base Item দিন','red'); return; }
 
-  var isImg = emoji.startsWith('http');
+  // PDP content fields
+  var highlights = (document.getElementById('hHighlights').value||'').split('\n').map(function(s){return s.trim();}).filter(Boolean);
+  var specs = {
+    weight: (document.getElementById('hSpecWeight').value||'').trim(),
+    shelfLife: (document.getElementById('hSpecShelfLife').value||'').trim(),
+    deliveryTime: (document.getElementById('hSpecDelivery').value||'').trim(),
+    occasion: (document.getElementById('hSpecOccasion').value||'').trim()
+  };
+
   var data = {
     name: name, price: price, festivalTag: festivalTag,
     stock: stock, soldCount: 0,
-    imageUrl: isImg ? emoji : '', emoji: isImg ? '🎁' : emoji,
+    imageUrl: mainImageUrl,
+    images: images,
+    emoji: emoji||'🎁',
     description: desc,
+    highlights: highlights,
+    specs: specs,
     baseItems: hamperBaseItems,
     addOns: hamperAddOns,
     active: true,
@@ -4860,7 +4842,10 @@ function saveHamper(){
 
   prom.then(function(){
     hamperBaseItems=[]; hamperAddOns=[]; editingHamperId=null;
-    ['hName','hPrice','hEmoji','hDesc','hStock'].forEach(function(id){ document.getElementById(id).value=''; });
+    ['hName','hPrice','hEmoji','hDesc','hStock','hImg1','hImg2','hImg3',
+     'hHighlights','hSpecWeight','hSpecShelfLife','hSpecDelivery','hSpecOccasion'].forEach(function(id){
+      var el = document.getElementById(id); if(el) el.value='';
+    });
     var hft = document.getElementById('hFestivalTag'); if(hft) hft.value='';
     renderHamperBaseItems(); renderHamperAddOns();
     if(statusEl) statusEl.textContent='✅ Hamper সেভ হয়েছে';
@@ -4910,10 +4895,22 @@ function editHamper(id){
   hamperAddOns = (h.addOns||[]).slice();
   document.getElementById('hName').value = h.name||'';
   document.getElementById('hPrice').value = h.price||'';
-  document.getElementById('hFestivalTag').value = h.festivalTag||'';
+  var hft = document.getElementById('hFestivalTag'); if(hft) hft.value = h.festivalTag||'';
   document.getElementById('hStock').value = h.stock||'';
-  document.getElementById('hEmoji').value = h.imageUrl||h.emoji||'🎁';
+  document.getElementById('hEmoji').value = h.emoji||'🎁';
   document.getElementById('hDesc').value = h.description||'';
+  // Images
+  var imgs = h.images||[];
+  var i1=document.getElementById('hImg1'); if(i1) i1.value=imgs[0]||h.imageUrl||'';
+  var i2=document.getElementById('hImg2'); if(i2) i2.value=imgs[1]||'';
+  var i3=document.getElementById('hImg3'); if(i3) i3.value=imgs[2]||'';
+  // PDP fields
+  var hl=document.getElementById('hHighlights'); if(hl) hl.value=(h.highlights||[]).join('\n');
+  var specs=h.specs||{};
+  var sw=document.getElementById('hSpecWeight'); if(sw) sw.value=specs.weight||'';
+  var ssl=document.getElementById('hSpecShelfLife'); if(ssl) ssl.value=specs.shelfLife||'';
+  var sd=document.getElementById('hSpecDelivery'); if(sd) sd.value=specs.deliveryTime||'';
+  var so=document.getElementById('hSpecOccasion'); if(so) so.value=specs.occasion||'';
   renderHamperBaseItems(); renderHamperAddOns();
   document.getElementById('hName').scrollIntoView({behavior:'smooth'});
   showToast('Hamper load হয়েছে — edit করে Save করুন','green');
