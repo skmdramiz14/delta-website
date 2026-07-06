@@ -4050,8 +4050,7 @@ function renderMyHamperRequests(list){
 function loadSellerFestivalSection(){
   // Active festivals load করো
   db.collection('cities').doc(CITY).collection('settings').doc('festivalCategories')
-    .get().then(function(doc){
-      sellerFestivalCats = doc.exists ? (doc.data().festivals||[]).filter(function(f){ return f.active; }) : [];
+    .get({source:'server'}).then(function(doc){
       renderSellerFestivals();
     }).catch(function(){
       document.getElementById('sellerFestivalList').innerHTML =
