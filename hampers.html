@@ -1388,17 +1388,45 @@ function renderCartDrawer(){
     foot.innerHTML = '';
     return;
   }
+
   var total = list.reduce(function(s,i){ return s+i.price*(i.qty||1); },0);
-  body.innerHTML = list.map(function(i){
-    return '<div class="cart-drawer-item">'+
-      '<span class="ci-emoji">'+i.emoji+'</span>'+
-      '<span class="ci-name">'+i.name+' '+(i.qty>1?'× '+i.qty:'')+'</span>'+
-      '<span class="ci-price">₹'+(i.price*(i.qty||1))+'</span>'+
-      '<button class="ci-remove" onclick="removeFromCart(\''+i.id+'\')">×</button>'+
+
+  // Hampers আর add-ons আলাদা করো
+  var hampers = list.filter(function(i){ return !i.isAddOn; });
+  var addOns = list.filter(function(i){ return i.isAddOn; });
+
+  body.innerHTML = hampers.map(function(h){
+    // এই hamper এর add-ons খুঁজো
+    var hAddOns = addOns.filter(function(a){ return a.hamperId===h.id; });
+    var hamperTotal = h.price*(h.qty||1) + hAddOns.reduce(function(s,a){return s+a.price;},0);
+
+    return '<div style="border-bottom:1px solid var(--border);padding-bottom:12px;margin-bottom:12px;">'+
+      // Main hamper
+      '<div class="cart-drawer-item" style="margin-bottom:6px;">'+
+        '<span class="ci-emoji">'+(h.emoji||'🎁')+'</span>'+
+        '<span class="ci-name" style="font-weight:700;">'+h.name+(h.qty>1?' × '+h.qty:'')+'</span>'+
+        '<span class="ci-price">₹'+h.price*(h.qty||1)+'</span>'+
+        '<button class="ci-remove" onclick="removeFromCart(\''+h.id+'\')">×</button>'+
+      '</div>'+
+      // Add-ons indented
+      hAddOns.map(function(a){
+        return '<div style="display:flex;align-items:center;gap:8px;padding:5px 0 5px 28px;">'+
+          '<span style="font-size:.75rem;color:var(--orange);">✨</span>'+
+          '<span style="flex:1;font-size:.78rem;color:var(--muted);">'+a.name+'</span>'+
+          '<span style="font-size:.78rem;font-weight:600;color:var(--orange);">+₹'+a.price+'</span>'+
+          '<button onclick="removeFromCart(\''+a.id+'\')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:.9rem;padding:0 4px;">×</button>'+
+        '</div>';
+      }).join('')+
+      // Subtotal if add-ons exist
+      (hAddOns.length?
+        '<div style="display:flex;justify-content:flex-end;padding-top:6px;padding-right:30px;font-size:.78rem;font-weight:700;color:var(--navy);">'+
+          'Subtotal: ₹'+hamperTotal+
+        '</div>':'')+
     '</div>';
   }).join('');
+
   foot.innerHTML =
-    '<div style="display:flex;justify-content:space-between;margin-bottom:12px;font-weight:800;color:var(--navy);">'+
+    '<div style="display:flex;justify-content:space-between;margin-bottom:12px;font-weight:800;font-size:1rem;color:var(--navy);">'+
       '<span>মোট</span><span>₹'+total+'</span>'+
     '</div>'+
     '<div style="margin-bottom:8px;">'+
