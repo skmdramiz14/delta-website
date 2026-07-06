@@ -152,9 +152,15 @@ body.lang-bn .lang-en{display:none!important;}
 .detail-page{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:var(--cream);z-index:9997;overflow-y:auto;}
 .detail-page.open{display:block;}
 .dp-topbar{position:sticky;top:0;z-index:5;background:rgba(255,255,255,.95);backdrop-filter:blur(6px);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
-.dp-icon-btn{width:36px;height:36px;border-radius:50%;background:var(--sand);border:none;display:flex;align-items:center;justify-content:center;font-size:1.05rem;cursor:pointer;color:var(--navy);flex-shrink:0;}
+.dp-icon-btn{width:36px;height:36px;border-radius:50%;background:var(--sand);border:none;display:flex;align-items:center;justify-content:center;font-size:1.05rem;cursor:pointer;color:var(--navy);flex-shrink:0;transition:all .2s;}
 .dp-icon-btn.active{background:#ffe4e4;color:#e0433d;}
 .dp-topbar-actions{display:flex;gap:8px;}
+/* Colorful topbar buttons */
+#dpWishlistBtn{background:#fff0f0;color:#e0433d;}
+#dpWishlistBtn.active{background:#e0433d;color:#fff;}
+.dp-topbar-actions button:nth-child(2){background:#fff4ec;color:var(--orange);}
+.dp-topbar-actions button:nth-child(3){background:#e8f7ee;color:#1a8a4a;}
+.dp-topbar-actions button:nth-child(4){background:#fff8e1;color:#f59e0b;}
 
 /* slider */
 .dp-slider{position:relative;width:100%;aspect-ratio:1/1;max-height:380px;overflow:hidden;background:var(--sand);}
