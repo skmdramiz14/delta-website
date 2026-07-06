@@ -276,14 +276,14 @@ body.lang-bn .lang-en{display:none!important;}
   </div>
 
   <p class="hero-sub">
-    <span class="lang-bn">মন্তেশ্বরের সেরা কৃষক ও দোকানদারদের হাতে বাছাই করা পণ্য নিয়ে<br>তৈরি বিশেষ হ্যাম্পার — আপনার প্রিয়জনের জন্য, সরাসরি দরজায়</span>
-    <span class="lang-en">Handcrafted with the finest local produce of Manteswar<br>Special hampers for your loved ones, delivered to your door</span>
+    <span class="lang-bn">প্রতিটি হ্যাম্পার — একটি গল্প, একটি অনুভূতি<br>উৎসবের আলোয় সাজানো, ভালোবাসায় মোড়ানো</span>
+    <span class="lang-en">Every hamper tells a story, carries an emotion<br>Curated for the festive soul, wrapped in warmth</span>
   </p>
 
   <!-- Stats -->
   <div style="display:flex;justify-content:center;gap:24px;margin-bottom:16px;">
     <div style="text-align:center;">
-      <div style="font-size:1.3rem;font-weight:900;color:#fff;" id="heroHamperCount">—</div>
+      <div style="font-size:1.3rem;font-weight:900;color:#fff;" id="heroHamperCount">0</div>
       <div style="font-size:.68rem;color:rgba(255,255,255,.75);">হ্যাম্পার</div>
     </div>
     <div style="width:1px;background:rgba(255,255,255,.25);"></div>
@@ -590,6 +590,9 @@ function loadHampers(){
       allHampers = [];
       snap.forEach(function(d){ allHampers.push(Object.assign({id:d.id},d.data())); });
       allHampers.sort(function(a,b){ return new Date(b.createdAt||0)-new Date(a.createdAt||0); });
+      // Hero count update
+      var countEl = document.getElementById('heroHamperCount');
+      if(countEl) countEl.textContent = allHampers.length||'0';
 
       if(!allHampers.length){ showDefaultHampers(); return; }
 
