@@ -676,7 +676,7 @@ function updateHamperTotal(hamperId, basePrice){
 function addHamperToCart(hamperId, hamperName, basePrice){
   var h = allHampers.find(function(x){ return x.id===hamperId; }) ||
           {id:hamperId, name:hamperName, price:basePrice, addOns:[], baseItems:[]};
-  addToCart(h);
+  openOrderModal(h);
 }
 
 function openOrderModal(h){
@@ -1304,12 +1304,20 @@ function updateCartBadge(){
   if(list.length){ badge.textContent = list.length; badge.classList.remove('hidden'); }
   else { badge.classList.add('hidden'); }
 }
+var updateCartIcon = updateCartBadge;
 
 function addToCart(h){
   var list = getCart();
-  var existing = list.find(function(i){ return i.id===h.id; });
+  var existing = list.find(function(i){ return i.id===h.id && !i.isAddOn; });
   if(existing){ existing.qty = (existing.qty||1)+1; }
-  else { list.push({id:h.id,name:h.name,emoji:h.emoji||'🎁',price:h.price,qty:1}); }
+  else { list.push({
+    id: h.id,
+    name: h.name||'Hamper',
+    emoji: h.emoji||'🎁',
+    price: h.price||0,
+    qty: 1,
+    isAddOn: false
+  }); }
   saveCart(list);
   showToast('কার্টে যোগ হয়েছে 🛒','green');
 }
