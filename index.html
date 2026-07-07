@@ -4595,15 +4595,30 @@ function startBannerCountdown(endTime){
 }
 
 // ── FLASH COUNTDOWN ──
-function startFlashCountdown(){
-  var end=new Date();end.setHours(end.getHours()+3,0,0,0);
+function startFlashCountdownWithTime(endTimeMs){
   function tick(){
-    var diff=Math.max(0,end-new Date());
+    var diff=Math.max(0, endTimeMs - Date.now());
     var h=Math.floor(diff/3600000),m=Math.floor(diff%3600000/60000),s=Math.floor(diff%60000/1000);
     var el=document.getElementById('flashCountdown');
-    if(el)el.textContent=(h<10?'0':'')+h+':'+(m<10?'0':'')+m+':'+(s<10?'0':'')+s;
+    if(el) el.textContent=(h<10?'0':'')+h+':'+(m<10?'0':'')+m+':'+(s<10?'0':'')+s;
   }
-  tick();setInterval(tick,1000);
+  tick(); setInterval(tick,1000);
+}
+
+function startFlashCountdown(){
+  // Legacy fallback
+  startFlashCountdownWithTime(Date.now()+3*3600000);
+}
+
+function renderFlashSection(flashProds){
+  // Find flash grid in DOM and re-render with correct salePrice + timers
+  var grid = document.querySelector('.flash-grid') || document.getElementById('flashGrid');
+  if(!grid) return;
+  grid.innerHTML = flashProds.map(function(p){
+    return productCardHTML(p, true);
+  }).join('');
+  // Start individual timers
+  startFlashCardTimers(flashProds);
 }
 
 // ── SHARED PRODUCT CARD HTML ──
@@ -4623,8 +4638,10 @@ function productCardHTML(p,isFlash){
   var inCart=cart.find(function(c){return c.id===p.id&&c.shopId===p.shopId;});
   var qty=inCart?inCart.qty:0;
   var isWished=wishlist.indexOf(p.id)>=0;
-  // Flash end time — 2-5 hrs from now per product (simulated)
-  var flashEndMs=isFlash?(Date.now()+(2+Math.floor(Math.random()*3))*3600000+Math.floor(Math.random()*60)*60000):0;
+  // Flash end time — use actual _flashEnd if available
+  var flashEndMs = isFlash ? (p._flashEnd || Date.now()+3*3600000) : 0;
+  // Use salePrice if available (set by admin), otherwise calculate
+  var salePrice = isFlash ? (p.salePrice || Math.round(price*(1-disc/100))) : Math.round(price*(1-disc/100));
   var timerId='ftimer_'+p.id;
   var barId='ftbar_'+p.id;
   return '<div class="product-card" id="pcard_'+p.id+'">'+
@@ -4644,7 +4661,11 @@ function productCardHTML(p,isFlash){
     '<div class="product-name">'+name+'</div>'+
     (unit?'<div class="product-weight">'+unit+'</div>':'')+
     '<div class="product-rating">⭐ 4.8 <span style="color:var(--muted)">(24)</span></div>'+
-    '<div class="product-pricing"><span class="price-now">₹'+price+'</span>'+(p.mrp&&p.mrp!==price?'<span class="price-old">₹'+p.mrp+'</span>':'')+'</div>'+
+    '<div class="product-pricing">'+
+      (isFlash && salePrice < price
+        ? '<span class="price-now">₹'+salePrice+'</span><span class="price-old">₹'+price+'</span><span class="badge badge-disc">'+disc+'% OFF</span>'
+        : '<span class="price-now">₹'+price+'</span>'+(p.mrp&&p.mrp!==price?'<span class="price-old">₹'+p.mrp+'</span>':''))+
+    '</div>'+
     (qty>0
       ?'<div class="prod-qty-ctrl" id="pqc-'+p.id+'"><button class="pqc-btn minus" onclick="prodQtyChange(\''+p.id+'\',\''+p.shopId+'\',-1)">−</button><span class="pqc-num">'+qty+'</span><button class="pqc-btn plus" onclick="prodQtyChange(\''+p.id+'\',\''+p.shopId+'\',1)">+</button></div>'
       :'<button class="add-to-cart-btn" onclick="addToCartCard(event,\''+p.id+'\',\''+p.shopId+'\',this)">+ '+(currentLang==='en'?'Add to Cart':'কার্টে যোগ করুন')+'</button>')+
@@ -4754,8 +4775,14 @@ function buildFlashSale(prods){
       sec.style.display='block';
       var countEl=document.getElementById('flashProdCount');
       if(countEl) countEl.textContent=flash.length+'টি পণ্য Flash Sale এ';
-      startBannerCountdown(flash[0]._flashEnd||Date.now()+3*3600000);
-      startFlashCountdown();
+      // Mega end time দিয়ে banner countdown
+      var megaEnd = flash[0]._flashEnd||Date.now()+3*3600000;
+      startBannerCountdown(megaEnd);
+      startFlashCountdownWithTime(megaEnd);
+      // Flash products globally set করো
+      window._flashProds = flash;
+      // Re-render flash section with correct timers
+      renderFlashSection(flash);
     }).catch(function(){
       var flash=prods.filter(function(p){return p.discount>=10;}).slice(0,6);
       if(!flash.length)return;
@@ -4769,7 +4796,9 @@ function buildFlashSale(prods){
       var countEl=document.getElementById('flashProdCount');
       if(countEl) countEl.textContent=flash.length+'টি পণ্য Flash Sale এ';
       startBannerCountdown(flash[0]._flashEnd);
-      startFlashCountdown();
+      startFlashCountdownWithTime(flash[0]._flashEnd);
+      window._flashProds = flash;
+      renderFlashSection(flash);
     });
 }
 
