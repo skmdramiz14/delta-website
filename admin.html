@@ -2645,10 +2645,10 @@ function loadCommissionRequests(){
       wrap.innerHTML = list.map(function(r){
         return '<div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:8px;">'+
           '<div style="font-size:.82rem;font-weight:700;color:var(--navy);">'+r.shopName+'</div>'+
-          '<div style="font-size:.72rem;color:var(--muted);margin-bottom:8px;">Category: <strong>'+r.category+'</strong> · Product: '+r.productName+'</div>'+
+          '<div style="font-size:.72rem;color:var(--muted);margin-bottom:8px;">Category: <strong>'+(r.categoryDisplay||r.mainCategory+(r.subCategory?'>'+r.subCategory:'')||r.category||'Unknown')+'</strong> · Product: '+r.productName+'</div>'+
           '<div style="display:flex;gap:8px;align-items:center;">'+
             '<input type="number" class="form-input" style="width:80px;padding:4px 8px;" placeholder="%" id="creq_'+r.id+'" min="0" max="30">'+
-            '<button class="btn-sm btn-green" style="font-size:.72rem;" onclick="setCommissionFromRequest(\''+r.id+'\',\''+r.shopId+'\',\''+r.category+'\')">✅ Set করুন + Notify</button>'+
+            '<button class="btn-sm btn-green" style="font-size:.72rem;" onclick="setCommissionFromRequest(\''+r.id+'\',\''+r.shopId+'\',\''+r.mainCategory+(r.subCategory?'_'+r.subCategory:'')+'\')">✅ Set করুন + Notify</button>'+
             '<button class="btn-sm btn-red" style="font-size:.72rem;" onclick="rejectCommissionRequest(\''+r.id+'\',\''+r.shopId+'\')">❌ Reject</button>'+
           '</div>'+
         '</div>';
@@ -2659,34 +2659,36 @@ function loadCommissionRequests(){
 function setCommissionFromRequest(reqId, shopId, cat){
   var pct = parseInt(document.getElementById('creq_'+reqId).value)||0;
   if(!pct){showToast('Commission % দিন','red');return;}
-  // Commission save করো
-  var update = {};
-  update['categories.'+cat] = pct;
-  db.collection('cities').doc(CITY).collection('settings').doc('saleCommissions')
-    .set({categories:{}},{merge:true})
-    .then(function(){
-      return db.collection('cities').doc(CITY).collection('settings').doc('saleCommissions').update(update);
-    }).then(function(){
-      // Request resolve করো
-      return db.collection('cities').doc(CITY).collection('commissionRequests').doc(reqId)
-        .update({status:'resolved', commission:pct, resolvedAt:new Date().toISOString()});
-    }).then(function(){
-      // Seller notification
-      return db.collection('cities').doc(CITY).collection('sellers').doc(shopId)
-        .collection('notifications').add({
-          type: 'commission_set',
-          title: '💰 Commission Set হয়েছে!',
-          message: '"'+cat+'" category এর জন্য commission: '+pct+'%. এখন Sale Product submit করতে পারবেন।',
-          category: cat,
-          commission: pct,
-          read: false,
-          createdAt: new Date().toISOString()
-        });
-    }).then(function(){
-      showToast('✅ Commission set হয়েছে + Seller notify করা হয়েছে','green');
-      loadCommissionRequests();
-      loadSaleCommissions();
-    }).catch(function(e){showToast('সমস্যা: '+e.message,'red');});
+  var fieldUpdate = {};
+  fieldUpdate['categories.'+cat] = pct;
+  var ref = db.collection('cities').doc(CITY).collection('settings').doc('saleCommissions');
+  ref.get().then(function(doc){
+    if(doc.exists){
+      return ref.update(fieldUpdate);
+    } else {
+      var initData = {categories:{}};
+      initData.categories[cat] = pct;
+      return ref.set(initData);
+    }
+  }).then(function(){
+    return db.collection('cities').doc(CITY).collection('commissionRequests').doc(reqId)
+      .update({status:'resolved', commission:pct, resolvedAt:new Date().toISOString()});
+  }).then(function(){
+    return db.collection('cities').doc(CITY).collection('sellers').doc(shopId)
+      .collection('notifications').add({
+        type: 'commission_set',
+        title: '💰 Commission Set হয়েছে!',
+        message: '"'+cat+'" category এর জন্য commission: '+pct+'%. এখন Sale Product submit করতে পারবেন।',
+        category: cat,
+        commission: pct,
+        read: false,
+        createdAt: new Date().toISOString()
+      });
+  }).then(function(){
+    showToast('✅ Commission set হয়েছে + Seller notify করা হয়েছে','green');
+    loadCommissionRequests();
+    loadSaleCommissions();
+  }).catch(function(e){showToast('সমস্যা: '+e.message,'red');});
 }
 
 function rejectCommissionRequest(reqId, shopId){
