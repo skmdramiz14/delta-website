@@ -967,7 +967,8 @@ select.form-input{cursor:pointer;}
           </div>
           <!-- Seller Package Curation -->
           <div style="background:#fff;border-radius:14px;border:1px solid var(--border);padding:16px;margin-top:16px;">
-            <div style="font-size:.85rem;font-weight:700;color:var(--navy);margin-bottom:14px;">📦 Festival Package তৈরি করুন</div>
+            <div style="font-size:.85rem;font-weight:700;color:var(--navy);margin-bottom:6px;">📦 Festival Package তৈরি করুন</div>
+            <div style="font-size:.72rem;color:var(--muted);margin-bottom:14px;">নিজের products থেকে bundle তৈরি করুন → Admin approve করলে festival page এ দেখাবে</div>
 
             <div style="background:linear-gradient(135deg,rgba(9,132,227,.08),rgba(0,184,148,.08));border-radius:12px;padding:14px;margin-bottom:14px;">
               <div class="form-grid">
@@ -1073,57 +1074,6 @@ select.form-input{cursor:pointer;}
             <!-- My Contests -->
             <div style="font-size:.78rem;font-weight:700;color:var(--navy);margin-bottom:10px;">📋 আমার Contests</div>
             <div id="myContestsList">
-              <div style="color:var(--muted);font-size:.78rem;text-align:center;padding:12px;">লোড হচ্ছে...</div>
-            </div>
-          </div>
-
-          <!-- Seller Package Section -->
-          <div style="background:#fff;border-radius:14px;border:1px solid var(--border);padding:16px;margin-top:16px;">
-            <div style="font-size:.85rem;font-weight:700;color:var(--navy);margin-bottom:14px;">📦 নিজের Package তৈরি করুন</div>
-
-            <div style="background:linear-gradient(135deg,rgba(10,31,53,.06),rgba(240,112,24,.06));border-radius:12px;padding:14px;margin-bottom:14px;">
-              <div class="form-grid">
-                <div class="form-group">
-                  <label>Package নাম</label>
-                  <input type="text" class="form-input" id="pkgName" placeholder="যেমন: পূজা স্পেশাল কম্বো">
-                </div>
-                <div class="form-group">
-                  <label>Package Price (₹)</label>
-                  <input type="number" class="form-input" id="pkgPrice" placeholder="যেমন: 299">
-                </div>
-                <div class="form-group">
-                  <label>Festival</label>
-                  <select class="form-input" id="pkgFestival">
-                    <option value="">-- Festival select করুন --</option>
-                  </select>
-                </div>
-                <div class="form-group">
-                  <label>Stock</label>
-                  <input type="number" class="form-input" id="pkgStock" placeholder="যেমন: 20">
-                </div>
-              </div>
-              <div class="form-group" style="margin-top:8px;">
-                <label>Package Description</label>
-                <input type="text" class="form-input" id="pkgDesc" placeholder="যেমন: ৩টি তাজা সবজি + ১টি মাছ একসাথে">
-              </div>
-              <!-- Package Items -->
-              <div style="margin-top:12px;">
-                <div style="font-size:.75rem;font-weight:700;color:var(--navy);margin-bottom:8px;">📦 Package এ কী কী থাকবে?</div>
-                <div id="pkgItemsList" style="display:flex;flex-direction:column;gap:6px;margin-bottom:8px;"></div>
-                <div style="display:flex;gap:6px;">
-                  <select class="form-input" id="pkgProductSelect" style="flex:1;">
-                    <option value="">-- আপনার product select করুন --</option>
-                  </select>
-                  <input type="number" class="form-input" id="pkgProductQty" placeholder="qty" style="width:70px;" min="1" value="1">
-                  <button onclick="addPkgItem()" class="btn-sm" style="background:var(--navy);color:#fff;">+ Add</button>
-                </div>
-              </div>
-              <button onclick="createSellerPackage()" class="btn-sm btn-orange" style="width:100%;justify-content:center;margin-top:12px;">📦 Package তৈরি করুন</button>
-            </div>
-
-            <!-- My Packages -->
-            <div style="font-size:.78rem;font-weight:700;color:var(--navy);margin-bottom:10px;">📋 আমার Packages</div>
-            <div id="myPackagesList">
               <div style="color:var(--muted);font-size:.78rem;text-align:center;padding:12px;">লোড হচ্ছে...</div>
             </div>
           </div>
