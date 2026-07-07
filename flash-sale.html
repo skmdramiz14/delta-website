@@ -278,8 +278,8 @@ function loadFlashSale(db){
 
 function loadProductDetails(db, adminProds){
   var promises=adminProds.map(function(ap){
-    // Custom products (Admin's own)
-    if(ap.isCustom){
+    // Custom products (Admin's own) OR Seller Sale Products
+    if(ap.isCustom || ap.fromSaleProduct){
       var pEndTime = ap.productEndTime ? new Date(ap.productEndTime).getTime() : flashEndTime;
       if(isNaN(pEndTime)) pEndTime = flashEndTime;
       return Promise.resolve({
@@ -292,7 +292,9 @@ function loadProductDetails(db, adminProds){
         discount: ap.totalDiscount||ap.discount||0,
         imageUrl: ap.imageUrl||'',
         flashEndTime: Math.min(pEndTime, flashEndTime),
-        isCustom: true
+        priority: ap.priority||0,
+        isCustom: ap.isCustom||false,
+        fromSaleProduct: ap.fromSaleProduct||false
       });
     }
     return db.collection('cities').doc(CITY).collection('sellers').doc(ap.shopId)
