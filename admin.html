@@ -2746,8 +2746,10 @@ function loadSaleCommissions(){
         var label = parts.length>1 ? parts[0]+' > '+parts.slice(1).join('_') : key;
         return '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:#fff;border-radius:10px;margin-bottom:6px;border:1px solid var(--border);">'+
           '<span style="font-size:.82rem;font-weight:600;color:var(--navy);">'+label+'</span>'+
-          '<div style="display:flex;align-items:center;gap:10px;">'+
-            '<span style="font-size:.88rem;font-weight:800;color:var(--green);">'+pct+'%</span>'+
+          '<div style="display:flex;align-items:center;gap:8px;">'+
+            '<input type="number" id="edit_'+key+'" value="'+pct+'" min="0" max="30" style="width:56px;padding:4px 6px;border:1px solid var(--border);border-radius:6px;font-size:.78rem;">'+
+            '<span style="font-size:.78rem;color:var(--muted);">%</span>'+
+            '<button class="btn-sm btn-green" style="font-size:.68rem;" onclick="updateCommission(\''+key+'\')">✏️</button>'+
             '<button class="btn-sm btn-red" style="font-size:.68rem;" onclick="deleteCommission(\''+key+'\')">🗑️</button>'+
           '</div>'+
         '</div>';
@@ -2783,8 +2785,20 @@ function saveCommission(){
   }).catch(function(e){showToast('সমস্যা: '+e.message,'red');});
 }
 
+function updateCommission(key){
+  var newPct = parseInt(document.getElementById('edit_'+key).value)||0;
+  if(!newPct){showToast('Commission % দিন','red');return;}
+  var fieldUpdate = {};
+  fieldUpdate['categories.'+key] = newPct;
+  db.collection('cities').doc(CITY).collection('settings').doc('saleCommissions')
+    .update(fieldUpdate).then(function(){
+      showToast('✅ '+key+' = '+newPct+'% updated','green');
+      loadSaleCommissions();
+    }).catch(function(e){showToast('সমস্যা: '+e.message,'red');});
+}
+window.updateCommission = updateCommission;
+
 function deleteCommission(key){
-  if(!confirm('"'+key+'" commission delete করবেন?'))return;
   var update={};
   update['categories.'+key]=firebase.firestore.FieldValue.delete();
   db.collection('cities').doc(CITY).collection('settings').doc('saleCommissions')
