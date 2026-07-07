@@ -156,18 +156,9 @@ body.lang-bn .lang-en{display:none!important;}
 <nav class="nav">
   <a class="nav-back" href="index.html">← <span class="lang-bn">হোমে ফিরুন</span><span class="lang-en">Back</span></a>
   <a class="nav-logo" href="index.html">△ DELT<em>A</em></a>
-  <div style="display:flex;align-items:center;gap:10px;">
-    <!-- Cart Button -->
-    <div style="position:relative;cursor:pointer;" onclick="goToCart()">
-      <div style="background:rgba(255,255,255,.15);border-radius:20px;padding:6px 12px;display:flex;align-items:center;gap:6px;">
-        <span style="font-size:1rem;">🛒</span>
-        <span id="flashCartBadge" style="display:none;background:var(--orange);color:#fff;font-size:.65rem;font-weight:800;min-width:16px;height:16px;border-radius:10px;display:flex;align-items:center;justify-content:center;padding:0 4px;">0</span>
-      </div>
-    </div>
-    <div style="display:flex;gap:4px;background:rgba(255,255,255,.1);border-radius:20px;padding:3px;">
-      <button style="padding:4px 10px;border-radius:16px;border:none;background:var(--orange);color:#fff;font-size:.75rem;font-weight:700;cursor:pointer;" id="langBn" onclick="setLang('bn')">বাং</button>
-      <button style="padding:4px 10px;border-radius:16px;border:none;background:transparent;color:rgba(255,255,255,.6);font-size:.75rem;font-weight:700;cursor:pointer;" id="langEn" onclick="setLang('en')">ENG</button>
-    </div>
+  <div style="display:flex;gap:4px;background:rgba(255,255,255,.1);border-radius:20px;padding:3px;">
+    <button style="padding:4px 10px;border-radius:16px;border:none;background:var(--orange);color:#fff;font-size:.75rem;font-weight:700;cursor:pointer;" id="langBn" onclick="setLang('bn')">বাং</button>
+    <button style="padding:4px 10px;border-radius:16px;border:none;background:transparent;color:rgba(255,255,255,.6);font-size:.75rem;font-weight:700;cursor:pointer;" id="langEn" onclick="setLang('en')">ENG</button>
   </div>
 </nav>
 
@@ -484,7 +475,7 @@ function addToCart(id,shopId,name,price){
   if(btn){
     btn.outerHTML='<div class="qty-control" id="qc_'+id+'"><button class="qty-btn" onclick="changeQty(\''+id+'\',\''+shopId+'\',-1)">−</button><span class="qty-num">1</span><button class="qty-btn" onclick="changeQty(\''+id+'\',\''+shopId+'\',1)">+</button></div>';
   }
-  showToast(name+' কার্টে যোগ হয়েছে 🛒','green');
+  showToast('✅ '+name+' কার্টে যোগ হয়েছে! হোমে গিয়ে checkout করুন 🛒','green');
 }
 
 function changeQty(id,shopId,delta){
