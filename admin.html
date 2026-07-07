@@ -2774,8 +2774,11 @@ function saveFlashSettings(){
   var enabled = document.getElementById('flashEnabled').checked;
   var startTime = document.getElementById('flashStartTime').value;
   var endTime = document.getElementById('flashEndTime').value;
+  // Ensure proper format
+  var endTimeISO = endTime ? new Date(endTime).toISOString() : '';
+  var startTimeISO = startTime ? new Date(startTime).toISOString() : '';
   db.collection('cities').doc(CITY).collection('settings').doc('flashSale')
-    .set({enabled:enabled, startTime:startTime, endTime:endTime, products:flashSaleProducts, updatedAt:new Date().toISOString()}, {merge:true})
+    .set({enabled:enabled, startTime:startTimeISO, endTime:endTimeISO, products:flashSaleProducts, updatedAt:new Date().toISOString()}, {merge:true})
     .then(function(){
       document.getElementById('flashSettingsStatus').textContent='✅ সেভ হয়েছে!';
       setTimeout(function(){document.getElementById('flashSettingsStatus').textContent='';},3000);
