@@ -286,7 +286,7 @@ function loadProductDetails(db, adminProds){
         id: ap.productId,
         shopId: ap.shopId,
         nameBn: ap.productName,
-        shopName: ap.shopName||'DELTA Admin',
+        shopName: ap.shopName||'DELTA Store',
         price: ap.price,
         salePrice: ap.salePrice||ap.price,
         discount: ap.totalDiscount||ap.discount||0,
@@ -316,6 +316,8 @@ function loadProductDetails(db, adminProds){
 
   Promise.all(promises).then(function(prods){
     allFlashProds=prods.filter(function(p){return p!==null;});
+    // Priority অনুযায়ী sort — বড় priority আগে
+    allFlashProds.sort(function(a,b){ return (b.priority||0)-(a.priority||0); });
     renderFlashGrid(allFlashProds);
     buildCategoryFilters(allFlashProds);
     var countEl=document.getElementById('heroCount');
