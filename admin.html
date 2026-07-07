@@ -2762,19 +2762,25 @@ function saveCommission(){
   if(!main){showToast('Main category বেছে নিন','red');return;}
   if(!pct){showToast('Commission % দিন','red');return;}
   var key = sub ? main+'_'+sub : main;
-  var update = {};
-  update['categories.'+key] = pct;
-  db.collection('cities').doc(CITY).collection('settings').doc('saleCommissions')
-    .set({categories:{}},{merge:true})
-    .then(function(){
-      return db.collection('cities').doc(CITY).collection('settings').doc('saleCommissions').update(update);
-    }).then(function(){
-      showToast('✅ Commission saved: '+key+' = '+pct+'%','green');
-      document.getElementById('commMainCat').value='';
-      document.getElementById('commSubCat').innerHTML='<option value="">— Main category ই apply হবে —</option>';
-      document.getElementById('commPercent').value='';
-      loadSaleCommissions();
-    }).catch(function(e){showToast('সমস্যা: '+e.message,'red');});
+  var fieldUpdate = {};
+  fieldUpdate['categories.'+key] = pct;
+
+  var ref = db.collection('cities').doc(CITY).collection('settings').doc('saleCommissions');
+  ref.get().then(function(doc){
+    if(doc.exists){
+      return ref.update(fieldUpdate);
+    } else {
+      var initData = {categories:{}};
+      initData.categories[key] = pct;
+      return ref.set(initData);
+    }
+  }).then(function(){
+    showToast('✅ '+key+' = '+pct+'%','green');
+    document.getElementById('commMainCat').value='';
+    document.getElementById('commSubCat').innerHTML='<option value="">— Main category ই apply হবে —</option>';
+    document.getElementById('commPercent').value='';
+    loadSaleCommissions();
+  }).catch(function(e){showToast('সমস্যা: '+e.message,'red');});
 }
 
 function deleteCommission(key){
