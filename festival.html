@@ -1328,6 +1328,9 @@ function placeFestOrder(){
         couponCode: appliedCoupon ? appliedCoupon.code : '',
         couponDiscount: discount,
         festivalKey: FESTIVAL_TYPE,
+        orderSource: 'festival',
+        commissionRate: 0,
+        commissionAmount: 0,
         status: 'pending',
         createdAt: new Date().toISOString()
       });
