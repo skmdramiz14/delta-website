@@ -3130,11 +3130,30 @@ function renderFlashProductsList(){
     return;
   }
   wrap.innerHTML = flashSaleProducts.map(function(p,i){
-    return '<div style="background:#fff;border:1.5px solid var(--orange);border-radius:12px;padding:12px;display:flex;align-items:center;gap:12px;">'+
+    var isFirst = i===0, isLast = i===flashSaleProducts.length-1;
+    var sourceBadge = p.fromSaleProduct ?
+      '<span style="background:#e8f7ee;color:var(--green);font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:20px;">🏷️ Seller Sale</span>' :
+      p.isCustom ?
+      '<span style="background:#fff4ec;color:var(--orange);font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:20px;">✏️ Custom</span>' :
+      '<span style="background:var(--sand);color:var(--muted);font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:20px;">🛍️ Seller</span>';
+
+    return '<div style="background:#fff;border:1.5px solid var(--orange);border-radius:12px;padding:12px;display:flex;align-items:center;gap:10px;margin-bottom:8px;">'+
+      // Up/Down buttons
+      '<div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;">'+
+        '<button onclick="moveFlashProduct('+i+',-1)" '+(isFirst?'disabled style="opacity:.3;"':'')+' style="background:var(--sand);border:none;border-radius:6px;width:28px;height:28px;cursor:pointer;font-size:.9rem;">↑</button>'+
+        '<button onclick="moveFlashProduct('+i+',1)" '+(isLast?'disabled style="opacity:.3;"':'')+' style="background:var(--sand);border:none;border-radius:6px;width:28px;height:28px;cursor:pointer;font-size:.9rem;">↓</button>'+
+      '</div>'+
+      // Position badge
+      '<div style="background:var(--orange);color:#fff;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:800;flex-shrink:0;">'+(i+1)+'</div>'+
+      // Image
       (p.imageUrl?'<img src="'+p.imageUrl+'" style="width:44px;height:44px;object-fit:cover;border-radius:8px;flex-shrink:0;">':
         '<div style="width:44px;height:44px;background:var(--sand);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;">🛍️</div>')+
+      // Details
       '<div style="flex:1;min-width:0;">'+
-        '<div style="font-size:.82rem;font-weight:700;color:var(--navy);">'+p.productName+'</div>'+
+        '<div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">'+
+          '<div style="font-size:.82rem;font-weight:700;color:var(--navy);">'+p.productName+'</div>'+
+          sourceBadge+
+        '</div>'+
         '<div style="font-size:.72rem;color:var(--muted);">🏪 '+p.shopName+'</div>'+
         '<div style="font-size:.78rem;margin-top:2px;">'+
           '<span style="font-weight:800;color:var(--orange);">₹'+p.salePrice+'</span> '+
@@ -3142,18 +3161,22 @@ function renderFlashProductsList(){
           '<span style="background:var(--orange);color:#fff;font-size:.65rem;font-weight:800;padding:2px 7px;border-radius:6px;">'+p.totalDiscount+'% OFF</span>'+
           (p.extraDiscount?'<span style="font-size:.65rem;color:var(--green);margin-left:4px;">+'+p.extraDiscount+'% extra</span>':'')+
         '</div>'+
-        (p.productEndTime?'<div style="font-size:.68rem;color:var(--orange);margin-top:2px;">⏰ end time: '+p.productEndTime+'</div>':'')+
+        (p.productEndTime?'<div style="font-size:.68rem;color:var(--orange);margin-top:2px;">⏰ end: '+new Date(p.productEndTime).toLocaleDateString('bn-IN')+'</div>':'')+
       '</div>'+
-      '<div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">'+
-        '<div>'+
-          '<label style="font-size:.65rem;color:var(--muted);display:block;">Priority</label>'+
-          '<input type="number" class="form-input" style="width:56px;padding:4px 6px;font-size:.78rem;" value="'+(p.priority||0)+'" min="0" id="pri_'+i+'" onchange="updateFlashPriority('+i+',this.value)">'+
-        '</div>'+
-        '<button onclick="removeFlashProduct('+i+')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:1.2rem;">×</button>'+
-      '</div>'+
+      '<button onclick="removeFlashProduct('+i+')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:1.3rem;flex-shrink:0;">×</button>'+
     '</div>';
   }).join('');
 }
+
+function moveFlashProduct(idx, dir){
+  var newIdx = idx + dir;
+  if(newIdx < 0 || newIdx >= flashSaleProducts.length) return;
+  var temp = flashSaleProducts[idx];
+  flashSaleProducts[idx] = flashSaleProducts[newIdx];
+  flashSaleProducts[newIdx] = temp;
+  renderFlashProductsList();
+}
+window.moveFlashProduct = moveFlashProduct;
 
 function removeFlashProduct(idx){
   flashSaleProducts.splice(idx,1);
