@@ -794,16 +794,51 @@ button,input,select{font-family:'DM Sans',sans-serif;}
       <!-- Category Commission Settings -->
       <div class="add-zone-card" style="margin-bottom:16px;border-left:3px solid var(--green);">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-          <div style="font-size:.85rem;font-weight:700;color:var(--navy);">💰 Category-wise Commission (Sale Products এর জন্য)</div>
+          <div style="font-size:.85rem;font-weight:700;color:var(--navy);">💰 Category-wise Commission</div>
           <button class="btn-sm" onclick="loadSaleCommissions()" style="background:var(--sand);color:var(--navy);">↺ Load</button>
         </div>
-        <div style="font-size:.72rem;color:var(--muted);margin-bottom:12px;">Seller Sale Product submit করলে এই commission দেখাবে। Set না থাকলে seller কে notify করতে হবে।</div>
+        <div style="font-size:.72rem;color:var(--muted);margin-bottom:12px;">Main category বা sub-category specific commission set করুন। Sub-category commission থাকলে সেটা override করবে।</div>
         <div id="commissionList"><div style="color:var(--muted);font-size:.82rem;">"Load" চাপুন</div></div>
-        <!-- Add new category commission -->
-        <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
-          <input class="form-input" id="commCategoryName" placeholder="Category নাম (যেমন: food)" style="flex:1;min-width:120px;">
-          <input type="number" class="form-input" id="commPercent" placeholder="% (যেমন: 5)" style="width:80px;" min="0" max="30">
-          <button class="btn-sm btn-green" onclick="saveCommission()">+ Add/Update</button>
+
+        <!-- Add Commission Form -->
+        <div style="background:var(--sand);border-radius:10px;padding:12px;margin-top:12px;">
+          <div style="font-size:.72rem;font-weight:700;color:var(--navy);margin-bottom:8px;">➕ Commission Add/Update করুন</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+            <div>
+              <label style="font-size:.68rem;color:var(--muted);">Main Category</label>
+              <select class="form-input" id="commMainCat" onchange="loadAdminCommSubCat()" style="margin-top:3px;">
+                <option value="">— বেছে নিন —</option>
+                <option value="food">🍽️ খাবার / Food</option>
+                <option value="grocery">🛒 মুদিখানা / Grocery</option>
+                <option value="farm">🌾 কৃষি / Agriculture</option>
+                <option value="farm_tools">🌿 কৃষি সরঞ্জাম / Farm Tools</option>
+                <option value="livestock">🐄 পশুপালন / Livestock</option>
+                <option value="health">💊 স্বাস্থ্য / Health</option>
+                <option value="clothing">👗 পোশাক / Clothing</option>
+                <option value="electronics">📱 ইলেকট্রনিক্স / Electronics</option>
+                <option value="home">🏠 বাড়ি / Home & Living</option>
+                <option value="construction">🏗️ নির্মাণ / Construction</option>
+                <option value="automotive">🚗 যানবাহন / Automotive</option>
+                <option value="arts">🎨 শিল্প / Arts</option>
+                <option value="education">🏫 শিক্ষা / Education</option>
+                <option value="services">💈 সেবা / Services</option>
+                <option value="other">📦 অন্যান্য / Other</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:.68rem;color:var(--muted);">Sub-Category (Optional)</label>
+              <select class="form-input" id="commSubCat" style="margin-top:3px;">
+                <option value="">— Main category ই apply হবে —</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:.68rem;color:var(--muted);">Commission %</label>
+              <input type="number" class="form-input" id="commPercent" placeholder="যেমন: 5" min="0" max="30" style="margin-top:3px;">
+            </div>
+            <div style="display:flex;align-items:flex-end;">
+              <button class="btn-sm btn-green" onclick="saveCommission()" style="width:100%;">+ Add/Update</button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -2665,6 +2700,36 @@ window.setCommissionFromRequest=setCommissionFromRequest;
 window.rejectCommissionRequest=rejectCommissionRequest;
 
 // ═══ SALE COMMISSIONS ═══
+var ADMIN_CAT_SUBS = {
+  food:['sweets','cooked','bakery','beverages','snacks'],
+  grocery:['rice_lentils','spices','oil_ghee','essentials','cleaning'],
+  farm:['vegetables','fruits','fish','meat','dairy','organic','flowers'],
+  farm_tools:['seeds','fertilizer','tools','irrigation','other'],
+  livestock:['poultry','goat','cattle','other'],
+  health:['medicine','ayurvedic','personal_care','other'],
+  clothing:['saree','readymade','kids','accessories','other'],
+  electronics:['mobile','accessories','appliances','other'],
+  home:['furniture','decor','kitchen','other'],
+  construction:['materials','tools','other'],
+  automotive:['parts','service','other'],
+  arts:['art_supplies','crafts','stationery','other'],
+  education:['books','coaching','other'],
+  services:['tailoring','repair','beauty','other'],
+  other:['other']
+};
+
+function loadAdminCommSubCat(){
+  var main = document.getElementById('commMainCat').value;
+  var subSel = document.getElementById('commSubCat');
+  subSel.innerHTML = '<option value="">— Main category ই apply হবে —</option>';
+  if(!main || !ADMIN_CAT_SUBS[main]) return;
+  ADMIN_CAT_SUBS[main].forEach(function(s){
+    var opt = document.createElement('option');
+    opt.value = s; opt.textContent = s;
+    subSel.appendChild(opt);
+  });
+}
+
 function loadSaleCommissions(){
   var wrap = document.getElementById('commissionList');
   wrap.innerHTML = '<div style="color:var(--muted);font-size:.82rem;">লোড হচ্ছে...</div>';
@@ -2676,12 +2741,14 @@ function loadSaleCommissions(){
         return;
       }
       wrap.innerHTML = Object.entries(commissions).map(function(entry){
-        var cat=entry[0], pct=entry[1];
+        var key=entry[0], pct=entry[1];
+        var parts = key.split('_');
+        var label = parts.length>1 ? parts[0]+' > '+parts.slice(1).join('_') : key;
         return '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:#fff;border-radius:10px;margin-bottom:6px;border:1px solid var(--border);">'+
-          '<span style="font-size:.82rem;font-weight:600;color:var(--navy);">'+cat+'</span>'+
+          '<span style="font-size:.82rem;font-weight:600;color:var(--navy);">'+label+'</span>'+
           '<div style="display:flex;align-items:center;gap:10px;">'+
             '<span style="font-size:.88rem;font-weight:800;color:var(--green);">'+pct+'%</span>'+
-            '<button class="btn-sm btn-red" style="font-size:.68rem;" onclick="deleteCommission(\''+cat+'\')">🗑️</button>'+
+            '<button class="btn-sm btn-red" style="font-size:.68rem;" onclick="deleteCommission(\''+key+'\')">🗑️</button>'+
           '</div>'+
         '</div>';
       }).join('');
@@ -2689,28 +2756,31 @@ function loadSaleCommissions(){
 }
 
 function saveCommission(){
-  var cat=(document.getElementById('commCategoryName').value||'').trim().toLowerCase();
-  var pct=parseInt(document.getElementById('commPercent').value)||0;
-  if(!cat){showToast('Category নাম দিন','red');return;}
+  var main = document.getElementById('commMainCat').value;
+  var sub = document.getElementById('commSubCat').value;
+  var pct = parseInt(document.getElementById('commPercent').value)||0;
+  if(!main){showToast('Main category বেছে নিন','red');return;}
   if(!pct){showToast('Commission % দিন','red');return;}
-  var update={};
-  update['categories.'+cat]=pct;
+  var key = sub ? main+'_'+sub : main;
+  var update = {};
+  update['categories.'+key] = pct;
   db.collection('cities').doc(CITY).collection('settings').doc('saleCommissions')
     .set({categories:{}},{merge:true})
     .then(function(){
       return db.collection('cities').doc(CITY).collection('settings').doc('saleCommissions').update(update);
     }).then(function(){
-      showToast('✅ Commission saved: '+cat+' = '+pct+'%','green');
-      document.getElementById('commCategoryName').value='';
+      showToast('✅ Commission saved: '+key+' = '+pct+'%','green');
+      document.getElementById('commMainCat').value='';
+      document.getElementById('commSubCat').innerHTML='<option value="">— Main category ই apply হবে —</option>';
       document.getElementById('commPercent').value='';
       loadSaleCommissions();
     }).catch(function(e){showToast('সমস্যা: '+e.message,'red');});
 }
 
-function deleteCommission(cat){
-  if(!confirm('"'+cat+'" commission delete করবেন?'))return;
+function deleteCommission(key){
+  if(!confirm('"'+key+'" commission delete করবেন?'))return;
   var update={};
-  update['categories.'+cat]=firebase.firestore.FieldValue.delete();
+  update['categories.'+key]=firebase.firestore.FieldValue.delete();
   db.collection('cities').doc(CITY).collection('settings').doc('saleCommissions')
     .update(update).then(function(){
       showToast('Commission delete হয়েছে','green');
@@ -2826,6 +2896,7 @@ function deleteSaleProduct(id){
 window.loadSaleCommissions=loadSaleCommissions;
 window.saveCommission=saveCommission;
 window.deleteCommission=deleteCommission;
+window.loadAdminCommSubCat=loadAdminCommSubCat;
 window.loadSellerSaleProducts=loadSellerSaleProducts;
 window.activateSaleProduct=activateSaleProduct;
 window.deactivateSaleProduct=deactivateSaleProduct;
