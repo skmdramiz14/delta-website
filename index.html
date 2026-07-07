@@ -1859,13 +1859,6 @@ img{max-width:100%;height:auto;}
   <button class="fds-btn" onclick="document.getElementById('productsSection').scrollIntoView({behavior:'smooth'})"><span class="lang-bn">এখনই কিনুন →</span><span class="lang-en">Shop Now →</span></button>
 </div>
 
-<!-- BANNER ADS (Festival + Shop Ads) -->
-<section class="section" id="bannerAdsSection" style="display:none;padding:12px 16px;">
-  <div id="bannerAdsScroll" style="display:flex;gap:12px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;">
-    <!-- Dynamic banner cards load হবে -->
-  </div>
-</section>
-
 <!-- FLASH SALE -->
 <!-- FLASH SALE BANNER -->
 <section class="section" id="flashSection" style="display:none;padding-top:0;padding-bottom:0;">
@@ -3216,8 +3209,6 @@ function skipGate(){
 
 async function loadData(retryCount){
   retryCount = retryCount || 0;
-  // Banner Ads load করো
-  loadBannerAds();
   try{
     var snap=await db.collection('cities').doc(CITY).collection('sellers').get();
     allShops=[];allProducts=[];
@@ -4173,40 +4164,91 @@ function renderMultipleFestivalBanners(festivals){
   var wrap = document.getElementById('festivalBannerWrap');
   if(!wrap) return;
 
-  if(festivals.length === 1){
-    // Single festival — existing design
-    var f = festivals[0];
-    var bg = 'linear-gradient(135deg,'+f.color1+','+f.color2+')';
-    var festDate = f.date ? new Date(f.date) : null;
-    var days = festDate ? Math.max(0,Math.floor((festDate-new Date())/86400000)) : 0;
-    var hours = festDate ? Math.max(0,Math.floor(((festDate-new Date())%86400000)/3600000)) : 0;
-    wrap.innerHTML = _festivalBannerHTML(bg, f.emoji+' '+f.name, f.name+' এ কেনাকাটা করুন →', days, hours, f.key);
-    _startFestivalCountdown(festDate);
-    return;
-  }
+  // Banner Ads load করো এবং festivals এর সাথে merge করো
+  var today = new Date().toISOString().slice(0,10);
+  db.collection('cities').doc(CITY).collection('bannerAds')
+    .where('status','==','active')
+    .orderBy('priority','desc')
+    .get().then(function(snap){
+      var ads = [];
+      snap.forEach(function(d){
+        var b = Object.assign({id:d.id},d.data());
+        if(b.endDate && b.endDate < today) return;
+        if(b.startDate && b.startDate > today) return;
+        // Festival type banner — already festivals list এ আছে, skip
+        if(b.type==='festival') return;
+        ads.push(b);
+      });
 
-  // Multiple festivals — horizontal scroll
-  var html = '<section class="section" style="padding-top:4px;padding-bottom:4px;">'+
-    '<div style="display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px;">'+
-    festivals.map(function(f){
-      var bg = 'linear-gradient(135deg,'+f.color1+','+f.color2+')';
-      var festDate = f.date ? new Date(f.date) : null;
-      var days = festDate ? Math.max(0,Math.floor((festDate-new Date())/86400000)) : 0;
-      return '<div onclick="showFestivalOffers(\''+f.key+'\')" '+
-        'style="flex-shrink:0;width:240px;background:'+bg+';border-radius:16px;padding:16px;cursor:pointer;'+
-        'box-shadow:0 4px 16px rgba(0,0,0,.15);position:relative;overflow:hidden;">'+
-        '<div style="position:absolute;right:-15px;top:-15px;width:80px;height:80px;'+
-          'background:rgba(255,255,255,.08);border-radius:50%;"></div>'+
-        '<div style="font-size:1.6rem;margin-bottom:6px;">'+f.emoji+'</div>'+
-        '<div style="font-size:.88rem;font-weight:800;color:#fff;margin-bottom:4px;">'+f.name+'</div>'+
-        '<div style="display:flex;align-items:center;justify-content:space-between;">'+
-          '<div style="font-size:.7rem;color:rgba(255,255,255,.75);">'+days+' দিন বাকি</div>'+
-          '<div style="background:rgba(255,255,255,.2);color:#fff;padding:4px 10px;border-radius:12px;font-size:.7rem;font-weight:700;">→</div>'+
-        '</div>'+
-      '</div>';
-    }).join('')+
-    '</div></section>';
-  wrap.innerHTML = html;
+      var total = festivals.length + ads.length;
+
+      if(total === 1 && festivals.length === 1 && ads.length === 0){
+        // Single festival — existing design
+        var f = festivals[0];
+        var bg = 'linear-gradient(135deg,'+f.color1+','+f.color2+')';
+        var festDate = f.date ? new Date(f.date) : null;
+        var days = festDate ? Math.max(0,Math.floor((festDate-new Date())/86400000)) : 0;
+        var hours = festDate ? Math.max(0,Math.floor(((festDate-new Date())%86400000)/3600000)) : 0;
+        wrap.innerHTML = _festivalBannerHTML(bg, f.emoji+' '+f.name, f.name+' এ কেনাকাটা করুন →', days, hours, f.key);
+        _startFestivalCountdown(festDate);
+        return;
+      }
+
+      // Multiple — horizontal scroll with festivals + ads
+      var festCards = festivals.map(function(f){
+        var bg = 'linear-gradient(135deg,'+f.color1+','+f.color2+')';
+        var festDate = f.date ? new Date(f.date) : null;
+        var days = festDate ? Math.max(0,Math.floor((festDate-new Date())/86400000)) : 0;
+        return '<div onclick="showFestivalOffers(\''+f.key+'\')" '+
+          'style="flex-shrink:0;width:200px;background:'+bg+';border-radius:16px;padding:16px;cursor:pointer;'+
+          'box-shadow:0 4px 16px rgba(0,0,0,.15);position:relative;overflow:hidden;">'+
+          '<div style="position:absolute;right:-15px;top:-15px;width:80px;height:80px;'+
+            'background:rgba(255,255,255,.08);border-radius:50%;"></div>'+
+          '<div style="font-size:1.6rem;margin-bottom:6px;">'+f.emoji+'</div>'+
+          '<div style="font-size:.88rem;font-weight:800;color:#fff;margin-bottom:4px;">'+f.name+'</div>'+
+          '<div style="display:flex;align-items:center;justify-content:space-between;">'+
+            '<div style="font-size:.7rem;color:rgba(255,255,255,.75);">'+days+' দিন বাকি</div>'+
+            '<div style="background:rgba(255,255,255,.2);color:#fff;padding:4px 10px;border-radius:12px;font-size:.7rem;font-weight:700;">→</div>'+
+          '</div>'+
+        '</div>';
+      }).join('');
+
+      var adCards = ads.map(function(b){
+        var bg = 'linear-gradient(135deg,'+b.color1+','+b.color2+')';
+        var link = b.linkUrl||'#';
+        return '<div onclick="window.location.href=\''+link+'\'" '+
+          'style="flex-shrink:0;width:200px;background:'+bg+';border-radius:16px;padding:16px;cursor:pointer;'+
+          'box-shadow:0 4px 16px rgba(0,0,0,.15);position:relative;overflow:hidden;">'+
+          '<div style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,.25);color:#fff;'+
+            'font-size:.6rem;font-weight:700;padding:2px 7px;border-radius:20px;">AD</div>'+
+          '<div style="font-size:1.6rem;margin-bottom:6px;">'+b.emoji+'</div>'+
+          '<div style="font-size:.88rem;font-weight:800;color:#fff;margin-bottom:4px;">'+b.title+'</div>'+
+          (b.shopName?'<div style="font-size:.7rem;color:rgba(255,255,255,.75);">🏪 '+b.shopName+'</div>':'')+
+        '</div>';
+      }).join('');
+
+      var html = '<section class="section" style="padding-top:4px;padding-bottom:4px;">'+
+        '<div style="display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-bottom:4px;">'+
+        festCards + adCards +
+        '</div></section>';
+      wrap.innerHTML = html;
+
+      // First festival এ countdown start করো
+      if(festivals.length > 0 && festivals[0].date){
+        _startFestivalCountdown(new Date(festivals[0].date));
+      }
+    }).catch(function(){
+      // Error হলে শুধু festival cards দেখাও
+      if(festivals.length === 1){
+        var f = festivals[0];
+        var bg = 'linear-gradient(135deg,'+f.color1+','+f.color2+')';
+        var festDate = f.date ? new Date(f.date) : null;
+        var days = festDate ? Math.max(0,Math.floor((festDate-new Date())/86400000)) : 0;
+        var hours = festDate ? Math.max(0,Math.floor(((festDate-new Date())%86400000)/3600000)) : 0;
+        wrap.innerHTML = _festivalBannerHTML(bg, f.emoji+' '+f.name, f.name+' এ কেনাকাটা করুন →', days, hours, f.key);
+        _startFestivalCountdown(festDate);
+      }
+    });
 }
 
 function _festivalBannerHTML(bg, name, btnText, days, hours, festivalKey){
@@ -4633,41 +4675,6 @@ function startBannerCountdown(endTime){
 }
 
 // ── FLASH COUNTDOWN ──
-// ── BANNER ADS ──
-function loadBannerAds(){
-  var today = new Date().toISOString().slice(0,10);
-  db.collection('cities').doc(CITY).collection('bannerAds')
-    .where('status','==','active')
-    .orderBy('priority','desc')
-    .get().then(function(snap){
-      var banners = [];
-      snap.forEach(function(d){
-        var b = Object.assign({id:d.id},d.data());
-        // Date filter
-        if(b.endDate && b.endDate < today) return;
-        if(b.startDate && b.startDate > today) return;
-        banners.push(b);
-      });
-      if(!banners.length) return;
-      var section = document.getElementById('bannerAdsSection');
-      var scroll = document.getElementById('bannerAdsScroll');
-      if(!section||!scroll) return;
-      section.style.display = 'block';
-      scroll.innerHTML = banners.map(function(b){
-        var bg = 'linear-gradient(135deg,'+b.color1+','+b.color2+')';
-        var link = b.linkUrl || (b.type==='festival'?'festival.html?type='+b.festivalKey:'#');
-        var badge = b.type==='shop_ad' ? '<div class="banner-card-badge">AD</div>' : '';
-        return '<div class="banner-card" style="background:'+bg+';" onclick="window.location.href=\''+link+'\'">'+
-          badge+
-          '<div class="banner-card-emoji">'+b.emoji+'</div>'+
-          '<div>'+
-            '<div class="banner-card-title">'+b.title+'</div>'+
-          '</div>'+
-        '</div>';
-      }).join('');
-    }).catch(function(){});
-}
-
 function startFlashCountdownWithTime(endTimeMs){
   function tick(){
     var diff=Math.max(0, endTimeMs - Date.now());
