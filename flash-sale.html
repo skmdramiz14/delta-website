@@ -473,7 +473,9 @@ function addToCart(id,shopId,name,price){
   updateCartBadge();
   var btn=document.getElementById('abtn_'+id);
   if(btn){
-    btn.outerHTML='<div class="qty-control" id="qc_'+id+'"><button class="qty-btn" onclick="changeQty(\''+id+'\',\''+shopId+'\',-1)">−</button><span class="qty-num">1</span><button class="qty-btn" onclick="changeQty(\''+id+'\',\''+shopId+'\',1)">+</button></div>';
+    btn.textContent = '✅ Added';
+    btn.style.background = 'var(--green,#1a8a4a)';
+    btn.disabled = true;
   }
   showToast('✅ '+name+' কার্টে যোগ হয়েছে! হোমে গিয়ে checkout করুন 🛒','green');
 }
