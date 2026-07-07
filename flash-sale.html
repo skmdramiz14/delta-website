@@ -253,7 +253,10 @@ function loadFlashSale(db){
         return;
       }
       var data=doc.data();
-      flashEndTime=data.endTime||0;
+      var rawEnd = data.endTime||'';
+      var parsedEnd = rawEnd ? new Date(rawEnd).getTime() : 0;
+      if(isNaN(parsedEnd)) parsedEnd = Date.now() + 3*3600000;
+      flashEndTime = parsedEnd;
       startCountdown();
 
       var adminProds=data.products||[];
@@ -271,14 +274,34 @@ function loadFlashSale(db){
 
 function loadProductDetails(db, adminProds){
   var promises=adminProds.map(function(ap){
+    // Custom products (Admin's own)
+    if(ap.isCustom){
+      var pEndTime = ap.productEndTime ? new Date(ap.productEndTime).getTime() : flashEndTime;
+      if(isNaN(pEndTime)) pEndTime = flashEndTime;
+      return Promise.resolve({
+        id: ap.productId,
+        shopId: ap.shopId,
+        nameBn: ap.productName,
+        shopName: ap.shopName||'DELTA Admin',
+        price: ap.price,
+        salePrice: ap.salePrice||ap.price,
+        discount: ap.totalDiscount||ap.discount||0,
+        imageUrl: ap.imageUrl||'',
+        flashEndTime: Math.min(pEndTime, flashEndTime),
+        isCustom: true
+      });
+    }
     return db.collection('cities').doc(CITY).collection('sellers').doc(ap.shopId)
       .collection('products').doc(ap.productId).get()
       .then(function(pd){
         if(!pd.exists) return null;
         var p=Object.assign({id:pd.id,shopId:ap.shopId},pd.data());
-        p.discount=ap.discount||p.discount||10;
-        p.flashEndTime=flashEndTime;
-        // shop name load
+        p.discount = ap.totalDiscount||ap.discount||p.discount||10;
+        p.salePrice = ap.salePrice||Math.round(p.price*(1-p.discount/100));
+        // Individual product end time
+        var pEndTime = ap.productEndTime ? new Date(ap.productEndTime).getTime() : flashEndTime;
+        if(isNaN(pEndTime)) pEndTime = flashEndTime;
+        p.flashEndTime = Math.min(pEndTime, flashEndTime);
         return db.collection('cities').doc(CITY).collection('sellers').doc(ap.shopId).get()
           .then(function(sd){
             p.shopName=sd.exists?(sd.data().shopName||'দোকান'):'দোকান';
@@ -330,10 +353,10 @@ function renderFlashGrid(prods){
   grid.innerHTML=prods.map(function(p){
     var img=p.imageUrl||(p.images&&p.images[0])||'';
     var name=p.nameBn||p.nameEn||p.name||'পণ্য';
-    var price=parseFloat(p.price||p.sellPrice||0);
+    var origPrice=parseFloat(p.price||p.sellPrice||0);
     var disc=parseInt(p.discount||0);
-    var mrp=p.mrp||Math.round(price/(1-disc/100));
-    var save=mrp-price;
+    var salePrice = p.salePrice || Math.round(origPrice*(1-disc/100));
+    var save = origPrice - salePrice;
     var inCart=cart.find(function(c){return c.id===p.id&&c.shopId===p.shopId;});
     var qty=inCart?inCart.qty:0;
     var timerId='ft_'+p.id;
@@ -353,13 +376,13 @@ function renderFlashGrid(prods){
         '<div class="shop-name">🏪 '+p.shopName+'</div>'+
         '<div class="product-name">'+name+'</div>'+
         '<div class="product-pricing">'+
-          '<span class="price-now">₹'+price+'</span>'+
-          (mrp&&mrp!==price?'<span class="price-old">₹'+mrp+'</span>':'')+ 
+          '<span class="price-now">₹'+salePrice+'</span>'+
+          (origPrice&&origPrice!==salePrice?'<span class="price-old">₹'+origPrice+'</span>':'')+ 
           (save>0?'<span class="price-save">₹'+save+' বাঁচুন</span>':'')+
         '</div>'+
         (qty>0
           ?'<div class="qty-control" id="qc_'+p.id+'"><button class="qty-btn" onclick="changeQty(\''+p.id+'\',\''+p.shopId+'\',-1)">−</button><span class="qty-num">'+qty+'</span><button class="qty-btn" onclick="changeQty(\''+p.id+'\',\''+p.shopId+'\',1)">+</button></div>'
-          :'<button class="add-btn" id="abtn_'+p.id+'" onclick="addToCart(\''+p.id+'\',\''+p.shopId+'\',\''+name+'\','+price+')">+ <span class="lang-bn">কার্টে যোগ করুন</span><span class="lang-en">Add to Cart</span></button>')+
+          :'<button class="add-btn" id="abtn_'+p.id+'" onclick="addToCart(\''+p.id+'\',\''+p.shopId+'\',\''+name+'\','+salePrice+')">+ <span class="lang-bn">কার্টে যোগ করুন</span><span class="lang-en">Add to Cart</span></button>')+
       '</div></div>';
   }).join('');
   startProductTimers(prods);
