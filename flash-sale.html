@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="bn">
 <head>
 <meta charset="UTF-8">
@@ -156,9 +156,18 @@ body.lang-bn .lang-en{display:none!important;}
 <nav class="nav">
   <a class="nav-back" href="index.html">← <span class="lang-bn">হোমে ফিরুন</span><span class="lang-en">Back</span></a>
   <a class="nav-logo" href="index.html">△ DELT<em>A</em></a>
-  <div style="display:flex;gap:4px;background:rgba(255,255,255,.1);border-radius:20px;padding:3px;">
-    <button style="padding:4px 10px;border-radius:16px;border:none;background:var(--orange);color:#fff;font-size:.75rem;font-weight:700;cursor:pointer;" id="langBn" onclick="setLang('bn')">বাং</button>
-    <button style="padding:4px 10px;border-radius:16px;border:none;background:transparent;color:rgba(255,255,255,.6);font-size:.75rem;font-weight:700;cursor:pointer;" id="langEn" onclick="setLang('en')">ENG</button>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <!-- Cart Button -->
+    <div style="position:relative;cursor:pointer;" onclick="goToCart()">
+      <div style="background:rgba(255,255,255,.15);border-radius:20px;padding:6px 12px;display:flex;align-items:center;gap:6px;">
+        <span style="font-size:1rem;">🛒</span>
+        <span id="flashCartBadge" style="display:none;background:var(--orange);color:#fff;font-size:.65rem;font-weight:800;min-width:16px;height:16px;border-radius:10px;display:flex;align-items:center;justify-content:center;padding:0 4px;">0</span>
+      </div>
+    </div>
+    <div style="display:flex;gap:4px;background:rgba(255,255,255,.1);border-radius:20px;padding:3px;">
+      <button style="padding:4px 10px;border-radius:16px;border:none;background:var(--orange);color:#fff;font-size:.75rem;font-weight:700;cursor:pointer;" id="langBn" onclick="setLang('bn')">বাং</button>
+      <button style="padding:4px 10px;border-radius:16px;border:none;background:transparent;color:rgba(255,255,255,.6);font-size:.75rem;font-weight:700;cursor:pointer;" id="langEn" onclick="setLang('en')">ENG</button>
+    </div>
   </div>
 </nav>
 
@@ -209,6 +218,10 @@ var allFlashProds=[];
 var flashEndTime=0;
 var countdownInterval;
 var cart=JSON.parse(localStorage.getItem('delta_cart')||'[]');
+// Update badge on load
+document.addEventListener('DOMContentLoaded', function(){
+  updateCartBadge();
+});
 
 function setLang(l){
   currentLang=l;
@@ -448,11 +461,25 @@ function startCountdown(){
 }
 
 // Cart
+function updateCartBadge(){
+  var total = cart.reduce(function(s,i){return s+(i.qty||1);},0);
+  var badge = document.getElementById('flashCartBadge');
+  if(badge){
+    badge.textContent = total;
+    badge.style.display = total ? 'flex' : 'none';
+  }
+}
+
+function goToCart(){
+  window.location.href = 'index.html#cart';
+}
+
 function addToCart(id,shopId,name,price){
   var existing=cart.find(function(c){return c.id===id&&c.shopId===shopId;});
   if(existing){existing.qty++;}
   else{cart.push({id:id,shopId:shopId,name:name,price:price,qty:1});}
   localStorage.setItem('delta_cart',JSON.stringify(cart));
+  updateCartBadge();
   var btn=document.getElementById('abtn_'+id);
   if(btn){
     btn.outerHTML='<div class="qty-control" id="qc_'+id+'"><button class="qty-btn" onclick="changeQty(\''+id+'\',\''+shopId+'\',-1)">−</button><span class="qty-num">1</span><button class="qty-btn" onclick="changeQty(\''+id+'\',\''+shopId+'\',1)">+</button></div>';
