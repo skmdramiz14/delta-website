@@ -5080,14 +5080,18 @@ function submitSaleProduct(){
 
 function loadMySaleProducts(){
   if(!auth.currentUser) return;
+  var wrap = document.getElementById('mySaleProductsList');
   db.collection('cities').doc(CITY).collection('saleProducts')
     .where('shopId','==',auth.currentUser.uid)
-    .orderBy('createdAt','desc').get()
+    .get()
     .then(function(snap){
       var list=[];
       snap.forEach(function(d){list.push(Object.assign({id:d.id},d.data()));});
+      list.sort(function(a,b){return new Date(b.createdAt||0)-new Date(a.createdAt||0);});
       renderMySaleProducts(list);
-    }).catch(function(){});
+    }).catch(function(e){
+      if(wrap) wrap.innerHTML='<div style="color:var(--red);font-size:.78rem;padding:12px;">লোড সমস্যা: '+e.message+'</div>';
+    });
 }
 
 function renderMySaleProducts(list){
