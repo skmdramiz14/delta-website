@@ -1123,6 +1123,83 @@ button,input,select{font-family:'DM Sans',sans-serif;}
         <div style="font-size:.72rem;color:var(--muted);margin-bottom:12px;">Sellers যে products festival এ add করতে চেয়েছে — approve বা reject করুন</div>
         <div id="festPendingList"><div style="color:var(--muted);font-size:.82rem;">লোড হচ্ছে...</div></div>
       </div>
+
+      <!-- Banner Ad Management -->
+      <div class="add-zone-card" style="margin-bottom:16px;border-left:3px solid #7b1fa2;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <div style="font-size:.85rem;font-weight:700;color:var(--navy);">🖼️ Homepage Banner Ads Management</div>
+          <button class="btn-sm" onclick="loadBannerAds()" style="background:var(--sand);color:var(--navy);">↺ Load</button>
+        </div>
+        <div style="font-size:.72rem;color:var(--muted);margin-bottom:12px;">Festival cards + Shop Ads → Homepage এ horizontal scroll এ দেখাবে</div>
+
+        <!-- Add Banner Form -->
+        <div style="background:var(--sand);border-radius:12px;padding:14px;margin-bottom:14px;">
+          <div style="font-size:.75rem;font-weight:700;color:var(--navy);margin-bottom:10px;">➕ নতুন Banner Ad যোগ করুন</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+            <div>
+              <label style="font-size:.68rem;color:var(--muted);">Banner Type</label>
+              <select class="form-input" id="bannerType" onchange="toggleBannerType()" style="margin-top:3px;">
+                <option value="festival">🎊 Festival Banner</option>
+                <option value="shop_ad">🏪 Shop Ad</option>
+              </select>
+            </div>
+            <div id="bannerFestivalGroup">
+              <label style="font-size:.68rem;color:var(--muted);">Festival</label>
+              <select class="form-input" id="bannerFestival" style="margin-top:3px;">
+                <option value="">-- Festival select করুন --</option>
+              </select>
+            </div>
+            <div id="bannerShopGroup" style="display:none;">
+              <label style="font-size:.68rem;color:var(--muted);">Shop Name</label>
+              <input type="text" class="form-input" id="bannerShopName" placeholder="যেমন: Rahman Store" style="margin-top:3px;">
+            </div>
+            <div>
+              <label style="font-size:.68rem;color:var(--muted);">Banner Title</label>
+              <input type="text" class="form-input" id="bannerTitle" placeholder="যেমন: পূজার বিশেষ অফার" style="margin-top:3px;">
+            </div>
+            <div>
+              <label style="font-size:.68rem;color:var(--muted);">Emoji / Icon</label>
+              <input type="text" class="form-input" id="bannerEmoji" placeholder="🎊" style="margin-top:3px;max-width:80px;">
+            </div>
+            <div>
+              <label style="font-size:.68rem;color:var(--muted);">Color 1</label>
+              <input type="color" class="form-input" id="bannerColor1" value="#b5451b" style="margin-top:3px;height:38px;">
+            </div>
+            <div>
+              <label style="font-size:.68rem;color:var(--muted);">Color 2</label>
+              <input type="color" class="form-input" id="bannerColor2" value="#e8863a" style="margin-top:3px;height:38px;">
+            </div>
+            <div>
+              <label style="font-size:.68rem;color:var(--muted);">Link URL</label>
+              <input type="text" class="form-input" id="bannerLink" placeholder="যেমন: festival.html?type=durga_puja" style="margin-top:3px;">
+            </div>
+            <div>
+              <label style="font-size:.68rem;color:var(--muted);">Image URL (Optional)</label>
+              <input type="text" class="form-input" id="bannerImage" placeholder="Cloudinary URL" style="margin-top:3px;">
+            </div>
+            <div>
+              <label style="font-size:.68rem;color:var(--muted);">Start Date</label>
+              <input type="date" class="form-input" id="bannerStartDate" style="margin-top:3px;">
+            </div>
+            <div>
+              <label style="font-size:.68rem;color:var(--muted);">End Date</label>
+              <input type="date" class="form-input" id="bannerEndDate" style="margin-top:3px;">
+            </div>
+            <div>
+              <label style="font-size:.68rem;color:var(--muted);">Priority (বড় = আগে)</label>
+              <input type="number" class="form-input" id="bannerPriority" value="1" min="1" style="margin-top:3px;">
+            </div>
+            <div>
+              <label style="font-size:.68rem;color:var(--muted);">Price/Day ₹ (Ad হলে)</label>
+              <input type="number" class="form-input" id="bannerPrice" value="0" style="margin-top:3px;">
+            </div>
+          </div>
+          <button class="btn-sm btn-orange" onclick="saveBannerAd()" style="width:100%;justify-content:center;">🖼️ Banner Save করুন</button>
+        </div>
+
+        <!-- Banner List -->
+        <div id="bannerAdsList"><div style="color:var(--muted);font-size:.82rem;">"Load" চাপুন</div></div>
+      </div>
     </div>
 
     <!-- ═══ HAMPER MANAGEMENT PAGE ═══ -->
@@ -1590,7 +1667,10 @@ function goTab(tab, btn){
     loadSaleEditRequests();
   }
   if(tab==='products') loadModProducts();
-  if(tab==='festivals') loadFestivalManagement();
+  if(tab==='festivals'){
+    loadFestivalManagement();
+    loadBannerFestivalDropdown();
+  }
   if(tab==='hampers') loadHamperManagement();
   if(tab==='hamperorders') loadHamperOrders();
 }
@@ -3002,7 +3082,8 @@ function activateSaleProduct(id){
             price:p.originalPrice, salePrice:p.salePrice,
             discount:p.discount, extraDiscount:0, totalDiscount:p.discount,
             imageUrl:p.imageUrl||'', productEndTime:p.endTime,
-            active:true, fromSaleProduct:true, saleProductId:id
+            active:true, fromSaleProduct:true, saleProductId:id,
+            commission: p.commission||0
           });
           return db.collection('cities').doc(CITY).collection('settings').doc('flashSale')
             .set({products:products},{merge:true})
@@ -3167,31 +3248,57 @@ function toggleFlashProduct(productId, shopId, productName, shopName, price, dis
 
   var existing = flashSaleProducts.findIndex(function(f){return f.productId===productId&&f.shopId===shopId;});
   if(existing > -1){
-    // Remove from flash sale
     flashSaleProducts.splice(existing, 1);
     showToast('Flash Sale থেকে সরানো হয়েছে','green');
-  } else {
-    // Add to flash sale
-    var totalDisc = Math.min(90, discount + extraDisc);
-    var salePrice = Math.round(price*(1-totalDisc/100));
-    flashSaleProducts.push({
-      productId: productId,
-      shopId: shopId,
-      productName: productName,
-      shopName: shopName,
-      price: price,
-      salePrice: salePrice,
-      discount: discount,
-      extraDiscount: extraDisc,
-      totalDiscount: totalDisc,
-      imageUrl: imageUrl||'',
-      productEndTime: productEndTime||'',
-      active: true
-    });
-    showToast('⚡ Flash Sale এ যোগ হয়েছে!','green');
+    renderFlashProductsList();
+    renderDiscountedProducts();
+    return;
   }
-  renderFlashProductsList();
-  renderDiscountedProducts();
+
+  // Seller এর commission rate নিই
+  db.collection('cities').doc(CITY).collection('sellers').doc(shopId).get()
+    .then(function(sellerDoc){
+      var sellerCommission = 15; // default
+      if(sellerDoc.exists){
+        var plan = sellerDoc.data().subscriptionPlan||'free';
+        var tier = sellerDoc.data().performanceTier||'bronze';
+        var commTable = {
+          free:{bronze:15,silver:14,gold:13,platinum:12},
+          basic:{bronze:12,silver:11,gold:10,platinum:9},
+          standard:{bronze:10,silver:9,gold:8,platinum:7},
+          premium:{bronze:8,silver:7,gold:6,platinum:5}
+        };
+        sellerCommission = (commTable[plan]||commTable.free)[tier]||15;
+      }
+      var totalDisc = Math.min(90, discount + extraDisc);
+      var salePrice = Math.round(price*(1-totalDisc/100));
+      flashSaleProducts.push({
+        productId: productId, shopId: shopId,
+        productName: productName, shopName: shopName,
+        price: price, salePrice: salePrice,
+        discount: discount, extraDiscount: extraDisc,
+        totalDiscount: totalDisc,
+        imageUrl: imageUrl||'',
+        productEndTime: productEndTime||'',
+        commission: sellerCommission,
+        active: true
+      });
+      renderFlashProductsList();
+      renderDiscountedProducts();
+      showToast('⚡ Flash Sale এ যোগ হয়েছে! Commission: '+sellerCommission+'%','green');
+    }).catch(function(){
+      var totalDisc = Math.min(90, discount + extraDisc);
+      var salePrice = Math.round(price*(1-totalDisc/100));
+      flashSaleProducts.push({
+        productId:productId, shopId:shopId, productName:productName, shopName:shopName,
+        price:price, salePrice:salePrice, discount:discount, extraDiscount:extraDisc,
+        totalDiscount:totalDisc, imageUrl:imageUrl||'', productEndTime:productEndTime||'',
+        commission:15, active:true
+      });
+      renderFlashProductsList();
+      renderDiscountedProducts();
+      showToast('⚡ Flash Sale এ যোগ হয়েছে!','green');
+    });
 }
 
 function addToFlashSale(){
@@ -5357,6 +5464,131 @@ function deleteContest(contestId){
 window.loadAllContests = loadAllContests;
 window.announceWinner = announceWinner;
 window.deleteContest = deleteContest;
+
+// ═══ BANNER AD MANAGEMENT ═══
+function toggleBannerType(){
+  var type = document.getElementById('bannerType').value;
+  document.getElementById('bannerFestivalGroup').style.display = type==='festival' ? 'block' : 'none';
+  document.getElementById('bannerShopGroup').style.display = type==='shop_ad' ? 'block' : 'none';
+}
+
+function loadBannerFestivalDropdown(){
+  var sel = document.getElementById('bannerFestival');
+  if(!sel) return;
+  sel.innerHTML = '<option value="">-- Festival select করুন --</option>';
+  allFestivalCats.forEach(function(f){
+    var opt = document.createElement('option');
+    opt.value = f.key;
+    opt.textContent = f.emoji+' '+f.name;
+    sel.appendChild(opt);
+  });
+}
+
+function saveBannerAd(){
+  var type = document.getElementById('bannerType').value;
+  var title = document.getElementById('bannerTitle').value.trim();
+  var emoji = document.getElementById('bannerEmoji').value.trim()||'🎊';
+  var color1 = document.getElementById('bannerColor1').value||'#b5451b';
+  var color2 = document.getElementById('bannerColor2').value||'#e8863a';
+  var link = document.getElementById('bannerLink').value.trim();
+  var image = document.getElementById('bannerImage').value.trim();
+  var startDate = document.getElementById('bannerStartDate').value;
+  var endDate = document.getElementById('bannerEndDate').value;
+  var priority = parseInt(document.getElementById('bannerPriority').value)||1;
+  var pricePerDay = parseInt(document.getElementById('bannerPrice').value)||0;
+  var festivalKey = document.getElementById('bannerFestival').value;
+  var shopName = document.getElementById('bannerShopName').value.trim();
+
+  if(!title){showToast('Banner title দিন','red');return;}
+  if(type==='festival' && !festivalKey){showToast('Festival select করুন','red');return;}
+  if(type==='shop_ad' && !shopName){showToast('Shop name দিন','red');return;}
+
+  var data = {
+    type: type,
+    title: title,
+    emoji: emoji,
+    color1: color1,
+    color2: color2,
+    linkUrl: link,
+    imageUrl: image,
+    startDate: startDate,
+    endDate: endDate,
+    priority: priority,
+    pricePerDay: pricePerDay,
+    status: 'active',
+    festivalKey: type==='festival' ? festivalKey : '',
+    shopName: type==='shop_ad' ? shopName : '',
+    createdAt: new Date().toISOString()
+  };
+
+  db.collection('cities').doc(CITY).collection('bannerAds').add(data)
+    .then(function(){
+      showToast('✅ Banner saved!','green');
+      ['bannerTitle','bannerEmoji','bannerLink','bannerImage','bannerStartDate','bannerEndDate','bannerShopName'].forEach(function(id){
+        var el=document.getElementById(id); if(el) el.value=id==='bannerEmoji'?'🎊':'';
+      });
+      document.getElementById('bannerPriority').value='1';
+      document.getElementById('bannerPrice').value='0';
+      loadBannerAds();
+    }).catch(function(e){showToast('সমস্যা: '+e.message,'red');});
+}
+
+function loadBannerAds(){
+  var wrap = document.getElementById('bannerAdsList');
+  wrap.innerHTML = '<div style="color:var(--muted);font-size:.82rem;">লোড হচ্ছে...</div>';
+  db.collection('cities').doc(CITY).collection('bannerAds')
+    .orderBy('priority','desc').get()
+    .then(function(snap){
+      var list=[];
+      snap.forEach(function(d){list.push(Object.assign({id:d.id},d.data()));});
+      if(!list.length){wrap.innerHTML='<div style="color:var(--muted);font-size:.82rem;">কোনো banner নেই।</div>';return;}
+      var now = new Date().toISOString().slice(0,10);
+      wrap.innerHTML = list.map(function(b){
+        var isExpired = b.endDate && b.endDate < now;
+        var isActive = b.status==='active' && !isExpired;
+        return '<div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:8px;display:flex;gap:12px;align-items:center;">'+
+          // Preview
+          '<div style="width:60px;height:44px;border-radius:8px;background:linear-gradient(135deg,'+b.color1+','+b.color2+');display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;">'+b.emoji+'</div>'+
+          '<div style="flex:1;min-width:0;">'+
+            '<div style="font-size:.82rem;font-weight:700;color:var(--navy);">'+b.title+'</div>'+
+            '<div style="font-size:.72rem;color:var(--muted);">'+
+              (b.type==='festival'?'🎊 Festival: '+b.festivalKey:'🏪 Shop: '+b.shopName)+
+              ' · Priority: '+b.priority+
+              (b.startDate?' · '+b.startDate+' → '+b.endDate:'')+
+            '</div>'+
+          '</div>'+
+          '<div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;align-items:flex-end;">'+
+            '<span style="font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:20px;background:'+(isActive?'var(--green2)':'var(--sand)')+';color:'+(isActive?'var(--green)':'var(--muted)')+';">'+
+              (isActive?'✅ Active':isExpired?'❌ Expired':'⏸ Off')+'</span>'+
+            '<div style="display:flex;gap:4px;">'+
+              '<button class="btn-sm '+(isActive?'btn-green':'')+'" style="font-size:.68rem;" onclick="toggleBannerStatus(\''+b.id+'\','+(b.status==='active'?'\'inactive\'':'\'active\'')+')">'+
+                (b.status==='active'?'⏸':'▶️')+'</button>'+
+              '<button class="btn-sm btn-red" style="font-size:.68rem;" onclick="deleteBannerAd(\''+b.id+'\')">🗑️</button>'+
+            '</div>'+
+          '</div>'+
+        '</div>';
+      }).join('');
+    }).catch(function(e){wrap.innerHTML='<div style="color:var(--red);">Error: '+e.message+'</div>';});
+}
+
+function toggleBannerStatus(id, status){
+  db.collection('cities').doc(CITY).collection('bannerAds').doc(id).update({status:status})
+    .then(function(){showToast('Banner updated','green');loadBannerAds();})
+    .catch(function(e){showToast('সমস্যা: '+e.message,'red');});
+}
+
+function deleteBannerAd(id){
+  if(!confirm('Banner delete করবেন?'))return;
+  db.collection('cities').doc(CITY).collection('bannerAds').doc(id).delete()
+    .then(function(){showToast('Banner deleted','green');loadBannerAds();})
+    .catch(function(e){showToast('সমস্যা: '+e.message,'red');});
+}
+
+window.loadBannerAds=loadBannerAds;
+window.saveBannerAd=saveBannerAd;
+window.toggleBannerType=toggleBannerType;
+window.toggleBannerStatus=toggleBannerStatus;
+window.deleteBannerAd=deleteBannerAd;
 
 // ═══ FESTIVAL MANAGEMENT ═══
 
