@@ -1,4 +1,4 @@
-<!DOCTYPE html>   
+<!DOCTYPE html>
 <html lang="bn">
 <head>
 <meta charset="UTF-8">
@@ -4705,15 +4705,37 @@ function buildFlashSale(prods){
     .get().then(function(doc){
       var flash = [];
       if(doc.exists && doc.data().enabled && doc.data().products && doc.data().products.length){
-        // Admin defined products
-        var adminProds = doc.data().products;
-        var endTime = doc.data().endTime || (Date.now() + 3*3600000);
-        adminProds.forEach(function(ap, i){
+        var data = doc.data();
+        var megaEndTime = data.endTime ? new Date(data.endTime).getTime() : (Date.now() + 3*3600000);
+        var adminProds = data.products;
+
+        adminProds.forEach(function(ap){
+          // Custom products (Admin's own)
+          if(ap.isCustom){
+            var productEndTime = ap.productEndTime ? new Date(ap.productEndTime).getTime() : megaEndTime;
+            flash.push({
+              id: ap.productId,
+              shopId: ap.shopId,
+              nameBn: ap.productName,
+              shopName: ap.shopName,
+              price: ap.price,
+              salePrice: ap.salePrice||ap.price,
+              discount: ap.totalDiscount||ap.discount||0,
+              imageUrl: ap.imageUrl||'',
+              _flashEnd: Math.min(productEndTime, megaEndTime),
+              _isCustom: true
+            });
+            return;
+          }
+          // Seller products
           var found = prods.find(function(p){ return p.id===ap.productId && p.shopId===ap.shopId; });
           if(found){
             found = Object.assign({}, found);
-            found.discount = ap.discount || found.discount || 10;
-            found._flashEnd = endTime;
+            found.discount = ap.totalDiscount || ap.discount || found.discount || 10;
+            found.salePrice = ap.salePrice || Math.round(found.price*(1-found.discount/100));
+            var productEndTime = ap.productEndTime ? new Date(ap.productEndTime).getTime() : megaEndTime;
+            found._flashEnd = Math.min(productEndTime, megaEndTime);
+            found._extraDiscount = ap.extraDiscount||0;
             flash.push(found);
           }
         });
@@ -4723,23 +4745,24 @@ function buildFlashSale(prods){
         flash = prods.filter(function(p){ return p.discount>=10; }).slice(0,6);
         flash.forEach(function(p,i){
           p._flashEnd = Date.now()+(2+i)*3600000+Math.floor(Math.random()*60)*60000;
+          p.salePrice = Math.round(p.price*(1-p.discount/100));
         });
       }
       if(!flash.length) return;
       var sec=document.getElementById('flashSection');
       if(!sec) return;
       sec.style.display='block';
-      // Product count দেখাও
       var countEl=document.getElementById('flashProdCount');
       if(countEl) countEl.textContent=flash.length+'টি পণ্য Flash Sale এ';
-      // Banner countdown শুরু করো
       startBannerCountdown(flash[0]._flashEnd||Date.now()+3*3600000);
       startFlashCountdown();
     }).catch(function(){
-      // Error হলে discount filter fallback
       var flash=prods.filter(function(p){return p.discount>=10;}).slice(0,6);
       if(!flash.length)return;
-      flash.forEach(function(p,i){ p._flashEnd=Date.now()+(2+i)*3600000; });
+      flash.forEach(function(p,i){
+        p._flashEnd=Date.now()+(2+i)*3600000;
+        p.salePrice=Math.round(p.price*(1-p.discount/100));
+      });
       var sec=document.getElementById('flashSection');
       if(!sec)return;
       sec.style.display='block';
