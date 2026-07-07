@@ -478,6 +478,18 @@ body.lang-bn .lang-en{display:none!important;}
       <div id="orderModalAddOnList"></div>
     </div>
 
+    <!-- Coupon Section (shows if hamper has coupon) -->
+    <div id="hamperCouponSection" style="display:none;background:var(--sand);border-radius:12px;padding:12px;margin-bottom:16px;">
+      <div style="font-size:.78rem;font-weight:700;color:var(--navy);margin-bottom:8px;">🎟️ Coupon Code আছে?</div>
+      <div style="display:flex;gap:8px;">
+        <input type="text" id="hamperCouponInput" placeholder="Coupon code লিখুন"
+          oninput="this.value=this.value.toUpperCase()"
+          style="flex:1;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:.85rem;text-transform:uppercase;">
+        <button onclick="applyHamperCoupon()" style="background:var(--orange);color:#fff;border:none;padding:10px 16px;border-radius:8px;font-weight:700;cursor:pointer;">Apply</button>
+      </div>
+      <div id="hamperCouponMsg" style="font-size:.75rem;margin-top:6px;display:none;"></div>
+    </div>
+
     <!-- Delivery Details -->
     <div style="margin-bottom:12px;">
       <label style="font-size:.78rem;font-weight:700;color:var(--navy);display:block;margin-bottom:6px;">📍 ডেলিভারি ঠিকানা</label>
@@ -491,14 +503,18 @@ body.lang-bn .lang-en{display:none!important;}
     </div>
 
     <!-- Total -->
-    <div style="background:linear-gradient(135deg,#b5451b,#e8863a);border-radius:12px;padding:14px;margin-bottom:16px;
-      display:flex;align-items:center;justify-content:space-between;">
-      <div>
-        <div style="font-size:.7rem;color:rgba(255,255,255,.8);">মোট মূল্য</div>
-        <div style="font-size:1.3rem;font-weight:900;color:#fff;" id="orderTotal">₹0</div>
+    <div style="background:linear-gradient(135deg,#b5451b,#e8863a);border-radius:12px;padding:14px;margin-bottom:16px;">
+      <div id="hamperDiscountRow" style="display:none;justify-content:space-between;margin-bottom:6px;font-size:.78rem;color:rgba(255,255,255,.9);">
+        <span>🎟️ Coupon Discount</span><span id="hamperDiscountAmt">-₹0</span>
       </div>
-      <div style="font-size:.72rem;color:rgba(255,255,255,.8);text-align:right;">
-        💵 Cash on Delivery<br>ডেলিভারিতে টাকা দিন
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div>
+          <div style="font-size:.7rem;color:rgba(255,255,255,.8);">মোট মূল্য</div>
+          <div style="font-size:1.3rem;font-weight:900;color:#fff;" id="orderTotal">₹0</div>
+        </div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.8);text-align:right;">
+          💵 Cash on Delivery<br>ডেলিভারিতে টাকা দিন
+        </div>
       </div>
     </div>
 
@@ -667,6 +683,24 @@ function buildHamperCard(h){
     '</div>';
   }
 
+  // Hamper coupon badge
+  var hamperBadges = '';
+  if(h.coupon && h.coupon.active && h.coupon.code){
+    var c = h.coupon;
+    if(c.type==='bogo')
+      hamperBadges += '<div style="background:linear-gradient(135deg,#7b1fa2,#c2185b);color:#fff;font-size:.65rem;font-weight:700;padding:3px 8px;border-radius:6px;margin-bottom:4px;display:inline-block;">🎁 1 কিনলে 1 ফ্রি · কোড: '+c.code+'</div><br>';
+    else if(c.type==='percent')
+      hamperBadges += '<div style="background:#e8f7ee;color:var(--green);font-size:.65rem;font-weight:700;padding:3px 8px;border-radius:6px;margin-bottom:4px;display:inline-block;">🎟️ কোড '+c.code+' দিয়ে '+c.value+'% ছাড়</div><br>';
+    else if(c.type==='flat')
+      hamperBadges += '<div style="background:#fff4ec;color:var(--orange);font-size:.65rem;font-weight:700;padding:3px 8px;border-radius:6px;margin-bottom:4px;display:inline-block;">🎟️ কোড '+c.code+' দিয়ে ₹'+c.value+' ছাড়</div><br>';
+  }
+  // Contest badge
+  if(h.contest && h.contest.active && h.contest.title){
+    hamperBadges += '<div style="background:linear-gradient(135deg,#7b1fa2,#c2185b);color:#fff;font-size:.65rem;font-weight:700;padding:3px 8px;border-radius:6px;margin-bottom:4px;display:inline-block;cursor:pointer;" '+
+      'onclick="joinHamperContest(\''+h.id+'\',\''+h.name.replace(/'/g,"\\'")+'\')">'+
+      '🏆 '+h.contest.title+' — পুরস্কার: '+h.contest.prize+'</div>';
+  }
+
   return '<div class="hap-card" id="hcard_'+h.id+'" data-festival="'+(h.festivalTag||'')+'">'+
     '<div class="hap-banner" style="background:'+bg+';padding:0;overflow:hidden;position:relative;cursor:pointer;" onclick="openDetailPage(\''+h.id+'\')">'+
       (h.imageUrl
@@ -684,6 +718,7 @@ function buildHamperCard(h){
     '<div class="hap-body">'+
       '<div class="hap-festival-label">'+festName.toUpperCase()+'</div>'+
       '<div class="hap-name">'+h.name+'</div>'+
+      (hamperBadges?'<div style="margin-bottom:6px;">'+hamperBadges+'</div>':'')+
       (h.description?'<div class="hap-desc">'+h.description+'</div>':'')+
       '<div class="hap-items">'+baseItemsHTML+'</div>'+
       addOnHTML+
@@ -724,8 +759,71 @@ function addHamperToCart(hamperId, hamperName, basePrice){
   openOrderModal(h);
 }
 
+// ── HAMPER COUPON + CONTEST ──
+function joinHamperContest(hamperId, hamperName){
+  var phone = prompt('আপনার ফোন নম্বর দিন (Contest entry র জন্য):');
+  if(!phone) return;
+  phone = phone.trim();
+  if(phone.length<10){ alert('সঠিক ফোন নম্বর দিন'); return; }
+  db.collection('hampers').doc(hamperId).update({
+    'contest.participants': firebase.firestore.FieldValue.arrayUnion({
+      phone: phone, hamperName: hamperName, joinedAt: new Date().toISOString()
+    })
+  }).then(function(){
+    showToast('🏆 Contest এ যোগ হয়েছে! Lucky Draw এ সুযোগ!','green');
+  }).catch(function(e){ alert('সমস্যা: '+e.message); });
+}
+
+function applyHamperCoupon(){
+  var h = currentOrderHamper;
+  if(!h || !h.coupon) return;
+  var code = (document.getElementById('hamperCouponInput').value||'').trim().toUpperCase();
+  var msgEl = document.getElementById('hamperCouponMsg');
+
+  if(code !== h.coupon.code){ showHamperCouponMsg('❌ Invalid coupon code','red'); return; }
+  if(!h.coupon.active){ showHamperCouponMsg('❌ Coupon inactive','red'); return; }
+  if(h.coupon.validUntil && new Date(h.coupon.validUntil)<new Date()){ showHamperCouponMsg('❌ মেয়াদ শেষ','red'); return; }
+  if(h.coupon.usedCount>=h.coupon.maxUses){ showHamperCouponMsg('❌ Coupon uses শেষ','red'); return; }
+
+  var subtotal = h.price + selectedAddOns.reduce(function(s,a){return s+a.price;},0);
+  if(h.coupon.minOrder && subtotal<h.coupon.minOrder){ showHamperCouponMsg('❌ ন্যূনতম ₹'+h.coupon.minOrder+' লাগবে','red'); return; }
+
+  appliedHamperCoupon = h.coupon;
+  updateModalTotal();
+  var label = h.coupon.type==='percent'?h.coupon.value+'% ছাড়':h.coupon.type==='flat'?'₹'+h.coupon.value+' ছাড়':'Buy 1 Get 1 Free';
+  showHamperCouponMsg('✅ Applied — '+label,'green');
+}
+
+function showHamperCouponMsg(msg, type){
+  var el = document.getElementById('hamperCouponMsg');
+  if(!el) return;
+  el.textContent = msg;
+  el.style.display = 'block';
+  el.style.color = type==='green'?'var(--green)':'var(--red,#c0392b)';
+}
+
+function updateModalTotal(){
+  var h = currentOrderHamper;
+  if(!h) return;
+  var addOnTotal = selectedAddOns.reduce(function(s,a){return s+a.price;},0);
+  var subtotal = h.price + addOnTotal;
+  var discount = 0;
+  if(appliedHamperCoupon){
+    if(appliedHamperCoupon.type==='percent') discount=Math.round(subtotal*appliedHamperCoupon.value/100);
+    else if(appliedHamperCoupon.type==='flat') discount=Math.min(appliedHamperCoupon.value,subtotal);
+    else if(appliedHamperCoupon.type==='bogo') discount=h.price;
+  }
+  var discRow = document.getElementById('hamperDiscountRow');
+  var discAmt = document.getElementById('hamperDiscountAmt');
+  if(discRow) discRow.style.display = discount?'flex':'none';
+  if(discAmt) discAmt.textContent = '-₹'+discount;
+  var totalEl = document.getElementById('orderTotal');
+  if(totalEl) totalEl.textContent = '₹'+(subtotal-discount);
+}
+
 function openOrderModal(h){
   currentOrderHamper = h;
+  appliedHamperCoupon = null; // reset on each open
   document.getElementById('orderModal').style.display = 'flex';
   document.body.style.overflow = 'hidden';
 
@@ -764,6 +862,21 @@ function openOrderModal(h){
   var preTotal = preselected.reduce(function(s,a){return s+a.price;},0);
   document.getElementById('orderTotal').textContent = '₹'+(h.price+preTotal);
 
+  // Coupon section দেখাও যদি hamper এ coupon থাকে
+  appliedHamperCoupon = null;
+  var cpnSection = document.getElementById('hamperCouponSection');
+  var cpnInput = document.getElementById('hamperCouponInput');
+  var cpnMsg = document.getElementById('hamperCouponMsg');
+  if(cpnSection){
+    if(h.coupon && h.coupon.code && h.coupon.active){
+      cpnSection.style.display = 'block';
+      if(cpnInput) cpnInput.value='';
+      if(cpnMsg) cpnMsg.style.display='none';
+    } else {
+      cpnSection.style.display = 'none';
+    }
+  }
+
   // Preselected add-ons check করো
   if(preselected.length){
     setTimeout(function(){
@@ -789,6 +902,7 @@ function closeOrderModal(){
   document.getElementById('orderModal').style.display = 'none';
   document.body.style.overflow = '';
   currentOrderHamper = null;
+  appliedHamperCoupon = null;
 }
 
 function placeHamperOrder(){
@@ -798,7 +912,6 @@ function placeHamperOrder(){
   if(!phone){ alert('ফোন নম্বর দিন'); return; }
   if(!currentOrderHamper) return;
 
-  // Selected add-ons collect করো
   var selectedAddOns = [];
   document.querySelectorAll('.modal-addon-cb:checked').forEach(function(cb){
     selectedAddOns.push({
@@ -807,7 +920,14 @@ function placeHamperOrder(){
     });
   });
 
-  var totalPrice = currentOrderHamper.price + selectedAddOns.reduce(function(s,a){return s+a.price;},0);
+  var subtotal = currentOrderHamper.price + selectedAddOns.reduce(function(s,a){return s+a.price;},0);
+  var discount = 0;
+  if(appliedHamperCoupon){
+    if(appliedHamperCoupon.type==='percent') discount=Math.round(subtotal*appliedHamperCoupon.value/100);
+    else if(appliedHamperCoupon.type==='flat') discount=Math.min(appliedHamperCoupon.value,subtotal);
+    else if(appliedHamperCoupon.type==='bogo') discount=currentOrderHamper.price;
+  }
+  var totalPrice = subtotal - discount;
 
   var orderData = {
     hamperId: currentOrderHamper.id,
@@ -818,6 +938,11 @@ function placeHamperOrder(){
     selectedAddOns: selectedAddOns,
     basePrice: currentOrderHamper.price,
     totalPrice: totalPrice,
+    couponCode: appliedHamperCoupon ? appliedHamperCoupon.code : '',
+    couponDiscount: discount,
+    orderSource: 'hamper',
+    commissionRate: 0,
+    commissionAmount: 0,
     deliveryAddress: addr,
     customerPhone: phone,
     status: 'pending',
@@ -837,6 +962,13 @@ function placeHamperOrder(){
       stock: firebase.firestore.FieldValue.increment(-1),
       soldCount: firebase.firestore.FieldValue.increment(1)
     }).catch(function(){});
+
+    // Coupon use count বাড়াও
+    if(appliedHamperCoupon && appliedHamperCoupon.code){
+      db.collection('hampers').doc(currentOrderHamper.id).update({
+        'coupon.usedCount': firebase.firestore.FieldValue.increment(1)
+      }).catch(function(){});
+    }
 
     // Add-on orders → respective sellers এর কাছে পাঠাও
     if(selectedAddOns.length > 0){
