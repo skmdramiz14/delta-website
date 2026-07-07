@@ -4856,6 +4856,48 @@ function submitSaleEdit(id){
   }).catch(function(e){showToast('সমস্যা: '+e.message,'red');});
 }
 
+function goToSaleWithDraft(category){
+  // Sale page এ যাও
+  document.getElementById('notifPanel').style.display='none';
+  goPage('sale', document.getElementById('nb-sale'));
+
+  // Commission cache refresh করো তারপর draft load করো
+  loadSaleCommissionsCache();
+  setTimeout(function(){
+    // Draft খোঁজো localStorage থেকে
+    var keys = Object.keys(localStorage).filter(function(k){ return k.startsWith('saleDraft_'); });
+    if(!keys.length) return;
+
+    // Category match করো
+    var matchKey = keys.find(function(k){ return k.includes(category); }) || keys[0];
+    try{
+      var draft = JSON.parse(localStorage.getItem(matchKey)||'{}');
+      if(!draft.productName) return;
+
+      // Form prefill করো
+      if(draft.productName) document.getElementById('spName').value = draft.productName;
+      if(draft.mainCategory){
+        document.getElementById('spMainCat').value = draft.mainCategory;
+        loadSaleSubCat();
+      }
+      setTimeout(function(){
+        if(draft.subCategory) document.getElementById('spSubCat').value = draft.subCategory;
+        if(draft.originalPrice) document.getElementById('spOriginalPrice').value = draft.originalPrice;
+        if(draft.discount) document.getElementById('spDiscount').value = draft.discount;
+        if(draft.salePrice) document.getElementById('spSalePrice').value = draft.salePrice;
+        if(draft.imageUrl) document.getElementById('spImage').value = draft.imageUrl;
+        if(draft.startTime) document.getElementById('spStartTime').value = draft.startTime;
+        if(draft.endTime) document.getElementById('spEndTime').value = draft.endTime;
+        if(draft.description) document.getElementById('spDescription').value = draft.description;
+        loadSaleCommissionPreview();
+        // Draft delete করো
+        localStorage.removeItem(matchKey);
+        showToast('✅ আগের তথ্য prefill হয়েছে — I Agree check করে Submit করুন','green');
+      }, 300);
+    }catch(e){}
+  }, 500);
+}
+
 // ── NOTIFICATION SYSTEM ──
 var notifListener = null;
 
@@ -4894,11 +4936,15 @@ function renderNotifications(notifs){
   }
   wrap.innerHTML = notifs.map(function(n){
     var time = n.createdAt ? new Date(n.createdAt).toLocaleString('bn-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) : '';
+    var extraAction = '';
+    if(n.type==='commission_set'){
+      extraAction = '<button class="btn-sm btn-orange" style="font-size:.68rem;margin-top:6px;" onclick="goToSaleWithDraft(\''+n.category+'\')">🏷️ Sale Product Submit করুন</button>';
+    }
     return '<div style="padding:12px 16px;border-bottom:1px solid var(--border);'+
-      'background:'+(n.read?'#fff':'#fff9f0')+';cursor:pointer;" '+
-      'onclick="markNotifRead(\''+n.id+'\')" >'+
+      'background:'+(n.read?'#fff':'#fff9f0')+';" onclick="markNotifRead(\''+n.id+'\')">'+
       '<div style="font-size:.82rem;font-weight:'+(n.read?'500':'700')+';color:var(--navy);margin-bottom:2px;">'+n.title+'</div>'+
       '<div style="font-size:.75rem;color:var(--muted);line-height:1.4;">'+n.message+'</div>'+
+      extraAction+
       '<div style="font-size:.68rem;color:var(--muted);margin-top:4px;">'+time+'</div>'+
     '</div>';
   }).join('');
@@ -5055,7 +5101,22 @@ function submitSaleProduct(){
   var categoryDisplay = subLabel ? catLabel+' > '+subLabel : catLabel;
 
   if(!pct){
-    // Commission not set — Admin কে request পাঠাও
+    // Draft হিসেবে save করো
+    var draft = {
+      productName: name,
+      mainCategory: main,
+      subCategory: sub,
+      originalPrice: origPrice,
+      discount: discount,
+      salePrice: salePrice||Math.round(origPrice*(1-discount/100)),
+      imageUrl: image,
+      startTime: startTime,
+      endTime: endTime,
+      description: desc
+    };
+    try{ localStorage.setItem('saleDraft_'+main+(sub?'_'+sub:''), JSON.stringify(draft)); }catch(e){}
+
+    // Admin কে commission request পাঠাও
     db.collection('cities').doc(CITY).collection('commissionRequests').add({
       shopId: auth.currentUser.uid,
       shopName: SD.shopName||'দোকান',
@@ -5063,10 +5124,11 @@ function submitSaleProduct(){
       subCategory: sub||'',
       categoryDisplay: categoryDisplay,
       productName: name,
+      draftKey: 'saleDraft_'+main+(sub?'_'+sub:''),
       requestedAt: new Date().toISOString(),
       status: 'pending'
     }).then(function(){
-      showToast('Admin কে commission request পাঠানো হয়েছে। Set হলে notify করা হবে।','green');
+      showToast('⚠️ Commission set নেই। Admin কে request পাঠানো হয়েছে। Set হলে notification আসবে — তখন আবার submit করুন।','green');
     }).catch(function(){});
     return;
   }
