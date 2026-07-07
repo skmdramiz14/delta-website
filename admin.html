@@ -779,6 +779,18 @@ button,input,select{font-family:'DM Sans',sans-serif;}
         <div class="sec-title">⚡ Flash Sale Management</div>
       </div>
 
+      <!-- Sale Product Edit Requests -->
+      <div class="add-zone-card" style="margin-bottom:16px;border-left:3px solid #0984e3;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <div style="font-size:.85rem;font-weight:700;color:var(--navy);">
+            ✏️ Sale Product Edit Requests
+            <span id="saleEditReqCount" style="font-size:.72rem;color:var(--orange);font-weight:400;margin-left:6px;"></span>
+          </div>
+          <button class="btn-sm" onclick="loadSaleEditRequests()" style="background:var(--sand);color:var(--navy);">↺ Load</button>
+        </div>
+        <div id="saleEditRequestsList"><div style="color:var(--muted);font-size:.82rem;">"Load" চাপুন</div></div>
+      </div>
+
       <!-- Commission Requests from Sellers -->
       <div class="add-zone-card" style="margin-bottom:16px;border-left:3px solid var(--orange);">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
@@ -1575,6 +1587,7 @@ function goTab(tab, btn){
     loadSaleCommissions();
     loadSellerSaleProducts();
     loadCommissionRequests();
+    loadSaleEditRequests();
   }
   if(tab==='products') loadModProducts();
   if(tab==='festivals') loadFestivalManagement();
@@ -2698,6 +2711,118 @@ function rejectCommissionRequest(reqId, shopId){
 window.loadCommissionRequests=loadCommissionRequests;
 window.setCommissionFromRequest=setCommissionFromRequest;
 window.rejectCommissionRequest=rejectCommissionRequest;
+
+// ═══ SALE PRODUCT EDIT REQUESTS (ADMIN) ═══
+function loadSaleEditRequests(){
+  var wrap = document.getElementById('saleEditRequestsList');
+  var countEl = document.getElementById('saleEditReqCount');
+  wrap.innerHTML = '<div style="color:var(--muted);font-size:.82rem;">লোড হচ্ছে...</div>';
+
+  // সব pending edit সহ saleProducts load করো
+  db.collection('cities').doc(CITY).collection('saleProducts')
+    .get().then(function(snap){
+      var list = [];
+      snap.forEach(function(d){
+        var data = d.data();
+        if(data.pendingEdit && !data.pendingEdit.adminApproved){
+          list.push(Object.assign({id:d.id}, data));
+        }
+      });
+      if(countEl) countEl.textContent = list.length ? list.length+'টি pending' : '';
+      if(!list.length){
+        wrap.innerHTML='<div style="color:var(--muted);font-size:.82rem;">কোনো edit request নেই।</div>';
+        return;
+      }
+      wrap.innerHTML = list.map(function(p){
+        var e = p.pendingEdit;
+        return '<div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;">'+
+          '<div style="font-size:.85rem;font-weight:700;color:var(--navy);margin-bottom:6px;">'+p.productName+'</div>'+
+          '<div style="font-size:.72rem;color:var(--muted);margin-bottom:8px;">🏪 '+p.shopName+'</div>'+
+          // Old vs New comparison
+          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">'+
+            '<div style="background:var(--sand);border-radius:8px;padding:8px;">'+
+              '<div style="font-size:.68rem;color:var(--muted);margin-bottom:4px;">📌 Current</div>'+
+              '<div style="font-size:.78rem;">₹'+p.salePrice+' ('+p.discount+'% off)</div>'+
+              (p.description?'<div style="font-size:.7rem;color:var(--muted);">'+p.description+'</div>':'')+
+            '</div>'+
+            '<div style="background:#fff4ec;border-radius:8px;padding:8px;border:1px solid var(--orange);">'+
+              '<div style="font-size:.68rem;color:var(--orange);margin-bottom:4px;">✏️ Requested</div>'+
+              '<div style="font-size:.78rem;">₹'+e.salePrice+' ('+e.discount+'% off)</div>'+
+              (e.description?'<div style="font-size:.7rem;color:var(--muted);">'+e.description+'</div>':'')+
+            '</div>'+
+          '</div>'+
+          '<div style="display:flex;gap:8px;">'+
+            '<button class="btn-sm btn-green" style="font-size:.72rem;" onclick="approveSaleEdit(\''+p.id+'\')">✅ Approve</button>'+
+            '<button class="btn-sm btn-red" style="font-size:.72rem;" onclick="rejectSaleEdit(\''+p.id+'\',\''+p.shopId+'\')">❌ Reject</button>'+
+          '</div>'+
+        '</div>';
+      }).join('');
+    }).catch(function(e){ wrap.innerHTML='<div style="color:var(--red);">Error: '+e.message+'</div>'; });
+}
+
+function approveSaleEdit(id){
+  db.collection('cities').doc(CITY).collection('saleProducts').doc(id).get()
+    .then(function(doc){
+      if(!doc.exists) return;
+      var data = doc.data();
+      var e = data.pendingEdit;
+      var updateData = {
+        originalPrice: e.originalPrice,
+        discount: e.discount,
+        salePrice: e.salePrice,
+        description: e.description,
+        'pendingEdit.adminApproved': true,
+        updatedAt: new Date().toISOString()
+      };
+      return db.collection('cities').doc(CITY).collection('saleProducts').doc(id).update(updateData)
+        .then(function(){
+          // Flash Sale products এও update করো যদি active থাকে
+          if(data.active){
+            return db.collection('cities').doc(CITY).collection('settings').doc('flashSale')
+              .get().then(function(fsDoc){
+                var products = (fsDoc.data().products||[]).map(function(p){
+                  if(p.saleProductId===id){
+                    p.salePrice = e.salePrice;
+                    p.discount = e.discount;
+                    p.totalDiscount = e.discount;
+                    p.price = e.originalPrice;
+                  }
+                  return p;
+                });
+                return db.collection('cities').doc(CITY).collection('settings').doc('flashSale')
+                  .set({products:products},{merge:true});
+              });
+          }
+        });
+    }).then(function(){
+      // Seller notification
+      showToast('✅ Edit approved + Flash Sale updated','green');
+      loadSaleEditRequests();
+    }).catch(function(e){showToast('সমস্যা: '+e.message,'red');});
+}
+
+function rejectSaleEdit(id, shopId){
+  db.collection('cities').doc(CITY).collection('saleProducts').doc(id)
+    .update({'pendingEdit.adminApproved': false, 'pendingEdit.rejected': true})
+    .then(function(){
+      // Seller notification
+      return db.collection('cities').doc(CITY).collection('sellers').doc(shopId)
+        .collection('notifications').add({
+          type: 'sale_edit_rejected',
+          title: '❌ Sale Product Edit Rejected',
+          message: 'আপনার sale product এর edit request reject করা হয়েছে। পুরোনো version চলবে।',
+          read: false,
+          createdAt: new Date().toISOString()
+        });
+    }).then(function(){
+      showToast('Edit rejected — seller notify হয়েছে','green');
+      loadSaleEditRequests();
+    }).catch(function(e){showToast('সমস্যা: '+e.message,'red');});
+}
+
+window.loadSaleEditRequests = loadSaleEditRequests;
+window.approveSaleEdit = approveSaleEdit;
+window.rejectSaleEdit = rejectSaleEdit;
 
 // ═══ SALE COMMISSIONS ═══
 var ADMIN_CAT_SUBS = {
