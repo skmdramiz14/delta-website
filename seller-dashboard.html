@@ -4821,6 +4821,41 @@ function renderSellerFestivals(){
     }).join('');
 }
 
+function openSaleEdit(id){
+  document.getElementById('saleEditForm_'+id).style.display='block';
+}
+function closeSaleEdit(id){
+  document.getElementById('saleEditForm_'+id).style.display='none';
+}
+function calcEditSalePrice(id){
+  var price = parseInt(document.getElementById('editPrice_'+id).value)||0;
+  var disc = parseInt(document.getElementById('editDiscount_'+id).value)||0;
+  if(price && disc) document.getElementById('editSalePrice_'+id).value = Math.round(price*(1-disc/100));
+}
+function submitSaleEdit(id){
+  var newPrice = parseInt(document.getElementById('editPrice_'+id).value)||0;
+  var newDiscount = parseInt(document.getElementById('editDiscount_'+id).value)||0;
+  var newSalePrice = parseInt(document.getElementById('editSalePrice_'+id).value)||0;
+  var newDesc = document.getElementById('editDesc_'+id).value.trim();
+
+  if(!newPrice||!newDiscount){showToast('দাম ও discount দিন','red');return;}
+
+  db.collection('cities').doc(CITY).collection('saleProducts').doc(id).update({
+    pendingEdit: {
+      originalPrice: newPrice,
+      discount: newDiscount,
+      salePrice: newSalePrice||Math.round(newPrice*(1-newDiscount/100)),
+      description: newDesc,
+      submittedAt: new Date().toISOString(),
+      adminApproved: false
+    }
+  }).then(function(){
+    showToast('✅ Edit request পাঠানো হয়েছে — Admin approval এর অপেক্ষায়','green');
+    closeSaleEdit(id);
+    loadMySaleProducts();
+  }).catch(function(e){showToast('সমস্যা: '+e.message,'red');});
+}
+
 // ── NOTIFICATION SYSTEM ──
 var notifListener = null;
 
@@ -5105,6 +5140,7 @@ function renderMySaleProducts(list){
     var now=Date.now();
     var expired = p.endTime && new Date(p.endTime).getTime()<now;
     var status = p.active?'active':expired?'expired':(p.status||'agreed');
+    var hasPendingEdit = p.pendingEdit && !p.pendingEdit.adminApproved;
     return '<div style="background:#fff;border:1.5px solid var(--border);border-radius:12px;padding:12px;margin-bottom:8px;">'+
       '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">'+
         '<div style="font-size:.85rem;font-weight:700;color:var(--navy);">'+p.productName+'</div>'+
@@ -5115,9 +5151,91 @@ function renderMySaleProducts(list){
         '₹'+p.salePrice+' ('+p.discount+'% off) · Commission: '+p.commission+'%<br>'+
         '⏰ '+new Date(p.startTime).toLocaleDateString('bn-IN')+' → '+new Date(p.endTime).toLocaleDateString('bn-IN')+
       '</div>'+
+      (hasPendingEdit?'<div style="font-size:.72rem;color:var(--orange);margin-top:4px;">⏳ Edit pending Admin approval</div>':'')+
+      '<div style="display:flex;gap:6px;margin-top:8px;">'+
+        '<button class="btn-sm" style="background:var(--sand);color:var(--navy);font-size:.72rem;" onclick="openSaleEdit(\''+p.id+'\')">✏️ Edit</button>'+
+      '</div>'+
+      // Edit form (hidden by default)
+      '<div id="saleEditForm_'+p.id+'" style="display:none;background:var(--sand);border-radius:10px;padding:12px;margin-top:10px;">'+
+        '<div style="font-size:.72rem;font-weight:700;color:var(--navy);margin-bottom:8px;">✏️ Edit করুন</div>'+
+        '<div class="form-grid" style="grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">'+
+          '<div><label style="font-size:.68rem;color:var(--muted);">নতুন দাম (MRP) ₹</label>'+
+          '<input type="number" class="form-input" id="editPrice_'+p.id+'" value="'+p.originalPrice+'" style="margin-top:3px;"></div>'+
+          '<div><label style="font-size:.68rem;color:var(--muted);">নতুন Discount %</label>'+
+          '<input type="number" class="form-input" id="editDiscount_'+p.id+'" value="'+p.discount+'" style="margin-top:3px;" oninput="calcEditSalePrice(\''+p.id+'\')"></div>'+
+          '<div><label style="font-size:.68rem;color:var(--muted);">Sale Price ₹</label>'+
+          '<input type="number" class="form-input" id="editSalePrice_'+p.id+'" value="'+p.salePrice+'" style="margin-top:3px;"></div>'+
+          '<div><label style="font-size:.68rem;color:var(--muted);">Description</label>'+
+          '<input type="text" class="form-input" id="editDesc_'+p.id+'" value="'+(p.description||'')+'" style="margin-top:3px;"></div>'+
+        '</div>'+
+        '<div style="display:flex;gap:6px;">'+
+          '<button class="btn-sm btn-orange" onclick="submitSaleEdit(\''+p.id+'\')">📤 Edit Submit করুন</button>'+
+          '<button class="btn-sm" style="background:var(--border);color:var(--muted);" onclick="closeSaleEdit(\''+p.id+'\')">বাতিল</button>'+
+        '</div>'+
+      '</div>'+
     '</div>';
   }).join('');
 }
+
+// ── SALE PRODUCT EDIT ──
+function openSaleEdit(id){
+  document.getElementById('saleEditForm_'+id).style.display='block';
+}
+function closeSaleEdit(id){
+  document.getElementById('saleEditForm_'+id).style.display='none';
+}
+function calcEditSalePrice(id){
+  var price = parseInt(document.getElementById('editPrice_'+id).value)||0;
+  var disc = parseInt(document.getElementById('editDiscount_'+id).value)||0;
+  if(price && disc){
+    document.getElementById('editSalePrice_'+id).value = Math.round(price*(1-disc/100));
+  }
+}
+function submitSaleEdit(id){
+  var newPrice = parseInt(document.getElementById('editPrice_'+id).value)||0;
+  var newDiscount = parseInt(document.getElementById('editDiscount_'+id).value)||0;
+  var newSalePrice = parseInt(document.getElementById('editSalePrice_'+id).value)||0;
+  var newDesc = document.getElementById('editDesc_'+id).value.trim();
+
+  if(!newPrice){showToast('দাম দিন','red');return;}
+  if(!newDiscount){showToast('Discount % দিন','red');return;}
+
+  var pendingEdit = {
+    originalPrice: newPrice,
+    discount: newDiscount,
+    salePrice: newSalePrice||Math.round(newPrice*(1-newDiscount/100)),
+    description: newDesc,
+    submittedAt: new Date().toISOString(),
+    adminApproved: false
+  };
+
+  db.collection('cities').doc(CITY).collection('saleProducts').doc(id)
+    .update({pendingEdit: pendingEdit})
+    .then(function(){
+      // Admin notification
+      return db.collection('cities').doc(CITY).collection('sellers')
+        .doc(auth.currentUser.uid).get();
+    }).then(function(sDoc){
+      var shopName = sDoc.exists ? (sDoc.data().shopName||'দোকান') : 'দোকান';
+      return db.collection('cities').doc(CITY).collection('settings').doc('saleEditRequests')
+        .set({requests: firebase.firestore.FieldValue.arrayUnion({
+          saleProductId: id,
+          shopId: auth.currentUser.uid,
+          shopName: shopName,
+          pendingEdit: pendingEdit,
+          submittedAt: new Date().toISOString()
+        })}, {merge:true});
+    }).then(function(){
+      closeSaleEdit(id);
+      showToast('✅ Edit submit হয়েছে। Admin approval এর অপেক্ষায়।','green');
+      loadMySaleProducts();
+    }).catch(function(e){showToast('সমস্যা: '+e.message,'red');});
+}
+
+window.openSaleEdit = openSaleEdit;
+window.closeSaleEdit = closeSaleEdit;
+window.calcEditSalePrice = calcEditSalePrice;
+window.submitSaleEdit = submitSaleEdit;
 
 // ── COUPON SYSTEM ──
 function updateCouponPreview(){
