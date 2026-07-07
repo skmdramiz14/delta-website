@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="bn"> 
+<html lang="bn">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -4752,7 +4752,9 @@ function buildFlashSale(prods){
         var data = doc.data();
         var megaEndTime = data.endTime ? new Date(data.endTime.includes('T') && !data.endTime.includes('Z') ? data.endTime+':00' : data.endTime).getTime() : (Date.now() + 3*3600000);
         if(isNaN(megaEndTime)) megaEndTime = Date.now() + 3*3600000;
-        var adminProds = data.products;
+        var adminProds = (data.products||[]).slice().sort(function(a,b){
+          return (b.priority||0)-(a.priority||0);
+        });
 
         adminProds.forEach(function(ap){
           // Custom products (Admin's own)
@@ -5501,9 +5503,19 @@ async function placeOrder(){
   var FREE_DELIVERY_MIN = 399;
   var byShop={};
   cart.forEach(function(c){
-    if(!byShop[c.shopId])byShop[c.shopId]={shopId:c.shopId,shopName:c.shopName,items:[],total:0};
-    byShop[c.shopId].items.push({id:c.id,name:c.nameBn||c.nameEn||c.name,price:c.price||c.sellPrice||0,qty:c.qty});
-    byShop[c.shopId].total+=(c.price||c.sellPrice||0)*c.qty;
+    if(!byShop[c.shopId])byShop[c.shopId]={shopId:c.shopId,shopName:c.shopName,items:[],total:0,orderSource:'normal',commissionRate:0};
+    var itemPrice = c.price||c.sellPrice||0;
+    byShop[c.shopId].items.push({
+      id:c.id, name:c.nameBn||c.nameEn||c.name,
+      price:itemPrice, qty:c.qty,
+      orderSource:c.orderSource||'normal'
+    });
+    byShop[c.shopId].total += itemPrice*c.qty;
+    // Flash sale থেকে আসলে source override করো
+    if(c.orderSource==='flash_sale'){
+      byShop[c.shopId].orderSource = 'flash_sale';
+      byShop[c.shopId].commissionRate = c.commissionRate||0;
+    }
   });
   try{
     var oids=[];
@@ -5524,6 +5536,9 @@ async function placeOrder(){
         shopName:od.shopName||shopInfo.shopName||'দোকান',
         shopAddress:shopInfo.area||shopInfo.address||'',
         shopPhone:shopInfo.phone||shopInfo.ownerPhone||'',
+        orderSource: od.orderSource||'normal',
+        commissionRate: od.commissionRate||0,
+        commissionAmount: Math.round((od.total*(od.commissionRate||0))/100),
         status:'pending',createdAt:new Date().toISOString()
       });
       oids.push(ref.id);
