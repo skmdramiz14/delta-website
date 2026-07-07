@@ -846,12 +846,12 @@ button,input,select{font-family:'DM Sans',sans-serif;}
       <div class="add-zone-card" style="margin-bottom:16px;border-left:3px solid #7b1fa2;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
           <div style="font-size:.85rem;font-weight:700;color:var(--navy);">
-            🏷️ Seller Sale Products
+            🏷️ Seller Sale Products — Pending Activation
             <span id="saleProductCount" style="font-size:.72rem;color:var(--muted);font-weight:400;margin-left:6px;"></span>
           </div>
           <button class="btn-sm" onclick="loadSellerSaleProducts()" style="background:var(--sand);color:var(--navy);">↺ Load</button>
         </div>
-        <div style="font-size:.72rem;color:var(--muted);margin-bottom:10px;">Sellers এর agreed sale products — Admin seller এর time range এর মধ্যে activate করবে।</div>
+        <div style="font-size:.72rem;color:var(--muted);margin-bottom:10px;">Activate করলে নিচের ⚡ Active Flash Sale Products list এ চলে যাবে।</div>
         <div id="sellerSaleProductsList"><div style="color:var(--muted);font-size:.82rem;">"Load" চাপুন</div></div>
       </div>
 
@@ -2818,9 +2818,11 @@ function loadSellerSaleProducts(){
     .then(function(snap){
       var list=[];
       snap.forEach(function(d){list.push(Object.assign({id:d.id},d.data()));});
-      if(countEl) countEl.textContent=list.length+'টি product';
-      if(!list.length){wrap.innerHTML='<div style="color:var(--muted);font-size:.82rem;">কোনো sale product নেই।</div>';return;}
-      wrap.innerHTML=list.map(function(p){
+      // শুধু active না এমন products দেখাও
+      var pending = list.filter(function(p){ return !p.active; });
+      if(countEl) countEl.textContent = pending.length ? pending.length+'টি pending' : 'সব activate হয়েছে ✅';
+      if(!pending.length){wrap.innerHTML='<div style="color:var(--green);font-size:.82rem;text-align:center;padding:12px;">✅ সব products activate হয়েছে!</div>';return;}
+      wrap.innerHTML=pending.map(function(p){
         var now=Date.now();
         var startTime=p.startTime?new Date(p.startTime).getTime():now;
         var endTime=p.endTime?new Date(p.endTime).getTime():now;
@@ -2882,8 +2884,11 @@ function activateSaleProduct(id){
                 .update({active:true, activatedAt:new Date().toISOString()});
             });
         });
-    }).then(function(){showToast('⚡ Flash Sale এ activate হয়েছে!','green');loadSellerSaleProducts();})
-    .catch(function(e){showToast('সমস্যা: '+e.message,'red');});
+    }).then(function(){
+      showToast('⚡ Flash Sale এ activate হয়েছে!','green');
+      loadFlashSaleData(); // Flash Sale list refresh করো
+      loadSellerSaleProducts(); // Seller Sale list refresh করো
+    }).catch(function(e){showToast('সমস্যা: '+e.message,'red');});
 }
 
 function deactivateSaleProduct(id){
