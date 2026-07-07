@@ -4491,13 +4491,48 @@ function reconCardHTML(o){
       '⚠️ Seller এখনো payment details দেননি — তাকে জানান</div>';
   }
 
+  // Order source badge
+  var sourceLabels = {
+    normal: '🛒 Normal',
+    flash_sale: '⚡ Flash Sale',
+    festival: '🎊 Festival',
+    hamper: '🎁 Hamper',
+    bazaar: '🏪 Bazaar'
+  };
+  var sourceBg = {
+    normal: 'var(--sand)',
+    flash_sale: '#fff4ec',
+    festival: 'linear-gradient(135deg,rgba(181,69,27,.1),rgba(232,134,58,.1))',
+    hamper: '#f0f0ff',
+    bazaar: '#e8f7ee'
+  };
+  var sourceColor = {
+    normal: 'var(--muted)',
+    flash_sale: 'var(--orange)',
+    festival: '#b5451b',
+    hamper: '#7b1fa2',
+    bazaar: 'var(--green)'
+  };
+  var src = o.orderSource||'normal';
+  var sourceBadge = '<span style="font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:20px;'+
+    'background:'+( sourceBg[src]||'var(--sand)')+';color:'+(sourceColor[src]||'var(--muted)')+';">'+
+    (sourceLabels[src]||'🛒 Normal')+'</span>';
+
+  // Commission info
+  var commissionInfo = '';
+  if(o.commissionRate > 0){
+    commissionInfo = '<div style="font-size:.72rem;color:var(--orange);margin-top:4px;">'+
+      '💰 Commission: '+o.commissionRate+'% = ₹'+o.commissionAmount+'</div>';
+  }
+
   return '<div class="order-card" style="border-left:3px solid '+(isSettled?'var(--green)':'var(--orange)')+'">'+
 
     // Header
     '<div class="order-top">'+
       '<div>'+
-        '<div class="order-id-text">#'+o.id.slice(-6).toUpperCase()+' · '+orderDate+'</div>'+
+        '<div class="order-id-text">#'+o.id.slice(-6).toUpperCase()+' · '+orderDate+' '+sourceBadge+'</div>'+
         '<div class="order-shop-name">🏪 '+(o.shopName||'—')+'</div>'+
+        commissionInfo+
       '</div>'+
       '<span class="status-badge-pill '+(isSettled?'bp-delivered':'bp-pending')+'">'+
         (isSettled ? '✅ Settled'+(settledDate?' · '+settledDate:'') : '⏳ Unsettled')+
