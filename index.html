@@ -1,5 +1,5 @@
-<!DOCTYPE html>     
-<html lang="bn"> 
+<!DOCTYPE html>
+<html lang="bn">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -1373,6 +1373,12 @@ img{max-width:100%;height:auto;}
 .open-now-count{font-size:.78rem;color:var(--muted);margin-left:4px;}
 
 /* ══ FEATURE 8: FESTIVAL BANNER ══ */
+.banner-card{flex-shrink:0;width:220px;height:110px;border-radius:16px;padding:16px;display:flex;flex-direction:column;justify-content:space-between;cursor:pointer;position:relative;overflow:hidden;transition:transform .2s;}
+.banner-card:hover{transform:translateY(-2px);}
+.banner-card-emoji{font-size:1.8rem;line-height:1;}
+.banner-card-title{font-family:'Playfair Display',serif;font-size:.95rem;font-weight:900;color:#fff;line-height:1.2;}
+.banner-card-sub{font-size:.7rem;color:rgba(255,255,255,.8);}
+.banner-card-badge{position:absolute;top:8px;right:8px;background:rgba(255,255,255,.25);color:#fff;font-size:.6rem;font-weight:700;padding:2px 7px;border-radius:20px;}
 .festival-banner{border-radius:20px;padding:22px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:0;overflow:hidden;position:relative;}
 .festival-banner::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,0,0,.3),transparent);z-index:0;}
 .festival-banner>*{position:relative;z-index:1;}
@@ -1852,6 +1858,13 @@ img{max-width:100%;height:auto;}
   <span class="fds-badge">Manteswar Block · All Zones</span>
   <button class="fds-btn" onclick="document.getElementById('productsSection').scrollIntoView({behavior:'smooth'})"><span class="lang-bn">এখনই কিনুন →</span><span class="lang-en">Shop Now →</span></button>
 </div>
+
+<!-- BANNER ADS (Festival + Shop Ads) -->
+<section class="section" id="bannerAdsSection" style="display:none;padding:12px 16px;">
+  <div id="bannerAdsScroll" style="display:flex;gap:12px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;">
+    <!-- Dynamic banner cards load হবে -->
+  </div>
+</section>
 
 <!-- FLASH SALE -->
 <!-- FLASH SALE BANNER -->
@@ -3203,6 +3216,8 @@ function skipGate(){
 
 async function loadData(retryCount){
   retryCount = retryCount || 0;
+  // Banner Ads load করো
+  loadBannerAds();
   try{
     var snap=await db.collection('cities').doc(CITY).collection('sellers').get();
     allShops=[];allProducts=[];
@@ -4618,6 +4633,41 @@ function startBannerCountdown(endTime){
 }
 
 // ── FLASH COUNTDOWN ──
+// ── BANNER ADS ──
+function loadBannerAds(){
+  var today = new Date().toISOString().slice(0,10);
+  db.collection('cities').doc(CITY).collection('bannerAds')
+    .where('status','==','active')
+    .orderBy('priority','desc')
+    .get().then(function(snap){
+      var banners = [];
+      snap.forEach(function(d){
+        var b = Object.assign({id:d.id},d.data());
+        // Date filter
+        if(b.endDate && b.endDate < today) return;
+        if(b.startDate && b.startDate > today) return;
+        banners.push(b);
+      });
+      if(!banners.length) return;
+      var section = document.getElementById('bannerAdsSection');
+      var scroll = document.getElementById('bannerAdsScroll');
+      if(!section||!scroll) return;
+      section.style.display = 'block';
+      scroll.innerHTML = banners.map(function(b){
+        var bg = 'linear-gradient(135deg,'+b.color1+','+b.color2+')';
+        var link = b.linkUrl || (b.type==='festival'?'festival.html?type='+b.festivalKey:'#');
+        var badge = b.type==='shop_ad' ? '<div class="banner-card-badge">AD</div>' : '';
+        return '<div class="banner-card" style="background:'+bg+';" onclick="window.location.href=\''+link+'\'">'+
+          badge+
+          '<div class="banner-card-emoji">'+b.emoji+'</div>'+
+          '<div>'+
+            '<div class="banner-card-title">'+b.title+'</div>'+
+          '</div>'+
+        '</div>';
+      }).join('');
+    }).catch(function(){});
+}
+
 function startFlashCountdownWithTime(endTimeMs){
   function tick(){
     var diff=Math.max(0, endTimeMs - Date.now());
