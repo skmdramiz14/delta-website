@@ -776,67 +776,107 @@ button,input,select{font-family:'DM Sans',sans-serif;}
     <!-- ═══ FLASH SALE MANAGEMENT PAGE ═══ -->
     <div class="page" id="page-flashsale">
       <div class="sec-head">
-        <div class="sec-title">⚡ Flash Sale Management <small>Homepage এ কোন products Flash Sale এ দেখাবে</small></div>
+        <div class="sec-title">⚡ Flash Sale Management <small>Products select করুন, activate করুন, timer set করুন</small></div>
       </div>
 
-      <!-- Pending Requests from Sellers -->
+      <!-- Mega Sale Settings -->
       <div class="add-zone-card" style="margin-bottom:16px;border-left:3px solid var(--orange);">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-          <div style="font-size:.82rem;font-weight:700;color:var(--navy);">
-            🔔 Seller Requests <span id="pendingFlashCount" style="background:var(--orange);color:#fff;border-radius:20px;padding:2px 8px;font-size:.7rem;margin-left:6px;">0</span>
-          </div>
-          <button class="btn-sm" style="background:var(--sand);color:var(--navy)" onclick="loadFlashPendingRequests()">↺ Refresh</button>
-        </div>
-        <div style="font-size:.72rem;color:var(--muted);margin-bottom:10px;">Seller দের discount দেওয়া products — Approve করলে Flash Sale এ যাবে, discount edit করা যাবে।</div>
-        <div id="flashPendingList">
-          <div style="color:var(--muted);font-size:.8rem;padding:8px 0">লোড হচ্ছে...</div>
-        </div>
-      </div>
-
-      <!-- Flash Sale Settings -->
-      <div class="add-zone-card" style="margin-bottom:16px">
-        <div style="font-size:.82rem;font-weight:700;color:var(--navy);margin-bottom:12px">⚙️ Settings</div>
-        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:10px">
+        <div style="font-size:.85rem;font-weight:700;color:var(--navy);margin-bottom:12px;">⚙️ Mega Sale Duration (সব products এর জন্য common)</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
           <div>
-            <label style="font-size:.72rem;font-weight:600;color:var(--muted);display:block;margin-bottom:4px">Flash Sale শেষ হওয়ার সময়</label>
-            <input type="datetime-local" id="flashEndTime" class="form-input" style="max-width:220px">
+            <label style="font-size:.72rem;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">শুরুর সময়</label>
+            <input type="datetime-local" id="flashStartTime" class="form-input">
           </div>
-          <div style="display:flex;align-items:center;gap:8px;margin-top:20px">
-            <label style="font-size:.82rem;font-weight:600;color:var(--navy)">Flash Sale চালু</label>
-            <input type="checkbox" id="flashEnabled" style="width:18px;height:18px;accent-color:var(--orange);cursor:pointer">
+          <div>
+            <label style="font-size:.72rem;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">শেষ হওয়ার সময়</label>
+            <input type="datetime-local" id="flashEndTime" class="form-input">
           </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+          <label style="font-size:.82rem;font-weight:600;color:var(--navy);">Flash Sale চালু</label>
+          <input type="checkbox" id="flashEnabled" style="width:18px;height:18px;accent-color:var(--orange);cursor:pointer">
         </div>
         <button class="btn-sm btn-orange" onclick="saveFlashSettings()">💾 Settings সেভ করুন</button>
-        <span id="flashSettingsStatus" style="font-size:.72rem;color:var(--muted);margin-left:10px"></span>
+        <span id="flashSettingsStatus" style="font-size:.72rem;color:var(--muted);margin-left:10px;"></span>
       </div>
 
-      <!-- Manually Add Product -->
-      <div class="add-zone-card" style="margin-bottom:16px">
-        <div style="font-size:.82rem;font-weight:700;color:var(--navy);margin-bottom:10px">➕ নিজে Product যোগ করুন</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
-          <div style="flex:1;min-width:200px">
-            <label style="font-size:.72rem;font-weight:600;color:var(--muted);display:block;margin-bottom:4px">Product বেছে নিন</label>
-            <select id="flashProductSelect" class="form-input">
-              <option value="">-- লোড হচ্ছে... --</option>
+      <!-- All Discounted Products from Sellers -->
+      <div class="add-zone-card" style="margin-bottom:16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <div style="font-size:.85rem;font-weight:700;color:var(--navy);">
+            🛍️ Sellers এর সব Discounted Products
+            <span id="discProductCount" style="font-size:.72rem;color:var(--muted);font-weight:400;margin-left:6px;"></span>
+          </div>
+          <button class="btn-sm" style="background:var(--sand);color:var(--navy);" onclick="loadAllDiscountedProducts()">↺ Load</button>
+        </div>
+        <div style="font-size:.72rem;color:var(--muted);margin-bottom:10px;">যে products এ discount আছে সেগুলো দেখাচ্ছে। ✅ Activate toggle করলে Flash Sale এ যাবে।</div>
+
+        <!-- Filters -->
+        <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
+          <input type="text" id="flashDiscSearch" class="form-input" style="flex:1;min-width:160px;" placeholder="🔍 Product বা Seller খুঁজুন..." oninput="filterDiscountedProducts()">
+          <select id="flashDiscSort" class="form-input" style="max-width:160px;" onchange="filterDiscountedProducts()">
+            <option value="discount">Discount % (বেশি থেকে)</option>
+            <option value="price">দাম (কম থেকে)</option>
+            <option value="seller">Seller নাম</option>
+          </select>
+        </div>
+
+        <div id="allDiscountedList"><div style="color:var(--muted);font-size:.82rem;">"Load" চাপুন</div></div>
+      </div>
+
+      <!-- Manual Add -->
+      <div class="add-zone-card" style="margin-bottom:16px;">
+        <div style="font-size:.85rem;font-weight:700;color:var(--navy);margin-bottom:12px;">➕ Manually Product যোগ করুন</div>
+
+        <!-- From Seller Products -->
+        <div style="background:var(--sand);border-radius:10px;padding:12px;margin-bottom:10px;">
+          <div style="font-size:.75rem;font-weight:700;color:var(--navy);margin-bottom:8px;">📦 Seller Product থেকে</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;">
+            <select id="flashProductSelect" class="form-input" style="flex:2;min-width:200px;">
+              <option value="">-- Product select করুন --</option>
             </select>
+            <div style="min-width:90px;">
+              <label style="font-size:.68rem;color:var(--muted);">Extra Discount %</label>
+              <input type="number" id="flashExtraDiscount" class="form-input" min="0" max="90" value="0" placeholder="0">
+            </div>
+            <div style="min-width:140px;">
+              <label style="font-size:.68rem;color:var(--muted);">Product এর আলাদা End Time</label>
+              <input type="datetime-local" id="flashProductEndTime" class="form-input">
+            </div>
+            <button class="btn-sm btn-orange" onclick="addToFlashSale()">➕ Add</button>
           </div>
-          <div style="min-width:90px">
-            <label style="font-size:.72rem;font-weight:600;color:var(--muted);display:block;margin-bottom:4px">Discount %</label>
-            <input type="number" id="flashDiscount" class="form-input" min="1" max="90" value="10">
+        </div>
+
+        <!-- Custom Product (Admin's own) -->
+        <div style="background:#fff4ec;border-radius:10px;padding:12px;">
+          <div style="font-size:.75rem;font-weight:700;color:var(--orange);margin-bottom:8px;">✏️ Custom Product (Admin এর নিজস্ব)</div>
+          <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px;margin-bottom:8px;">
+            <input class="form-input" id="customFlashName" placeholder="Product নাম">
+            <input type="number" class="form-input" id="customFlashPrice" placeholder="MRP (₹)">
+            <input type="number" class="form-input" id="customFlashDiscount" placeholder="Discount %" min="1" max="90">
           </div>
-          <button class="btn-sm btn-orange" onclick="addToFlashSale()">➕ যোগ করুন</button>
+          <div style="display:flex;gap:8px;">
+            <input class="form-input" id="customFlashImage" placeholder="Image URL (optional)" style="flex:1;">
+            <input type="datetime-local" id="customFlashEndTime" class="form-input" style="max-width:180px;">
+            <button class="btn-sm btn-orange" onclick="addCustomFlashProduct()">➕ Add</button>
+          </div>
         </div>
       </div>
 
-      <!-- Current Flash Sale products -->
-      <div style="font-size:.82rem;font-weight:700;color:var(--navy);margin-bottom:10px">
-        ⚡ বর্তমান Flash Sale Products <span id="flashCount" style="color:var(--muted);font-weight:400"></span>
-      </div>
-      <div id="flashProductsList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px"></div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-        <button class="btn-sm btn-orange" onclick="saveFlashProducts()">💾 সেভ করুন</button>
-        <button class="btn-sm" style="background:var(--sand);color:var(--navy)" onclick="clearFlashSale()">🗑️ সব সরিয়ে দিন</button>
-        <span id="flashSaveStatus" style="font-size:.72rem;color:var(--muted)"></span>
+      <!-- Active Flash Sale Products -->
+      <div class="add-zone-card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <div style="font-size:.85rem;font-weight:700;color:var(--navy);">
+            ⚡ Active Flash Sale Products
+            <span id="flashCount" style="font-size:.72rem;color:var(--muted);font-weight:400;margin-left:6px;"></span>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn-sm btn-orange" onclick="saveFlashProducts()">💾 Save করুন</button>
+            <button class="btn-sm" style="background:var(--sand);color:var(--navy);" onclick="clearFlashSale()">🗑️ Clear All</button>
+          </div>
+        </div>
+        <div id="flashProductsList" style="display:flex;flex-direction:column;gap:8px;"></div>
+        <span id="flashSaveStatus" style="font-size:.72rem;color:var(--muted);"></span>
       </div>
     </div>
 
@@ -1129,9 +1169,124 @@ button,input,select{font-family:'DM Sans',sans-serif;}
               <label style="font-size:.7rem;color:var(--muted);font-weight:600;">🏷️ About Section Title</label>
               <input class="form-input" id="hAboutTitle" placeholder="যেমন: DELTA কিউরেটেড সম্পর্কে" style="margin-top:4px;">
             </div>
+
+            <!-- Coupon -->
+            <div style="border-top:1px solid var(--border);padding-top:12px;margin-top:4px;">
+              <div style="font-size:.78rem;font-weight:700;color:var(--navy);margin-bottom:10px;">🎟️ Hamper Offers</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+                <div>
+                  <label style="font-size:.7rem;color:var(--muted);font-weight:600;">Coupon Code</label>
+                  <input class="form-input" id="hCouponCode" placeholder="যেমন: HAMPER20" style="margin-top:4px;text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()">
+                </div>
+                <div>
+                  <label style="font-size:.7rem;color:var(--muted);font-weight:600;">Coupon Type</label>
+                  <select class="form-input" id="hCouponType" style="margin-top:4px;">
+                    <option value="">-- None --</option>
+                    <option value="percent">% Discount</option>
+                    <option value="flat">Flat ₹ Off</option>
+                    <option value="bogo">Buy 1 Get 1 Free</option>
+                  </select>
+                </div>
+                <div>
+                  <label style="font-size:.7rem;color:var(--muted);font-weight:600;">Coupon Value</label>
+                  <input type="number" class="form-input" id="hCouponValue" placeholder="যেমন: 20" style="margin-top:4px;">
+                </div>
+                <div>
+                  <label style="font-size:.7rem;color:var(--muted);font-weight:600;">Min Order (₹)</label>
+                  <input type="number" class="form-input" id="hCouponMinOrder" placeholder="যেমন: 500" style="margin-top:4px;">
+                </div>
+                <div>
+                  <label style="font-size:.7rem;color:var(--muted);font-weight:600;">Max Uses</label>
+                  <input type="number" class="form-input" id="hCouponMaxUses" placeholder="যেমন: 100" style="margin-top:4px;">
+                </div>
+                <div>
+                  <label style="font-size:.7rem;color:var(--muted);font-weight:600;">Valid Until</label>
+                  <input type="date" class="form-input" id="hCouponValid" style="margin-top:4px;">
+                </div>
+              </div>
+            </div>
+
+            <!-- Contest -->
+            <div style="border-top:1px solid var(--border);padding-top:12px;margin-top:4px;">
+              <div style="font-size:.78rem;font-weight:700;color:var(--navy);margin-bottom:10px;">🏆 Lucky Draw / Contest</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                <div>
+                  <label style="font-size:.7rem;color:var(--muted);font-weight:600;">Contest Title</label>
+                  <input class="form-input" id="hContestTitle" placeholder="যেমন: পূজার Lucky Draw" style="margin-top:4px;">
+                </div>
+                <div>
+                  <label style="font-size:.7rem;color:var(--muted);font-weight:600;">Prize / পুরস্কার</label>
+                  <input class="form-input" id="hContestPrize" placeholder="যেমন: ₹1000 Gift" style="margin-top:4px;">
+                </div>
+              </div>
+            </div>
           </div>
 
-          <!-- Base Items from Pool -->
+          <!-- Offers & Promotions Section -->
+          <div style="border-top:1px solid var(--border);padding-top:12px;margin-top:4px;">
+            <div style="font-size:.78rem;font-weight:700;color:var(--navy);margin-bottom:10px;">🎁 Offers & Promotions</div>
+
+            <!-- BOGO Toggle -->
+            <div style="background:#fff4ec;border-radius:10px;padding:12px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;">
+              <div>
+                <div style="font-size:.78rem;font-weight:700;color:var(--orange);">🎁 Buy 1 Get 1 Free</div>
+                <div style="font-size:.68rem;color:var(--muted);margin-top:2px;">চালু করলে hamper page এ BOGO badge দেখাবে</div>
+              </div>
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                <input type="checkbox" id="hBogo" style="width:18px;height:18px;accent-color:var(--orange);cursor:pointer;">
+                <span style="font-size:.75rem;font-weight:600;color:var(--orange);">BOGO চালু</span>
+              </label>
+            </div>
+
+            <!-- Coupon -->
+            <div style="background:var(--sand);border-radius:10px;padding:12px;margin-bottom:10px;">
+              <div style="font-size:.75rem;font-weight:700;color:var(--navy);margin-bottom:8px;">🎟️ Hamper Coupon</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+                <div>
+                  <label style="font-size:.68rem;color:var(--muted);">Coupon Code</label>
+                  <input class="form-input" id="hCouponCode" placeholder="HAMPER20" oninput="this.value=this.value.toUpperCase()" style="margin-top:3px;">
+                </div>
+                <div>
+                  <label style="font-size:.68rem;color:var(--muted);">Type</label>
+                  <select class="form-input" id="hCouponType" style="margin-top:3px;">
+                    <option value="percent">% Discount</option>
+                    <option value="flat">Flat ₹ Off</option>
+                  </select>
+                </div>
+                <div>
+                  <label style="font-size:.68rem;color:var(--muted);">Value</label>
+                  <input type="number" class="form-input" id="hCouponValue" placeholder="20" style="margin-top:3px;">
+                </div>
+                <div>
+                  <label style="font-size:.68rem;color:var(--muted);">Valid Until</label>
+                  <input type="date" class="form-input" id="hCouponValidity" style="margin-top:3px;">
+                </div>
+                <div>
+                  <label style="font-size:.68rem;color:var(--muted);">Max Uses</label>
+                  <input type="number" class="form-input" id="hCouponMaxUses" placeholder="100" style="margin-top:3px;">
+                </div>
+              </div>
+            </div>
+
+            <!-- Contest -->
+            <div style="background:linear-gradient(135deg,rgba(123,31,162,.06),rgba(194,24,91,.06));border-radius:10px;padding:12px;">
+              <div style="font-size:.75rem;font-weight:700;color:#7b1fa2;margin-bottom:8px;">🏆 Contest / Lucky Draw</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                <div>
+                  <label style="font-size:.68rem;color:var(--muted);">Contest Title</label>
+                  <input class="form-input" id="hContestTitle" placeholder="যেমন: পূজা Lucky Draw" style="margin-top:3px;">
+                </div>
+                <div>
+                  <label style="font-size:.68rem;color:var(--muted);">Prize / পুরস্কার</label>
+                  <input class="form-input" id="hContestPrize" placeholder="যেমন: ₹500 Gift" style="margin-top:3px;">
+                </div>
+                <div style="grid-column:1/-1;">
+                  <label style="font-size:.68rem;color:var(--muted);">Contest Details (customer দেখবে)</label>
+                  <input class="form-input" id="hContestDetails" placeholder="যেমন: এই হ্যাম্পার কিনলে Lucky Draw এ সুযোগ পাবেন" style="margin-top:3px;">
+                </div>
+              </div>
+            </div>
+          </div>
           <div style="margin-bottom:10px;">
             <div style="font-size:.72rem;font-weight:700;color:var(--navy);margin-bottom:6px;">📦 Base Items</div>
             <div style="background:#e8f4ff;border-radius:10px;padding:10px;margin-bottom:8px;">
@@ -2382,180 +2537,296 @@ function saveMarqueeMessages(){
 
 
 // ═══ FLASH SALE MANAGEMENT ═══
-var flashSaleProducts = [];
-var allProductsForFlash = [];
+// ═══ FLASH SALE MANAGEMENT ═══
+var flashSaleProducts = []; // active flash sale products
+var allProductsForFlash = []; // all seller products with discount
+var allDiscountedFiltered = []; // filtered view
 
 function loadFlashSaleData(){
+  // Load current flash sale settings
   db.collection('cities').doc(CITY).collection('settings').doc('flashSale')
     .get().then(function(doc){
       if(doc.exists){
         var d = doc.data();
-        if(d.endTime) document.getElementById('flashEndTime').value = new Date(d.endTime).toISOString().slice(0,16);
-        if(d.enabled !== undefined) document.getElementById('flashEnabled').checked = d.enabled;
-        flashSaleProducts = d.products || [];
+        if(d.enabled) document.getElementById('flashEnabled').checked = true;
+        if(d.startTime) document.getElementById('flashStartTime').value = d.startTime.replace('Z','').slice(0,16);
+        if(d.endTime) document.getElementById('flashEndTime').value = d.endTime.replace('Z','').slice(0,16);
+        flashSaleProducts = d.products||[];
       }
       renderFlashProductsList();
-    }).catch(function(){ renderFlashProductsList(); });
-  loadAllProductsForFlash();
-  loadFlashPendingRequests();
+      loadFlashProductDropdown();
+    }).catch(function(){});
 }
 
-function loadFlashPendingRequests(){
-  var wrap = document.getElementById('flashPendingList');
-  var countEl = document.getElementById('pendingFlashCount');
-  if(wrap) wrap.innerHTML = '<div style="color:var(--muted);font-size:.8rem;padding:8px 0">লোড হচ্ছে...</div>';
-  db.collection('cities').doc(CITY).collection('settings').doc('flashSalePending')
-    .collection('requests').where('status','==','pending').get()
-    .then(function(snap){
-      if(countEl) countEl.textContent = snap.size;
-      if(!snap.size){
-        if(wrap) wrap.innerHTML = '<div style="color:var(--muted);font-size:.8rem;padding:8px 0">কোনো pending request নেই</div>';
-        return;
-      }
-      var html = '';
-      snap.forEach(function(doc){
-        var r = doc.data();
-        html += '<div style="display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:8px;">'+
-          (r.imageUrl?'<img src="'+r.imageUrl+'" style="width:44px;height:44px;object-fit:cover;border-radius:8px;flex-shrink:0">':'<div style="width:44px;height:44px;background:var(--sand);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0">🏷️</div>')+
-          '<div style="flex:1;min-width:0;">'+
-            '<div style="font-size:.85rem;font-weight:700;color:var(--charcoal)">'+r.productName+'</div>'+
-            '<div style="font-size:.72rem;color:var(--muted)">'+r.shopName+' · ₹'+r.price+'</div>'+
-            '<div style="font-size:.7rem;color:var(--orange);font-weight:600">Seller discount: '+r.discount+'%</div>'+
-          '</div>'+
-          '<div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;flex-shrink:0;">'+
-            '<div style="display:flex;align-items:center;gap:4px;">'+
-              '<input type="number" min="1" max="90" value="'+r.discount+'" id="pd_'+doc.id+'" style="width:54px;border:1px solid var(--border);border-radius:6px;padding:4px 6px;font-size:.78rem;text-align:center;">'+
-              '<span style="font-size:.7rem;color:var(--muted)">% OFF</span>'+
-            '</div>'+
-            '<div style="display:flex;gap:6px;">'+
-              '<button class="btn-sm btn-orange" style="padding:5px 12px;font-size:.72rem;" onclick="approveFlashRequest(\''+doc.id+'\',\''+r.productId+'\',\''+r.shopId+'\',\''+r.productName.replace(/'/g,"\\'")+'\',\''+r.shopName.replace(/'/g,"\\'")+'\','+r.price+',\''+r.imageUrl+'\')">✅ Approve</button>'+
-              '<button class="btn-sm" style="padding:5px 12px;font-size:.72rem;background:var(--red2);color:var(--red);" onclick="rejectFlashRequest(\''+doc.id+'\')">❌ Reject</button>'+
-            '</div>'+
-          '</div>'+
-        '</div>';
-      });
-      if(wrap) wrap.innerHTML = html;
-    }).catch(function(e){
-      if(wrap) wrap.innerHTML = '<div style="color:var(--muted);font-size:.8rem;">লোড ব্যর্থ: '+e.message+'</div>';
-    });
-}
-
-function approveFlashRequest(docId, productId, shopId, productName, shopName, price, imageUrl){
-  var discInput = document.getElementById('pd_'+docId);
-  var disc = discInput ? (parseInt(discInput.value)||10) : 10;
-  if(flashSaleProducts.length >= 10){ showToast('সর্বোচ্চ ১০টি product','red'); return; }
-  var exists = flashSaleProducts.find(function(p){ return p.productId===productId && p.shopId===shopId; });
-  if(!exists){
-    flashSaleProducts.push({ productId:productId, shopId:shopId, productName:productName, shopName:shopName, price:price, discount:disc, imageUrl:imageUrl||'' });
-  }
-  renderFlashProductsList();
-  db.collection('cities').doc(CITY).collection('settings').doc('flashSalePending')
-    .collection('requests').doc(docId)
-    .update({ status:'approved', approvedDiscount:disc, approvedAt:new Date().toISOString() })
-    .then(function(){
-      showToast('"'+productName+'" Approved ✅ — এখন Save করুন','green');
-      loadFlashPendingRequests();
-    }).catch(function(e){ showToast('Error: '+e.message,'red'); });
-}
-
-function rejectFlashRequest(docId){
-  if(!confirm('এই request reject করবেন?')) return;
-  db.collection('cities').doc(CITY).collection('settings').doc('flashSalePending')
-    .collection('requests').doc(docId)
-    .update({ status:'rejected', rejectedAt:new Date().toISOString() })
-    .then(function(){
-      showToast('Request reject হয়েছে','green');
-      loadFlashPendingRequests();
-    }).catch(function(e){ showToast('Error: '+e.message,'red'); });
-}
-
-function loadAllProductsForFlash(){
-  var select = document.getElementById('flashProductSelect');
-  if(!select) return;
-  select.innerHTML = '<option value="">-- Product বেছে নিন --</option>';
+function loadAllDiscountedProducts(){
+  var wrap = document.getElementById('allDiscountedList');
+  wrap.innerHTML = '<div style="color:var(--muted);font-size:.82rem;">লোড হচ্ছে...</div>';
   allProductsForFlash = [];
-  db.collection('cities').doc(CITY).collection('sellers').get().then(function(snap){
-    var promises = [];
-    snap.forEach(function(sellerDoc){
-      var seller = sellerDoc.data();
-      if(seller.status === 'pending') return;
-      var p = db.collection('cities').doc(CITY).collection('sellers').doc(sellerDoc.id)
-        .collection('products').get().then(function(prodSnap){
-          prodSnap.forEach(function(pd){
-            var prod = pd.data();
-            allProductsForFlash.push({ productId:pd.id, shopId:sellerDoc.id, productName:prod.nameBn||prod.nameEn||prod.name||'পণ্য', shopName:seller.shopName||'দোকান', price:prod.price||prod.sellPrice||0, imageUrl:prod.imageUrl||(prod.images&&prod.images[0])||'' });
+
+  var proms = allSellers.map(function(s){
+    return db.collection('cities').doc(CITY).collection('sellers').doc(s.id)
+      .collection('products').get().then(function(snap){
+        snap.forEach(function(d){
+          var p = d.data();
+          if(p.adminRemoved) return;
+          var disc = parseInt(p.discount)||0;
+          if(disc <= 0) return; // Only discounted products
+          allProductsForFlash.push({
+            productId: d.id,
+            shopId: s.id,
+            shopName: s.shopName||'দোকান',
+            productName: p.nameBn||p.name||'পণ্য',
+            price: p.price||0,
+            discount: disc,
+            imageUrl: p.imageUrl||(p.images&&p.images[0])||''
           });
         });
-      promises.push(p);
-    });
-    return Promise.all(promises);
-  }).then(function(){
-    allProductsForFlash.sort(function(a,b){ return a.productName.localeCompare(b.productName); });
-    allProductsForFlash.forEach(function(p){
-      var opt = document.createElement('option');
-      opt.value = p.shopId+'::'+p.productId;
-      opt.textContent = p.productName+' — '+p.shopName+' (₹'+p.price+')';
-      select.appendChild(opt);
-    });
-  }).catch(function(e){ showToast('Products লোড ব্যর্থ: '+e.message,'red'); });
+      });
+  });
+
+  Promise.all(proms).then(function(){
+    allDiscountedFiltered = allProductsForFlash.slice();
+    var countEl = document.getElementById('discProductCount');
+    if(countEl) countEl.textContent = allProductsForFlash.length+'টি discounted product';
+    renderDiscountedProducts();
+  }).catch(function(e){ wrap.innerHTML='<div style="color:var(--red);">Error: '+e.message+'</div>'; });
 }
 
-function addToFlashSale(){
-  var val = document.getElementById('flashProductSelect').value;
-  var disc = parseInt(document.getElementById('flashDiscount').value)||10;
-  if(!val){ showToast('Product বেছে নিন','red'); return; }
-  var parts = val.split('::');
-  var prod = allProductsForFlash.find(function(p){ return p.shopId===parts[0]&&p.productId===parts[1]; });
-  if(!prod){ showToast('Product পাওয়া যায়নি','red'); return; }
-  if(flashSaleProducts.find(function(p){ return p.productId===parts[1]&&p.shopId===parts[0]; })){ showToast('ইতোমধ্যে আছে','red'); return; }
-  if(flashSaleProducts.length>=10){ showToast('সর্বোচ্চ ১০টি','red'); return; }
-  flashSaleProducts.push({ productId:parts[1], shopId:parts[0], productName:prod.productName, shopName:prod.shopName, price:prod.price, discount:disc, imageUrl:prod.imageUrl });
-  renderFlashProductsList();
-  document.getElementById('flashProductSelect').value='';
-  showToast('"'+prod.productName+'" যোগ হয়েছে ✅','green');
+function filterDiscountedProducts(){
+  var search = (document.getElementById('flashDiscSearch').value||'').toLowerCase();
+  var sort = document.getElementById('flashDiscSort').value;
+  allDiscountedFiltered = allProductsForFlash.filter(function(p){
+    if(!search) return true;
+    return (p.productName+p.shopName).toLowerCase().includes(search);
+  });
+  if(sort==='discount') allDiscountedFiltered.sort(function(a,b){return b.discount-a.discount;});
+  else if(sort==='price') allDiscountedFiltered.sort(function(a,b){return a.price-b.price;});
+  else allDiscountedFiltered.sort(function(a,b){return a.shopName.localeCompare(b.shopName);});
+  renderDiscountedProducts();
 }
 
-function renderFlashProductsList(){
-  var wrap=document.getElementById('flashProductsList');
-  var countEl=document.getElementById('flashCount');
-  if(!wrap)return;
-  if(countEl)countEl.textContent='('+flashSaleProducts.length+'/10)';
-  if(!flashSaleProducts.length){ wrap.innerHTML='<div style="color:var(--muted);font-size:.8rem;padding:12px 0">কোনো product নেই</div>'; return; }
-  wrap.innerHTML=flashSaleProducts.map(function(p,i){
-    return '<div style="display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px 14px;">'+
-      (p.imageUrl?'<img src="'+p.imageUrl+'" style="width:44px;height:44px;object-fit:cover;border-radius:8px;flex-shrink:0">':'<div style="width:44px;height:44px;background:var(--sand);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0">🏷️</div>')+
-      '<div style="flex:1;min-width:0"><div style="font-size:.85rem;font-weight:700;color:var(--charcoal)">'+p.productName+'</div><div style="font-size:.72rem;color:var(--muted)">'+p.shopName+' · ₹'+p.price+'</div></div>'+
-      '<div style="display:flex;align-items:center;gap:6px;flex-shrink:0">'+
-        '<input type="number" min="1" max="90" value="'+p.discount+'" style="width:56px;border:1px solid var(--border);border-radius:6px;padding:4px 6px;font-size:.78rem;text-align:center;" oninput="flashSaleProducts['+i+'].discount=parseInt(this.value)||10">'+
-        '<span style="font-size:.72rem;color:var(--muted)">% OFF</span>'+
-        '<button onclick="removeFromFlashSale('+i+')" style="background:none;border:none;color:#c0392b;cursor:pointer;font-size:1rem;padding:4px">🗑️</button>'+
-      '</div></div>';
+function renderDiscountedProducts(){
+  var wrap = document.getElementById('allDiscountedList');
+  if(!allDiscountedFiltered.length){
+    wrap.innerHTML='<div style="color:var(--muted);font-size:.82rem;">কোনো discounted product নেই।</div>';
+    return;
+  }
+  wrap.innerHTML = allDiscountedFiltered.map(function(p){
+    var isActive = flashSaleProducts.find(function(f){return f.productId===p.productId&&f.shopId===p.shopId;});
+    var salePrice = Math.round(p.price*(1-p.discount/100));
+    return '<div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px;display:flex;align-items:center;gap:12px;margin-bottom:8px;">'+
+      (p.imageUrl?'<img src="'+p.imageUrl+'" style="width:44px;height:44px;object-fit:cover;border-radius:8px;flex-shrink:0;">':
+        '<div style="width:44px;height:44px;background:var(--sand);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;">🛍️</div>')+
+      '<div style="flex:1;min-width:0;">'+
+        '<div style="font-size:.82rem;font-weight:700;color:var(--navy);">'+p.productName+'</div>'+
+        '<div style="font-size:.72rem;color:var(--muted);">🏪 '+p.shopName+'</div>'+
+        '<div style="font-size:.78rem;margin-top:2px;">'+
+          '<span style="font-weight:800;color:var(--navy);">₹'+salePrice+'</span> '+
+          '<span style="text-decoration:line-through;color:var(--muted);font-size:.7rem;">₹'+p.price+'</span> '+
+          '<span style="background:var(--orange);color:#fff;font-size:.65rem;font-weight:800;padding:2px 7px;border-radius:6px;">'+p.discount+'% OFF</span>'+
+        '</div>'+
+      '</div>'+
+      '<div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;flex-shrink:0;">'+
+        '<div>'+
+          '<label style="font-size:.65rem;color:var(--muted);display:block;margin-bottom:2px;">Extra Discount %</label>'+
+          '<input type="number" class="form-input" style="width:70px;padding:4px 8px;font-size:.78rem;" min="0" max="80" value="0" id="extra_'+p.productId+'_'+p.shopId+'">'+
+        '</div>'+
+        '<div>'+
+          '<label style="font-size:.65rem;color:var(--muted);display:block;margin-bottom:2px;">Product End Time</label>'+
+          '<input type="datetime-local" class="form-input" style="width:160px;padding:4px 8px;font-size:.7rem;" id="ptime_'+p.productId+'_'+p.shopId+'">'+
+        '</div>'+
+        '<button class="btn-sm '+(isActive?'btn-green':'btn-orange')+'" style="font-size:.72rem;" onclick="toggleFlashProduct(\''+p.productId+'\',\''+p.shopId+'\',\''+p.productName.replace(/'/g,"\\'")+'\',\''+p.shopName.replace(/'/g,"\\'")+'\','+p.price+','+p.discount+',\''+p.imageUrl+'\')">'+
+          (isActive?'✅ Active':'⚡ Activate')+'</button>'+
+      '</div>'+
+    '</div>';
   }).join('');
 }
 
-function removeFromFlashSale(i){ var n=flashSaleProducts[i].productName; flashSaleProducts.splice(i,1); renderFlashProductsList(); showToast('"'+n+'" সরানো হয়েছে','green'); }
+function toggleFlashProduct(productId, shopId, productName, shopName, price, discount, imageUrl){
+  var extraEl = document.getElementById('extra_'+productId+'_'+shopId);
+  var ptimeEl = document.getElementById('ptime_'+productId+'_'+shopId);
+  var extraDisc = extraEl ? parseInt(extraEl.value)||0 : 0;
+  var productEndTime = ptimeEl ? ptimeEl.value : '';
+
+  var existing = flashSaleProducts.findIndex(function(f){return f.productId===productId&&f.shopId===shopId;});
+  if(existing > -1){
+    // Remove from flash sale
+    flashSaleProducts.splice(existing, 1);
+    showToast('Flash Sale থেকে সরানো হয়েছে','green');
+  } else {
+    // Add to flash sale
+    var totalDisc = Math.min(90, discount + extraDisc);
+    var salePrice = Math.round(price*(1-totalDisc/100));
+    flashSaleProducts.push({
+      productId: productId,
+      shopId: shopId,
+      productName: productName,
+      shopName: shopName,
+      price: price,
+      salePrice: salePrice,
+      discount: discount,
+      extraDiscount: extraDisc,
+      totalDiscount: totalDisc,
+      imageUrl: imageUrl||'',
+      productEndTime: productEndTime||'',
+      active: true
+    });
+    showToast('⚡ Flash Sale এ যোগ হয়েছে!','green');
+  }
+  renderFlashProductsList();
+  renderDiscountedProducts();
+}
+
+function addToFlashSale(){
+  var sel = document.getElementById('flashProductSelect');
+  var extra = parseInt(document.getElementById('flashExtraDiscount').value)||0;
+  var ptime = document.getElementById('flashProductEndTime').value||'';
+  if(!sel.value){ showToast('Product select করুন','red'); return; }
+  var parts = sel.value.split('|');
+  var productId=parts[0], shopId=parts[1], productName=parts[2], shopName=parts[3], price=parseInt(parts[4])||0, discount=parseInt(parts[5])||0, imageUrl=parts[6]||'';
+
+  if(flashSaleProducts.find(function(f){return f.productId===productId&&f.shopId===shopId;})){
+    showToast('ইতোমধ্যে আছে','red'); return;
+  }
+  var totalDisc = Math.min(90, discount+extra);
+  var salePrice = Math.round(price*(1-totalDisc/100));
+  flashSaleProducts.push({
+    productId:productId, shopId:shopId, productName:productName, shopName:shopName,
+    price:price, salePrice:salePrice, discount:discount, extraDiscount:extra,
+    totalDiscount:totalDisc, imageUrl:imageUrl, productEndTime:ptime, active:true
+  });
+  sel.value='';
+  document.getElementById('flashExtraDiscount').value='0';
+  document.getElementById('flashProductEndTime').value='';
+  renderFlashProductsList();
+  showToast('⚡ Flash Sale এ যোগ হয়েছে!','green');
+}
+
+function addCustomFlashProduct(){
+  var name = document.getElementById('customFlashName').value.trim();
+  var price = parseInt(document.getElementById('customFlashPrice').value)||0;
+  var discount = parseInt(document.getElementById('customFlashDiscount').value)||0;
+  var image = document.getElementById('customFlashImage').value.trim();
+  var ptime = document.getElementById('customFlashEndTime').value||'';
+
+  if(!name){ showToast('Product নাম দিন','red'); return; }
+  if(!price){ showToast('দাম দিন','red'); return; }
+  if(!discount){ showToast('Discount % দিন','red'); return; }
+
+  var salePrice = Math.round(price*(1-discount/100));
+  flashSaleProducts.push({
+    productId: 'custom_'+Date.now(),
+    shopId: 'admin',
+    productName: name,
+    shopName: 'DELTA Admin',
+    price: price,
+    salePrice: salePrice,
+    discount: discount,
+    extraDiscount: 0,
+    totalDiscount: discount,
+    imageUrl: image,
+    productEndTime: ptime,
+    active: true,
+    isCustom: true
+  });
+  ['customFlashName','customFlashPrice','customFlashDiscount','customFlashImage','customFlashEndTime'].forEach(function(id){
+    var el=document.getElementById(id); if(el) el.value='';
+  });
+  renderFlashProductsList();
+  showToast('✅ Custom product যোগ হয়েছে!','green');
+}
+
+function renderFlashProductsList(){
+  var wrap = document.getElementById('flashProductsList');
+  var countEl = document.getElementById('flashCount');
+  if(countEl) countEl.textContent = '('+flashSaleProducts.length+'টি product)';
+  if(!flashSaleProducts.length){
+    wrap.innerHTML='<div style="color:var(--muted);font-size:.82rem;padding:12px 0;">কোনো product নেই। উপর থেকে যোগ করুন।</div>';
+    return;
+  }
+  wrap.innerHTML = flashSaleProducts.map(function(p,i){
+    return '<div style="background:#fff;border:1.5px solid var(--orange);border-radius:12px;padding:12px;display:flex;align-items:center;gap:12px;">'+
+      (p.imageUrl?'<img src="'+p.imageUrl+'" style="width:44px;height:44px;object-fit:cover;border-radius:8px;flex-shrink:0;">':
+        '<div style="width:44px;height:44px;background:var(--sand);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;">🛍️</div>')+
+      '<div style="flex:1;min-width:0;">'+
+        '<div style="font-size:.82rem;font-weight:700;color:var(--navy);">'+p.productName+'</div>'+
+        '<div style="font-size:.72rem;color:var(--muted);">🏪 '+p.shopName+'</div>'+
+        '<div style="font-size:.78rem;margin-top:2px;">'+
+          '<span style="font-weight:800;color:var(--orange);">₹'+p.salePrice+'</span> '+
+          '<span style="text-decoration:line-through;color:var(--muted);font-size:.7rem;">₹'+p.price+'</span> '+
+          '<span style="background:var(--orange);color:#fff;font-size:.65rem;font-weight:800;padding:2px 7px;border-radius:6px;">'+p.totalDiscount+'% OFF</span>'+
+          (p.extraDiscount?'<span style="font-size:.65rem;color:var(--green);margin-left:4px;">+'+p.extraDiscount+'% extra</span>':'')+
+        '</div>'+
+        (p.productEndTime?'<div style="font-size:.68rem;color:var(--orange);margin-top:2px;">⏰ আলাদা end time: '+p.productEndTime+'</div>':'')+
+      '</div>'+
+      '<button onclick="removeFlashProduct('+i+')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:1.2rem;flex-shrink:0;">×</button>'+
+    '</div>';
+  }).join('');
+}
+
+function removeFlashProduct(idx){
+  flashSaleProducts.splice(idx,1);
+  renderFlashProductsList();
+  renderDiscountedProducts();
+}
 
 function saveFlashSettings(){
-  var status=document.getElementById('flashSettingsStatus');
-  var endTime=document.getElementById('flashEndTime').value;
-  var enabled=document.getElementById('flashEnabled').checked;
-  if(!endTime){showToast('শেষ সময় দিন','red');return;}
+  var enabled = document.getElementById('flashEnabled').checked;
+  var startTime = document.getElementById('flashStartTime').value;
+  var endTime = document.getElementById('flashEndTime').value;
   db.collection('cities').doc(CITY).collection('settings').doc('flashSale')
-    .set({endTime:new Date(endTime).getTime(),enabled:enabled,products:flashSaleProducts,updatedAt:new Date().toISOString()},{merge:true})
-    .then(function(){ if(status)status.textContent='✅ সেভ হয়েছে'; setTimeout(function(){if(status)status.textContent='';},3000); showToast('Settings সেভ ✅','green'); })
-    .catch(function(e){ showToast('সেভ ব্যর্থ: '+e.message,'red'); });
+    .set({enabled:enabled, startTime:startTime, endTime:endTime, products:flashSaleProducts, updatedAt:new Date().toISOString()}, {merge:true})
+    .then(function(){
+      document.getElementById('flashSettingsStatus').textContent='✅ সেভ হয়েছে!';
+      setTimeout(function(){document.getElementById('flashSettingsStatus').textContent='';},3000);
+    }).catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
 }
 
 function saveFlashProducts(){
-  var status=document.getElementById('flashSaveStatus');
-  if(status)status.textContent='সেভ হচ্ছে...';
   db.collection('cities').doc(CITY).collection('settings').doc('flashSale')
-    .set({products:flashSaleProducts,updatedAt:new Date().toISOString()},{merge:true})
-    .then(function(){ if(status)status.textContent='✅ সেভ হয়েছে'; setTimeout(function(){if(status)status.textContent='';},3000); showToast('Flash Sale products সেভ ✅','green'); })
-    .catch(function(e){ showToast('সেভ ব্যর্থ: '+e.message,'red'); });
+    .set({products:flashSaleProducts, updatedAt:new Date().toISOString()}, {merge:true})
+    .then(function(){
+      document.getElementById('flashSaveStatus').textContent='✅ '+flashSaleProducts.length+'টি product সেভ হয়েছে';
+      setTimeout(function(){document.getElementById('flashSaveStatus').textContent='';},3000);
+    }).catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
 }
 
-function clearFlashSale(){ if(!confirm('সব সরাবেন?'))return; flashSaleProducts=[]; renderFlashProductsList(); showToast('Clear হয়েছে — Save করুন','green'); }
+function clearFlashSale(){
+  if(!confirm('সব Flash Sale products সরাবেন?')) return;
+  flashSaleProducts=[];
+  renderFlashProductsList();
+  showToast('Clear হয়েছে — Save করুন','green');
+}
+
+function loadFlashProductDropdown(){
+  var sel = document.getElementById('flashProductSelect');
+  if(!sel) return;
+  sel.innerHTML = '<option value="">-- Product select করুন --</option>';
+  allSellers.forEach(function(s){
+    db.collection('cities').doc(CITY).collection('sellers').doc(s.id)
+      .collection('products').get().then(function(snap){
+        snap.forEach(function(d){
+          var p = d.data();
+          if(p.adminRemoved) return;
+          var opt = document.createElement('option');
+          var disc = parseInt(p.discount)||0;
+          opt.value = d.id+'|'+s.id+'|'+(p.nameBn||p.name||'পণ্য')+'|'+s.shopName+'|'+(p.price||0)+'|'+disc+'|'+(p.imageUrl||'');
+          opt.textContent = (p.nameBn||p.name||'পণ্য')+' — ₹'+(p.price||0)+(disc?' ('+disc+'% OFF)':'')+' | '+s.shopName;
+          sel.appendChild(opt);
+        });
+      });
+  });
+}
+
+window.loadAllDiscountedProducts = loadAllDiscountedProducts;
+window.filterDiscountedProducts = filterDiscountedProducts;
+window.toggleFlashProduct = toggleFlashProduct;
+window.addToFlashSale = addToFlashSale;
+window.addCustomFlashProduct = addCustomFlashProduct;
+window.removeFlashProduct = removeFlashProduct;
+window.saveFlashSettings = saveFlashSettings;
+window.saveFlashProducts = saveFlashProducts;
+window.clearFlashSale = clearFlashSale;
 
 // ═══ PRODUCT MODERATION ═══
 var allModProducts = []; // {id, shopId, shopName, ...productData}
@@ -5148,6 +5419,47 @@ function saveHamper(){
   var discountValidUntil = (document.getElementById('hDiscountValidity').value||'').trim();
   var aboutTitle = (document.getElementById('hAboutTitle').value||'').trim();
 
+  // Coupon fields
+  var couponCode = (document.getElementById('hCouponCode').value||'').trim().toUpperCase();
+  var couponType = document.getElementById('hCouponType').value;
+  var couponValue = parseInt(document.getElementById('hCouponValue').value)||0;
+  var couponMinOrder = parseInt(document.getElementById('hCouponMinOrder').value)||0;
+  var couponMaxUses = parseInt(document.getElementById('hCouponMaxUses').value)||100;
+  var couponValid = (document.getElementById('hCouponValid').value||'').trim();
+  var hamperCoupon = couponCode && couponType ? {
+    code: couponCode, type: couponType, value: couponValue,
+    minOrder: couponMinOrder, maxUses: couponMaxUses,
+    validUntil: couponValid, usedCount: 0, active: true
+  } : null;
+
+  // Contest fields
+  var contestTitle = (document.getElementById('hContestTitle').value||'').trim();
+  var contestPrize = (document.getElementById('hContestPrize').value||'').trim();
+  var hamperContest = contestTitle && contestPrize ? {
+    title: contestTitle, prize: contestPrize,
+    participants: [], winners: [], active: true
+  } : null;
+
+  // Offers & Promotions
+  var bogo = document.getElementById('hBogo').checked;
+  var couponCode = (document.getElementById('hCouponCode').value||'').trim().toUpperCase();
+  var couponType = document.getElementById('hCouponType').value;
+  var couponValue = parseInt(document.getElementById('hCouponValue').value)||0;
+  var couponValidity = document.getElementById('hCouponValidity').value||'';
+  var couponMaxUses = parseInt(document.getElementById('hCouponMaxUses').value)||100;
+  var contestTitle = (document.getElementById('hContestTitle').value||'').trim();
+  var contestPrize = (document.getElementById('hContestPrize').value||'').trim();
+  var contestDetails = (document.getElementById('hContestDetails').value||'').trim();
+
+  var hamperCoupon = couponCode && couponValue ? {
+    code: couponCode, type: couponType, value: couponValue,
+    validUntil: couponValidity, maxUses: couponMaxUses, usedCount: 0
+  } : null;
+
+  var hamperContest = contestTitle && contestPrize ? {
+    title: contestTitle, prize: contestPrize, details: contestDetails, participants: []
+  } : null;
+
   var data = {
     name: name, price: price, festivalTag: festivalTag,
     stock: stock, soldCount: 0,
@@ -5159,6 +5471,11 @@ function saveHamper(){
     specs: specs,
     discountValidUntil: discountValidUntil,
     aboutTitle: aboutTitle,
+    coupon: hamperCoupon,
+    contest: hamperContest,
+    bogo: bogo,
+    coupon: hamperCoupon,
+    contest: hamperContest,
     baseItems: hamperBaseItems,
     addOns: hamperAddOns,
     active: true,
@@ -5175,9 +5492,11 @@ function saveHamper(){
     hamperBaseItems=[]; hamperAddOns=[]; editingHamperId=null;
     ['hName','hPrice','hEmoji','hDesc','hStock','hImg1','hImg2','hImg3',
      'hHighlights','hSpecWeight','hSpecShelfLife','hSpecDelivery','hSpecOccasion',
-     'hDiscountValidity','hAboutTitle'].forEach(function(id){
+     'hDiscountValidity','hAboutTitle','hCouponCode','hCouponValue','hCouponMinOrder',
+     'hCouponMaxUses','hCouponValid','hContestTitle','hContestPrize'].forEach(function(id){
       var el = document.getElementById(id); if(el) el.value='';
     });
+    var ct = document.getElementById('hCouponType'); if(ct) ct.value='';
     var hft = document.getElementById('hFestivalTag'); if(hft) hft.value='';
     renderHamperBaseItems(); renderHamperAddOns();
     if(statusEl) statusEl.textContent='✅ Hamper সেভ হয়েছে';
@@ -5245,6 +5564,18 @@ function editHamper(id){
   var so=document.getElementById('hSpecOccasion'); if(so) so.value=specs.occasion||'';
   var dv=document.getElementById('hDiscountValidity'); if(dv) dv.value=h.discountValidUntil||'';
   var at=document.getElementById('hAboutTitle'); if(at) at.value=h.aboutTitle||'';
+  // Coupon fields
+  var c = h.coupon||{};
+  var hcc=document.getElementById('hCouponCode'); if(hcc) hcc.value=c.code||'';
+  var hct=document.getElementById('hCouponType'); if(hct) hct.value=c.type||'';
+  var hcv=document.getElementById('hCouponValue'); if(hcv) hcv.value=c.value||'';
+  var hcm=document.getElementById('hCouponMinOrder'); if(hcm) hcm.value=c.minOrder||'';
+  var hcmu=document.getElementById('hCouponMaxUses'); if(hcmu) hcmu.value=c.maxUses||'';
+  var hcvl=document.getElementById('hCouponValid'); if(hcvl) hcvl.value=c.validUntil||'';
+  // Contest fields
+  var con = h.contest||{};
+  var hcot=document.getElementById('hContestTitle'); if(hcot) hcot.value=con.title||'';
+  var hcop=document.getElementById('hContestPrize'); if(hcop) hcop.value=con.prize||'';
   renderHamperBaseItems(); renderHamperAddOns();
   document.getElementById('hName').scrollIntoView({behavior:'smooth'});
   showToast('Hamper load হয়েছে — edit করে Save করুন','green');
