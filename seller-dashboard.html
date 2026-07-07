@@ -1190,8 +1190,18 @@ select.form-input{cursor:pointer;}
               <input type="number" class="form-input" id="spSalePrice" placeholder="Auto fill হবে">
             </div>
             <div class="form-group">
-              <label>Image URL (Cloudinary)</label>
-              <input type="text" class="form-input" id="spImage" placeholder="Cloudinary URL">
+              <label>Product Image</label>
+              <div style="display:flex;gap:8px;align-items:center;margin-top:4px;">
+                <input type="file" id="spImageFile" accept="image/*" style="display:none;" onchange="uploadSaleImage(this)">
+                <button type="button" class="btn-sm" onclick="document.getElementById('spImageFile').click()" style="background:var(--sand);color:var(--navy);">
+                  📷 Image Upload করুন
+                </button>
+                <span id="spImageStatus" style="font-size:.72rem;color:var(--muted);">কোনো image নেই</span>
+              </div>
+              <input type="hidden" id="spImage">
+              <div id="spImagePreview" style="display:none;margin-top:8px;">
+                <img id="spImagePreviewImg" style="width:80px;height:80px;object-fit:cover;border-radius:8px;border:1px solid var(--border);">
+              </div>
             </div>
             <div class="form-group">
               <label>Sale শুরুর সময় <span style="color:var(--red);font-size:.7rem;">*</span></label>
@@ -4947,6 +4957,34 @@ function loadSaleCommissionPreview(){
   }
 }
 
+async function uploadSaleImage(input){
+  var file = input.files[0];
+  if(!file) return;
+  var statusEl = document.getElementById('spImageStatus');
+  var previewDiv = document.getElementById('spImagePreview');
+  var previewImg = document.getElementById('spImagePreviewImg');
+  statusEl.textContent = 'Upload হচ্ছে...';
+  statusEl.style.color = 'var(--orange)';
+  try{
+    var fd = new FormData();
+    fd.append('file', file);
+    fd.append('upload_preset', PRESET);
+    fd.append('folder', 'delta/sale-products');
+    var res = await fetch('https://api.cloudinary.com/v1_1/'+CLOUD+'/image/upload',{method:'POST',body:fd});
+    var data = await res.json();
+    if(data.secure_url){
+      document.getElementById('spImage').value = data.secure_url;
+      previewImg.src = data.secure_url;
+      previewDiv.style.display = 'block';
+      statusEl.textContent = '✅ Upload সফল';
+      statusEl.style.color = 'var(--green)';
+    }
+  }catch(e){
+    statusEl.textContent = '❌ Upload failed';
+    statusEl.style.color = 'var(--red)';
+  }
+}
+
 function calcSalePrice(){
   var orig = parseInt(document.getElementById('spOriginalPrice').value)||0;
   var disc = parseInt(document.getElementById('spDiscount').value)||0;
@@ -5028,6 +5066,9 @@ function submitSaleProduct(){
       ['spName','spOriginalPrice','spDiscount','spSalePrice','spImage','spStartTime','spEndTime','spDescription'].forEach(function(id){
         var el=document.getElementById(id); if(el) el.value='';
       });
+      var imgFile=document.getElementById('spImageFile'); if(imgFile) imgFile.value='';
+      var imgStatus=document.getElementById('spImageStatus'); if(imgStatus){imgStatus.textContent='কোনো image নেই';imgStatus.style.color='var(--muted)';}
+      var imgPrev=document.getElementById('spImagePreview'); if(imgPrev) imgPrev.style.display='none';
       document.getElementById('spMainCat').value='';
       document.getElementById('spSubCat').innerHTML='<option value="">— আগে প্রধান category বেছে নিন —</option>';
       var agEl=document.getElementById('spAgree'); if(agEl) agEl.checked=false;
