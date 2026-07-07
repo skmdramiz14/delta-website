@@ -2958,6 +2958,17 @@ img{max-width:100%;height:auto;}
 <script>
 var fbcfg={apiKey:"AIzaSyA6TrrnCMwv1aa1WPqGvTVWlnieB2pVOEU",authDomain:"delta-platform-82fc0.firebaseapp.com",projectId:"delta-platform-82fc0",storageBucket:"delta-platform-82fc0.firebasestorage.app",messagingSenderId:"444904180433",appId:"1:444904180433:web:6706eba4d73a30cd67d3f0"};
 var auth,db,currentUser=null,cart=[],wishlist=[],allShops=[],allProducts=[],selectedPay='cod';
+
+// Flash sale থেকে আসা cart items merge করো
+(function(){
+  try{
+    var flashCart = JSON.parse(localStorage.getItem('delta_cart')||'[]');
+    if(flashCart.length){
+      cart = flashCart;
+      localStorage.removeItem('delta_cart'); // merge হলে clear করো
+    }
+  }catch(e){}
+})();
 var CITY='manteswar'; // Multi-tenant city
 
 // Dynamic Firebase loader — robust version with error handling + timeout fallback
