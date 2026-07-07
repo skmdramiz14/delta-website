@@ -1,4 +1,4 @@
-<!DOCTYPE html>  
+<!DOCTYPE html>
 <html lang="bn">
 <head>
 <meta charset="UTF-8">
@@ -2964,8 +2964,20 @@ var auth,db,currentUser=null,cart=[],wishlist=[],allShops=[],allProducts=[],sele
   try{
     var flashCart = JSON.parse(localStorage.getItem('delta_cart')||'[]');
     if(flashCart.length){
-      cart = flashCart;
-      localStorage.removeItem('delta_cart'); // merge হলে clear করো
+      // sale price preserve করো — allProducts এর price দিয়ে override করো না
+      cart = flashCart.map(function(item){
+        return {
+          id: item.id,
+          shopId: item.shopId,
+          name: item.name,
+          nameBn: item.name,
+          price: item.price, // flash sale price (already discounted)
+          qty: item.qty||1,
+          imageUrl: item.imageUrl||'',
+          _fromFlashSale: true
+        };
+      });
+      localStorage.removeItem('delta_cart');
     }
   }catch(e){}
 })();
