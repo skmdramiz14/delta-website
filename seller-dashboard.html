@@ -632,6 +632,8 @@ select.form-input{cursor:pointer;}
         <span class="nav-badge" id="pendingBadge" style="display:none">0</span></button>
       <button class="nav-btn" id="nb-festival" onclick="goPage('festival',this)">
         <span class="nicon">🎊</span><span data-lang-bn="উৎসব" data-lang-en="Festival">উৎসব</span></button>
+      <button class="nav-btn" id="nb-sale" onclick="goPage('sale',this)">
+        <span class="nicon">🏷️</span><span data-lang-bn="Sale" data-lang-en="Sale">Sale</span></button>
       <button class="nav-btn" id="nb-hamper" onclick="goPage('hamper',this)">
         <span class="nicon">🎁</span><span data-lang-bn="হ্যাম্পার" data-lang-en="Hamper">হ্যাম্পার</span></button>
       <div class="sb-nav-section" data-lang-bn="সেটিংস" data-lang-en="SETTINGS">সেটিংস</div>
@@ -1127,6 +1129,86 @@ select.form-input{cursor:pointer;}
           </div>
         </div>
       </div>
+      <!-- ═══ SALE PAGE ═══ -->
+      <div class="page" id="page-sale">
+        <div class="sec-head">
+          <div class="sec-title">🏷️ Sale Product
+            <small>Flash Sale এ দেওয়ার জন্য product submit করুন</small>
+          </div>
+        </div>
+
+        <!-- Add Sale Product Form -->
+        <div style="background:#fff;border-radius:14px;border:1px solid var(--border);padding:16px;margin-bottom:16px;">
+          <div style="font-size:.85rem;font-weight:700;color:var(--navy);margin-bottom:14px;">➕ নতুন Sale Product যোগ করুন</div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Product নাম <span style="color:var(--red);font-size:.7rem;">*</span></label>
+              <input type="text" class="form-input" id="spName" placeholder="যেমন: দেশি মিষ্টি দই">
+            </div>
+            <div class="form-group">
+              <label>Category <span style="color:var(--red);font-size:.7rem;">*</span></label>
+              <input type="text" class="form-input" id="spCategory" placeholder="যেমন: food, clothing, gift" oninput="loadCommissionPreview()">
+            </div>
+            <div class="form-group">
+              <label>Original Price (MRP) ₹</label>
+              <input type="number" class="form-input" id="spOriginalPrice" placeholder="যেমন: 120" oninput="calcSalePrice()">
+            </div>
+            <div class="form-group">
+              <label>Discount %</label>
+              <input type="number" class="form-input" id="spDiscount" placeholder="যেমন: 20" min="1" max="90" oninput="calcSalePrice()">
+            </div>
+            <div class="form-group">
+              <label>Sale Price ₹ <span style="font-size:.68rem;color:var(--green);">← auto calculate</span></label>
+              <input type="number" class="form-input" id="spSalePrice" placeholder="Auto fill হবে">
+            </div>
+            <div class="form-group">
+              <label>Image URL (Cloudinary)</label>
+              <input type="text" class="form-input" id="spImage" placeholder="Cloudinary URL">
+            </div>
+            <div class="form-group">
+              <label>Sale শুরুর সময় <span style="color:var(--red);font-size:.7rem;">*</span></label>
+              <input type="datetime-local" class="form-input" id="spStartTime">
+            </div>
+            <div class="form-group">
+              <label>Sale শেষের সময় <span style="color:var(--red);font-size:.7rem;">*</span></label>
+              <input type="datetime-local" class="form-input" id="spEndTime">
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top:8px;">
+            <label>Description (Optional)</label>
+            <textarea class="form-input" id="spDescription" rows="2" placeholder="Product সম্পর্কে বিস্তারিত" style="resize:vertical;"></textarea>
+          </div>
+
+          <!-- Commission Preview -->
+          <div id="spCommissionBox" style="display:none;background:var(--sand);border-radius:10px;padding:12px;margin-top:12px;">
+            <div style="font-size:.75rem;font-weight:700;color:var(--navy);margin-bottom:6px;">💰 Commission Agreement</div>
+            <div id="spCommissionText" style="font-size:.78rem;color:var(--muted);margin-bottom:10px;"></div>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+              <input type="checkbox" id="spAgree" style="width:16px;height:16px;accent-color:var(--orange);">
+              <span style="font-size:.78rem;color:var(--navy);font-weight:600;">আমি এই commission rate এ রাজি আছি</span>
+            </label>
+          </div>
+
+          <!-- Commission not set warning -->
+          <div id="spNoCommissionBox" style="display:none;background:#fff4ec;border-radius:10px;padding:12px;margin-top:12px;border-left:3px solid var(--orange);">
+            <div style="font-size:.75rem;color:var(--orange);font-weight:700;">⚠️ এই category র commission এখনো set হয়নি</div>
+            <div style="font-size:.72rem;color:var(--muted);margin-top:4px;">Admin কে request পাঠানো হবে। Commission set হলে আপনাকে notify করা হবে।</div>
+          </div>
+
+          <button onclick="submitSaleProduct()" class="btn-sm btn-orange" style="width:100%;justify-content:center;margin-top:14px;">🏷️ Sale Product Submit করুন</button>
+        </div>
+
+        <!-- My Sale Products -->
+        <div style="background:#fff;border-radius:14px;border:1px solid var(--border);padding:16px;">
+          <div style="font-size:.82rem;font-weight:700;color:var(--navy);margin-bottom:12px;">📋 আমার Sale Products</div>
+          <div id="mySaleProductsList">
+            <div style="color:var(--muted);font-size:.78rem;text-align:center;padding:12px;">লোড হচ্ছে...</div>
+          </div>
+        </div>
+      </div>
+
       <div class="page" id="page-hamper">
         <div class="sec-head">
           <div class="sec-title">🎁 হ্যাম্পার Section
@@ -2162,6 +2244,7 @@ function goPage(page,btnEl){
   if(page==='performance')renderPerformance();
   if(page==='support')loadMyTickets();
   if(page==='festival')loadSellerFestivalSection();
+  if(page==='sale')loadSalePage();
   if(page==='hamper')loadSellerHamperSection();
   closeSidebar();
 }
@@ -4782,6 +4865,167 @@ document.addEventListener('click', function(e){
     panel.style.display='none';
   }
 });
+
+// ── SELLER SALE PRODUCT SYSTEM ──
+var saleCommissions = {}; // cache
+
+function loadSalePage(){
+  loadCommissionPreview();
+  loadMySaleProducts();
+}
+
+function loadCommissionPreview(){
+  var cat = (document.getElementById('spCategory').value||'').trim().toLowerCase();
+  var commBox = document.getElementById('spCommissionBox');
+  var noCommBox = document.getElementById('spNoCommissionBox');
+  if(!cat){ commBox.style.display='none'; noCommBox.style.display='none'; return; }
+
+  if(Object.keys(saleCommissions).length){
+    showCommissionBox(cat);
+    return;
+  }
+  db.collection('cities').doc(CITY).collection('settings').doc('saleCommissions')
+    .get({source:'server'}).then(function(doc){
+      saleCommissions = doc.exists ? (doc.data().categories||{}) : {};
+      showCommissionBox(cat);
+    }).catch(function(){});
+}
+
+function showCommissionBox(cat){
+  var commBox = document.getElementById('spCommissionBox');
+  var noCommBox = document.getElementById('spNoCommissionBox');
+  var commText = document.getElementById('spCommissionText');
+  var pct = saleCommissions[cat]||saleCommissions[cat.split(' ')[0]]||null;
+  if(pct){
+    commBox.style.display='block';
+    noCommBox.style.display='none';
+    commText.innerHTML = 'Category: <strong>'+cat+'</strong> এর জন্য commission হবে <strong style="color:var(--orange);">'+pct+'%</strong> প্রতিটা sale এ।<br>'+
+      '<span style="font-size:.7rem;">উদাহরণ: ₹100 sale হলে DELTA পাবে ₹'+pct+', আপনি পাবেন ₹'+(100-pct)+'</span>';
+    document.getElementById('spAgree').checked = false;
+  } else {
+    commBox.style.display='none';
+    noCommBox.style.display='block';
+  }
+}
+
+function calcSalePrice(){
+  var orig = parseInt(document.getElementById('spOriginalPrice').value)||0;
+  var disc = parseInt(document.getElementById('spDiscount').value)||0;
+  if(orig && disc){
+    var salePrice = Math.round(orig*(1-disc/100));
+    document.getElementById('spSalePrice').value = salePrice;
+  }
+}
+
+function submitSaleProduct(){
+  var name = document.getElementById('spName').value.trim();
+  var cat = (document.getElementById('spCategory').value||'').trim().toLowerCase();
+  var origPrice = parseInt(document.getElementById('spOriginalPrice').value)||0;
+  var discount = parseInt(document.getElementById('spDiscount').value)||0;
+  var salePrice = parseInt(document.getElementById('spSalePrice').value)||0;
+  var image = document.getElementById('spImage').value.trim();
+  var startTime = document.getElementById('spStartTime').value;
+  var endTime = document.getElementById('spEndTime').value;
+  var desc = document.getElementById('spDescription').value.trim();
+
+  if(!name){showToast('Product নাম দিন','red');return;}
+  if(!cat){showToast('Category দিন','red');return;}
+  if(!origPrice){showToast('Original price দিন','red');return;}
+  if(!discount){showToast('Discount % দিন','red');return;}
+  if(!startTime){showToast('শুরুর সময় দিন','red');return;}
+  if(!endTime){showToast('শেষের সময় দিন','red');return;}
+  if(new Date(endTime)<=new Date(startTime)){showToast('শেষের সময় শুরুর পরে হতে হবে','red');return;}
+
+  var pct = saleCommissions[cat]||null;
+
+  // Commission set না থাকলে → Admin notification
+  if(!pct){
+    // Admin কে commission request পাঠাও
+    db.collection('cities').doc(CITY).collection('commissionRequests').add({
+      shopId: auth.currentUser.uid,
+      shopName: SD.shopName||'দোকান',
+      category: cat,
+      productName: name,
+      requestedAt: new Date().toISOString(),
+      status: 'pending'
+    }).then(function(){
+      showToast('Admin কে commission request পাঠানো হয়েছে। Commission set হলে notify করা হবে।','green');
+    }).catch(function(){});
+    return;
+  }
+
+  // Commission agree check
+  var agreeEl = document.getElementById('spAgree');
+  if(!agreeEl.checked){showToast('"I Agree" checkbox check করুন','red');return;}
+
+  var data = {
+    productId: 'sp_'+Date.now(),
+    shopId: auth.currentUser.uid,
+    shopName: SD.shopName||'দোকান',
+    productName: name,
+    category: cat,
+    originalPrice: origPrice,
+    salePrice: salePrice||Math.round(origPrice*(1-discount/100)),
+    discount: discount,
+    commission: pct,
+    imageUrl: image,
+    startTime: new Date(startTime).toISOString(),
+    endTime: new Date(endTime).toISOString(),
+    description: desc,
+    status: 'agreed',
+    active: false,
+    createdAt: new Date().toISOString()
+  };
+
+  db.collection('cities').doc(CITY).collection('saleProducts').add(data)
+    .then(function(){
+      showToast('🏷️ Sale Product submit হয়েছে! Admin activate করবেন।','green');
+      ['spName','spCategory','spOriginalPrice','spDiscount','spSalePrice','spImage','spStartTime','spEndTime','spDescription'].forEach(function(id){
+        var el=document.getElementById(id); if(el) el.value='';
+      });
+      var agEl=document.getElementById('spAgree'); if(agEl) agEl.checked=false;
+      document.getElementById('spCommissionBox').style.display='none';
+      document.getElementById('spNoCommissionBox').style.display='none';
+      loadMySaleProducts();
+    }).catch(function(e){showToast('সমস্যা: '+e.message,'red');});
+}
+
+function loadMySaleProducts(){
+  if(!auth.currentUser) return;
+  db.collection('cities').doc(CITY).collection('saleProducts')
+    .where('shopId','==',auth.currentUser.uid)
+    .orderBy('createdAt','desc').get()
+    .then(function(snap){
+      var list=[];
+      snap.forEach(function(d){list.push(Object.assign({id:d.id},d.data()));});
+      renderMySaleProducts(list);
+    }).catch(function(){});
+}
+
+function renderMySaleProducts(list){
+  var wrap = document.getElementById('mySaleProductsList');
+  if(!list.length){
+    wrap.innerHTML='<div style="color:var(--muted);font-size:.78rem;text-align:center;padding:12px;">কোনো sale product নেই।</div>';
+    return;
+  }
+  var statusLabel={agreed:'⏳ Admin Activation এর অপেক্ষায়',active:'✅ Flash Sale Active',expired:'❌ Expired',cancelled:'❌ Cancelled'};
+  wrap.innerHTML = list.map(function(p){
+    var now=Date.now();
+    var expired = p.endTime && new Date(p.endTime).getTime()<now;
+    var status = p.active?'active':expired?'expired':(p.status||'agreed');
+    return '<div style="background:#fff;border:1.5px solid var(--border);border-radius:12px;padding:12px;margin-bottom:8px;">'+
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">'+
+        '<div style="font-size:.85rem;font-weight:700;color:var(--navy);">'+p.productName+'</div>'+
+        '<span style="font-size:.65rem;font-weight:700;padding:3px 8px;border-radius:8px;background:var(--sand);color:var(--muted);">'+
+          (statusLabel[status]||'⏳ Pending')+'</span>'+
+      '</div>'+
+      '<div style="font-size:.75rem;color:var(--muted);">'+
+        '₹'+p.salePrice+' ('+p.discount+'% off) · Commission: '+p.commission+'%<br>'+
+        '⏰ '+new Date(p.startTime).toLocaleDateString('bn-IN')+' → '+new Date(p.endTime).toLocaleDateString('bn-IN')+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
 
 // ── COUPON SYSTEM ──
 function updateCouponPreview(){
