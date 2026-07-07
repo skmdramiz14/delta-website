@@ -1147,8 +1147,35 @@ select.form-input{cursor:pointer;}
               <input type="text" class="form-input" id="spName" placeholder="যেমন: দেশি মিষ্টি দই">
             </div>
             <div class="form-group">
-              <label>Category <span style="color:var(--red);font-size:.7rem;">*</span></label>
-              <input type="text" class="form-input" id="spCategory" placeholder="যেমন: food, clothing, gift" oninput="loadCommissionPreview()">
+              <label>প্রধান Category <span style="color:var(--red);font-size:.7rem;">*</span></label>
+              <select class="form-input" id="spMainCat" onchange="loadSaleSubCat()">
+                <option value="">— বেছে নিন —</option>
+                <option value="food">🍽️ খাবার / Food</option>
+                <option value="grocery">🛒 মুদিখানা / Grocery</option>
+                <option value="farm">🌾 কৃষি / Agriculture</option>
+                <option value="farm_tools">🌿 কৃষি সরঞ্জাম / Farm Tools</option>
+                <option value="livestock">🐄 পশুপালন / Livestock</option>
+                <option value="health">💊 স্বাস্থ্য / Health</option>
+                <option value="clothing">👗 পোশাক / Clothing</option>
+                <option value="electronics">📱 ইলেকট্রনিক্স / Electronics</option>
+                <option value="home">🏠 বাড়ি / Home & Living</option>
+                <option value="construction">🏗️ নির্মাণ / Construction</option>
+                <option value="automotive">🚗 যানবাহন / Automotive</option>
+                <option value="arts">🎨 শিল্প ও শিক্ষা / Arts & Education</option>
+                <option value="education">🏫 শিক্ষা / Education</option>
+                <option value="services">💈 সেবা / Services</option>
+                <option value="business">💼 ব্যবসায়িক সেবা / Business</option>
+                <option value="events">🎪 ইভেন্ট / Events</option>
+                <option value="rental">🔑 ভাড়া / Rental</option>
+                <option value="remarket">♻️ পুনর্ব্যবহার / ReMarket</option>
+                <option value="other">📦 অন্যান্য / Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>উপ-Category</label>
+              <select class="form-input" id="spSubCat" onchange="loadSaleCommissionPreview()">
+                <option value="">— আগে প্রধান category বেছে নিন —</option>
+              </select>
             </div>
             <div class="form-group">
               <label>Original Price (MRP) ₹</label>
@@ -4870,36 +4897,48 @@ document.addEventListener('click', function(e){
 var saleCommissions = {}; // cache
 
 function loadSalePage(){
-  loadCommissionPreview();
+  loadSaleCommissionsCache();
   loadMySaleProducts();
 }
 
-function loadCommissionPreview(){
-  var cat = (document.getElementById('spCategory').value||'').trim().toLowerCase();
-  var commBox = document.getElementById('spCommissionBox');
-  var noCommBox = document.getElementById('spNoCommissionBox');
-  if(!cat){ commBox.style.display='none'; noCommBox.style.display='none'; return; }
-
-  if(Object.keys(saleCommissions).length){
-    showCommissionBox(cat);
-    return;
-  }
+function loadSaleCommissionsCache(){
   db.collection('cities').doc(CITY).collection('settings').doc('saleCommissions')
     .get({source:'server'}).then(function(doc){
       saleCommissions = doc.exists ? (doc.data().categories||{}) : {};
-      showCommissionBox(cat);
     }).catch(function(){});
 }
 
-function showCommissionBox(cat){
+function loadSaleSubCat(){
+  var main = document.getElementById('spMainCat').value;
+  var subSel = document.getElementById('spSubCat');
+  subSel.innerHTML = '<option value="">— উপ-category বেছে নিন —</option>';
+  if(!main || !CAT_DATA[main]) return;
+  CAT_DATA[main].subs.forEach(function(s){
+    var opt = document.createElement('option');
+    opt.value = s.v; opt.textContent = s.l;
+    subSel.appendChild(opt);
+  });
+  loadSaleCommissionPreview();
+}
+
+function loadSaleCommissionPreview(){
+  var main = document.getElementById('spMainCat').value;
+  var sub = document.getElementById('spSubCat').value;
   var commBox = document.getElementById('spCommissionBox');
   var noCommBox = document.getElementById('spNoCommissionBox');
+  if(!main){ commBox.style.display='none'; noCommBox.style.display='none'; return; }
+
+  // sub-category specific commission আগে দেখো, না পেলে main category
+  var key = sub ? main+'_'+sub : main;
+  var pct = saleCommissions[key] || saleCommissions[main] || null;
+
   var commText = document.getElementById('spCommissionText');
-  var pct = saleCommissions[cat]||saleCommissions[cat.split(' ')[0]]||null;
   if(pct){
     commBox.style.display='block';
     noCommBox.style.display='none';
-    commText.innerHTML = 'Category: <strong>'+cat+'</strong> এর জন্য commission হবে <strong style="color:var(--orange);">'+pct+'%</strong> প্রতিটা sale এ।<br>'+
+    var catLabel = CAT_DATA[main] ? CAT_DATA[main].label : main;
+    var subLabel = sub && CAT_DATA[main] ? (CAT_DATA[main].subs.find(function(s){return s.v===sub;})||{}).l : '';
+    commText.innerHTML = 'Category: <strong>'+(subLabel||catLabel)+'</strong> এর জন্য commission: <strong style="color:var(--orange);">'+pct+'%</strong><br>'+
       '<span style="font-size:.7rem;">উদাহরণ: ₹100 sale হলে DELTA পাবে ₹'+pct+', আপনি পাবেন ₹'+(100-pct)+'</span>';
     document.getElementById('spAgree').checked = false;
   } else {
@@ -4912,14 +4951,14 @@ function calcSalePrice(){
   var orig = parseInt(document.getElementById('spOriginalPrice').value)||0;
   var disc = parseInt(document.getElementById('spDiscount').value)||0;
   if(orig && disc){
-    var salePrice = Math.round(orig*(1-disc/100));
-    document.getElementById('spSalePrice').value = salePrice;
+    document.getElementById('spSalePrice').value = Math.round(orig*(1-disc/100));
   }
 }
 
 function submitSaleProduct(){
   var name = document.getElementById('spName').value.trim();
-  var cat = (document.getElementById('spCategory').value||'').trim().toLowerCase();
+  var main = document.getElementById('spMainCat').value;
+  var sub = document.getElementById('spSubCat').value;
   var origPrice = parseInt(document.getElementById('spOriginalPrice').value)||0;
   var discount = parseInt(document.getElementById('spDiscount').value)||0;
   var salePrice = parseInt(document.getElementById('spSalePrice').value)||0;
@@ -4929,32 +4968,36 @@ function submitSaleProduct(){
   var desc = document.getElementById('spDescription').value.trim();
 
   if(!name){showToast('Product নাম দিন','red');return;}
-  if(!cat){showToast('Category দিন','red');return;}
+  if(!main){showToast('Category বেছে নিন','red');return;}
   if(!origPrice){showToast('Original price দিন','red');return;}
   if(!discount){showToast('Discount % দিন','red');return;}
   if(!startTime){showToast('শুরুর সময় দিন','red');return;}
   if(!endTime){showToast('শেষের সময় দিন','red');return;}
   if(new Date(endTime)<=new Date(startTime)){showToast('শেষের সময় শুরুর পরে হতে হবে','red');return;}
 
-  var pct = saleCommissions[cat]||null;
+  var key = sub ? main+'_'+sub : main;
+  var pct = saleCommissions[key] || saleCommissions[main] || null;
+  var catLabel = CAT_DATA[main] ? CAT_DATA[main].label : main;
+  var subLabel = sub && CAT_DATA[main] ? ((CAT_DATA[main].subs.find(function(s){return s.v===sub;})||{}).l||'') : '';
+  var categoryDisplay = subLabel ? catLabel+' > '+subLabel : catLabel;
 
-  // Commission set না থাকলে → Admin notification
   if(!pct){
-    // Admin কে commission request পাঠাও
+    // Commission not set — Admin কে request পাঠাও
     db.collection('cities').doc(CITY).collection('commissionRequests').add({
       shopId: auth.currentUser.uid,
       shopName: SD.shopName||'দোকান',
-      category: cat,
+      mainCategory: main,
+      subCategory: sub||'',
+      categoryDisplay: categoryDisplay,
       productName: name,
       requestedAt: new Date().toISOString(),
       status: 'pending'
     }).then(function(){
-      showToast('Admin কে commission request পাঠানো হয়েছে। Commission set হলে notify করা হবে।','green');
+      showToast('Admin কে commission request পাঠানো হয়েছে। Set হলে notify করা হবে।','green');
     }).catch(function(){});
     return;
   }
 
-  // Commission agree check
   var agreeEl = document.getElementById('spAgree');
   if(!agreeEl.checked){showToast('"I Agree" checkbox check করুন','red');return;}
 
@@ -4963,7 +5006,9 @@ function submitSaleProduct(){
     shopId: auth.currentUser.uid,
     shopName: SD.shopName||'দোকান',
     productName: name,
-    category: cat,
+    mainCategory: main,
+    subCategory: sub||'',
+    category: categoryDisplay,
     originalPrice: origPrice,
     salePrice: salePrice||Math.round(origPrice*(1-discount/100)),
     discount: discount,
@@ -4980,9 +5025,11 @@ function submitSaleProduct(){
   db.collection('cities').doc(CITY).collection('saleProducts').add(data)
     .then(function(){
       showToast('🏷️ Sale Product submit হয়েছে! Admin activate করবেন।','green');
-      ['spName','spCategory','spOriginalPrice','spDiscount','spSalePrice','spImage','spStartTime','spEndTime','spDescription'].forEach(function(id){
+      ['spName','spOriginalPrice','spDiscount','spSalePrice','spImage','spStartTime','spEndTime','spDescription'].forEach(function(id){
         var el=document.getElementById(id); if(el) el.value='';
       });
+      document.getElementById('spMainCat').value='';
+      document.getElementById('spSubCat').innerHTML='<option value="">— আগে প্রধান category বেছে নিন —</option>';
       var agEl=document.getElementById('spAgree'); if(agEl) agEl.checked=false;
       document.getElementById('spCommissionBox').style.display='none';
       document.getElementById('spNoCommissionBox').style.display='none';
