@@ -4727,7 +4727,8 @@ function buildFlashSale(prods){
       var flash = [];
       if(doc.exists && doc.data().enabled && doc.data().products && doc.data().products.length){
         var data = doc.data();
-        var megaEndTime = data.endTime ? new Date(data.endTime).getTime() : (Date.now() + 3*3600000);
+        var megaEndTime = data.endTime ? new Date(data.endTime.includes('T') && !data.endTime.includes('Z') ? data.endTime+':00' : data.endTime).getTime() : (Date.now() + 3*3600000);
+        if(isNaN(megaEndTime)) megaEndTime = Date.now() + 3*3600000;
         var adminProds = data.products;
 
         adminProds.forEach(function(ap){
