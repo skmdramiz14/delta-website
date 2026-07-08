@@ -4146,7 +4146,7 @@ function initFestivalBanner(){
             if(!f.active) return false;
             if(!f.date) return true;
             var diff = new Date(f.date) - new Date();
-            return diff > 0 && diff < 90*86400000;
+            return diff > 0 && diff < 180*86400000;
           });
           if(active.length > 1){
             // Multiple active → always show all
