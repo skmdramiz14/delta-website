@@ -1044,6 +1044,18 @@ button,input,select{font-family:'DM Sans',sans-serif;}
             <label style="font-size:.72rem;color:var(--muted);font-weight:600;">Color (to)</label>
             <input type="color" class="form-input" id="festCatColor2" value="#e8863a" style="height:42px;padding:4px;">
           </div>
+          <div style="grid-column:1/-1;">
+            <label style="font-size:.72rem;color:var(--muted);font-weight:600;">Background Image URL (Cloudinary — optional, না দিলে gradient দেখাবে)</label>
+            <input type="text" class="form-input" id="festCatImage" placeholder="https://res.cloudinary.com/...">
+          </div>
+          <div style="grid-column:1/-1;">
+            <label style="font-size:.72rem;color:var(--muted);font-weight:600;">Tagline / Subtitle</label>
+            <input type="text" class="form-input" id="festCatTagline" placeholder="যেমন: পুজোর কানন্দ থাকুক ঘরে ঘরে">
+          </div>
+          <div>
+            <label style="font-size:.72rem;color:var(--muted);font-weight:600;">Button Text</label>
+            <input type="text" class="form-input" id="festCatBtnText" placeholder="যেমন: দেখুন কালেকশন →">
+          </div>
         </div>
         <div style="display:flex;gap:10px;align-items:center;">
           <button class="btn-sm btn-orange" onclick="saveFestivalCategory()">💾 Festival তৈরি করুন</button>
@@ -1156,6 +1168,26 @@ button,input,select{font-family:'DM Sans',sans-serif;}
             <div>
               <label style="font-size:.68rem;color:var(--muted);">Banner Title</label>
               <input type="text" class="form-input" id="bannerTitle" placeholder="যেমন: পূজার বিশেষ অফার" style="margin-top:3px;">
+            </div>
+            <div id="bannerShopTaglineGroup" style="display:none;grid-column:1/-1;">
+              <label style="font-size:.68rem;color:var(--muted);">Tagline / Description</label>
+              <input type="text" class="form-input" id="bannerShopTagline" placeholder="যেমন: তাজা, খাঁটি, মনভরা মিষ্টি" style="margin-top:3px;">
+            </div>
+            <div id="bannerShopDiscountGroup" style="display:none;">
+              <label style="font-size:.68rem;color:var(--muted);">Discount Text</label>
+              <input type="text" class="form-input" id="bannerShopDiscount" placeholder="যেমন: 20% OFF" style="margin-top:3px;">
+            </div>
+            <div id="bannerShopRatingGroup" style="display:none;">
+              <label style="font-size:.68rem;color:var(--muted);">Rating</label>
+              <input type="text" class="form-input" id="bannerShopRating" placeholder="যেমন: 4.8" style="margin-top:3px;">
+            </div>
+            <div id="bannerShopHoursGroup" style="display:none;">
+              <label style="font-size:.68rem;color:var(--muted);">Hours</label>
+              <input type="text" class="form-input" id="bannerShopHours" placeholder="যেমন: 08:00 AM - 10:00 PM" style="margin-top:3px;">
+            </div>
+            <div id="bannerShopLocationGroup" style="display:none;">
+              <label style="font-size:.68rem;color:var(--muted);">Location / Area</label>
+              <input type="text" class="form-input" id="bannerShopLocation" placeholder="যেমন: Kusumgram" style="margin-top:3px;">
             </div>
             <div>
               <label style="font-size:.68rem;color:var(--muted);">Emoji / Icon</label>
@@ -5468,8 +5500,13 @@ window.deleteContest = deleteContest;
 // ═══ BANNER AD MANAGEMENT ═══
 function toggleBannerType(){
   var type = document.getElementById('bannerType').value;
+  var isShop = type==='shop_ad';
   document.getElementById('bannerFestivalGroup').style.display = type==='festival' ? 'block' : 'none';
-  document.getElementById('bannerShopGroup').style.display = type==='shop_ad' ? 'block' : 'none';
+  document.getElementById('bannerShopGroup').style.display = isShop ? 'block' : 'none';
+  ['bannerShopTaglineGroup','bannerShopDiscountGroup','bannerShopRatingGroup','bannerShopHoursGroup','bannerShopLocationGroup'].forEach(function(id){
+    var el = document.getElementById(id);
+    if(el) el.style.display = isShop ? 'block' : 'none';
+  });
 }
 
 function loadBannerFestivalDropdown(){
@@ -5498,6 +5535,11 @@ function saveBannerAd(){
   var pricePerDay = parseInt(document.getElementById('bannerPrice').value)||0;
   var festivalKey = document.getElementById('bannerFestival').value;
   var shopName = document.getElementById('bannerShopName').value.trim();
+  var tagline = document.getElementById('bannerShopTagline').value.trim();
+  var discountText = document.getElementById('bannerShopDiscount').value.trim();
+  var rating = document.getElementById('bannerShopRating').value.trim();
+  var hours = document.getElementById('bannerShopHours').value.trim();
+  var location = document.getElementById('bannerShopLocation').value.trim();
 
   if(!title){showToast('Banner title দিন','red');return;}
   if(type==='festival' && !festivalKey){showToast('Festival select করুন','red');return;}
@@ -5518,13 +5560,18 @@ function saveBannerAd(){
     status: 'active',
     festivalKey: type==='festival' ? festivalKey : '',
     shopName: type==='shop_ad' ? shopName : '',
+    tagline: type==='shop_ad' ? tagline : '',
+    discountText: type==='shop_ad' ? discountText : '',
+    rating: type==='shop_ad' ? rating : '',
+    hours: type==='shop_ad' ? hours : '',
+    location: type==='shop_ad' ? location : '',
     createdAt: new Date().toISOString()
   };
 
   db.collection('cities').doc(CITY).collection('bannerAds').add(data)
     .then(function(){
       showToast('✅ Banner saved!','green');
-      ['bannerTitle','bannerEmoji','bannerLink','bannerImage','bannerStartDate','bannerEndDate','bannerShopName'].forEach(function(id){
+      ['bannerTitle','bannerEmoji','bannerLink','bannerImage','bannerStartDate','bannerEndDate','bannerShopName','bannerShopTagline','bannerShopDiscount','bannerShopRating','bannerShopHours','bannerShopLocation'].forEach(function(id){
         var el=document.getElementById(id); if(el) el.value=id==='bannerEmoji'?'🎊':'';
       });
       document.getElementById('bannerPriority').value='1';
@@ -5546,15 +5593,21 @@ function loadBannerAds(){
       wrap.innerHTML = list.map(function(b){
         var isExpired = b.endDate && b.endDate < now;
         var isActive = b.status==='active' && !isExpired;
+        var thumb = (b.type==='shop_ad' && b.imageUrl) ?
+          '<img src="'+b.imageUrl+'" style="width:60px;height:44px;border-radius:8px;object-fit:cover;flex-shrink:0;">' :
+          '<div style="width:60px;height:44px;border-radius:8px;background:linear-gradient(135deg,'+b.color1+','+b.color2+');display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;">'+b.emoji+'</div>';
+        var shopExtra = b.type==='shop_ad' ?
+          (' · '+[b.discountText, b.rating?'⭐'+b.rating:'', b.location].filter(Boolean).join(' · ')) : '';
         return '<div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:8px;display:flex;gap:12px;align-items:center;">'+
           // Preview
-          '<div style="width:60px;height:44px;border-radius:8px;background:linear-gradient(135deg,'+b.color1+','+b.color2+');display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;">'+b.emoji+'</div>'+
+          thumb+
           '<div style="flex:1;min-width:0;">'+
             '<div style="font-size:.82rem;font-weight:700;color:var(--navy);">'+b.title+'</div>'+
             '<div style="font-size:.72rem;color:var(--muted);">'+
               (b.type==='festival'?'🎊 Festival: '+b.festivalKey:'🏪 Shop: '+b.shopName)+
               ' · Priority: '+b.priority+
               (b.startDate?' · '+b.startDate+' → '+b.endDate:'')+
+              shopExtra+
             '</div>'+
           '</div>'+
           '<div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;align-items:flex-end;">'+
@@ -5895,6 +5948,12 @@ function renderFestivalCategories(){
             '<div><label style="font-size:.68rem;color:var(--muted);">Color 2</label>'+
               '<input type="color" class="form-input" id="festEdit_c2_'+idx+'" value="'+f.color2+'" style="margin-top:3px;height:38px;padding:3px;"></div>'+
           '</div>'+
+          '<div style="grid-column:1/-1;"><label style="font-size:.68rem;color:var(--muted);">Background Image URL</label>'+
+            '<input class="form-input" id="festEdit_image_'+idx+'" value="'+(f.imageUrl||'').replace(/"/g,'&quot;')+'" placeholder="Cloudinary URL" style="margin-top:3px;"></div>'+
+          '<div style="grid-column:1/-1;"><label style="font-size:.68rem;color:var(--muted);">Tagline / Subtitle</label>'+
+            '<input class="form-input" id="festEdit_tagline_'+idx+'" value="'+(f.tagline||'').replace(/"/g,'&quot;')+'" style="margin-top:3px;"></div>'+
+          '<div style="grid-column:1/-1;"><label style="font-size:.68rem;color:var(--muted);">Button Text</label>'+
+            '<input class="form-input" id="festEdit_btn_'+idx+'" value="'+(f.btnText||'').replace(/"/g,'&quot;')+'" style="margin-top:3px;"></div>'+
         '</div>'+
         '<div style="display:flex;gap:8px;">'+
           '<button class="btn-sm btn-orange" onclick="saveFestivalEdit('+idx+')">💾 Save</button>'+
@@ -5916,11 +5975,15 @@ function saveFestivalEdit(idx){
   var date = document.getElementById('festEdit_date_'+idx).value;
   var color1 = document.getElementById('festEdit_c1_'+idx).value;
   var color2 = document.getElementById('festEdit_c2_'+idx).value;
+  var imageUrl = document.getElementById('festEdit_image_'+idx).value.trim();
+  var tagline = document.getElementById('festEdit_tagline_'+idx).value.trim();
+  var btnText = document.getElementById('festEdit_btn_'+idx).value.trim();
 
   if(!name){ showToast('নাম দিন','red'); return; }
 
   allFestivalCats[idx] = Object.assign({}, allFestivalCats[idx], {
     name:name, emoji:emoji, date:date, color1:color1, color2:color2,
+    imageUrl:imageUrl, tagline:tagline, btnText:btnText,
     updatedAt: new Date().toISOString()
   });
 
@@ -5939,20 +6002,24 @@ function saveFestivalCategory(){
   var emoji = document.getElementById('festCatEmoji').value.trim()||'🎊';
   var color1 = document.getElementById('festCatColor1').value;
   var color2 = document.getElementById('festCatColor2').value;
+  var imageUrl = document.getElementById('festCatImage').value.trim();
+  var tagline = document.getElementById('festCatTagline').value.trim();
+  var btnText = document.getElementById('festCatBtnText').value.trim();
 
   if(!name||!key){ showToast('নাম এবং key দিন','red'); return; }
   if(allFestivalCats.find(function(f){return f.key===key;})){
     showToast('এই key আগেই আছে','red'); return;
   }
 
-  allFestivalCats.push({name:name, key:key, date:date, emoji:emoji, color1:color1, color2:color2, active:true, createdAt:new Date().toISOString()});
+  allFestivalCats.push({name:name, key:key, date:date, emoji:emoji, color1:color1, color2:color2,
+    imageUrl:imageUrl, tagline:tagline, btnText:btnText, active:true, createdAt:new Date().toISOString()});
 
   db.collection('cities').doc(CITY).collection('settings').doc('festivalCategories')
     .set({festivals: allFestivalCats, updatedAt: new Date().toISOString()})
     .then(function(){
       renderFestivalCategories();
       // Form clear করো
-      ['festCatName','festCatKey','festCatEmoji'].forEach(function(id){ document.getElementById(id).value=''; });
+      ['festCatName','festCatKey','festCatEmoji','festCatImage','festCatTagline','festCatBtnText'].forEach(function(id){ document.getElementById(id).value=''; });
       document.getElementById('festCatStatus').textContent = '✅ Festival তৈরি হয়েছে';
       setTimeout(function(){ document.getElementById('festCatStatus').textContent=''; },3000);
       showToast(name+' festival তৈরি হয়েছে ✅','green');
