@@ -233,25 +233,25 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 /* ── FLASH SALE BANNER ── */
 .flash-outer-wrap{position:relative;margin:0 16px;}
 .flash-outer-card{
-  background:radial-gradient(circle at 25% 15%,rgba(255,255,255,.06),transparent 55%),linear-gradient(135deg,#4A0000 0%,#7B0000 55%,#B01616 100%);
+  background:radial-gradient(circle at 20% 10%,rgba(255,255,255,.09),transparent 50%),linear-gradient(150deg,#3d0000 0%,#7B0000 50%,#c41f1f 100%);
   border-radius:22px;padding:14px 16px 16px;
   position:relative;overflow:hidden;
-  box-shadow:0 10px 30px rgba(0,0,0,.12),0 8px 22px rgba(176,22,22,.28);
+  box-shadow:0 10px 30px rgba(0,0,0,.14),0 8px 22px rgba(176,22,22,.3);
 }
-/* ডেকোরেটিভ ব্যাকগ্রাউন্ড — শুধু ডান দিকে, হালকা opacity */
+/* ডেকোরেটিভ ব্যাকগ্রাউন্ড — শুধু ডান দিকে, খুব হালকা opacity */
 .flash-outer-card::before{
   content:'🛍️';position:absolute;right:6%;top:10%;font-size:3.2rem;opacity:.06;
   pointer-events:none;transform:rotate(-8deg);
 }
 .flash-outer-card::after{
   content:'';position:absolute;right:-40px;bottom:-40px;width:180px;height:180px;
-  background:radial-gradient(circle,rgba(255,255,255,.1) 0%,transparent 70%);
+  background:radial-gradient(circle,rgba(255,255,255,.12) 0%,transparent 70%);
   pointer-events:none;
 }
 
 /* Countdown — card-এর top-right এ absolute, 44×44 box, compact */
 .flash-banner-countdown{
-  position:absolute;top:18px;right:18px;z-index:3;
+  position:absolute;top:18px;right:16px;z-index:3;
   display:flex;align-items:center;gap:4px;
 }
 .fbc-block{display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(0,0,0,.4);border-radius:8px;width:44px;height:44px;box-sizing:border-box;}
@@ -259,17 +259,17 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 .fbc-label{font-size:.36rem;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.3px;margin-top:2px;}
 .fbc-sep{font-size:.8rem;font-weight:700;color:rgba(255,255,255,.4);}
 
-.flash-card-row{display:flex;gap:24px;position:relative;z-index:1;width:100%;align-items:center;}
-.flash-left{flex:0 0 35%;display:flex;flex-direction:column;justify-content:center;min-width:0;}
+.flash-card-row{display:flex;gap:28px;position:relative;z-index:1;width:100%;align-items:center;}
+.flash-left{flex:0 0 36%;display:flex;flex-direction:column;justify-content:center;min-width:0;}
 .flash-left-badge{
   display:inline-flex;align-items:center;gap:4px;color:#FFD54F;
-  font-size:.58rem;font-weight:800;letter-spacing:.5px;margin-bottom:5px;align-self:flex-start;
+  font-size:.62rem;font-weight:800;letter-spacing:.5px;margin-bottom:7px;align-self:flex-start;
 }
 .flash-left-title{
-  font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:900;color:#fff;
-  line-height:1.05;margin-bottom:5px;text-shadow:0 2px 8px rgba(0,0,0,.3);
+  font-family:'Playfair Display',serif;font-size:1.75rem;font-weight:900;color:#fff;
+  line-height:1.1;margin-bottom:8px;text-shadow:0 2px 8px rgba(0,0,0,.3);
 }
-.flash-left-sub{font-size:.68rem;font-weight:600;color:rgba(255,255,255,.9);line-height:1.25;margin-bottom:10px;}
+.flash-left-sub{font-size:.98rem;font-weight:600;color:rgba(255,255,255,.92);line-height:1.4;margin-bottom:14px;}
 .flash-left-btn{
   background:#fff;border:none;color:#B01616;font-weight:800;font-size:.7rem;
   width:165px;height:48px;border-radius:999px;cursor:pointer;white-space:nowrap;
@@ -280,21 +280,21 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 
 .flash-grid{display:flex;gap:12px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-top:64px;padding-bottom:2px;scroll-snap-type:x mandatory;}
 
-/* Floating right arrow — card-এর ডান edge-এর সাথে exact half overlap */
+/* Floating right arrow — card-এর ডান edge-এর সাথে exact half overlap, ছোট */
 .flash-scroll-arrow{
-  position:absolute;right:-20px;top:50%;transform:translateY(-50%);
-  width:40px;height:40px;border-radius:50%;background:#fff;border:none;
+  position:absolute;right:-17px;top:50%;transform:translateY(-50%);
+  width:34px;height:34px;border-radius:50%;background:#fff;border:none;
   box-shadow:0 3px 10px rgba(0,0,0,.25);color:#B01616;font-weight:800;
-  display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:2;font-size:.9rem;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:2;font-size:.8rem;
 }
 
 /* 360–430px রেঞ্জে fine-tune, কিন্তু two-column split বজায় থাকবে */
 @media(max-width:400px){
   .flash-outer-card{padding:12px 12px 14px;}
-  .flash-card-row{gap:18px;}
-  .flash-left{flex:0 0 34%;}
-  .flash-left-title{font-size:1rem;}
-  .flash-left-sub{font-size:.62rem;}
+  .flash-card-row{gap:20px;}
+  .flash-left{flex:0 0 35%;}
+  .flash-left-title{font-size:1.4rem;}
+  .flash-left-sub{font-size:.8rem;}
   .flash-left-btn{font-size:.62rem;width:135px;height:44px;}
   .fbc-block{width:38px;height:38px;}
   .fbc-num{font-size:.78rem;}
@@ -305,11 +305,13 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 
 
 
+
 /* ── FLASH CARD COMPACT ── */
-.flash-card{background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;position:relative;flex-shrink:0;width:clamp(150px,42vw,165px);box-shadow:0 4px 14px rgba(0,0,0,.2);scroll-snap-align:start;}
-.flash-card-img{height:108px;background:var(--sand);display:flex;align-items:center;justify-content:center;font-size:2rem;position:relative;overflow:hidden;}
+.flash-card{background:#fff;border:1px solid var(--border);border-radius:15px;overflow:hidden;position:relative;flex-shrink:0;width:clamp(122px,35vw,138px);box-shadow:0 4px 14px rgba(0,0,0,.2);scroll-snap-align:start;}
+.flash-card-img{height:88px;background:var(--sand);display:flex;align-items:center;justify-content:center;font-size:2rem;position:relative;overflow:hidden;}
 .flash-card-img img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;}
 .flash-card-badges{position:absolute;top:5px;left:5px;display:flex;gap:3px;}
+.flash-card-badges .badge{font-size:.58rem;padding:2px 6px;}
 .flash-card-timer{background:linear-gradient(135deg,#B71C1C,#E53935);padding:4px 10px;display:flex;align-items:center;justify-content:space-between;}
 .flash-card-timer-label{color:rgba(255,255,255,.85);font-size:.58rem;font-weight:600;}
 .flash-card-timer-digits{font-family:monospace;font-size:.78rem;font-weight:800;color:#fff;letter-spacing:1px;}
@@ -1904,7 +1906,7 @@ img{max-width:100%;height:auto;}
 </section>
 
 <!-- FLASH SALE -->
-<section class="section" id="flashSection" style="display:none;">
+<section class="section" id="flashSection" style="display:none;padding-bottom:24px;">
   <div class="flash-outer-wrap">
   <div class="flash-outer-card">
 
