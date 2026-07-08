@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>স্পনসরড শপ — DELTA</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --navy:#0a1f35;--navy2:#122840;--navy3:#061526;
+  --orange:#f07018;--orange2:#ff8c3a;--orange-dark:#d9610f;
+  --green:#2da86a;--green2:#1a7a4c;
+  --white:#fff;--sand:#eef2f7;--cream:#f7f9fc;
+  --border:#dde5ef;--muted:#6b7b8d;--gray:#6b7b8d;--charcoal:#1a2535;
+  --orange-light:#fff4ec;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charcoal);}
+
+/* ── NAV ── */
+.nav{background:var(--navy);padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.nav-logo{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:900;color:#fff;cursor:pointer;text-decoration:none;}
+.nav-logo em{color:var(--orange);font-style:normal;}
+.nav-back{color:rgba(255,255,255,.7);font-size:.85rem;cursor:pointer;display:flex;align-items:center;gap:6px;text-decoration:none;}
+.nav-back:hover{color:#fff;}
+.nav-lang{display:flex;gap:2px;background:rgba(255,255,255,.1);border-radius:20px;padding:3px;}
+.lang-btn{padding:4px 10px;border-radius:16px;border:none;background:transparent;color:rgba(255,255,255,.6);font-size:.75rem;font-weight:700;cursor:pointer;transition:all .2s;}
+.lang-btn.active{background:var(--orange);color:#fff;}
+
+/* ── HERO BANNER ── */
+.hero-banner{background:linear-gradient(135deg,var(--navy3),var(--navy),#1c3a5e);padding:32px 20px 40px;text-align:center;position:relative;overflow:hidden;}
+.hero-banner::before{content:'⭐';position:absolute;left:-20px;top:-10px;font-size:8rem;opacity:.12;}
+.hero-banner::after{content:'🏪';position:absolute;right:-20px;bottom:-10px;font-size:8rem;opacity:.12;}
+.hero-title{font-family:'Playfair Display',serif;font-size:clamp(1.6rem,5vw,2.4rem);font-weight:900;color:#fff;margin-bottom:8px;}
+.hero-sub{color:rgba(255,255,255,.85);font-size:.88rem;margin-bottom:6px;max-width:500px;margin-left:auto;margin-right:auto;}
+.hero-count{color:rgba(255,255,255,.95);font-size:.8rem;font-weight:700;margin-top:10px;}
+
+/* ── MAIN CONTENT ── */
+.main{max-width:760px;margin:0 auto;padding:24px 16px 60px;}
+
+/* ── SPONSORED SHOP ROW ── */
+.ss-list{display:flex;flex-direction:column;gap:12px;}
+.ss-row{display:flex;align-items:center;gap:14px;border-radius:16px;padding:14px 16px;cursor:pointer;transition:transform .15s;border:1px solid var(--border);}
+.ss-row:hover{transform:translateY(-2px);}
+.ss-logo{width:52px;height:52px;border-radius:50%;background:#fff;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.4rem;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;}
+.ss-logo img{width:100%;height:100%;object-fit:cover;}
+.ss-info{flex:1;min-width:0;}
+.ss-name{font-weight:800;font-size:.92rem;color:var(--navy);margin-bottom:3px;}
+.ss-tagline{font-size:.76rem;color:var(--muted);margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ss-offer{display:inline-block;font-size:.66rem;font-weight:800;padding:3px 10px;border-radius:20px;background:rgba(255,255,255,.75);}
+.ss-thumb{width:64px;height:64px;border-radius:12px;object-fit:cover;flex-shrink:0;}
+.ss-chevron{font-size:1.1rem;color:var(--muted);flex-shrink:0;}
+
+.empty-state{text-align:center;padding:60px 20px;color:var(--muted);}
+.empty-icon{font-size:2.5rem;margin-bottom:10px;}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:12px 22px;border-radius:10px;font-size:.85rem;font-weight:600;z-index:9999;display:none;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.3);}
+.toast.show{display:block;animation:fadeInUp .3s ease;}
+@keyframes fadeInUp{from{opacity:0;transform:translate(-50%,20px);}to{opacity:1;transform:translate(-50%,0);}}
+
+/* ── MOBILE FIX ── */
+@media(max-width:768px){
+  html,body{overflow-x:hidden;max-width:100vw;}
+  *{max-width:100%;}
+  .ss-row{padding:12px;gap:10px;}
+  .ss-thumb{width:52px;height:52px;}
+  .ss-logo{width:44px;height:44px;font-size:1.2rem;}
+}
+
+/* ── LANG ── */
+body.lang-en .lang-bn{display:none!important;}
+body.lang-bn .lang-en{display:none!important;}
+</style>
+</head>
+<body class="lang-bn">
+
+<!-- NAV -->
+<nav class="nav">
+  <a class="nav-back" href="index.html">← <span class="lang-bn">হোমে ফিরুন</span><span class="lang-en">Back to Home</span></a>
+  <a class="nav-logo" href="index.html">△ DELT<em>A</em></a>
+  <div class="nav-lang">
+    <button class="lang-btn active" id="langBn" onclick="setLang('bn')">বাং</button>
+    <button class="lang-btn" id="langEn" onclick="setLang('en')">ENG</button>
+  </div>
+</nav>
+
+<!-- HERO BANNER -->
+<div class="hero-banner">
+  <div class="hero-title">⭐ <span class="lang-bn">স্পনসরড শপ</span><span class="lang-en">Sponsored Shops</span></div>
+  <p class="hero-sub">
+    <span class="lang-bn">আমাদের বিশ্বস্ত পার্টনার দোকানগুলো — বিশেষ অফার সহ</span>
+    <span class="lang-en">Our trusted partner shops — with special offers</span>
+  </p>
+  <div class="hero-count" id="heroCount"><span class="lang-bn">লোড হচ্ছে...</span><span class="lang-en">Loading...</span></div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="ss-list" id="ssList">
+    <div class="empty-state"><div class="empty-icon">⏳</div><p><span class="lang-bn">লোড হচ্ছে...</span><span class="lang-en">Loading...</span></p></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var currentLang='bn';
+function setLang(l){
+  currentLang=l;
+  document.body.className='lang-'+l;
+  document.getElementById('langBn').classList.toggle('active',l==='bn');
+  document.getElementById('langEn').classList.toggle('active',l==='en');
+}
+function showToast(msg,type){
+  var t=document.getElementById('toast');
+  t.textContent=msg;
+  t.style.background=type==='green'?'#1a8a4a':'#0a1f35';
+  t.classList.add('show');
+  setTimeout(function(){t.classList.remove('show');},2800);
+}
+
+var allSponsoredShops = [];
+var fbcfg={apiKey:"AIzaSyA6TrrnCMwv1aa1WPqGvTVWlnieB2pVOEU",authDomain:"delta-platform-82fc0.firebaseapp.com",projectId:"delta-platform-82fc0",storageBucket:"delta-platform-82fc0.firebasestorage.app",messagingSenderId:"444904180433",appId:"1:444904180433:web:6706eba4d73a30cd67d3f0"};
+var CITY='manteswar';
+
+/* সারিভিত্তিক হালকা tint রং — cycle করে ব্যবহার হবে */
+var SS_TINTS = ['#eaf5ec','#e9f1fb','#fdf3e1','#fce9ee','#efeafb'];
+
+(function(){
+  var s=['https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js','https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js'];
+  var n=0;
+  s.forEach(function(src){
+    var el=document.createElement('script'); el.src=src;
+    el.onload=function(){ if(++n===s.length) initFB(); };
+    el.onerror=function(){ renderSSList([]); };
+    document.head.appendChild(el);
+  });
+})();
+
+function initFB(){
+  try{
+    firebase.initializeApp(fbcfg);
+    var db=firebase.firestore();
+    var today = new Date().toISOString().slice(0,10);
+    db.collection('cities').doc(CITY).collection('bannerAds')
+      .where('status','==','active').get().then(function(snap){
+        allSponsoredShops = [];
+        snap.forEach(function(d){
+          var b = Object.assign({id:d.id}, d.data());
+          if(b.type!=='shop_ad') return;
+          if(b.endDate && b.endDate < today) return;
+          if(b.startDate && b.startDate > today) return;
+          allSponsoredShops.push(b);
+        });
+        allSponsoredShops.sort(function(a,b){ return (b.priority||0)-(a.priority||0); });
+        renderSSList(allSponsoredShops);
+      }).catch(function(){ renderSSList([]); });
+  }catch(e){ renderSSList([]); }
+}
+
+function renderSSList(shops){
+  var wrap = document.getElementById('ssList');
+  var countEl = document.getElementById('heroCount');
+  countEl.innerHTML = '<span class="lang-bn">'+shops.length+' টি sponsored shop</span><span class="lang-en">'+shops.length+' sponsored shops</span>';
+
+  if(!shops.length){
+    wrap.innerHTML = '<div class="empty-state"><div class="empty-icon">🏪</div>'+
+      '<p><span class="lang-bn">এখনো কোনো sponsored shop যোগ করা হয়নি</span><span class="lang-en">No sponsored shops yet</span></p></div>';
+    return;
+  }
+
+  wrap.innerHTML = shops.map(function(s, i){
+    var tint = SS_TINTS[i % SS_TINTS.length];
+    var logo = s.imageUrl ? '<img src="'+s.imageUrl+'">' : '🏪';
+    var thumb = s.imageUrl ? '<img class="ss-thumb" src="'+s.imageUrl+'" loading="lazy">' : '';
+    var link = s.linkUrl || '#';
+    return '<div class="ss-row" style="background:'+tint+';" onclick="window.location.href=\''+link+'\'">'+
+      '<div class="ss-logo">'+logo+'</div>'+
+      '<div class="ss-info">'+
+        '<div class="ss-name">'+(s.shopName||'—')+'</div>'+
+        (s.tagline ? '<div class="ss-tagline">'+s.tagline+'</div>' : '')+
+        (s.discountText ? '<span class="ss-offer">'+s.discountText+'</span>' : '')+
+      '</div>'+
+      thumb+
+      '<span class="ss-chevron">›</span>'+
+    '</div>';
+  }).join('');
+}
+
+// Safety: if Firebase scripts take too long, show empty state after 6s instead of hanging
+setTimeout(function(){
+  if(document.getElementById('ssList').innerHTML.indexOf('লোড হচ্ছে') !== -1){
+    renderSSList(allSponsoredShops);
+  }
+},6000);
+</script>
+</body>
+</html>
