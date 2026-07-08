@@ -233,73 +233,38 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 /* ── FLASH SALE BANNER ── */
 .flash-outer-card{
   background:linear-gradient(135deg,#1a0000 0%,#7f0000 40%,#B71C1C 70%,#E53935 100%);
-  border-radius:18px;padding:20px 18px 16px;
+  border-radius:18px;padding:18px;
   margin:0 4%;position:relative;overflow:hidden;
   box-shadow:0 8px 32px rgba(183,28,28,.35);
 }
-.flash-banner{
-  display:flex;align-items:center;justify-content:space-between;gap:16px;
-  cursor:pointer;position:relative;z-index:1;
+.flash-card-row{display:flex;gap:16px;position:relative;z-index:1;}
+.flash-left{flex:0 0 34%;display:flex;flex-direction:column;justify-content:center;min-width:0;}
+.flash-left-sub{font-size:.86rem;font-weight:700;color:#fff;line-height:1.35;margin-bottom:2px;}
+.flash-left-sub2{font-size:.72rem;color:rgba(255,255,255,.75);margin-bottom:14px;line-height:1.3;}
+.flash-left-btn{
+  background:#fff;border:none;color:#B71C1C;font-weight:800;font-size:.74rem;
+  padding:9px 12px;border-radius:20px;cursor:pointer;white-space:nowrap;
+  box-shadow:0 3px 10px rgba(0,0,0,.2);align-self:flex-start;
 }
-.flash-banner:active{transform:scale(.98);}
-.flash-banner-bg{
-  position:absolute;inset:0;
-  background:radial-gradient(circle at 70% 50%,rgba(255,255,255,.08) 0%,transparent 60%);
-  pointer-events:none;
-}
-.flash-banner-lightning{
-  position:absolute;right:48%;top:50%;transform:translate(50%,-50%);
-  font-size:5rem;opacity:.06;pointer-events:none;
-}
-.flash-banner-left{flex:1;min-width:0;position:relative;z-index:1;}
-.flash-banner-badge{
-  display:inline-flex;align-items:center;gap:4px;
-  background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);
-  color:#FFD54F;padding:3px 10px;border-radius:20px;
-  font-size:.62rem;font-weight:800;letter-spacing:1px;
-  margin-bottom:8px;
-}
-.flash-banner-title{
-  font-family:'Playfair Display',serif;
-  font-size:1.8rem;font-weight:900;color:#fff;
-  line-height:1;margin-bottom:4px;
-  text-shadow:0 2px 10px rgba(0,0,0,.3);
-}
-.flash-banner-sub{font-size:.78rem;color:rgba(255,255,255,.8);margin-bottom:12px;font-weight:500;}
+.flash-right{flex:1;min-width:0;display:flex;flex-direction:column;gap:10px;}
 
 /* Countdown */
-.flash-banner-countdown{display:flex;align-items:center;gap:6px;}
-.fbc-block{display:flex;flex-direction:column;align-items:center;background:rgba(0,0,0,.3);border-radius:8px;padding:5px 10px;min-width:42px;}
-.fbc-num{font-size:1.2rem;font-weight:800;color:#fff;font-family:monospace;line-height:1;}
-.fbc-label{font-size:.52rem;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.5px;margin-top:1px;}
-.fbc-sep{font-size:1.2rem;font-weight:700;color:rgba(255,255,255,.4);margin-bottom:10px;}
+.flash-banner-countdown{display:flex;align-items:center;gap:5px;}
+.fbc-block{display:flex;flex-direction:column;align-items:center;background:rgba(0,0,0,.35);border-radius:8px;padding:5px 8px;min-width:36px;}
+.fbc-num{font-size:1.05rem;font-weight:800;color:#fff;font-family:monospace;line-height:1;}
+.fbc-label{font-size:.48rem;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.5px;margin-top:1px;}
+.fbc-sep{font-size:1rem;font-weight:700;color:rgba(255,255,255,.4);margin-bottom:8px;}
 
-/* Right side */
-.flash-banner-right{
-  display:flex;flex-direction:column;align-items:center;gap:10px;
-  position:relative;z-index:1;flex-shrink:0;
-}
-.flash-banner-emoji{font-size:2.8rem;line-height:1;animation:flicker 2s infinite alternate;}
-@keyframes flicker{0%{opacity:1;transform:scale(1);}100%{opacity:.85;transform:scale(1.08);}}
-.flash-banner-btn{
-  background:#fff;border:none;
-  color:#B71C1C;font-weight:800;font-size:.82rem;
-  padding:10px 18px;border-radius:20px;cursor:pointer;
-  white-space:nowrap;display:flex;align-items:center;gap:5px;
-  box-shadow:0 3px 12px rgba(0,0,0,.2);
-  transition:all .2s;
-}
-.flash-banner-btn:hover{background:#fff3f3;transform:translateY(-1px);}
-.flash-banner-count{font-size:.65rem;color:rgba(255,255,255,.6);text-align:center;}
+.flash-grid{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-bottom:2px;scroll-snap-type:x mandatory;}
 
-/* Mobile */
+/* Mobile — narrow স্ক্রিনে left column নিচে চলে আসবে */
+@media(max-width:560px){
+  .flash-card-row{flex-direction:column;gap:12px;}
+  .flash-left{flex:none;}
+  .flash-left-btn{align-self:flex-start;}
+}
 @media(max-width:480px){
-  .flash-outer-card{padding:16px 14px 14px;margin:0 4%;}
-  .flash-banner-title{font-size:1.5rem;}
-  .fbc-block{padding:4px 8px;min-width:36px;}
-  .fbc-num{font-size:1rem;}
-  .flash-banner-emoji{font-size:2.2rem;}
-  .flash-banner-btn{padding:9px 14px;font-size:.75rem;}
+  .flash-outer-card{padding:16px 14px;}
 }
 
 
@@ -1902,25 +1867,36 @@ img{max-width:100%;height:auto;}
 </section>
 
 <!-- FLASH SALE -->
-<!-- FLASH SALE BANNER -->
-<section class="section" id="flashSection" style="display:none;padding-top:0;padding-bottom:0;">
-  <div class="flash-outer-card">
-    <div class="flash-banner" onclick="window.location.href='flash-sale.html'">
-      <!-- Background elements -->
-      <div class="flash-banner-bg"></div>
-      <div class="flash-banner-lightning">⚡</div>
+<section class="section" id="flashSection" style="display:none;">
+  <div class="section-head">
+    <div>
+      <div class="section-label">⚡ <span class="lang-bn">লিমিটেড টাইম</span><span class="lang-en">LIMITED TIME</span></div>
+      <div class="section-title">Flash Sale</div>
+    </div>
+    <a href="flash-sale.html" style="color:var(--orange);font-weight:700;font-size:.85rem;text-decoration:none;white-space:nowrap;">
+      <span class="lang-bn">সব দেখুন →</span><span class="lang-en">See All →</span>
+    </a>
+  </div>
 
-      <!-- Left: Text -->
-      <div class="flash-banner-left">
-        <div class="flash-banner-badge">⚡ LIMITED TIME</div>
-        <div class="flash-banner-title">
-          <span class="lang-bn">Flash Sale</span>
-          <span class="lang-en">Flash Sale</span>
+  <div class="flash-outer-card">
+    <div class="flash-card-row">
+      <!-- Left: subtitle + button -->
+      <div class="flash-left">
+        <div class="flash-left-sub">
+          <span class="lang-bn">সময় অল্প, ডিল কিন্তু দারুণ!</span>
+          <span class="lang-en">Time's short, deals are great!</span>
         </div>
-        <div class="flash-banner-sub">
-          <span class="lang-bn">৩০% পর্যন্ত ছাড় — আজকেই!</span>
-          <span class="lang-en">Up to 30% off — Today only!</span>
+        <div class="flash-left-sub2">
+          <span class="lang-bn">দাম কমার সেরা সময় এখনই</span>
+          <span class="lang-en">Best time for lower prices, right now</span>
         </div>
+        <button class="flash-left-btn" onclick="window.location.href='flash-sale.html'">
+          <span class="lang-bn">সব ডিল দেখুন →</span><span class="lang-en">See All Deals →</span>
+        </button>
+      </div>
+
+      <!-- Right: countdown + product thumbnails -->
+      <div class="flash-right">
         <div class="flash-banner-countdown">
           <!-- দিন — শুধু ২৪ ঘণ্টার বেশি হলে দেখাবে -->
           <div class="fbc-block" id="fbcDaysWrap" style="display:none;">
@@ -1943,22 +1919,10 @@ img{max-width:100%;height:auto;}
             <span class="fbc-label"><span class="lang-bn">সেকেন্ড</span><span class="lang-en">sec</span></span>
           </div>
         </div>
-      </div>
 
-      <!-- Right: CTA -->
-      <div class="flash-banner-right">
-        <div class="flash-banner-emoji">🔥</div>
-        <button class="flash-banner-btn" onclick="event.stopPropagation();window.location.href='flash-sale.html'">
-          <span class="lang-bn">এখনই দেখুন</span>
-          <span class="lang-en">Shop Now</span>
-          <span>→</span>
-        </button>
-        <div class="flash-banner-count" id="flashProdCount"></div>
+        <div class="flash-grid" id="flashGrid"></div>
       </div>
     </div>
-
-    <!-- Flash Sale Product Thumbnails -->
-    <div class="flash-grid" id="flashGrid" style="display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;margin-top:14px;padding-bottom:2px;position:relative;z-index:1;scroll-snap-type:x mandatory;"></div>
   </div>
 </section>
 
@@ -4656,20 +4620,6 @@ function startBannerCountdown(endTime){
     if(hEl) hEl.textContent=(hours<10?'0':'')+hours;
     if(mEl) mEl.textContent=(mins<10?'0':'')+mins;
     if(sEl) sEl.textContent=(secs<10?'0':'')+secs;
-
-    // Sub-text dynamically update
-    var subBn = document.querySelector('.flash-banner-sub .lang-bn');
-    var subEn = document.querySelector('.flash-banner-sub .lang-en');
-    if(days >= 2){
-      if(subBn) subBn.textContent = days+' দিন ধরে চলবে — মিস করবেন না!';
-      if(subEn) subEn.textContent = 'Running for '+days+' days — don\'t miss it!';
-    } else if(days === 1){
-      if(subBn) subBn.textContent = 'মাত্র ১ দিন বাকি — এখনই নিন!';
-      if(subEn) subEn.textContent = 'Only 1 day left — grab yours now!';
-    } else {
-      if(subBn) subBn.textContent = 'সীমিত সময়ের অফার — শেষ হওয়ার আগেই নিন!';
-      if(subEn) subEn.textContent = 'Limited time — grab before it ends!';
-    }
   }
   tick();
   bannerCountdownInterval = setInterval(tick, 1000);
