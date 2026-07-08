@@ -304,18 +304,18 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 
 
 /* ── FLASH CARD COMPACT ── */
-.flash-card{background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden;position:relative;flex-shrink:0;width:160px;box-shadow:0 4px 14px rgba(0,0,0,.2);}
-.flash-card-img{height:110px;background:var(--sand);display:flex;align-items:center;justify-content:center;font-size:2.4rem;position:relative;overflow:hidden;}
+.flash-card{background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;position:relative;flex-shrink:0;width:128px;box-shadow:0 4px 14px rgba(0,0,0,.2);scroll-snap-align:start;}
+.flash-card-img{height:88px;background:var(--sand);display:flex;align-items:center;justify-content:center;font-size:2rem;position:relative;overflow:hidden;}
 .flash-card-img img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;}
-.flash-card-badges{position:absolute;top:6px;left:6px;display:flex;gap:4px;}
+.flash-card-badges{position:absolute;top:5px;left:5px;display:flex;gap:3px;}
 .flash-card-timer{background:linear-gradient(135deg,#B71C1C,#E53935);padding:4px 10px;display:flex;align-items:center;justify-content:space-between;}
 .flash-card-timer-label{color:rgba(255,255,255,.85);font-size:.58rem;font-weight:600;}
 .flash-card-timer-digits{font-family:monospace;font-size:.78rem;font-weight:800;color:#fff;letter-spacing:1px;}
-.flash-card-body{padding:9px 10px;}
-.flash-card-name{font-weight:700;font-size:.78rem;color:var(--charcoal);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px;}
-.flash-card-price{display:flex;align-items:center;gap:5px;margin-bottom:7px;}
-.flash-card-price-now{font-size:.9rem;font-weight:800;color:var(--orange);}
-.flash-card-price-old{font-size:.68rem;color:var(--muted);text-decoration:line-through;}
+.flash-card-body{padding:7px 8px;}
+.flash-card-name{font-weight:700;font-size:.68rem;color:var(--charcoal);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px;}
+.flash-card-price{display:flex;align-items:center;gap:4px;margin-bottom:5px;}
+.flash-card-price-now{font-size:.78rem;font-weight:800;color:var(--orange);}
+.flash-card-price-old{font-size:.6rem;color:var(--muted);text-decoration:line-through;}
 .flash-card-btn{width:100%;background:var(--navy);color:#fff;border:none;padding:7px 6px;border-radius:7px;font-weight:700;font-size:.72rem;cursor:pointer;}
 .flash-card-btn:active{background:var(--orange);}
 .flash-card-qty{display:flex;align-items:center;justify-content:space-between;background:var(--sand);border-radius:7px;}
@@ -1958,7 +1958,7 @@ img{max-width:100%;height:auto;}
     </div>
 
     <!-- Flash Sale Product Thumbnails -->
-    <div class="flash-grid" id="flashGrid" style="display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;margin-top:14px;padding-bottom:2px;position:relative;z-index:1;"></div>
+    <div class="flash-grid" id="flashGrid" style="display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;margin-top:14px;padding-bottom:2px;position:relative;z-index:1;scroll-snap-type:x mandatory;"></div>
   </div>
 </section>
 
@@ -4776,17 +4776,12 @@ function flashCardHTML(p){
   var salePrice=p.salePrice||(disc?Math.round(origPrice*(1-disc/100)):origPrice);
   var inCart=cart.find(function(c){return c.id===p.id&&c.shopId===p.shopId;});
   var qty=inCart?inCart.qty:0;
-  var timerId='ftimer_'+p.id;
   return '<div class="flash-card">'+
     '<div class="flash-card-img">'+
       (img?'<img src="'+img+'" alt="'+name+'" loading="lazy">':prodEmoji(p.category))+
       '<div class="flash-card-badges">'+
         (disc?'<span class="badge badge-disc">-'+disc+'%</span>':'')+
       '</div>'+
-    '</div>'+
-    '<div class="flash-card-timer">'+
-      '<span class="flash-card-timer-label">⏱</span>'+
-      '<span class="flash-card-timer-digits" id="'+timerId+'">--:--</span>'+
     '</div>'+
     '<div class="flash-card-body">'+
       '<div class="flash-card-name">'+name+'</div>'+
