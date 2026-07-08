@@ -231,16 +231,17 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 .why-card p{color:var(--muted);font-size:.86rem;line-height:1.7;}
 
 /* ── FLASH SALE BANNER ── */
-.flash-outer-wrap{position:relative;margin:0 4%;}
+.flash-outer-wrap{position:relative;margin:0 3%;}
 .flash-outer-card{
   background:linear-gradient(135deg,#4A0000 0%,#7B0000 55%,#B01616 100%);
-  border-radius:18px;padding:16px 14px;
+  border-radius:24px;padding:20px;
+  min-height:300px;display:flex;align-items:center;
   position:relative;overflow:hidden;
   box-shadow:0 8px 32px rgba(176,22,22,.35);
 }
 /* ডেকোরেটিভ ব্যাকগ্রাউন্ড — শুধু ডান দিকে, হালকা opacity */
 .flash-outer-card::before{
-  content:'🛍️';position:absolute;right:6%;top:8%;font-size:3.2rem;opacity:.08;
+  content:'🛍️';position:absolute;right:6%;top:10%;font-size:3.2rem;opacity:.08;
   pointer-events:none;transform:rotate(-8deg);
 }
 .flash-outer-card::after{
@@ -248,33 +249,37 @@ button,input,select{font-family:'DM Sans',sans-serif;}
   background:radial-gradient(circle,rgba(255,255,255,.1) 0%,transparent 70%);
   pointer-events:none;
 }
-.flash-card-row{display:flex;gap:10px;position:relative;z-index:1;align-items:stretch;}
-.flash-left{flex:0 0 32%;display:flex;flex-direction:column;justify-content:center;min-width:0;}
+
+/* Countdown — card-এর top-right এ absolute floating */
+.flash-banner-countdown{
+  position:absolute;top:16px;right:16px;z-index:3;
+  display:flex;align-items:center;gap:4px;
+}
+.fbc-block{display:flex;flex-direction:column;align-items:center;background:rgba(0,0,0,.4);border-radius:7px;padding:4px 7px;min-width:30px;}
+.fbc-num{font-size:.85rem;font-weight:800;color:#fff;font-family:monospace;line-height:1;}
+.fbc-label{font-size:.4rem;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.4px;margin-top:1px;}
+.fbc-sep{font-size:.85rem;font-weight:700;color:rgba(255,255,255,.4);margin-bottom:6px;}
+
+.flash-card-row{display:flex;gap:12px;position:relative;z-index:1;width:100%;align-items:center;}
+.flash-left{flex:0 0 31%;display:flex;flex-direction:column;justify-content:center;min-width:0;}
 .flash-left-badge{
   display:inline-flex;align-items:center;gap:4px;color:#FFD54F;
-  font-size:.62rem;font-weight:800;letter-spacing:.5px;margin-bottom:6px;align-self:flex-start;
+  font-size:.6rem;font-weight:800;letter-spacing:.5px;margin-bottom:6px;align-self:flex-start;
 }
 .flash-left-title{
-  font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:900;color:#fff;
+  font-family:'Playfair Display',serif;font-size:1.25rem;font-weight:900;color:#fff;
   line-height:1.05;margin-bottom:6px;text-shadow:0 2px 8px rgba(0,0,0,.3);
 }
-.flash-left-sub{font-size:.76rem;font-weight:600;color:rgba(255,255,255,.9);line-height:1.3;margin-bottom:12px;}
+.flash-left-sub{font-size:.72rem;font-weight:600;color:rgba(255,255,255,.9);line-height:1.3;margin-bottom:12px;}
 .flash-left-btn{
-  background:#fff;border:none;color:#B01616;font-weight:800;font-size:.72rem;
-  padding:13px 14px;border-radius:999px;cursor:pointer;white-space:nowrap;
+  background:#fff;border:none;color:#B01616;font-weight:800;font-size:.7rem;
+  padding:12px 14px;border-radius:999px;cursor:pointer;white-space:nowrap;
   box-shadow:0 4px 14px rgba(0,0,0,.25);align-self:flex-start;
-  min-height:44px;display:flex;align-items:center;
+  min-height:42px;display:flex;align-items:center;
 }
-.flash-right{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px;position:relative;}
+.flash-right{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;}
 
-/* Countdown — right column-এর top-এ floating */
-.flash-banner-countdown{display:flex;align-items:center;gap:4px;align-self:flex-end;}
-.fbc-block{display:flex;flex-direction:column;align-items:center;background:rgba(0,0,0,.4);border-radius:7px;padding:4px 7px;min-width:32px;}
-.fbc-num{font-size:.92rem;font-weight:800;color:#fff;font-family:monospace;line-height:1;}
-.fbc-label{font-size:.44rem;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.4px;margin-top:1px;}
-.fbc-sep{font-size:.9rem;font-weight:700;color:rgba(255,255,255,.4);margin-bottom:6px;}
-
-.flash-grid{display:flex;gap:16px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-bottom:2px;scroll-snap-type:x mandatory;}
+.flash-grid{display:flex;gap:12px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-top:34px;padding-bottom:2px;scroll-snap-type:x mandatory;}
 
 /* Floating right arrow — card-এর ডান edge-এ আধা বাইরে, wrapper-relative তাই clip হবে না */
 .flash-scroll-arrow{
@@ -284,27 +289,22 @@ button,input,select{font-family:'DM Sans',sans-serif;}
   display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:2;font-size:.85rem;
 }
 
-/* বাস্তব ফোন স্ক্রিনে (>1 product দেখানোর জন্য) — left content উপরে, product row নিচে ফুল-উইথে */
-@media(max-width:600px){
-  .flash-card-row{flex-direction:column;gap:12px;}
-  .flash-left{flex:none;}
-  .flash-left-title{font-size:1.5rem;}
-  .flash-left-sub{margin-bottom:10px;}
-  .flash-right{gap:10px;}
-  .flash-banner-countdown{align-self:flex-start;}
-  .flash-card{width:clamp(115px,32vw,140px);}
-  .flash-card-img{height:110px;}
-  .flash-scroll-arrow{display:none;}
-}
+/* 360–430px রেঞ্জে fine-tune, কিন্তু two-column split বজায় থাকবে */
 @media(max-width:400px){
-  .flash-left-sub{font-size:.72rem;}
-  .flash-left-btn{font-size:.66rem;padding:11px 10px;}
+  .flash-outer-card{padding:18px;}
+  .flash-left{flex:0 0 30%;}
+  .flash-left-title{font-size:1.1rem;}
+  .flash-left-sub{font-size:.66rem;}
+  .flash-left-btn{font-size:.64rem;padding:10px 12px;min-height:38px;}
+  .fbc-block{padding:3px 6px;min-width:26px;}
+  .fbc-num{font-size:.72rem;}
 }
+
 
 
 /* ── FLASH CARD COMPACT ── */
-.flash-card{background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;position:relative;flex-shrink:0;width:clamp(150px,46vw,185px);box-shadow:0 4px 14px rgba(0,0,0,.2);scroll-snap-align:start;}
-.flash-card-img{height:145px;background:var(--sand);display:flex;align-items:center;justify-content:center;font-size:2rem;position:relative;overflow:hidden;}
+.flash-card{background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;position:relative;flex-shrink:0;width:clamp(145px,40vw,155px);box-shadow:0 4px 14px rgba(0,0,0,.2);scroll-snap-align:start;}
+.flash-card-img{height:118px;background:var(--sand);display:flex;align-items:center;justify-content:center;font-size:2rem;position:relative;overflow:hidden;}
 .flash-card-img img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;}
 .flash-card-badges{position:absolute;top:5px;left:5px;display:flex;gap:3px;}
 .flash-card-timer{background:linear-gradient(135deg,#B71C1C,#E53935);padding:4px 10px;display:flex;align-items:center;justify-content:space-between;}
@@ -1904,8 +1904,33 @@ img{max-width:100%;height:auto;}
 <section class="section" id="flashSection" style="display:none;">
   <div class="flash-outer-wrap">
   <div class="flash-outer-card">
+
+    <!-- Countdown — card-এর top-right এ absolute -->
+    <div class="flash-banner-countdown">
+      <!-- দিন — শুধু ২৪ ঘণ্টার বেশি হলে দেখাবে -->
+      <div class="fbc-block" id="fbcDaysWrap" style="display:none;">
+        <span class="fbc-num" id="fbcD">--</span>
+        <span class="fbc-label"><span class="lang-bn">দিন</span><span class="lang-en">days</span></span>
+      </div>
+      <span class="fbc-sep" id="fbcDaySep" style="display:none;">:</span>
+      <div class="fbc-block">
+        <span class="fbc-num" id="fbcH">--</span>
+        <span class="fbc-label"><span class="lang-bn">ঘণ্টা</span><span class="lang-en">hrs</span></span>
+      </div>
+      <span class="fbc-sep">:</span>
+      <div class="fbc-block">
+        <span class="fbc-num" id="fbcM">--</span>
+        <span class="fbc-label"><span class="lang-bn">মিনিট</span><span class="lang-en">min</span></span>
+      </div>
+      <span class="fbc-sep">:</span>
+      <div class="fbc-block">
+        <span class="fbc-num" id="fbcS">--</span>
+        <span class="fbc-label"><span class="lang-bn">সেকেন্ড</span><span class="lang-en">sec</span></span>
+      </div>
+    </div>
+
     <div class="flash-card-row">
-      <!-- Left: badge + title + subtitle + button -->
+      <!-- Left: badge + title + subtitle + button — vertically centered -->
       <div class="flash-left">
         <div class="flash-left-badge">⚡ <span class="lang-bn">লিমিটেড টাইম</span><span class="lang-en">LIMITED TIME</span></div>
         <div class="flash-left-title">Flash Sale</div>
@@ -1918,36 +1943,13 @@ img{max-width:100%;height:auto;}
         </button>
       </div>
 
-      <!-- Right: countdown + product thumbnails -->
+      <!-- Right: horizontally scrollable product slider -->
       <div class="flash-right">
-        <div class="flash-banner-countdown">
-          <!-- দিন — শুধু ২৪ ঘণ্টার বেশি হলে দেখাবে -->
-          <div class="fbc-block" id="fbcDaysWrap" style="display:none;">
-            <span class="fbc-num" id="fbcD">--</span>
-            <span class="fbc-label"><span class="lang-bn">দিন</span><span class="lang-en">days</span></span>
-          </div>
-          <span class="fbc-sep" id="fbcDaySep" style="display:none;">:</span>
-          <div class="fbc-block">
-            <span class="fbc-num" id="fbcH">--</span>
-            <span class="fbc-label"><span class="lang-bn">ঘণ্টা</span><span class="lang-en">hrs</span></span>
-          </div>
-          <span class="fbc-sep">:</span>
-          <div class="fbc-block">
-            <span class="fbc-num" id="fbcM">--</span>
-            <span class="fbc-label"><span class="lang-bn">মিনিট</span><span class="lang-en">min</span></span>
-          </div>
-          <span class="fbc-sep">:</span>
-          <div class="fbc-block">
-            <span class="fbc-num" id="fbcS">--</span>
-            <span class="fbc-label"><span class="lang-bn">সেকেন্ড</span><span class="lang-en">sec</span></span>
-          </div>
-        </div>
-
         <div class="flash-grid" id="flashGrid"></div>
       </div>
     </div>
   </div>
-  <button class="flash-scroll-arrow" onclick="document.getElementById('flashGrid').scrollBy({left:190,behavior:'smooth'})">→</button>
+  <button class="flash-scroll-arrow" onclick="document.getElementById('flashGrid').scrollBy({left:170,behavior:'smooth'})">→</button>
   </div>
 </section>
 
