@@ -231,16 +231,16 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 .why-card p{color:var(--muted);font-size:.86rem;line-height:1.7;}
 
 /* ── FLASH SALE BANNER ── */
-.flash-outer-wrap{position:relative;margin:0 3%;}
+.flash-outer-wrap{position:relative;margin:0 16px;}
 .flash-outer-card{
-  background:linear-gradient(135deg,#4A0000 0%,#7B0000 55%,#B01616 100%);
+  background:radial-gradient(circle at 25% 15%,rgba(255,255,255,.06),transparent 55%),linear-gradient(135deg,#4A0000 0%,#7B0000 55%,#B01616 100%);
   border-radius:22px;padding:14px 16px 16px;
   position:relative;overflow:hidden;
   box-shadow:0 10px 30px rgba(0,0,0,.12),0 8px 22px rgba(176,22,22,.28);
 }
 /* ডেকোরেটিভ ব্যাকগ্রাউন্ড — শুধু ডান দিকে, হালকা opacity */
 .flash-outer-card::before{
-  content:'🛍️';position:absolute;right:6%;top:10%;font-size:3.2rem;opacity:.08;
+  content:'🛍️';position:absolute;right:6%;top:10%;font-size:3.2rem;opacity:.06;
   pointer-events:none;transform:rotate(-8deg);
 }
 .flash-outer-card::after{
@@ -251,7 +251,7 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 
 /* Countdown — card-এর top-right এ absolute, 44×44 box, compact */
 .flash-banner-countdown{
-  position:absolute;top:18px;right:14px;z-index:3;
+  position:absolute;top:18px;right:18px;z-index:3;
   display:flex;align-items:center;gap:4px;
 }
 .fbc-block{display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(0,0,0,.4);border-radius:8px;width:44px;height:44px;box-sizing:border-box;}
@@ -259,8 +259,8 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 .fbc-label{font-size:.36rem;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.3px;margin-top:2px;}
 .fbc-sep{font-size:.8rem;font-weight:700;color:rgba(255,255,255,.4);}
 
-.flash-card-row{display:flex;gap:12px;position:relative;z-index:1;width:100%;align-items:center;}
-.flash-left{flex:0 0 30%;display:flex;flex-direction:column;justify-content:center;min-width:0;}
+.flash-card-row{display:flex;gap:24px;position:relative;z-index:1;width:100%;align-items:center;}
+.flash-left{flex:0 0 35%;display:flex;flex-direction:column;justify-content:center;min-width:0;}
 .flash-left-badge{
   display:inline-flex;align-items:center;gap:4px;color:#FFD54F;
   font-size:.58rem;font-weight:800;letter-spacing:.5px;margin-bottom:5px;align-self:flex-start;
@@ -271,41 +271,43 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 }
 .flash-left-sub{font-size:.68rem;font-weight:600;color:rgba(255,255,255,.9);line-height:1.25;margin-bottom:10px;}
 .flash-left-btn{
-  background:#fff;border:none;color:#B01616;font-weight:800;font-size:.66rem;
-  width:140px;height:44px;border-radius:999px;cursor:pointer;white-space:nowrap;
-  box-shadow:0 4px 14px rgba(0,0,0,.25);align-self:flex-start;
+  background:#fff;border:none;color:#B01616;font-weight:800;font-size:.7rem;
+  width:165px;height:48px;border-radius:999px;cursor:pointer;white-space:nowrap;
+  box-shadow:0 4px 14px rgba(0,0,0,.2);align-self:flex-start;
   display:flex;align-items:center;justify-content:center;
 }
 .flash-right{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;}
 
-.flash-grid{display:flex;gap:12px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-top:58px;padding-bottom:2px;scroll-snap-type:x mandatory;}
+.flash-grid{display:flex;gap:12px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-top:64px;padding-bottom:2px;scroll-snap-type:x mandatory;}
 
-/* Floating right arrow — card-এর ডান edge-এর সাথে half overlap, vertically centered */
+/* Floating right arrow — card-এর ডান edge-এর সাথে exact half overlap */
 .flash-scroll-arrow{
-  position:absolute;right:-21px;top:50%;transform:translateY(-50%);
-  width:42px;height:42px;border-radius:50%;background:#fff;border:none;
+  position:absolute;right:-20px;top:50%;transform:translateY(-50%);
+  width:40px;height:40px;border-radius:50%;background:#fff;border:none;
   box-shadow:0 3px 10px rgba(0,0,0,.25);color:#B01616;font-weight:800;
-  display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:2;font-size:.95rem;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:2;font-size:.9rem;
 }
 
 /* 360–430px রেঞ্জে fine-tune, কিন্তু two-column split বজায় থাকবে */
 @media(max-width:400px){
   .flash-outer-card{padding:12px 12px 14px;}
-  .flash-left{flex:0 0 29%;}
+  .flash-card-row{gap:18px;}
+  .flash-left{flex:0 0 34%;}
   .flash-left-title{font-size:1rem;}
   .flash-left-sub{font-size:.62rem;}
-  .flash-left-btn{font-size:.6rem;width:120px;height:40px;}
+  .flash-left-btn{font-size:.62rem;width:135px;height:44px;}
   .fbc-block{width:38px;height:38px;}
   .fbc-num{font-size:.78rem;}
-  .flash-grid{padding-top:52px;}
+  .flash-grid{padding-top:56px;}
 }
 
 
 
 
+
 /* ── FLASH CARD COMPACT ── */
-.flash-card{background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;position:relative;flex-shrink:0;width:clamp(145px,40vw,150px);box-shadow:0 4px 14px rgba(0,0,0,.2);scroll-snap-align:start;}
-.flash-card-img{height:98px;background:var(--sand);display:flex;align-items:center;justify-content:center;font-size:2rem;position:relative;overflow:hidden;}
+.flash-card{background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;position:relative;flex-shrink:0;width:clamp(150px,42vw,165px);box-shadow:0 4px 14px rgba(0,0,0,.2);scroll-snap-align:start;}
+.flash-card-img{height:108px;background:var(--sand);display:flex;align-items:center;justify-content:center;font-size:2rem;position:relative;overflow:hidden;}
 .flash-card-img img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;}
 .flash-card-badges{position:absolute;top:5px;left:5px;display:flex;gap:3px;}
 .flash-card-timer{background:linear-gradient(135deg,#B71C1C,#E53935);padding:4px 10px;display:flex;align-items:center;justify-content:space-between;}
