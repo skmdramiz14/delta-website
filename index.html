@@ -231,13 +231,15 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 .why-card p{color:var(--muted);font-size:.86rem;line-height:1.7;}
 
 /* ── FLASH SALE BANNER ── */
-.flash-banner{
+.flash-outer-card{
   background:linear-gradient(135deg,#1a0000 0%,#7f0000 40%,#B71C1C 70%,#E53935 100%);
-  border-radius:18px;padding:22px 20px;
-  display:flex;align-items:center;justify-content:space-between;gap:16px;
-  cursor:pointer;position:relative;overflow:hidden;
-  transition:transform .2s;margin:0 4%;
+  border-radius:18px;padding:20px 18px 16px;
+  margin:0 4%;position:relative;overflow:hidden;
   box-shadow:0 8px 32px rgba(183,28,28,.35);
+}
+.flash-banner{
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  cursor:pointer;position:relative;z-index:1;
 }
 .flash-banner:active{transform:scale(.98);}
 .flash-banner-bg{
@@ -292,7 +294,7 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 
 /* Mobile */
 @media(max-width:480px){
-  .flash-banner{padding:18px 16px;margin:0 4%;}
+  .flash-outer-card{padding:16px 14px 14px;margin:0 4%;}
   .flash-banner-title{font-size:1.5rem;}
   .fbc-block{padding:4px 8px;min-width:36px;}
   .fbc-num{font-size:1rem;}
@@ -300,8 +302,9 @@ button,input,select{font-family:'DM Sans',sans-serif;}
   .flash-banner-btn{padding:9px 14px;font-size:.75rem;}
 }
 
+
 /* ── FLASH CARD COMPACT ── */
-.flash-card{background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden;position:relative;flex-shrink:0;width:160px;}
+.flash-card{background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden;position:relative;flex-shrink:0;width:160px;box-shadow:0 4px 14px rgba(0,0,0,.2);}
 .flash-card-img{height:110px;background:var(--sand);display:flex;align-items:center;justify-content:center;font-size:2.4rem;position:relative;overflow:hidden;}
 .flash-card-img img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;}
 .flash-card-badges{position:absolute;top:6px;left:6px;display:flex;gap:4px;}
@@ -1901,60 +1904,62 @@ img{max-width:100%;height:auto;}
 <!-- FLASH SALE -->
 <!-- FLASH SALE BANNER -->
 <section class="section" id="flashSection" style="display:none;padding-top:0;padding-bottom:0;">
-  <div class="flash-banner" onclick="window.location.href='flash-sale.html'">
-    <!-- Background elements -->
-    <div class="flash-banner-bg"></div>
-    <div class="flash-banner-lightning">⚡</div>
+  <div class="flash-outer-card">
+    <div class="flash-banner" onclick="window.location.href='flash-sale.html'">
+      <!-- Background elements -->
+      <div class="flash-banner-bg"></div>
+      <div class="flash-banner-lightning">⚡</div>
 
-    <!-- Left: Text -->
-    <div class="flash-banner-left">
-      <div class="flash-banner-badge">⚡ LIMITED TIME</div>
-      <div class="flash-banner-title">
-        <span class="lang-bn">Flash Sale</span>
-        <span class="lang-en">Flash Sale</span>
+      <!-- Left: Text -->
+      <div class="flash-banner-left">
+        <div class="flash-banner-badge">⚡ LIMITED TIME</div>
+        <div class="flash-banner-title">
+          <span class="lang-bn">Flash Sale</span>
+          <span class="lang-en">Flash Sale</span>
+        </div>
+        <div class="flash-banner-sub">
+          <span class="lang-bn">৩০% পর্যন্ত ছাড় — আজকেই!</span>
+          <span class="lang-en">Up to 30% off — Today only!</span>
+        </div>
+        <div class="flash-banner-countdown">
+          <!-- দিন — শুধু ২৪ ঘণ্টার বেশি হলে দেখাবে -->
+          <div class="fbc-block" id="fbcDaysWrap" style="display:none;">
+            <span class="fbc-num" id="fbcD">--</span>
+            <span class="fbc-label"><span class="lang-bn">দিন</span><span class="lang-en">days</span></span>
+          </div>
+          <span class="fbc-sep" id="fbcDaySep" style="display:none;">:</span>
+          <div class="fbc-block">
+            <span class="fbc-num" id="fbcH">--</span>
+            <span class="fbc-label"><span class="lang-bn">ঘণ্টা</span><span class="lang-en">hrs</span></span>
+          </div>
+          <span class="fbc-sep">:</span>
+          <div class="fbc-block">
+            <span class="fbc-num" id="fbcM">--</span>
+            <span class="fbc-label"><span class="lang-bn">মিনিট</span><span class="lang-en">min</span></span>
+          </div>
+          <span class="fbc-sep">:</span>
+          <div class="fbc-block">
+            <span class="fbc-num" id="fbcS">--</span>
+            <span class="fbc-label"><span class="lang-bn">সেকেন্ড</span><span class="lang-en">sec</span></span>
+          </div>
+        </div>
       </div>
-      <div class="flash-banner-sub">
-        <span class="lang-bn">৩০% পর্যন্ত ছাড় — আজকেই!</span>
-        <span class="lang-en">Up to 30% off — Today only!</span>
-      </div>
-      <div class="flash-banner-countdown">
-        <!-- দিন — শুধু ২৪ ঘণ্টার বেশি হলে দেখাবে -->
-        <div class="fbc-block" id="fbcDaysWrap" style="display:none;">
-          <span class="fbc-num" id="fbcD">--</span>
-          <span class="fbc-label"><span class="lang-bn">দিন</span><span class="lang-en">days</span></span>
-        </div>
-        <span class="fbc-sep" id="fbcDaySep" style="display:none;">:</span>
-        <div class="fbc-block">
-          <span class="fbc-num" id="fbcH">--</span>
-          <span class="fbc-label"><span class="lang-bn">ঘণ্টা</span><span class="lang-en">hrs</span></span>
-        </div>
-        <span class="fbc-sep">:</span>
-        <div class="fbc-block">
-          <span class="fbc-num" id="fbcM">--</span>
-          <span class="fbc-label"><span class="lang-bn">মিনিট</span><span class="lang-en">min</span></span>
-        </div>
-        <span class="fbc-sep">:</span>
-        <div class="fbc-block">
-          <span class="fbc-num" id="fbcS">--</span>
-          <span class="fbc-label"><span class="lang-bn">সেকেন্ড</span><span class="lang-en">sec</span></span>
-        </div>
+
+      <!-- Right: CTA -->
+      <div class="flash-banner-right">
+        <div class="flash-banner-emoji">🔥</div>
+        <button class="flash-banner-btn" onclick="event.stopPropagation();window.location.href='flash-sale.html'">
+          <span class="lang-bn">এখনই দেখুন</span>
+          <span class="lang-en">Shop Now</span>
+          <span>→</span>
+        </button>
+        <div class="flash-banner-count" id="flashProdCount"></div>
       </div>
     </div>
 
-    <!-- Right: CTA -->
-    <div class="flash-banner-right">
-      <div class="flash-banner-emoji">🔥</div>
-      <button class="flash-banner-btn" onclick="event.stopPropagation();window.location.href='flash-sale.html'">
-        <span class="lang-bn">এখনই দেখুন</span>
-        <span class="lang-en">Shop Now</span>
-        <span>→</span>
-      </button>
-      <div class="flash-banner-count" id="flashProdCount"></div>
-    </div>
+    <!-- Flash Sale Product Thumbnails -->
+    <div class="flash-grid" id="flashGrid" style="display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;margin-top:14px;padding-bottom:2px;position:relative;z-index:1;"></div>
   </div>
-
-  <!-- Flash Sale Product Thumbnails -->
-  <div class="flash-grid" id="flashGrid" style="display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;margin:12px 4% 0;padding-bottom:4px;"></div>
 </section>
 
 <!-- SHOPS (Nearby Shops) -->
@@ -4347,18 +4352,23 @@ function renderFestivalCarousel(festivals){
 function _festivalSlideHTML(f, idx){
   var bg = f.imageUrl ?
     ('background:linear-gradient(rgba(0,0,0,.35),rgba(0,0,0,.45)),url(\''+f.imageUrl+'\') center/cover;') :
-    ('background:linear-gradient(135deg,'+f.color1+','+f.color2+');');
+    ('background:radial-gradient(circle at 75% 20%,'+f.color2+'55,transparent 55%),linear-gradient(135deg,'+f.color1+','+f.color2+');');
   var festDate = f.date ? new Date(f.date) : null;
   var days = festDate ? Math.max(0, Math.ceil((festDate-new Date())/86400000)) : null;
   var tagline = f.tagline || '';
-  var btnText = f.btnText || (f.name+' দেখুন →');
+  var btnText = f.btnText || 'বিস্তারিত দেখুন →';
 
   return '<div onclick="showFestivalOffers(\''+f.key+'\')" style="flex-shrink:0;width:'+(100/_festSlides.length)+'%;'+
       'min-height:180px;'+bg+'padding:20px 22px;position:relative;cursor:pointer;display:flex;'+
-      'flex-direction:column;justify-content:flex-end;box-sizing:border-box;">'+
+      'flex-direction:column;justify-content:flex-end;box-sizing:border-box;overflow:hidden;">'+
+      // ডেকোরেটিভ ব্যাকগ্রাউন্ড সার্কেল — image না থাকলেও depth দেয়
+      '<div style="position:absolute;right:-35px;top:-35px;width:170px;height:170px;'+
+        'background:rgba(255,255,255,.08);border-radius:50%;pointer-events:none;"></div>'+
+      '<div style="position:absolute;left:-25px;bottom:-25px;width:110px;height:110px;'+
+        'background:rgba(255,255,255,.06);border-radius:50%;pointer-events:none;"></div>'+
       (days!==null ? (
         '<div style="position:absolute;top:14px;right:14px;background:rgba(255,255,255,.94);'+
-          'color:var(--navy);border-radius:12px;padding:6px 12px;text-align:center;box-shadow:0 3px 10px rgba(0,0,0,.15);">'+
+          'color:var(--navy);border-radius:12px;padding:6px 12px;text-align:center;box-shadow:0 3px 10px rgba(0,0,0,.15);z-index:2;">'+
           '<div style="font-size:1.1rem;font-weight:900;line-height:1;">'+days+'</div>'+
           '<div style="font-size:.56rem;font-weight:700;color:var(--muted);white-space:nowrap;">'+
             '<span class="lang-bn">দিন বাকি</span><span class="lang-en">days left</span></div>'+
