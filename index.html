@@ -278,9 +278,15 @@ button,input,select{font-family:'DM Sans',sans-serif;}
   transition:transform .15s;
 }
 .flash-left-btn:active{transform:scale(.96);}
+.flash-left-trust{
+  display:flex;align-items:center;gap:5px;margin-top:10px;
+  font-size:.68rem;color:rgba(255,255,255,.8);align-self:flex-start;
+}
 .flash-right{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;}
 
 .flash-grid{display:flex;gap:12px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-top:78px;padding-bottom:2px;scroll-snap-type:x mandatory;}
+
+.flash-countdown-label{font-size:.6rem;color:rgba(255,255,255,.7);margin-right:6px;white-space:nowrap;}
 
 /* Floating right arrow — card-এর ডান edge-এর সাথে half overlap, 50px */
 .flash-scroll-arrow{
@@ -292,7 +298,23 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 }
 @keyframes arrowBounce{0%,100%{transform:translateY(-50%) translateX(0);}50%{transform:translateY(-50%) translateX(3px);}}
 
+/* Trust / Feature row — card-এর নিচে */
+.flash-trust-row{
+  display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;
+  margin:14px 0 0;padding:0 2px 2px;
+}
+.flash-trust-item{
+  flex:1;min-width:130px;display:flex;align-items:center;gap:8px;
+  background:var(--white);border:1px solid var(--border);border-radius:12px;padding:9px 10px;
+}
+.flash-trust-icon{font-size:1.2rem;flex-shrink:0;}
+.flash-trust-title{font-size:.7rem;font-weight:700;color:var(--navy);white-space:nowrap;}
+.flash-trust-sub{font-size:.6rem;color:var(--muted);white-space:nowrap;}
+
 /* 360–430px রেঞ্জে fine-tune, কিন্তু two-column split বজায় থাকবে */
+@media(max-width:480px){
+  .flash-countdown-label{display:none;}
+}
 @media(max-width:400px){
   .flash-outer-card{padding:14px 16px;}
   .flash-card-row{gap:18px;}
@@ -300,9 +322,12 @@ button,input,select{font-family:'DM Sans',sans-serif;}
   .flash-left-title{font-size:1.6rem;margin-bottom:10px;}
   .flash-left-sub{font-size:.9rem;margin-bottom:16px;}
   .flash-left-btn{font-size:.85rem;width:135px;height:44px;}
+  .flash-left-trust{font-size:.6rem;}
   .fbc-block{width:42px;height:42px;border-radius:11px;}
   .fbc-num{font-size:1.1rem;}
   .flash-grid{padding-top:64px;}
+  .flash-trust-item{min-width:110px;}
+  .flash-trust-sub{display:none;}
 }
 
 
@@ -1918,6 +1943,7 @@ img{max-width:100%;height:auto;}
 
     <!-- Countdown — card-এর top-right এ absolute -->
     <div class="flash-banner-countdown">
+      <span class="flash-countdown-label">🕐 <span class="lang-bn">অফার শেষ হতে</span><span class="lang-en">Offer ends in</span></span>
       <!-- দিন — শুধু ২৪ ঘণ্টার বেশি হলে দেখাবে -->
       <div class="fbc-block" id="fbcDaysWrap" style="display:none;">
         <span class="fbc-num" id="fbcD">--</span>
@@ -1944,14 +1970,15 @@ img{max-width:100%;height:auto;}
       <!-- Left: badge + title + subtitle + button — vertically centered -->
       <div class="flash-left">
         <div class="flash-left-badge">⚡ <span class="lang-bn">লিমিটেড টাইম</span><span class="lang-en">LIMITED TIME</span></div>
-        <div class="flash-left-title">Flash Sale</div>
+        <div class="flash-left-title">Flash <span style="color:#FFD54F;">Sale</span></div>
         <div class="flash-left-sub">
-          <span class="lang-bn">সময় অল্প, ডিল কিন্তু দারুণ!</span>
-          <span class="lang-en">Time's short, deals are great!</span>
+          <span class="lang-bn">সময় অল্প, ডিল কিন্তু <span style="color:#FFD54F;">দারুণ!</span></span>
+          <span class="lang-en">Time's short, deals are <span style="color:#FFD54F;">great!</span></span>
         </div>
         <button class="flash-left-btn" onclick="window.location.href='flash-sale.html'">
           <span class="lang-bn">এখনই দেখুন →</span><span class="lang-en">Shop Now →</span>
         </button>
+        <div class="flash-left-trust">🛡️ <span class="lang-bn">১০০% আসল পণ্য</span><span class="lang-en">100% Authentic Products</span></div>
       </div>
 
       <!-- Right: horizontally scrollable product slider -->
@@ -1961,6 +1988,26 @@ img{max-width:100%;height:auto;}
     </div>
   </div>
   <button class="flash-scroll-arrow" onclick="document.getElementById('flashGrid').scrollBy({left:170,behavior:'smooth'})">→</button>
+  </div>
+
+  <!-- Trust / Feature row নিচে -->
+  <div class="flash-trust-row">
+    <div class="flash-trust-item">
+      <span class="flash-trust-icon">🏷️</span>
+      <div><div class="flash-trust-title"><span class="lang-bn">সেরা দাম</span><span class="lang-en">Best Price</span></div><div class="flash-trust-sub"><span class="lang-bn">নিশ্চিত সাশ্রয়</span><span class="lang-en">Guaranteed savings</span></div></div>
+    </div>
+    <div class="flash-trust-item">
+      <span class="flash-trust-icon">⚡</span>
+      <div><div class="flash-trust-title"><span class="lang-bn">সীমিত সময়ের অফার</span><span class="lang-en">Limited Time</span></div><div class="flash-trust-sub"><span class="lang-bn">তাড়াতাড়ি করুন</span><span class="lang-en">Hurry up</span></div></div>
+    </div>
+    <div class="flash-trust-item">
+      <span class="flash-trust-icon">✅</span>
+      <div><div class="flash-trust-title"><span class="lang-bn">বিশ্বস্ত পণ্য</span><span class="lang-en">Trusted Products</span></div><div class="flash-trust-sub"><span class="lang-bn">১০০% অরিজিনাল</span><span class="lang-en">100% Original</span></div></div>
+    </div>
+    <div class="flash-trust-item">
+      <span class="flash-trust-icon">🚚</span>
+      <div><div class="flash-trust-title"><span class="lang-bn">দ্রুত ডেলিভারি</span><span class="lang-en">Fast Delivery</span></div><div class="flash-trust-sub"><span class="lang-bn">সময়মতো আপনার কাছে</span><span class="lang-en">Right on time</span></div></div>
+    </div>
   </div>
 </section>
 
