@@ -3009,6 +3009,7 @@ img{max-width:100%;height:auto;}
 <script>
 var fbcfg={apiKey:"AIzaSyA6TrrnCMwv1aa1WPqGvTVWlnieB2pVOEU",authDomain:"delta-platform-82fc0.firebaseapp.com",projectId:"delta-platform-82fc0",storageBucket:"delta-platform-82fc0.firebasestorage.app",messagingSenderId:"444904180433",appId:"1:444904180433:web:6706eba4d73a30cd67d3f0"};
 var auth,db,currentUser=null,cart=[],wishlist=[],allShops=[],allProducts=[],selectedPay='cod';
+var _shopModalAutoOpened=false;
 
 // Flash sale থেকে আসা cart items merge করো
 (function(){
@@ -3291,6 +3292,12 @@ async function loadData(retryCount){
     loadCategoryConfigFromFirebase();
     updateSubCount();
     initAllFeatures(allShops, allProducts);
+    // ?shop=<id> URL-এ থাকলে (shops.html, sponsored ads ইত্যাদি থেকে আসা লিংক) সেই shop-এর modal অটোমেটিক খুলে দাও
+    if(!_shopModalAutoOpened){
+      _shopModalAutoOpened = true;
+      var shopParam = new URLSearchParams(window.location.search).get('shop');
+      if(shopParam) openShopModal(shopParam);
+    }
   }catch(e){
     console.error('DELTA loadData error (attempt '+(retryCount+1)+'):', e);
     if(retryCount < 2){
@@ -4169,7 +4176,11 @@ function toggleOpenNow(){
   }
 }
 
-// ══ FEATURE 7.5: SPONSORED SHOP AD (full-width card) ══
+// ══ FEATURE 7.5: SPONSORED SHOPS (rotating carousel, multiple shops) ══
+var _adSlides = [];
+var _adIdx = 0;
+var _adAutoplayTimer = null;
+
 function initSponsoredAd(){
   var wrap = document.getElementById('sponsoredAdWrap');
   if(!wrap || !db) return;
@@ -4187,11 +4198,65 @@ function initSponsoredAd(){
       });
       if(!ads.length){ wrap.innerHTML=''; return; }
       ads.sort(function(a,b){ return (b.priority||0)-(a.priority||0); });
-      wrap.innerHTML = _sponsoredAdHTML(ads[0]);
+      renderSponsoredCarousel(ads);
     }).catch(function(){ wrap.innerHTML=''; });
 }
 
-function _sponsoredAdHTML(ad){
+function renderSponsoredCarousel(ads){
+  var wrap = document.getElementById('sponsoredAdWrap');
+  if(!wrap) return;
+  if(_adAutoplayTimer){ clearInterval(_adAutoplayTimer); _adAutoplayTimer=null; }
+  _adSlides = ads;
+  _adIdx = 0;
+
+  var slidesHTML = ads.map(function(ad,i){ return _sponsoredSlideHTML(ad,i); }).join('');
+  var dotsHTML = ads.length > 1 ? (
+    '<div style="position:absolute;left:16px;bottom:14px;display:flex;align-items:center;gap:8px;z-index:2;">'+
+      '<span id="adSlideCounter" style="font-size:.68rem;font-weight:700;color:rgba(10,31,53,.6);">1/'+ads.length+'</span>'+
+      '<div style="display:flex;gap:5px;">'+
+      ads.map(function(a,i){
+        return '<span onclick="event.stopPropagation();goSponsoredSlide('+i+')" '+
+          'data-ad-dot="'+i+'" style="width:'+(i===0?'16px':'6px')+';height:6px;border-radius:4px;'+
+          'background:'+(i===0?'var(--navy)':'rgba(10,31,53,.25)')+';transition:all .25s;cursor:pointer;"></span>';
+      }).join('')+
+      '</div>'+
+    '</div>'
+  ) : '';
+
+  var header = '<div class="section-head" style="padding:0 4% 8px;">'+
+      '<div><div class="section-label">⭐ <span class="lang-bn">স্পনসরড</span><span class="lang-en">Sponsored</span></div>'+
+      '<div class="section-title"><span class="lang-bn">স্পনসরড শপ</span><span class="lang-en">Sponsored Shops</span></div></div>'+
+      '<a class="view-all" href="sponsored-shops.html" style="text-decoration:none">'+
+        '<span class="lang-bn">সব দেখুন →</span><span class="lang-en">View All →</span></a>'+
+    '</div>';
+
+  wrap.innerHTML = '<section class="section" style="padding-top:4px;padding-bottom:4px;">'+
+    header+
+    '<div style="border-radius:16px;overflow:hidden;position:relative;box-shadow:0 4px 18px rgba(10,31,53,.08);border:1px solid var(--border);">'+
+      '<div id="adTrack" style="display:flex;width:'+(ads.length*100)+'%;transition:transform .5s ease;">'+
+        slidesHTML+
+      '</div>'+
+      dotsHTML+
+    '</div></section>';
+
+  if(ads.length > 1){
+    _adAutoplayTimer = setInterval(function(){ goSponsoredSlide((_adIdx+1)%_adSlides.length); }, 4500);
+  }
+}
+
+function goSponsoredSlide(i){
+  _adIdx = i;
+  var track = document.getElementById('adTrack');
+  if(track) track.style.transform = 'translateX(-'+(i*(100/_adSlides.length))+'%)';
+  document.querySelectorAll('[data-ad-dot]').forEach(function(dot,j){
+    dot.style.width = j===i?'16px':'6px';
+    dot.style.background = j===i?'var(--navy)':'rgba(10,31,53,.25)';
+  });
+  var counter = document.getElementById('adSlideCounter');
+  if(counter) counter.textContent = (i+1)+'/'+_adSlides.length;
+}
+
+function _sponsoredSlideHTML(ad, idx){
   var img = ad.imageUrl || '';
   var discount = ad.discountText || '';
   var rating = ad.rating || '';
@@ -4199,6 +4264,7 @@ function _sponsoredAdHTML(ad){
   var loc = ad.location || '';
   var tagline = ad.tagline || ad.title || '';
   var link = ad.linkUrl || '#';
+  var btnText = ad.buttonText || '';
 
   var infoBits = [];
   if(rating) infoBits.push('<span>⭐ <strong style="color:var(--navy);">'+rating+'</strong> <span class="lang-bn">রেটিং</span><span class="lang-en">Rating</span></span>');
@@ -4209,9 +4275,7 @@ function _sponsoredAdHTML(ad){
       'font-size:.72rem;color:var(--muted);">'+infoBits.join('')+'</div>'
   ) : '';
 
-  return '<section class="section" style="padding-top:4px;padding-bottom:4px;">'+
-    '<div style="background:linear-gradient(135deg,#faf5e8,#f2e9d3);border-radius:16px;overflow:hidden;position:relative;'+
-      'box-shadow:0 4px 18px rgba(10,31,53,.08);border:1px solid var(--border);cursor:pointer;" '+
+  return '<div style="flex-shrink:0;width:'+(100/_adSlides.length)+'%;background:linear-gradient(135deg,#faf5e8,#f2e9d3);position:relative;overflow:hidden;cursor:pointer;" '+
       'onclick="window.location.href=\''+link+'\'">'+
       '<div style="position:absolute;left:-10px;bottom:-16px;font-size:4.5rem;opacity:.1;pointer-events:none;transform:rotate(-12deg);">🍃</div>'+
       '<div style="display:flex;align-items:stretch;gap:12px;padding:16px 18px 14px;position:relative;">'+
@@ -4224,7 +4288,7 @@ function _sponsoredAdHTML(ad){
           '<div style="font-size:.78rem;color:var(--muted);margin-bottom:12px;line-height:1.4;">'+tagline+'</div>'+
           '<div style="display:inline-flex;align-items:center;gap:4px;background:#fff;color:var(--navy);'+
             'padding:9px 16px;border-radius:20px;font-size:.76rem;font-weight:700;box-shadow:0 2px 8px rgba(10,31,53,.1);">'+
-            '<span class="lang-bn">এখনই কিনুন →</span><span class="lang-en">Shop Now →</span></div>'+
+            (btnText ? btnText : '<span class="lang-bn">এখনই কিনুন →</span><span class="lang-en">Shop Now →</span>')+'</div>'+
         '</div>'+
         (img ? (
           '<div style="width:38%;max-width:150px;flex-shrink:0;border-radius:14px;overflow:hidden;position:relative;">'+
@@ -4237,7 +4301,7 @@ function _sponsoredAdHTML(ad){
         'flex-direction:column;font-size:.68rem;font-weight:800;line-height:1.1;text-align:center;'+
         'border:3px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,.25);z-index:2;">'+discount+'</div>' : '')+
       infoStrip+
-    '</div></section>';
+    '</div>';
 }
 
 // ══ FEATURE 8: FESTIVAL BANNER (Image + Carousel) ══
