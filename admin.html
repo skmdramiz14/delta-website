@@ -342,6 +342,9 @@ button,input,select{font-family:'DM Sans',sans-serif;}
     <button class="tab-btn" id="tab-festivals" onclick="goTab('festivals',this)">
       🎊 Festival Management
     </button>
+    <button class="tab-btn" id="tab-sponsoredshops" onclick="goTab('sponsoredshops',this)">
+      🏪 Sponsored Shops
+    </button>
     <button class="tab-btn" id="tab-hampers" onclick="goTab('hampers',this)">
       🎁 Hamper Management
     </button>
@@ -1139,55 +1142,25 @@ button,input,select{font-family:'DM Sans',sans-serif;}
       <!-- Banner Ad Management -->
       <div class="add-zone-card" style="margin-bottom:16px;border-left:3px solid #7b1fa2;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-          <div style="font-size:.85rem;font-weight:700;color:var(--navy);">🖼️ Homepage Banner Ads Management</div>
+          <div style="font-size:.85rem;font-weight:700;color:var(--navy);">🎊 Festival Banner Management</div>
           <button class="btn-sm" onclick="loadBannerAds()" style="background:var(--sand);color:var(--navy);">↺ Load</button>
         </div>
-        <div style="font-size:.72rem;color:var(--muted);margin-bottom:12px;">Festival cards + Shop Ads → Homepage এ horizontal scroll এ দেখাবে</div>
+        <div style="font-size:.72rem;color:var(--muted);margin-bottom:12px;">Festival card banners → Homepage এ দেখাবে। (Shop Ad এর জন্য আলাদা "🏪 Sponsored Shops" section দেখুন)</div>
 
         <!-- Add Banner Form -->
         <div style="background:var(--sand);border-radius:12px;padding:14px;margin-bottom:14px;">
-          <div style="font-size:.75rem;font-weight:700;color:var(--navy);margin-bottom:10px;">➕ নতুন Banner Ad যোগ করুন</div>
+          <div style="font-size:.75rem;font-weight:700;color:var(--navy);margin-bottom:10px;">➕ নতুন Festival Banner যোগ করুন</div>
+          <input type="hidden" id="bannerType" value="festival">
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
-            <div>
-              <label style="font-size:.68rem;color:var(--muted);">Banner Type</label>
-              <select class="form-input" id="bannerType" onchange="toggleBannerType()" style="margin-top:3px;">
-                <option value="festival">🎊 Festival Banner</option>
-                <option value="shop_ad">🏪 Shop Ad</option>
-              </select>
-            </div>
             <div id="bannerFestivalGroup">
               <label style="font-size:.68rem;color:var(--muted);">Festival</label>
               <select class="form-input" id="bannerFestival" style="margin-top:3px;">
                 <option value="">-- Festival select করুন --</option>
               </select>
             </div>
-            <div id="bannerShopGroup" style="display:none;">
-              <label style="font-size:.68rem;color:var(--muted);">Shop Name</label>
-              <input type="text" class="form-input" id="bannerShopName" placeholder="যেমন: Rahman Store" style="margin-top:3px;">
-            </div>
             <div>
               <label style="font-size:.68rem;color:var(--muted);">Banner Title</label>
               <input type="text" class="form-input" id="bannerTitle" placeholder="যেমন: পূজার বিশেষ অফার" style="margin-top:3px;">
-            </div>
-            <div id="bannerShopTaglineGroup" style="display:none;grid-column:1/-1;">
-              <label style="font-size:.68rem;color:var(--muted);">Tagline / Description</label>
-              <input type="text" class="form-input" id="bannerShopTagline" placeholder="যেমন: তাজা, খাঁটি, মনভরা মিষ্টি" style="margin-top:3px;">
-            </div>
-            <div id="bannerShopDiscountGroup" style="display:none;">
-              <label style="font-size:.68rem;color:var(--muted);">Discount Text</label>
-              <input type="text" class="form-input" id="bannerShopDiscount" placeholder="যেমন: 20% OFF" style="margin-top:3px;">
-            </div>
-            <div id="bannerShopRatingGroup" style="display:none;">
-              <label style="font-size:.68rem;color:var(--muted);">Rating</label>
-              <input type="text" class="form-input" id="bannerShopRating" placeholder="যেমন: 4.8" style="margin-top:3px;">
-            </div>
-            <div id="bannerShopHoursGroup" style="display:none;">
-              <label style="font-size:.68rem;color:var(--muted);">Hours</label>
-              <input type="text" class="form-input" id="bannerShopHours" placeholder="যেমন: 08:00 AM - 10:00 PM" style="margin-top:3px;">
-            </div>
-            <div id="bannerShopLocationGroup" style="display:none;">
-              <label style="font-size:.68rem;color:var(--muted);">Location / Area</label>
-              <input type="text" class="form-input" id="bannerShopLocation" placeholder="যেমন: Kusumgram" style="margin-top:3px;">
             </div>
             <div>
               <label style="font-size:.68rem;color:var(--muted);">Emoji / Icon</label>
@@ -1232,6 +1205,83 @@ button,input,select{font-family:'DM Sans',sans-serif;}
         <!-- Banner List -->
         <div id="bannerAdsList"><div style="color:var(--muted);font-size:.82rem;">"Load" চাপুন</div></div>
       </div>
+    </div>
+
+    <!-- ═══ SPONSORED SHOPS MANAGEMENT PAGE ═══ -->
+    <div class="page" id="page-sponsoredshops">
+      <div class="sec-head">
+        <div class="sec-title">🏪 Sponsored Shops Management
+          <small>Homepage-এ ঘুরিয়ে ঘুরিয়ে (rotation) দেখানো sponsored shop ads এবং "সব দেখুন" পেজ পরিচালনা করুন</small>
+        </div>
+      </div>
+
+      <!-- Add/Edit Sponsored Shop Form -->
+      <div class="add-zone-card" style="margin-bottom:20px;" id="sponsoredShopFormCard">
+        <div style="font-size:.82rem;font-weight:700;color:var(--navy);margin-bottom:12px" id="sponsoredShopFormTitle">➕ নতুন Sponsored Shop যোগ করুন</div>
+        <input type="hidden" id="sponsoredShopEditId" value="">
+        <div style="background:var(--white);border:1px dashed var(--border);border-radius:10px;padding:10px 12px;margin-bottom:12px;">
+          <label style="font-size:.68rem;color:var(--muted);">Select Existing Shop (Optional) — নিলে সরাসরি ওই দোকানের পেজে redirect হবে, নাম/অবস্থান auto-fill হবে</label>
+          <select class="form-input" id="ssExistingShop" onchange="fillFromExistingShop()" style="margin-top:3px;">
+            <option value="">-- ম্যানুয়াল এন্ট্রি (external / non-listed shop) --</option>
+          </select>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+          <div class="form-group" style="margin-bottom:0">
+            <label>Shop Name *</label>
+            <input type="text" class="form-input" id="ssName" placeholder="যেমন: Appayan Sweets &amp; Bakery">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>Tagline / Description</label>
+            <input type="text" class="form-input" id="ssTagline" placeholder="যেমন: তাজা, খাঁটি, মনভরা মিষ্টি">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>Offer Text</label>
+            <input type="text" class="form-input" id="ssOffer" placeholder="যেমন: 20% OFF">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>Button Text</label>
+            <input type="text" class="form-input" id="ssBtnText" placeholder="যেমন: Shop Now → (খালি রাখলে ডিফল্ট দেখাবে)">
+          </div>
+          <div class="form-group" style="margin-bottom:0;grid-column:1/-1;">
+            <label>Banner Image URL * <span style="font-weight:400;color:var(--muted);">(1200 x 420 px recommended)</span></label>
+            <input type="text" class="form-input" id="ssImage" placeholder="Cloudinary URL">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>Link URL</label>
+            <input type="text" class="form-input" id="ssLink" placeholder="যেমন: https://yourshop.com">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>Priority (1-10, বড় = বেশিবার/আগে দেখাবে)</label>
+            <input type="number" class="form-input" id="ssPriority" value="5" min="1" max="10">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>Rating (Optional)</label>
+            <input type="text" class="form-input" id="ssRating" placeholder="যেমন: 4.8">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>Hours (Optional)</label>
+            <input type="text" class="form-input" id="ssHours" placeholder="যেমন: 08:00 AM - 10:00 PM">
+          </div>
+          <div class="form-group" style="margin-bottom:0;grid-column:1/-1;">
+            <label>Location / Area (Optional)</label>
+            <input type="text" class="form-input" id="ssLocation" placeholder="যেমন: Kusumgram">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>Start Date</label>
+            <input type="date" class="form-input" id="ssStartDate">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>End Date</label>
+            <input type="date" class="form-input" id="ssEndDate">
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;">
+          <button class="btn-sm btn-orange" onclick="saveSponsoredShop()" id="sponsoredShopSaveBtn">🏪 Save করুন</button>
+          <button class="btn-sm btn-outline" onclick="cancelSponsoredShopEdit()" id="sponsoredShopCancelBtn" style="display:none;">✕ বাতিল</button>
+        </div>
+      </div>
+
+      <div id="sponsoredShopsListWrap"><div style="color:var(--muted);font-size:.82rem;">লোড হচ্ছে...</div></div>
     </div>
 
     <!-- ═══ HAMPER MANAGEMENT PAGE ═══ -->
@@ -1705,6 +1755,7 @@ function goTab(tab, btn){
   }
   if(tab==='hampers') loadHamperManagement();
   if(tab==='hamperorders') loadHamperOrders();
+  if(tab==='sponsoredshops') loadSponsoredShops();
 }
 
 // ═══ DATA LOADING ═══
@@ -5497,18 +5548,7 @@ window.loadAllContests = loadAllContests;
 window.announceWinner = announceWinner;
 window.deleteContest = deleteContest;
 
-// ═══ BANNER AD MANAGEMENT ═══
-function toggleBannerType(){
-  var type = document.getElementById('bannerType').value;
-  var isShop = type==='shop_ad';
-  document.getElementById('bannerFestivalGroup').style.display = type==='festival' ? 'block' : 'none';
-  document.getElementById('bannerShopGroup').style.display = isShop ? 'block' : 'none';
-  ['bannerShopTaglineGroup','bannerShopDiscountGroup','bannerShopRatingGroup','bannerShopHoursGroup','bannerShopLocationGroup'].forEach(function(id){
-    var el = document.getElementById(id);
-    if(el) el.style.display = isShop ? 'block' : 'none';
-  });
-}
-
+// ═══ BANNER AD MANAGEMENT (Festival banners only — Shop Ads have their own dedicated section) ═══
 function loadBannerFestivalDropdown(){
   var sel = document.getElementById('bannerFestival');
   if(!sel) return;
@@ -5522,7 +5562,7 @@ function loadBannerFestivalDropdown(){
 }
 
 function saveBannerAd(){
-  var type = document.getElementById('bannerType').value;
+  var type = 'festival';
   var title = document.getElementById('bannerTitle').value.trim();
   var emoji = document.getElementById('bannerEmoji').value.trim()||'🎊';
   var color1 = document.getElementById('bannerColor1').value||'#b5451b';
@@ -5534,16 +5574,9 @@ function saveBannerAd(){
   var priority = parseInt(document.getElementById('bannerPriority').value)||1;
   var pricePerDay = parseInt(document.getElementById('bannerPrice').value)||0;
   var festivalKey = document.getElementById('bannerFestival').value;
-  var shopName = document.getElementById('bannerShopName').value.trim();
-  var tagline = document.getElementById('bannerShopTagline').value.trim();
-  var discountText = document.getElementById('bannerShopDiscount').value.trim();
-  var rating = document.getElementById('bannerShopRating').value.trim();
-  var hours = document.getElementById('bannerShopHours').value.trim();
-  var location = document.getElementById('bannerShopLocation').value.trim();
 
   if(!title){showToast('Banner title দিন','red');return;}
-  if(type==='festival' && !festivalKey){showToast('Festival select করুন','red');return;}
-  if(type==='shop_ad' && !shopName){showToast('Shop name দিন','red');return;}
+  if(!festivalKey){showToast('Festival select করুন','red');return;}
 
   var data = {
     type: type,
@@ -5558,20 +5591,14 @@ function saveBannerAd(){
     priority: priority,
     pricePerDay: pricePerDay,
     status: 'active',
-    festivalKey: type==='festival' ? festivalKey : '',
-    shopName: type==='shop_ad' ? shopName : '',
-    tagline: type==='shop_ad' ? tagline : '',
-    discountText: type==='shop_ad' ? discountText : '',
-    rating: type==='shop_ad' ? rating : '',
-    hours: type==='shop_ad' ? hours : '',
-    location: type==='shop_ad' ? location : '',
+    festivalKey: festivalKey,
     createdAt: new Date().toISOString()
   };
 
   db.collection('cities').doc(CITY).collection('bannerAds').add(data)
     .then(function(){
       showToast('✅ Banner saved!','green');
-      ['bannerTitle','bannerEmoji','bannerLink','bannerImage','bannerStartDate','bannerEndDate','bannerShopName','bannerShopTagline','bannerShopDiscount','bannerShopRating','bannerShopHours','bannerShopLocation'].forEach(function(id){
+      ['bannerTitle','bannerEmoji','bannerLink','bannerImage','bannerStartDate','bannerEndDate'].forEach(function(id){
         var el=document.getElementById(id); if(el) el.value=id==='bannerEmoji'?'🎊':'';
       });
       document.getElementById('bannerPriority').value='1';
@@ -5639,9 +5666,196 @@ function deleteBannerAd(id){
 
 window.loadBannerAds=loadBannerAds;
 window.saveBannerAd=saveBannerAd;
-window.toggleBannerType=toggleBannerType;
 window.toggleBannerStatus=toggleBannerStatus;
 window.deleteBannerAd=deleteBannerAd;
+
+// ═══ SPONSORED SHOPS MANAGEMENT (dedicated section — homepage rotation carousel + See All page) ═══
+var allSponsoredShops = [];
+
+function loadSponsoredShops(){
+  var wrap = document.getElementById('sponsoredShopsListWrap');
+  wrap.innerHTML = '<div style="color:var(--muted);font-size:.82rem;">লোড হচ্ছে...</div>';
+  loadSponsoredShopSellerDropdown();
+  db.collection('cities').doc(CITY).collection('bannerAds')
+    .where('type','==','shop_ad').get()
+    .then(function(snap){
+      allSponsoredShops = [];
+      snap.forEach(function(d){ allSponsoredShops.push(Object.assign({id:d.id}, d.data())); });
+      allSponsoredShops.sort(function(a,b){ return (b.priority||0)-(a.priority||0); });
+      renderSponsoredShopsList();
+    }).catch(function(e){ wrap.innerHTML='<div style="color:var(--red);">Error: '+e.message+'</div>'; });
+}
+
+function loadSponsoredShopSellerDropdown(){
+  var sel = document.getElementById('ssExistingShop');
+  if(!sel) return;
+  var current = sel.value;
+  sel.innerHTML = '<option value="">-- ম্যানুয়াল এন্ট্রি (external / non-listed shop) --</option>';
+  (allSellers||[]).filter(function(s){ return (s.status||'approved')==='approved'; })
+    .sort(function(a,b){ return (a.shopName||'').localeCompare(b.shopName||''); })
+    .forEach(function(s){
+      var opt = document.createElement('option');
+      opt.value = s.id;
+      opt.textContent = s.shopName + (s.area?' ('+s.area+')':'');
+      sel.appendChild(opt);
+    });
+  sel.value = current;
+}
+
+function fillFromExistingShop(){
+  var id = document.getElementById('ssExistingShop').value;
+  if(!id) return;
+  var s = (allSellers||[]).find(function(x){ return x.id===id; });
+  if(!s) return;
+  document.getElementById('ssName').value = s.shopName||'';
+  if(s.description) document.getElementById('ssTagline').value = s.description;
+  document.getElementById('ssLink').value = 'index.html?shop='+id;
+  if(s.rating) document.getElementById('ssRating').value = s.rating;
+  if(s.openTime && s.closeTime) document.getElementById('ssHours').value = s.openTime+' - '+s.closeTime;
+  if(s.area) document.getElementById('ssLocation').value = s.area;
+  if(!document.getElementById('ssImage').value.trim() && s.shopImages && s.shopImages[0]){
+    document.getElementById('ssImage').value = s.shopImages[0];
+  }
+}
+
+function renderSponsoredShopsList(){
+  var wrap = document.getElementById('sponsoredShopsListWrap');
+  if(!allSponsoredShops.length){
+    wrap.innerHTML = '<div class="empty-state"><div class="empty-icon">🏪</div><p>এখনো কোনো Sponsored Shop যোগ করা হয়নি</p></div>';
+    return;
+  }
+  var today = new Date().toISOString().slice(0,10);
+  wrap.innerHTML = allSponsoredShops.map(function(s){
+    var isExpired = s.endDate && s.endDate < today;
+    var isActive = s.status==='active' && !isExpired;
+    var thumb = s.imageUrl ?
+      '<img src="'+s.imageUrl+'" style="width:64px;height:48px;border-radius:8px;object-fit:cover;flex-shrink:0;">' :
+      '<div style="width:64px;height:48px;border-radius:8px;background:var(--sand);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;">🏪</div>';
+    return '<div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:8px;display:flex;gap:12px;align-items:center;">'+
+      thumb+
+      '<div style="flex:1;min-width:0;">'+
+        '<div style="font-size:.82rem;font-weight:700;color:var(--navy);">'+(s.shopName||'—')+'</div>'+
+        '<div style="font-size:.72rem;color:var(--muted);">'+
+          (s.discountText?s.discountText+' · ':'')+'Priority: '+(s.priority||1)+
+          (s.startDate?' · '+s.startDate+' → '+(s.endDate||'—'):'')+
+        '</div>'+
+      '</div>'+
+      '<div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;align-items:flex-end;">'+
+        '<span style="font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:20px;background:'+(isActive?'var(--green2)':'var(--sand)')+';color:'+(isActive?'var(--green)':'var(--muted)')+';">'+
+          (isActive?'✅ Active':isExpired?'❌ Expired':'⏸ Off')+'</span>'+
+        '<div style="display:flex;gap:4px;">'+
+          '<button class="btn-sm '+(isActive?'btn-green':'')+'" style="font-size:.68rem;" onclick="toggleSponsoredShopStatus(\''+s.id+'\','+(s.status==='active'?'\'inactive\'':'\'active\'')+')">'+(s.status==='active'?'⏸':'▶️')+'</button>'+
+          '<button class="btn-sm btn-outline" style="font-size:.68rem;" onclick="editSponsoredShop(\''+s.id+'\')">✏️</button>'+
+          '<button class="btn-sm btn-red" style="font-size:.68rem;" onclick="deleteSponsoredShop(\''+s.id+'\')">🗑️</button>'+
+        '</div>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+function saveSponsoredShop(){
+  var editId = document.getElementById('sponsoredShopEditId').value;
+  var shopName = document.getElementById('ssName').value.trim();
+  var tagline = document.getElementById('ssTagline').value.trim();
+  var discountText = document.getElementById('ssOffer').value.trim();
+  var buttonText = document.getElementById('ssBtnText').value.trim();
+  var imageUrl = document.getElementById('ssImage').value.trim();
+  var link = document.getElementById('ssLink').value.trim();
+  var rating = document.getElementById('ssRating').value.trim();
+  var hours = document.getElementById('ssHours').value.trim();
+  var location = document.getElementById('ssLocation').value.trim();
+  var priority = parseInt(document.getElementById('ssPriority').value)||1;
+  var startDate = document.getElementById('ssStartDate').value;
+  var endDate = document.getElementById('ssEndDate').value;
+
+  if(!shopName){ showToast('Shop name দিন','red'); return; }
+  if(!imageUrl){ showToast('Banner Image URL দিন','red'); return; }
+
+  var data = {
+    type: 'shop_ad',
+    shopName: shopName,
+    title: shopName,
+    tagline: tagline,
+    discountText: discountText,
+    buttonText: buttonText,
+    imageUrl: imageUrl,
+    linkUrl: link,
+    rating: rating,
+    hours: hours,
+    location: location,
+    priority: priority,
+    startDate: startDate,
+    endDate: endDate,
+    updatedAt: new Date().toISOString()
+  };
+
+  var ref = db.collection('cities').doc(CITY).collection('bannerAds');
+  var promise = editId ?
+    ref.doc(editId).update(data) :
+    ref.add(Object.assign({status:'active', createdAt:new Date().toISOString()}, data));
+
+  promise.then(function(){
+    showToast(editId?'✅ Updated!':'✅ Sponsored Shop added!','green');
+    cancelSponsoredShopEdit();
+    loadSponsoredShops();
+  }).catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
+}
+
+function editSponsoredShop(id){
+  var s = allSponsoredShops.find(function(x){ return x.id===id; });
+  if(!s) return;
+  document.getElementById('sponsoredShopEditId').value = id;
+  document.getElementById('ssName').value = s.shopName||'';
+  document.getElementById('ssTagline').value = s.tagline||'';
+  document.getElementById('ssOffer').value = s.discountText||'';
+  document.getElementById('ssBtnText').value = s.buttonText||'';
+  document.getElementById('ssImage').value = s.imageUrl||'';
+  document.getElementById('ssLink').value = s.linkUrl||'';
+  document.getElementById('ssRating').value = s.rating||'';
+  document.getElementById('ssHours').value = s.hours||'';
+  document.getElementById('ssLocation').value = s.location||'';
+  document.getElementById('ssPriority').value = s.priority||5;
+  document.getElementById('ssStartDate').value = s.startDate||'';
+  document.getElementById('ssEndDate').value = s.endDate||'';
+  var linkMatch = /^index\.html\?shop=(.+)$/.exec(s.linkUrl||'');
+  document.getElementById('ssExistingShop').value = linkMatch ? linkMatch[1] : '';
+  document.getElementById('sponsoredShopFormTitle').textContent = '✏️ Sponsored Shop এডিট করুন';
+  document.getElementById('sponsoredShopCancelBtn').style.display='inline-flex';
+  document.getElementById('sponsoredShopFormCard').scrollIntoView({behavior:'smooth'});
+}
+
+function cancelSponsoredShopEdit(){
+  document.getElementById('sponsoredShopEditId').value='';
+  document.getElementById('ssExistingShop').value='';
+  ['ssName','ssTagline','ssOffer','ssBtnText','ssImage','ssLink','ssRating','ssHours','ssLocation','ssStartDate','ssEndDate'].forEach(function(id){
+    document.getElementById(id).value='';
+  });
+  document.getElementById('ssPriority').value=5;
+  document.getElementById('sponsoredShopFormTitle').textContent = '➕ নতুন Sponsored Shop যোগ করুন';
+  document.getElementById('sponsoredShopCancelBtn').style.display='none';
+}
+
+function toggleSponsoredShopStatus(id, status){
+  db.collection('cities').doc(CITY).collection('bannerAds').doc(id).update({status:status})
+    .then(function(){ showToast('Updated','green'); loadSponsoredShops(); })
+    .catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
+}
+
+function deleteSponsoredShop(id){
+  if(!confirm('এই Sponsored Shop delete করবেন?')) return;
+  db.collection('cities').doc(CITY).collection('bannerAds').doc(id).delete()
+    .then(function(){ showToast('Deleted','green'); loadSponsoredShops(); })
+    .catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
+}
+
+window.loadSponsoredShops=loadSponsoredShops;
+window.loadSponsoredShopSellerDropdown=loadSponsoredShopSellerDropdown;
+window.fillFromExistingShop=fillFromExistingShop;
+window.saveSponsoredShop=saveSponsoredShop;
+window.editSponsoredShop=editSponsoredShop;
+window.cancelSponsoredShopEdit=cancelSponsoredShopEdit;
+window.toggleSponsoredShopStatus=toggleSponsoredShopStatus;
+window.deleteSponsoredShop=deleteSponsoredShop;
 
 // ═══ FESTIVAL MANAGEMENT ═══
 
