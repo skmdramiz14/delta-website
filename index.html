@@ -250,8 +250,15 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 }
 .flash-card-row{display:flex;gap:10px;position:relative;z-index:1;align-items:stretch;}
 .flash-left{flex:0 0 32%;display:flex;flex-direction:column;justify-content:center;min-width:0;}
-.flash-left-sub{font-size:.78rem;font-weight:700;color:#fff;line-height:1.3;margin-bottom:2px;}
-.flash-left-sub2{font-size:.64rem;color:rgba(255,255,255,.75);margin-bottom:12px;line-height:1.25;}
+.flash-left-badge{
+  display:inline-flex;align-items:center;gap:4px;color:#FFD54F;
+  font-size:.62rem;font-weight:800;letter-spacing:.5px;margin-bottom:6px;align-self:flex-start;
+}
+.flash-left-title{
+  font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:900;color:#fff;
+  line-height:1.05;margin-bottom:6px;text-shadow:0 2px 8px rgba(0,0,0,.3);
+}
+.flash-left-sub{font-size:.76rem;font-weight:600;color:rgba(255,255,255,.9);line-height:1.3;margin-bottom:12px;}
 .flash-left-btn{
   background:#fff;border:none;color:#B01616;font-weight:800;font-size:.72rem;
   padding:13px 14px;border-radius:999px;cursor:pointer;white-space:nowrap;
@@ -277,9 +284,20 @@ button,input,select{font-family:'DM Sans',sans-serif;}
   display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:2;font-size:.85rem;
 }
 
+/* বাস্তব ফোন স্ক্রিনে (>1 product দেখানোর জন্য) — left content উপরে, product row নিচে ফুল-উইথে */
+@media(max-width:600px){
+  .flash-card-row{flex-direction:column;gap:12px;}
+  .flash-left{flex:none;}
+  .flash-left-title{font-size:1.5rem;}
+  .flash-left-sub{margin-bottom:10px;}
+  .flash-right{gap:10px;}
+  .flash-banner-countdown{align-self:flex-start;}
+  .flash-card{width:clamp(115px,32vw,140px);}
+  .flash-card-img{height:110px;}
+  .flash-scroll-arrow{display:none;}
+}
 @media(max-width:400px){
-  .flash-left-sub{font-size:.7rem;}
-  .flash-left-sub2{display:none;}
+  .flash-left-sub{font-size:.72rem;}
   .flash-left-btn{font-size:.66rem;padding:11px 10px;}
 }
 
@@ -1884,28 +1902,16 @@ img{max-width:100%;height:auto;}
 
 <!-- FLASH SALE -->
 <section class="section" id="flashSection" style="display:none;">
-  <div class="section-head">
-    <div>
-      <div class="section-label">⚡ <span class="lang-bn">লিমিটেড টাইম</span><span class="lang-en">LIMITED TIME</span></div>
-      <div class="section-title">Flash Sale</div>
-    </div>
-    <a href="flash-sale.html" style="color:var(--orange);font-weight:700;font-size:.85rem;text-decoration:none;white-space:nowrap;">
-      <span class="lang-bn">সব দেখুন →</span><span class="lang-en">See All →</span>
-    </a>
-  </div>
-
   <div class="flash-outer-wrap">
   <div class="flash-outer-card">
     <div class="flash-card-row">
-      <!-- Left: subtitle + button -->
+      <!-- Left: badge + title + subtitle + button -->
       <div class="flash-left">
+        <div class="flash-left-badge">⚡ <span class="lang-bn">লিমিটেড টাইম</span><span class="lang-en">LIMITED TIME</span></div>
+        <div class="flash-left-title">Flash Sale</div>
         <div class="flash-left-sub">
           <span class="lang-bn">সময় অল্প, ডিল কিন্তু দারুণ!</span>
           <span class="lang-en">Time's short, deals are great!</span>
-        </div>
-        <div class="flash-left-sub2">
-          <span class="lang-bn">দাম কমার সেরা সময় এখনই</span>
-          <span class="lang-en">Best time for lower prices, right now</span>
         </div>
         <button class="flash-left-btn" onclick="window.location.href='flash-sale.html'">
           <span class="lang-bn">সব ডিল দেখুন →</span><span class="lang-en">See All Deals →</span>
