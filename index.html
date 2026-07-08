@@ -234,7 +234,7 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 .flash-outer-wrap{position:relative;margin:0 3%;}
 .flash-outer-card{
   background:linear-gradient(135deg,#4A0000 0%,#7B0000 55%,#B01616 100%);
-  border-radius:22px;padding:16px 18px 18px;
+  border-radius:22px;padding:14px 16px 16px;
   position:relative;overflow:hidden;
   box-shadow:0 10px 30px rgba(0,0,0,.12),0 8px 22px rgba(176,22,22,.28);
 }
@@ -249,18 +249,18 @@ button,input,select{font-family:'DM Sans',sans-serif;}
   pointer-events:none;
 }
 
-/* Countdown — card-এর top-right এ absolute, compact */
+/* Countdown — card-এর top-right এ absolute, 44×44 box, compact */
 .flash-banner-countdown{
-  position:absolute;top:12px;right:14px;z-index:3;
-  display:flex;align-items:center;gap:3px;
+  position:absolute;top:10px;right:12px;z-index:3;
+  display:flex;align-items:center;gap:4px;
 }
-.fbc-block{display:flex;flex-direction:column;align-items:center;background:rgba(0,0,0,.4);border-radius:6px;padding:3px 6px;min-width:26px;}
-.fbc-num{font-size:.7rem;font-weight:800;color:#fff;font-family:monospace;line-height:1;}
-.fbc-label{font-size:.36rem;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.3px;margin-top:1px;}
-.fbc-sep{font-size:.7rem;font-weight:700;color:rgba(255,255,255,.4);margin-bottom:5px;}
+.fbc-block{display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(0,0,0,.4);border-radius:8px;width:44px;height:44px;box-sizing:border-box;}
+.fbc-num{font-size:.9rem;font-weight:800;color:#fff;font-family:monospace;line-height:1;}
+.fbc-label{font-size:.36rem;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.3px;margin-top:2px;}
+.fbc-sep{font-size:.8rem;font-weight:700;color:rgba(255,255,255,.4);}
 
 .flash-card-row{display:flex;gap:12px;position:relative;z-index:1;width:100%;align-items:center;}
-.flash-left{flex:0 0 29%;display:flex;flex-direction:column;justify-content:center;min-width:0;}
+.flash-left{flex:0 0 30%;display:flex;flex-direction:column;justify-content:center;min-width:0;}
 .flash-left-badge{
   display:inline-flex;align-items:center;gap:4px;color:#FFD54F;
   font-size:.58rem;font-weight:800;letter-spacing:.5px;margin-bottom:5px;align-self:flex-start;
@@ -272,37 +272,39 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 .flash-left-sub{font-size:.68rem;font-weight:600;color:rgba(255,255,255,.9);line-height:1.25;margin-bottom:10px;}
 .flash-left-btn{
   background:#fff;border:none;color:#B01616;font-weight:800;font-size:.66rem;
-  padding:10px 13px;border-radius:999px;cursor:pointer;white-space:nowrap;
+  width:140px;height:44px;border-radius:999px;cursor:pointer;white-space:nowrap;
   box-shadow:0 4px 14px rgba(0,0,0,.25);align-self:flex-start;
-  min-height:38px;display:flex;align-items:center;
+  display:flex;align-items:center;justify-content:center;
 }
 .flash-right{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;}
 
-.flash-grid{display:flex;gap:12px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-top:22px;padding-bottom:2px;scroll-snap-type:x mandatory;}
+.flash-grid{display:flex;gap:12px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-top:50px;padding-bottom:2px;scroll-snap-type:x mandatory;}
 
 /* Floating right arrow — card-এর ডান edge-এর সাথে half overlap, vertically centered */
 .flash-scroll-arrow{
-  position:absolute;right:-21px;top:50%;transform:translateY(-50%);
+  position:absolute;right:-22px;top:50%;transform:translateY(-50%);
   width:44px;height:44px;border-radius:50%;background:#fff;border:none;
-  box-shadow:0 3px 10px rgba(0,0,0,.3);color:#B01616;font-weight:800;
+  box-shadow:0 3px 10px rgba(0,0,0,.25);color:#B01616;font-weight:800;
   display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:2;font-size:1rem;
 }
 
 /* 360–430px রেঞ্জে fine-tune, কিন্তু two-column split বজায় থাকবে */
 @media(max-width:400px){
-  .flash-outer-card{padding:14px 14px 16px;}
+  .flash-outer-card{padding:12px 12px 14px;}
   .flash-left{flex:0 0 29%;}
   .flash-left-title{font-size:1rem;}
   .flash-left-sub{font-size:.62rem;}
-  .flash-left-btn{font-size:.6rem;padding:9px 11px;min-height:34px;}
-  .fbc-block{padding:2px 5px;min-width:22px;}
-  .fbc-num{font-size:.62rem;}
+  .flash-left-btn{font-size:.6rem;width:120px;height:40px;}
+  .fbc-block{width:38px;height:38px;}
+  .fbc-num{font-size:.78rem;}
+  .flash-grid{padding-top:46px;}
 }
 
 
 
+
 /* ── FLASH CARD COMPACT ── */
-.flash-card{background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;position:relative;flex-shrink:0;width:clamp(145px,40vw,155px);box-shadow:0 4px 14px rgba(0,0,0,.2);scroll-snap-align:start;}
+.flash-card{background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;position:relative;flex-shrink:0;width:clamp(145px,40vw,150px);box-shadow:0 4px 14px rgba(0,0,0,.2);scroll-snap-align:start;}
 .flash-card-img{height:105px;background:var(--sand);display:flex;align-items:center;justify-content:center;font-size:2rem;position:relative;overflow:hidden;}
 .flash-card-img img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;}
 .flash-card-badges{position:absolute;top:5px;left:5px;display:flex;gap:3px;}
@@ -310,10 +312,10 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 .flash-card-timer-label{color:rgba(255,255,255,.85);font-size:.58rem;font-weight:600;}
 .flash-card-timer-digits{font-family:monospace;font-size:.78rem;font-weight:800;color:#fff;letter-spacing:1px;}
 .flash-card-body{padding:9px 10px;}
-.flash-card-name{font-weight:700;font-size:.82rem;color:var(--charcoal);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:5px;}
+.flash-card-name{font-weight:700;font-size:14px;color:var(--charcoal);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:5px;}
 .flash-card-price{display:flex;align-items:center;gap:5px;margin-bottom:6px;}
-.flash-card-price-now{font-size:.95rem;font-weight:800;color:var(--orange);}
-.flash-card-price-old{font-size:.68rem;color:var(--muted);text-decoration:line-through;}
+.flash-card-price-now{font-size:18px;font-weight:800;color:var(--orange);}
+.flash-card-price-old{font-size:12px;color:var(--muted);text-decoration:line-through;}
 .flash-card-btn{width:100%;background:var(--navy);color:#fff;border:none;padding:7px 6px;border-radius:7px;font-weight:700;font-size:.72rem;cursor:pointer;}
 .flash-card-btn:active{background:var(--orange);}
 .flash-card-qty{display:flex;align-items:center;justify-content:space-between;background:var(--sand);border-radius:7px;}
@@ -4772,7 +4774,7 @@ function flashCardHTML(p){
             '<span style="font-size:.75rem;font-weight:700;color:var(--navy);">'+qty+'</span>'+
             '<button onclick="prodQtyChange(\''+p.id+'\',\''+p.shopId+'\',1)" style="width:20px;height:20px;border:none;border-radius:50%;background:var(--orange);color:#fff;font-weight:700;font-size:.75rem;cursor:pointer;">+</button>'+
           '</div>'
-          :'<button onclick="addToCartCard(event,\''+p.id+'\',\''+p.shopId+'\',this)" style="width:28px;height:28px;flex-shrink:0;border:none;border-radius:50%;background:var(--orange);color:#fff;font-weight:900;font-size:1rem;cursor:pointer;line-height:1;">+</button>')+
+          :'<button onclick="addToCartCard(event,\''+p.id+'\',\''+p.shopId+'\',this)" style="width:36px;height:36px;flex-shrink:0;border:none;border-radius:50%;background:var(--orange);color:#fff;font-weight:900;font-size:1.1rem;cursor:pointer;line-height:1;">+</button>')+
       '</div>'+
     '</div></div>';
 }
