@@ -249,7 +249,7 @@ button,input,select{font-family:'DM Sans',sans-serif;}
   pointer-events:none;
 }
 .flash-card-row{display:flex;gap:10px;position:relative;z-index:1;align-items:stretch;}
-.flash-left{flex:0 0 32%;display:flex;flex-direction:column;justify-content:center;min-width:0;}
+.flash-left{flex:0 0 32%;display:flex;flex-direction:column;justify-content:flex-start;min-width:0;}
 .flash-left-badge{
   display:inline-flex;align-items:center;gap:4px;color:#FFD54F;
   font-size:.62rem;font-weight:800;letter-spacing:.5px;margin-bottom:6px;align-self:flex-start;
@@ -284,24 +284,6 @@ button,input,select{font-family:'DM Sans',sans-serif;}
   display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:2;font-size:.85rem;
 }
 
-/* বাস্তব ফোন স্ক্রিনে (>1 product দেখানোর জন্য) — left content উপরে, product row নিচে ফুল-উইথে */
-@media(max-width:600px){
-  .flash-card-row{flex-direction:column;gap:12px;}
-  .flash-left{flex:none;}
-  .flash-left-title{font-size:1.5rem;}
-  .flash-left-sub{margin-bottom:10px;}
-  .flash-right{gap:10px;}
-  .flash-banner-countdown{align-self:flex-start;}
-  .flash-card{width:clamp(115px,32vw,140px);}
-  .flash-card-img{height:110px;}
-  .flash-scroll-arrow{display:none;}
-}
-@media(max-width:400px){
-  .flash-left-sub{font-size:.72rem;}
-  .flash-left-btn{font-size:.66rem;padding:11px 10px;}
-}
-
-
 /* ── FLASH CARD COMPACT ── */
 .flash-card{background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;position:relative;flex-shrink:0;width:clamp(150px,46vw,185px);box-shadow:0 4px 14px rgba(0,0,0,.2);scroll-snap-align:start;}
 .flash-card-img{height:145px;background:var(--sand);display:flex;align-items:center;justify-content:center;font-size:2rem;position:relative;overflow:hidden;}
@@ -322,6 +304,33 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 .flash-card-qty span{font-size:.82rem;font-weight:700;}
 .flash-hscroll{display:flex;gap:12px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
 .flash-hscroll::-webkit-scrollbar{display:none;}
+
+/* বাস্তব ফোন স্ক্রিনে — reference design-এর মতো left text + right (countdown+products) পাশাপাশি রাখা, শুধু compact size-এ */
+@media(max-width:600px){
+  .flash-left{flex:0 0 34%;}
+  .flash-left-title{font-size:1.05rem;margin-bottom:4px;}
+  .flash-left-sub{font-size:.64rem;margin-bottom:8px;}
+  .flash-left-btn{font-size:.62rem;padding:9px 10px;min-height:36px;}
+  .flash-right{gap:6px;}
+  .flash-banner-countdown{gap:3px;}
+  .fbc-block{padding:3px 5px;min-width:26px;}
+  .fbc-num{font-size:.74rem;}
+  .fbc-label{font-size:.36rem;}
+  .fbc-sep{font-size:.7rem;margin-bottom:4px;}
+  .flash-card{width:clamp(92px,26vw,120px);}
+  .flash-card-img{height:82px;}
+  .flash-card-body{padding:6px 7px;}
+  .flash-card-name{font-size:.66rem;margin-bottom:3px;}
+  .flash-card-price-now{font-size:.76rem;}
+  .flash-card-price-old{font-size:.56rem;}
+  .flash-grid{gap:8px;}
+}
+@media(max-width:400px){
+  .flash-left-sub{font-size:.6rem;}
+  .flash-left-btn{font-size:.58rem;padding:8px 8px;}
+  .flash-card{width:clamp(84px,24vw,105px);}
+  .flash-card-img{height:74px;}
+}
 
 /* ── FLASH TIMER BAR (inside product card) ── */
 .flash-timer-bar{background:linear-gradient(135deg,#B71C1C,#E53935);border-radius:0 0 0 0;padding:6px 12px;display:flex;align-items:center;justify-content:space-between;margin:0;}
@@ -4342,7 +4351,12 @@ function renderFestivalCarousel(festivals){
   }
 }
 
+var _FEST_EYEBROWS = {
+  durga_puja: 'শারদীয়া উৎসব', eid: 'ঈদের বিশেষ',
+  poila_boishakh: 'নববর্ষ উৎসব', kali_puja: 'আলোর উৎসব'
+};
 function _festivalSlideHTML(f, idx){
+  var eyebrow = f.eyebrow || _FEST_EYEBROWS[f.key] || 'উৎসব স্পেশাল';
   var bg = f.imageUrl ?
     ('background:linear-gradient(rgba(0,0,0,.35),rgba(0,0,0,.45)),url(\''+f.imageUrl+'\') center/cover;') :
     ('background:radial-gradient(circle at 75% 20%,'+f.color2+'55,transparent 55%),linear-gradient(135deg,'+f.color1+','+f.color2+');');
@@ -4371,8 +4385,8 @@ function _festivalSlideHTML(f, idx){
         '</div>'
       ) : '')+
       '<div style="position:relative;z-index:1;max-width:72%;">'+
-        (f.eyebrow ? '<div style="font-size:.7rem;font-weight:700;color:rgba(255,255,255,.85);'+
-          'margin-bottom:4px;letter-spacing:.3px;">→ '+f.eyebrow+' ←</div>' : '')+
+        '<div style="font-size:.7rem;font-weight:700;color:rgba(255,255,255,.85);'+
+          'margin-bottom:4px;letter-spacing:.3px;">→ '+eyebrow+' ←</div>'+
         '<div style="font-family:\'Playfair Display\',serif;font-size:1.3rem;font-weight:900;color:#fff;'+
           'margin-bottom:5px;text-shadow:0 2px 8px rgba(0,0,0,.3);">'+f.name+'</div>'+
         (tagline ? '<div style="font-size:.78rem;color:rgba(255,255,255,.88);margin-bottom:12px;'+
@@ -4777,12 +4791,12 @@ function flashCardHTML(p){
           (salePrice!==origPrice?'<span class="flash-card-price-old">₹'+origPrice+'</span>':'')+
         '</div>'+
         (qty>0
-          ?'<div style="display:flex;align-items:center;gap:5px;" id="pqc-'+p.id+'">'+
-            '<button onclick="prodQtyChange(\''+p.id+'\',\''+p.shopId+'\',-1)" style="width:20px;height:20px;border:none;border-radius:50%;background:var(--sand);color:var(--navy);font-weight:700;font-size:.75rem;cursor:pointer;">−</button>'+
-            '<span style="font-size:.75rem;font-weight:700;color:var(--navy);">'+qty+'</span>'+
-            '<button onclick="prodQtyChange(\''+p.id+'\',\''+p.shopId+'\',1)" style="width:20px;height:20px;border:none;border-radius:50%;background:var(--orange);color:#fff;font-weight:700;font-size:.75rem;cursor:pointer;">+</button>'+
+          ?'<div style="display:flex;align-items:center;gap:3px;" id="pqc-'+p.id+'">'+
+            '<button onclick="prodQtyChange(\''+p.id+'\',\''+p.shopId+'\',-1)" style="width:17px;height:17px;flex-shrink:0;border:none;border-radius:50%;background:var(--sand);color:var(--navy);font-weight:700;font-size:.66rem;cursor:pointer;">−</button>'+
+            '<span style="font-size:.68rem;font-weight:700;color:var(--navy);">'+qty+'</span>'+
+            '<button onclick="prodQtyChange(\''+p.id+'\',\''+p.shopId+'\',1)" style="width:17px;height:17px;flex-shrink:0;border:none;border-radius:50%;background:var(--orange);color:#fff;font-weight:700;font-size:.66rem;cursor:pointer;">+</button>'+
           '</div>'
-          :'<button onclick="addToCartCard(event,\''+p.id+'\',\''+p.shopId+'\',this)" style="width:28px;height:28px;flex-shrink:0;border:none;border-radius:50%;background:var(--orange);color:#fff;font-weight:900;font-size:1rem;cursor:pointer;line-height:1;">+</button>')+
+          :'<button onclick="addToCartCard(event,\''+p.id+'\',\''+p.shopId+'\',this)" style="width:22px;height:22px;flex-shrink:0;border:none;border-radius:50%;background:var(--orange);color:#fff;font-weight:900;font-size:.85rem;cursor:pointer;line-height:1;">+</button>')+
       '</div>'+
     '</div></div>';
 }
