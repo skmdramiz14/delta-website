@@ -231,139 +231,90 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 .why-card p{color:var(--muted);font-size:.86rem;line-height:1.7;}
 
 /* ── FLASH SALE BANNER ── */
-.flash-outer-wrap{position:relative;margin:0 16px;}
+.flash-outer-wrap{position:relative;margin:0 4%;}
 .flash-outer-card{
-  background:radial-gradient(circle at 15% 15%,rgba(255,255,255,.09),transparent 50%),linear-gradient(100deg,#350000 0%,#8a0d0d 45%,#d92626 100%);
-  border-radius:24px;padding:16px 20px;
+  background:linear-gradient(135deg,#4A0000 0%,#7B0000 55%,#B01616 100%);
+  border-radius:18px;padding:16px 14px;
   position:relative;overflow:hidden;
-  box-shadow:0 8px 28px rgba(0,0,0,.11);
+  box-shadow:0 8px 32px rgba(176,22,22,.35);
 }
-/* ডেকোরেটিভ ব্যাকগ্রাউন্ড — শুধু ডান দিকে, খুব হালকা opacity */
+/* ডেকোরেটিভ ব্যাকগ্রাউন্ড — শুধু ডান দিকে, হালকা opacity */
 .flash-outer-card::before{
-  content:'🛍️';position:absolute;right:6%;top:10%;font-size:3.2rem;opacity:.04;
+  content:'🛍️';position:absolute;right:6%;top:8%;font-size:3.2rem;opacity:.08;
   pointer-events:none;transform:rotate(-8deg);
 }
 .flash-outer-card::after{
   content:'';position:absolute;right:-40px;bottom:-40px;width:180px;height:180px;
-  background:radial-gradient(circle,rgba(255,255,255,.12) 0%,transparent 70%);
+  background:radial-gradient(circle,rgba(255,255,255,.1) 0%,transparent 70%);
   pointer-events:none;
 }
-
-/* Countdown — card-এর top-right এ absolute, 52×52 box, glass effect */
-.flash-banner-countdown{
-  position:absolute;top:16px;right:16px;z-index:3;
-  display:flex;align-items:center;width:max-content;
-}
-.flash-banner-countdown>*{margin-right:11px;}
-.flash-banner-countdown>*:last-child{margin-right:0;}
-.fbc-block{
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  background:linear-gradient(160deg,rgba(255,255,255,.18),rgba(0,0,0,.35));
-  backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,.15);
-  border-radius:14px;width:52px;height:52px;box-sizing:border-box;flex-shrink:0;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.15),0 3px 8px rgba(0,0,0,.2);
-}
-.fbc-num{font-size:1.5rem;font-weight:900;color:#fff;font-family:monospace;line-height:1;text-shadow:0 1px 3px rgba(0,0,0,.3);}
-.fbc-label{font-size:.5rem;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.3px;margin-top:2px;}
-.fbc-sep{display:none;}
-
-.flash-card-row{display:flex;position:relative;z-index:1;width:100%;align-items:center;}
-.flash-left{flex:0 0 35%;display:flex;flex-direction:column;justify-content:center;min-width:0;margin-right:24px;}
+.flash-card-row{display:flex;gap:10px;position:relative;z-index:1;align-items:stretch;}
+.flash-left{flex:0 0 32%;display:flex;flex-direction:column;justify-content:center;min-width:0;}
 .flash-left-badge{
-  display:inline-flex;align-items:center;color:#FFD54F;
-  font-size:.875rem;font-weight:800;letter-spacing:.5px;margin-bottom:12px;align-self:flex-start;
+  display:inline-flex;align-items:center;gap:4px;color:#FFD54F;
+  font-size:.62rem;font-weight:800;letter-spacing:.5px;margin-bottom:6px;align-self:flex-start;
 }
-.flash-left-badge>*{margin-right:4px;}
-.flash-left-badge>*:last-child{margin-right:0;}
 .flash-left-title{
-  font-family:'Playfair Display',serif;font-size:2.25rem;font-weight:900;color:#fff;
-  line-height:1.05;margin-bottom:14px;text-shadow:0 2px 8px rgba(0,0,0,.3);
+  font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:900;color:#fff;
+  line-height:1.05;margin-bottom:6px;text-shadow:0 2px 8px rgba(0,0,0,.3);
 }
-.flash-left-sub{font-size:1.125rem;font-weight:600;color:rgba(255,255,255,.92);line-height:1.35;margin-bottom:24px;}
+.flash-left-sub{font-size:.76rem;font-weight:600;color:rgba(255,255,255,.9);line-height:1.3;margin-bottom:12px;}
 .flash-left-btn{
-  background:#fff;border:none;color:#B01616;font-weight:800;font-size:.95rem;
-  width:150px;height:48px;border-radius:999px;cursor:pointer;white-space:nowrap;
-  box-shadow:0 4px 14px rgba(0,0,0,.2);align-self:flex-start;
-  margin-left:6px;flex-shrink:0;
-  display:flex;align-items:center;justify-content:center;
+  background:#fff;border:none;color:#B01616;font-weight:800;font-size:.72rem;
+  padding:13px 14px;border-radius:999px;cursor:pointer;white-space:nowrap;
+  box-shadow:0 4px 14px rgba(0,0,0,.25);align-self:flex-start;
+  min-height:44px;display:flex;align-items:center;
 }
-.flash-left-trust{
-  display:flex;align-items:center;margin-top:10px;margin-left:6px;
-  font-size:.68rem;color:rgba(255,255,255,.8);align-self:flex-start;
-}
-.flash-left-trust>*{margin-right:5px;}
-.flash-left-trust>*:last-child{margin-right:0;}
-.flash-right{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;}
+.flash-right{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px;position:relative;}
 
-.flash-grid{display:flex;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-top:78px;padding-bottom:2px;scroll-snap-type:x mandatory;scroll-behavior:smooth;}
-.flash-grid>*{margin-right:12px;}
-.flash-grid>*:last-child{margin-right:0;}
+/* Countdown — right column-এর top-এ floating */
+.flash-banner-countdown{display:flex;align-items:center;gap:4px;align-self:flex-end;}
+.fbc-block{display:flex;flex-direction:column;align-items:center;background:rgba(0,0,0,.4);border-radius:7px;padding:4px 7px;min-width:32px;}
+.fbc-num{font-size:.92rem;font-weight:800;color:#fff;font-family:monospace;line-height:1;}
+.fbc-label{font-size:.44rem;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.4px;margin-top:1px;}
+.fbc-sep{font-size:.9rem;font-weight:700;color:rgba(255,255,255,.4);margin-bottom:6px;}
 
-.flash-countdown-label{font-size:.6rem;color:rgba(255,255,255,.7);margin-right:6px;white-space:nowrap;flex-shrink:0;}
+.flash-grid{display:flex;gap:16px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-bottom:2px;scroll-snap-type:x mandatory;}
 
-/* Floating right arrow — card-এর ডান edge-এর সাথে half overlap, 50px */
+/* Floating right arrow — card-এর ডান edge-এ আধা বাইরে, wrapper-relative তাই clip হবে না */
 .flash-scroll-arrow{
-  position:absolute;right:-25px;top:50%;transform:translateY(-50%);
-  width:50px;height:50px;border-radius:50%;background:#fff;border:none;
-  box-shadow:0 4px 14px rgba(0,0,0,.2);color:#B01616;font-weight:800;
-  display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:2;font-size:1.1rem;
-  animation:arrowBounce 2s ease-in-out infinite;
+  position:absolute;right:-14px;top:50%;transform:translateY(-50%);
+  width:34px;height:34px;border-radius:50%;background:#fff;border:none;
+  box-shadow:0 3px 10px rgba(0,0,0,.3);color:#B01616;font-weight:800;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:2;font-size:.85rem;
 }
-@keyframes arrowBounce{0%,100%{transform:translateY(-50%) translateX(0);}50%{transform:translateY(-50%) translateX(3px);}}
 
-/* Trust / Feature row — card-এর নিচে */
-.flash-trust-row{
-  display:flex;gap:12px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;scroll-behavior:smooth;
-  margin:16px 0 0;padding:0 2px 2px;
-}
-.flash-trust-item{
-  flex:1;min-width:130px;display:flex;align-items:center;gap:8px;
-  background:var(--white);border:1px solid var(--border);border-radius:12px;padding:9px 10px;
-}
-.flash-trust-icon{font-size:1.2rem;flex-shrink:0;}
-.flash-trust-title{font-size:.7rem;font-weight:700;color:var(--navy);white-space:nowrap;line-height:1.3;}
-.flash-trust-sub{font-size:.6rem;color:var(--muted);white-space:nowrap;line-height:1.3;}
-
-/* 360–430px রেঞ্জে fine-tune, কিন্তু two-column split বজায় থাকবে */
-@media(max-width:480px){
-  .flash-countdown-label{display:none;}
+/* বাস্তব ফোন স্ক্রিনে (>1 product দেখানোর জন্য) — left content উপরে, product row নিচে ফুল-উইথে */
+@media(max-width:600px){
+  .flash-card-row{flex-direction:column;gap:12px;}
+  .flash-left{flex:none;}
+  .flash-left-title{font-size:1.5rem;}
+  .flash-left-sub{margin-bottom:10px;}
+  .flash-right{gap:10px;}
+  .flash-banner-countdown{align-self:flex-start;}
+  .flash-card{width:clamp(115px,32vw,140px);}
+  .flash-card-img{height:110px;}
+  .flash-scroll-arrow{display:none;}
 }
 @media(max-width:400px){
-  .flash-outer-card{padding:14px 16px;}
-  .flash-card-row{gap:18px;}
-  .flash-left{flex:0 0 34%;}
-  .flash-left-title{font-size:1.6rem;margin-bottom:10px;}
-  .flash-left-sub{font-size:.9rem;margin-bottom:16px;}
-  .flash-left-btn{font-size:.8rem;width:130px;height:44px;}
-  .flash-left-trust{font-size:.6rem;}
-  .fbc-block{width:42px;height:42px;border-radius:11px;}
-  .fbc-num{font-size:1.1rem;}
-  .flash-grid{padding-top:64px;}
-  .flash-trust-item{min-width:110px;}
-  .flash-trust-sub{display:none;}
+  .flash-left-sub{font-size:.72rem;}
+  .flash-left-btn{font-size:.66rem;padding:11px 10px;}
 }
-
-
-
-
-
-
 
 
 /* ── FLASH CARD COMPACT ── */
-.flash-card{background:#fff;border:1px solid var(--border);border-radius:16px;overflow:hidden;position:relative;flex-shrink:0;width:clamp(150px,42vw,160px);box-shadow:0 6px 18px rgba(0,0,0,.14);scroll-snap-align:start;}
-.flash-card-img{height:134px;background:var(--sand);display:flex;align-items:center;justify-content:center;font-size:2rem;position:relative;overflow:hidden;}
+.flash-card{background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;position:relative;flex-shrink:0;width:clamp(150px,46vw,185px);box-shadow:0 4px 14px rgba(0,0,0,.2);scroll-snap-align:start;}
+.flash-card-img{height:145px;background:var(--sand);display:flex;align-items:center;justify-content:center;font-size:2rem;position:relative;overflow:hidden;}
 .flash-card-img img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;}
 .flash-card-badges{position:absolute;top:5px;left:5px;display:flex;gap:3px;}
-.flash-card-badges .badge{font-size:.58rem;padding:2px 6px;}
 .flash-card-timer{background:linear-gradient(135deg,#B71C1C,#E53935);padding:4px 10px;display:flex;align-items:center;justify-content:space-between;}
 .flash-card-timer-label{color:rgba(255,255,255,.85);font-size:.58rem;font-weight:600;}
 .flash-card-timer-digits{font-family:monospace;font-size:.78rem;font-weight:800;color:#fff;letter-spacing:1px;}
-.flash-card-body{padding:9px 10px;}
-.flash-card-name{font-weight:700;font-size:16px;color:var(--charcoal);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:5px;}
+.flash-card-body{padding:10px 12px;}
+.flash-card-name{font-weight:700;font-size:.82rem;color:var(--charcoal);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:5px;}
 .flash-card-price{display:flex;align-items:center;gap:5px;margin-bottom:6px;}
-.flash-card-price-now{font-size:22px;font-weight:800;color:var(--orange);}
-.flash-card-price-old{font-size:12px;color:var(--muted);text-decoration:line-through;}
+.flash-card-price-now{font-size:.95rem;font-weight:800;color:var(--orange);}
+.flash-card-price-old{font-size:.68rem;color:var(--muted);text-decoration:line-through;}
 .flash-card-btn{width:100%;background:var(--navy);color:#fff;border:none;padding:7px 6px;border-radius:7px;font-weight:700;font-size:.72rem;cursor:pointer;}
 .flash-card-btn:active{background:var(--orange);}
 .flash-card-qty{display:flex;align-items:center;justify-content:space-between;background:var(--sand);border-radius:7px;}
@@ -1937,7 +1888,7 @@ img{max-width:100%;height:auto;}
 <div id="festivalBannerWrap"></div>
 
 <!-- FREE DELIVERY BANNER -->
-<section class="section" style="padding-top:4px;padding-bottom:16px;">
+<section class="section" style="padding-top:4px;padding-bottom:4px;">
   <div class="delivery-card">
     <div class="delivery-card-icon">🚚</div>
     <div class="delivery-card-mid">
@@ -1950,86 +1901,53 @@ img{max-width:100%;height:auto;}
 </section>
 
 <!-- FLASH SALE -->
-<section class="section" id="flashSection" style="display:none;padding-bottom:22px;">
-  <div class="section-head" style="margin-bottom:10px;">
-    <div>
-      <div class="section-label">⚡ <span class="lang-bn">লিমিটেড টাইম</span><span class="lang-en">LIMITED TIME</span></div>
-      <div class="section-title">Flash Sale</div>
-    </div>
-    <a href="flash-sale.html" style="color:var(--orange);font-weight:700;font-size:.85rem;text-decoration:none;white-space:nowrap;">
-      <span class="lang-bn">সব দেখুন →</span><span class="lang-en">See All →</span>
-    </a>
-  </div>
+<section class="section" id="flashSection" style="display:none;">
   <div class="flash-outer-wrap">
   <div class="flash-outer-card">
-
-    <!-- Countdown — card-এর top-right এ absolute -->
-    <div class="flash-banner-countdown">
-      <span class="flash-countdown-label">🕐 <span class="lang-bn">অফার শেষ হতে</span><span class="lang-en">Offer ends in</span></span>
-      <!-- দিন — শুধু ২৪ ঘণ্টার বেশি হলে দেখাবে -->
-      <div class="fbc-block" id="fbcDaysWrap" style="display:none;">
-        <span class="fbc-num" id="fbcD">--</span>
-        <span class="fbc-label"><span class="lang-bn">দিন</span><span class="lang-en">days</span></span>
-      </div>
-      <span class="fbc-sep" id="fbcDaySep" style="display:none;">:</span>
-      <div class="fbc-block">
-        <span class="fbc-num" id="fbcH">--</span>
-        <span class="fbc-label"><span class="lang-bn">ঘণ্টা</span><span class="lang-en">hrs</span></span>
-      </div>
-      <span class="fbc-sep">:</span>
-      <div class="fbc-block">
-        <span class="fbc-num" id="fbcM">--</span>
-        <span class="fbc-label"><span class="lang-bn">মিনিট</span><span class="lang-en">min</span></span>
-      </div>
-      <span class="fbc-sep">:</span>
-      <div class="fbc-block">
-        <span class="fbc-num" id="fbcS">--</span>
-        <span class="fbc-label"><span class="lang-bn">সেকেন্ড</span><span class="lang-en">sec</span></span>
-      </div>
-    </div>
-
     <div class="flash-card-row">
-      <!-- Left: badge + title + subtitle + button — vertically centered -->
+      <!-- Left: badge + title + subtitle + button -->
       <div class="flash-left">
         <div class="flash-left-badge">⚡ <span class="lang-bn">লিমিটেড টাইম</span><span class="lang-en">LIMITED TIME</span></div>
-        <div class="flash-left-title">Flash <span style="color:#FFD54F;">Sale</span></div>
+        <div class="flash-left-title">Flash Sale</div>
         <div class="flash-left-sub">
-          <span class="lang-bn">সময় অল্প, ডিল কিন্তু <span style="color:#FFD54F;">দারুণ!</span></span>
-          <span class="lang-en">Time's short, deals are <span style="color:#FFD54F;">great!</span></span>
+          <span class="lang-bn">সময় অল্প, ডিল কিন্তু দারুণ!</span>
+          <span class="lang-en">Time's short, deals are great!</span>
         </div>
         <button class="flash-left-btn" onclick="window.location.href='flash-sale.html'">
-          <span class="lang-bn">এখনই দেখুন →</span><span class="lang-en">Shop Now →</span>
+          <span class="lang-bn">সব ডিল দেখুন →</span><span class="lang-en">See All Deals →</span>
         </button>
-        <div class="flash-left-trust">🛡️ <span class="lang-bn">১০০% আসল পণ্য</span><span class="lang-en">100% Authentic Products</span></div>
       </div>
 
-      <!-- Right: horizontally scrollable product slider -->
+      <!-- Right: countdown + product thumbnails -->
       <div class="flash-right">
+        <div class="flash-banner-countdown">
+          <!-- দিন — শুধু ২৪ ঘণ্টার বেশি হলে দেখাবে -->
+          <div class="fbc-block" id="fbcDaysWrap" style="display:none;">
+            <span class="fbc-num" id="fbcD">--</span>
+            <span class="fbc-label"><span class="lang-bn">দিন</span><span class="lang-en">days</span></span>
+          </div>
+          <span class="fbc-sep" id="fbcDaySep" style="display:none;">:</span>
+          <div class="fbc-block">
+            <span class="fbc-num" id="fbcH">--</span>
+            <span class="fbc-label"><span class="lang-bn">ঘণ্টা</span><span class="lang-en">hrs</span></span>
+          </div>
+          <span class="fbc-sep">:</span>
+          <div class="fbc-block">
+            <span class="fbc-num" id="fbcM">--</span>
+            <span class="fbc-label"><span class="lang-bn">মিনিট</span><span class="lang-en">min</span></span>
+          </div>
+          <span class="fbc-sep">:</span>
+          <div class="fbc-block">
+            <span class="fbc-num" id="fbcS">--</span>
+            <span class="fbc-label"><span class="lang-bn">সেকেন্ড</span><span class="lang-en">sec</span></span>
+          </div>
+        </div>
+
         <div class="flash-grid" id="flashGrid"></div>
       </div>
     </div>
   </div>
-  <button class="flash-scroll-arrow" onclick="document.getElementById('flashGrid').scrollBy({left:170,behavior:'smooth'})">→</button>
-  </div>
-
-  <!-- Trust / Feature row নিচে -->
-  <div class="flash-trust-row">
-    <div class="flash-trust-item">
-      <span class="flash-trust-icon">🏷️</span>
-      <div><div class="flash-trust-title"><span class="lang-bn">সেরা দাম</span><span class="lang-en">Best Price</span></div><div class="flash-trust-sub"><span class="lang-bn">নিশ্চিত সাশ্রয়</span><span class="lang-en">Guaranteed savings</span></div></div>
-    </div>
-    <div class="flash-trust-item">
-      <span class="flash-trust-icon">⚡</span>
-      <div><div class="flash-trust-title"><span class="lang-bn">সীমিত সময়ের অফার</span><span class="lang-en">Limited Time</span></div><div class="flash-trust-sub"><span class="lang-bn">তাড়াতাড়ি করুন</span><span class="lang-en">Hurry up</span></div></div>
-    </div>
-    <div class="flash-trust-item">
-      <span class="flash-trust-icon">✅</span>
-      <div><div class="flash-trust-title"><span class="lang-bn">বিশ্বস্ত পণ্য</span><span class="lang-en">Trusted Products</span></div><div class="flash-trust-sub"><span class="lang-bn">১০০% অরিজিনাল</span><span class="lang-en">100% Original</span></div></div>
-    </div>
-    <div class="flash-trust-item">
-      <span class="flash-trust-icon">🚚</span>
-      <div><div class="flash-trust-title"><span class="lang-bn">দ্রুত ডেলিভারি</span><span class="lang-en">Fast Delivery</span></div><div class="flash-trust-sub"><span class="lang-bn">সময়মতো আপনার কাছে</span><span class="lang-en">Right on time</span></div></div>
-    </div>
+  <button class="flash-scroll-arrow" onclick="document.getElementById('flashGrid').scrollBy({left:190,behavior:'smooth'})">→</button>
   </div>
 </section>
 
@@ -4283,10 +4201,11 @@ function _sponsoredAdHTML(ad){
   ) : '';
 
   return '<section class="section" style="padding-top:4px;padding-bottom:4px;">'+
-    '<div style="background:var(--white);border-radius:16px;overflow:hidden;position:relative;'+
+    '<div style="background:linear-gradient(135deg,#faf5e8,#f2e9d3);border-radius:16px;overflow:hidden;position:relative;'+
       'box-shadow:0 4px 18px rgba(10,31,53,.08);border:1px solid var(--border);cursor:pointer;" '+
       'onclick="window.location.href=\''+link+'\'">'+
-      '<div style="display:flex;align-items:stretch;gap:12px;padding:16px 18px 14px;">'+
+      '<div style="position:absolute;left:-10px;bottom:-16px;font-size:4.5rem;opacity:.1;pointer-events:none;transform:rotate(-12deg);">🍃</div>'+
+      '<div style="display:flex;align-items:stretch;gap:12px;padding:16px 18px 14px;position:relative;">'+
         '<div style="flex:1;min-width:0;">'+
           '<div style="display:inline-flex;align-items:center;gap:4px;background:var(--green2);color:var(--green);'+
             'font-size:.62rem;font-weight:800;padding:4px 10px;border-radius:20px;margin-bottom:8px;letter-spacing:.3px;">'+
@@ -4294,20 +4213,20 @@ function _sponsoredAdHTML(ad){
           '<div style="font-family:\'Playfair Display\',serif;font-size:1.15rem;font-weight:900;color:var(--navy);margin-bottom:4px;">'+
             (ad.shopName||ad.title)+'</div>'+
           '<div style="font-size:.78rem;color:var(--muted);margin-bottom:12px;line-height:1.4;">'+tagline+'</div>'+
-          '<div style="display:inline-flex;align-items:center;gap:4px;background:var(--navy);color:#fff;'+
-            'padding:9px 16px;border-radius:20px;font-size:.76rem;font-weight:700;">'+
+          '<div style="display:inline-flex;align-items:center;gap:4px;background:#fff;color:var(--navy);'+
+            'padding:9px 16px;border-radius:20px;font-size:.76rem;font-weight:700;box-shadow:0 2px 8px rgba(10,31,53,.1);">'+
             '<span class="lang-bn">এখনই কিনুন →</span><span class="lang-en">Shop Now →</span></div>'+
         '</div>'+
         (img ? (
-          '<div style="width:110px;flex-shrink:0;border-radius:12px;overflow:hidden;position:relative;">'+
+          '<div style="width:38%;max-width:150px;flex-shrink:0;border-radius:14px;overflow:hidden;position:relative;">'+
             '<img src="'+img+'" style="width:100%;height:100%;object-fit:cover;" loading="lazy">'+
-            (discount ? '<div style="position:absolute;top:6px;right:6px;background:var(--green);color:#fff;'+
-              'width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;'+
-              'flex-direction:column;font-size:.5rem;font-weight:800;line-height:1;text-align:center;'+
-              'box-shadow:0 2px 8px rgba(0,0,0,.25);">'+discount+'</div>' : '')+
           '</div>'
         ) : '')+
       '</div>'+
+      (discount ? '<div style="position:absolute;top:-10px;right:-10px;background:var(--green);color:#fff;'+
+        'width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;'+
+        'flex-direction:column;font-size:.68rem;font-weight:800;line-height:1.1;text-align:center;'+
+        'border:3px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,.25);z-index:2;">'+discount+'</div>' : '')+
       infoStrip+
     '</div></section>';
 }
@@ -4370,13 +4289,13 @@ function _customToFest(c){
 function _fallbackFestivals(){
   var now = new Date();
   var raw = [
-    {name:'🎊 দুর্গাপূজা স্পেশাল', key:'durga_puja', date:'2026-10-20', color1:'#b5451b', color2:'#e8863a',
+    {name:'দুর্গাপূজা স্পেশাল', eyebrow:'শারদীয়া উৎসব', key:'durga_puja', date:'2026-10-20', color1:'#b5451b', color2:'#e8863a',
       tagline:'মন্তেশ্বরের সেরা দোকান থেকে পূজার কেনাকাটা। বিশেষ ছাড় ও উপহার।', btnText:'পূজার শপিং শুরু করুন →'},
-    {name:'🌙 ঈদ স্পেশাল', key:'eid', date:'2027-03-20', color1:'#1a5c3a', color2:'#2e8b57',
+    {name:'ঈদ স্পেশাল', eyebrow:'ঈদের বিশেষ', key:'eid', date:'2027-03-20', color1:'#1a5c3a', color2:'#2e8b57',
       tagline:'ঈদের কেনাকাটা এখন আরও সহজ। পোশাক, মিষ্টি, সব কিছু।', btnText:'ঈদ শপিং →'},
-    {name:'🌸 পহেলা বৈশাখ', key:'poila_boishakh', date:'2027-04-14', color1:'#8b1a1a', color2:'#c0392b',
+    {name:'পহেলা বৈশাখ', eyebrow:'নববর্ষ উৎসব', key:'poila_boishakh', date:'2027-04-14', color1:'#8b1a1a', color2:'#c0392b',
       tagline:'নববর্ষের শুভেচ্ছা! বিশেষ উপহার বাক্স অর্ডার করুন।', btnText:'উপহার অর্ডার করুন →'},
-    {name:'🪔 কালীপূজা স্পেশাল', key:'kali_puja', date:'2026-11-01', color1:'#1a0533', color2:'#6a0dad',
+    {name:'কালীপূজা স্পেশাল', eyebrow:'আলোর উৎসব', key:'kali_puja', date:'2026-11-01', color1:'#1a0533', color2:'#6a0dad',
       tagline:'কালীপূজার আলোয় কেনাকাটা করুন DELTA তে।', btnText:'কালীপূজা শপিং →'}
   ];
   var upcoming = raw.filter(function(f){ return new Date(f.date) > now; })
@@ -4398,12 +4317,15 @@ function renderFestivalCarousel(festivals){
 
   var slidesHTML = festivals.map(function(f, i){ return _festivalSlideHTML(f, i); }).join('');
   var dotsHTML = festivals.length > 1 ? (
-    '<div style="position:absolute;left:16px;bottom:14px;display:flex;gap:5px;z-index:2;">'+
+    '<div style="position:absolute;left:16px;bottom:14px;display:flex;align-items:center;gap:8px;z-index:2;">'+
+      '<span id="festSlideCounter" style="font-size:.68rem;font-weight:700;color:rgba(255,255,255,.85);">1/'+festivals.length+'</span>'+
+      '<div style="display:flex;gap:5px;">'+
       festivals.map(function(f, i){
         return '<span onclick="event.stopPropagation();goFestSlide('+i+')" '+
           'data-fest-dot="'+i+'" style="width:'+(i===0?'16px':'6px')+';height:6px;border-radius:4px;'+
           'background:'+(i===0?'#fff':'rgba(255,255,255,.5)')+';transition:all .25s;cursor:pointer;"></span>';
       }).join('')+
+      '</div>'+
     '</div>'
   ) : '';
 
@@ -4438,21 +4360,26 @@ function _festivalSlideHTML(f, idx){
       '<div style="position:absolute;left:-25px;bottom:-25px;width:110px;height:110px;'+
         'background:rgba(255,255,255,.06);border-radius:50%;pointer-events:none;"></div>'+
       (days!==null ? (
-        '<div style="position:absolute;top:14px;right:14px;background:rgba(255,255,255,.94);'+
-          'color:var(--navy);border-radius:12px;padding:6px 12px;text-align:center;box-shadow:0 3px 10px rgba(0,0,0,.15);z-index:2;">'+
-          '<div style="font-size:1.1rem;font-weight:900;line-height:1;">'+days+'</div>'+
-          '<div style="font-size:.56rem;font-weight:700;color:var(--muted);white-space:nowrap;">'+
+        '<div style="position:absolute;top:50%;right:16px;transform:translateY(-50%);background:#fbe7cf;'+
+          'color:'+f.color1+';border-radius:50%;width:74px;height:74px;display:flex;flex-direction:column;'+
+          'align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.2);z-index:2;">'+
+          '<div style="font-size:.5rem;font-weight:800;white-space:nowrap;">'+
+            '<span class="lang-bn">আর মাত্র</span><span class="lang-en">only</span></div>'+
+          '<div style="font-size:1.15rem;font-weight:900;line-height:1;">'+days+'</div>'+
+          '<div style="font-size:.5rem;font-weight:700;white-space:nowrap;">'+
             '<span class="lang-bn">দিন বাকি</span><span class="lang-en">days left</span></div>'+
         '</div>'
       ) : '')+
-      '<div style="position:relative;z-index:1;max-width:78%;">'+
+      '<div style="position:relative;z-index:1;max-width:72%;">'+
+        (f.eyebrow ? '<div style="font-size:.7rem;font-weight:700;color:rgba(255,255,255,.85);'+
+          'margin-bottom:4px;letter-spacing:.3px;">→ '+f.eyebrow+' ←</div>' : '')+
         '<div style="font-family:\'Playfair Display\',serif;font-size:1.3rem;font-weight:900;color:#fff;'+
           'margin-bottom:5px;text-shadow:0 2px 8px rgba(0,0,0,.3);">'+f.name+'</div>'+
         (tagline ? '<div style="font-size:.78rem;color:rgba(255,255,255,.88);margin-bottom:12px;'+
           'line-height:1.4;text-shadow:0 1px 4px rgba(0,0,0,.3);">'+tagline+'</div>' : '')+
-        '<div style="display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.22);'+
-          'border:1.5px solid rgba(255,255,255,.5);color:#fff;padding:8px 16px;border-radius:20px;'+
-          'font-size:.76rem;font-weight:800;">'+btnText+'</div>'+
+        '<div style="display:inline-flex;align-items:center;gap:4px;background:#fbe7cf;'+
+          'color:'+f.color1+';padding:9px 18px;border-radius:20px;'+
+          'font-size:.76rem;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,.15);">'+btnText+'</div>'+
       '</div>'+
     '</div>';
 }
@@ -4465,6 +4392,8 @@ function goFestSlide(i){
     dot.style.width = j===i ? '16px' : '6px';
     dot.style.background = j===i ? '#fff' : 'rgba(255,255,255,.5)';
   });
+  var counter = document.getElementById('festSlideCounter');
+  if(counter) counter.textContent = (i+1)+'/'+_festSlides.length;
 }
 
 
@@ -4853,7 +4782,7 @@ function flashCardHTML(p){
             '<span style="font-size:.75rem;font-weight:700;color:var(--navy);">'+qty+'</span>'+
             '<button onclick="prodQtyChange(\''+p.id+'\',\''+p.shopId+'\',1)" style="width:20px;height:20px;border:none;border-radius:50%;background:var(--orange);color:#fff;font-weight:700;font-size:.75rem;cursor:pointer;">+</button>'+
           '</div>'
-          :'<button onclick="addToCartCard(event,\''+p.id+'\',\''+p.shopId+'\',this)" style="width:44px;height:44px;flex-shrink:0;border:none;border-radius:50%;background:var(--orange);color:#fff;font-weight:900;font-size:1.3rem;cursor:pointer;line-height:1;box-shadow:0 3px 8px rgba(240,112,24,.3);">+</button>')+
+          :'<button onclick="addToCartCard(event,\''+p.id+'\',\''+p.shopId+'\',this)" style="width:28px;height:28px;flex-shrink:0;border:none;border-radius:50%;background:var(--orange);color:#fff;font-weight:900;font-size:1rem;cursor:pointer;line-height:1;">+</button>')+
       '</div>'+
     '</div></div>';
 }
@@ -5058,15 +4987,23 @@ document.addEventListener('DOMContentLoaded', function(){
 // allShops/allProducts had reset to empty, showing "no shop/product added yet" until a
 // manual refresh. event.persisted===true means this page load came from bfcache — force a
 // full reload so all Firebase data and JS state initialize fresh, exactly like a manual refresh.
+// Reloads are capped at once per tab session (via sessionStorage) — otherwise a page that
+// can't reach Firebase at all (offline, blocked, etc.) would reload itself forever instead
+// of just showing empty/fallback content.
 window.addEventListener('pageshow', function(event){
+  var RELOAD_ONCE_KEY = 'delta_pageshow_reloaded';
   if(event.persisted){
-    window.location.reload();
+    if(!sessionStorage.getItem(RELOAD_ONCE_KEY)){
+      sessionStorage.setItem(RELOAD_ONCE_KEY, '1');
+      window.location.reload();
+    }
     return;
   }
   // Backup safety net: even on a "normal" pageshow, if data somehow ended up empty
-  // (e.g. a browser that doesn't set persisted reliably), reload to recover.
+  // (e.g. a browser that doesn't set persisted reliably), reload once to recover.
   setTimeout(function(){
-    if(!allShops.length && !allProducts.length){
+    if(!allShops.length && !allProducts.length && !sessionStorage.getItem(RELOAD_ONCE_KEY)){
+      sessionStorage.setItem(RELOAD_ONCE_KEY, '1');
       window.location.reload();
     }
   }, 800);
