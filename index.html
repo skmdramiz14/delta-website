@@ -546,6 +546,37 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 .fds-btn{background:var(--orange);color:#fff;border:none;padding:7px 18px;border-radius:7px;font-weight:700;font-size:.82rem;cursor:pointer;transition:background .2s;white-space:nowrap;}
 .fds-btn:hover{background:var(--orange2);}
 
+/* ── DELIVERY CARD (new) ── */
+.delivery-card{
+  background:var(--white);border:1px solid var(--border);border-radius:16px;
+  padding:14px 16px;display:flex;align-items:center;gap:14px;
+  box-shadow:0 4px 16px rgba(10,31,53,.06);
+}
+.delivery-card-icon{
+  width:48px;height:48px;flex-shrink:0;border-radius:12px;background:var(--green2);
+  display:flex;align-items:center;justify-content:center;font-size:1.5rem;
+}
+.delivery-card-mid{flex:1;min-width:0;}
+.delivery-card-tag{
+  display:inline-flex;align-items:center;gap:3px;background:var(--orange-light);color:var(--orange);
+  font-size:.62rem;font-weight:800;padding:2px 9px;border-radius:20px;letter-spacing:.3px;margin-bottom:4px;
+}
+.delivery-card-title{font-size:.86rem;font-weight:700;color:var(--navy);line-height:1.3;}
+.delivery-card-title strong{color:var(--green);}
+.delivery-card-sub{font-size:.7rem;color:var(--muted);margin-top:2px;}
+.delivery-card-btn{
+  background:var(--green);color:#fff;border:none;padding:9px 16px;border-radius:20px;
+  font-weight:700;font-size:.78rem;cursor:pointer;flex-shrink:0;transition:background .2s;white-space:nowrap;
+}
+.delivery-card-btn:hover{background:#159149;}
+@media(max-width:600px){
+  .delivery-card{padding:12px 14px;gap:10px;}
+  .delivery-card-icon{width:40px;height:40px;font-size:1.25rem;}
+  .delivery-card-title{font-size:.78rem;}
+  .delivery-card-sub{display:none;}
+  .delivery-card-btn{padding:8px 12px;font-size:.72rem;}
+}
+
 /* ── FLASH SALE ── */
 .flash-label{display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#c0392b,#e74c3c);color:#fff;padding:5px 14px;border-radius:20px;font-size:.78rem;font-weight:800;letter-spacing:.5px;}
 .flash-countdown{font-family:monospace;font-size:1.2rem;font-weight:800;color:#c0392b;background:#ffe8e8;padding:5px 14px;border-radius:20px;border:1px solid #ffb3b3;letter-spacing:2px;}
@@ -1848,16 +1879,24 @@ img{max-width:100%;height:auto;}
   <div class="cat-more-wrap" id="catMoreWrap" style="display:none;"></div>
 </section>
 
+<!-- SPONSORED SHOP AD (Dynamic) -->
+<div id="sponsoredAdWrap"></div>
+
 <!-- FESTIVAL BANNER (Dynamic) — Durga Puja Special -->
 <div id="festivalBannerWrap"></div>
 
 <!-- FREE DELIVERY BANNER -->
-<div class="free-delivery-strip">
-  <span class="fds-icon">🚚</span>
-  <span class="fds-text"><span class="lang-bn">প্রথম অর্ডারে <strong style="color:#a5d6a7;font-size:1.1em;">বিনামূল্যে ডেলিভারি!</strong></span><span class="lang-en"><strong style="color:#a5d6a7;font-size:1.1em;">Free Delivery</strong> on your first order!</span></span>
-  <span class="fds-badge">Manteswar Block · All Zones</span>
-  <button class="fds-btn" onclick="document.getElementById('productsSection').scrollIntoView({behavior:'smooth'})"><span class="lang-bn">এখনই কিনুন →</span><span class="lang-en">Shop Now →</span></button>
-</div>
+<section class="section" style="padding-top:4px;padding-bottom:4px;">
+  <div class="delivery-card">
+    <div class="delivery-card-icon">🚚</div>
+    <div class="delivery-card-mid">
+      <div class="delivery-card-tag">⚡ <span class="lang-bn">দ্রুত ও নির্ভরযোগ্য</span><span class="lang-en">FAST &amp; RELIABLE</span></div>
+      <div class="delivery-card-title"><span class="lang-bn">প্রথম অর্ডারে <strong>বিনামূল্যে ডেলিভারি!</strong></span><span class="lang-en">Free Delivery <strong>on your first order!</strong></span></div>
+      <div class="delivery-card-sub"><span class="lang-bn">Manteswar Block · সব Zone-এ প্রযোজ্য</span><span class="lang-en">Manteswar Block · All Zones</span></div>
+    </div>
+    <button class="delivery-card-btn" onclick="document.getElementById('productsSection').scrollIntoView({behavior:'smooth'})"><span class="lang-bn">এখনই কিনুন →</span><span class="lang-en">Shop Now →</span></button>
+  </div>
+</section>
 
 <!-- FLASH SALE -->
 <!-- FLASH SALE BANNER -->
@@ -1913,6 +1952,9 @@ img{max-width:100%;height:auto;}
       <div class="flash-banner-count" id="flashProdCount"></div>
     </div>
   </div>
+
+  <!-- Flash Sale Product Thumbnails -->
+  <div class="flash-grid" id="flashGrid" style="display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;margin:12px 4% 0;padding-bottom:4px;"></div>
 </section>
 
 <!-- SHOPS (Nearby Shops) -->
@@ -3240,6 +3282,7 @@ async function loadData(retryCount){
     buildBestsellers(allProducts);
     updateCommunityStats(allShops);
     initEcoCounter(allShops, allProducts);
+    initSponsoredAd();
     initFestivalBanner();
     loadMarqueeFromFirebase();
     loadCategoryConfigFromFirebase();
@@ -4123,9 +4166,83 @@ function toggleOpenNow(){
   }
 }
 
-// ══ FEATURE 8: FESTIVAL BANNER ══
+// ══ FEATURE 7.5: SPONSORED SHOP AD (full-width card) ══
+function initSponsoredAd(){
+  var wrap = document.getElementById('sponsoredAdWrap');
+  if(!wrap || !db) return;
+  var today = new Date().toISOString().slice(0,10);
+  db.collection('cities').doc(CITY).collection('bannerAds')
+    .where('status','==','active')
+    .get().then(function(snap){
+      var ads = [];
+      snap.forEach(function(d){
+        var b = Object.assign({id:d.id}, d.data());
+        if(b.type!=='shop_ad') return;
+        if(b.endDate && b.endDate < today) return;
+        if(b.startDate && b.startDate > today) return;
+        ads.push(b);
+      });
+      if(!ads.length){ wrap.innerHTML=''; return; }
+      ads.sort(function(a,b){ return (b.priority||0)-(a.priority||0); });
+      wrap.innerHTML = _sponsoredAdHTML(ads[0]);
+    }).catch(function(){ wrap.innerHTML=''; });
+}
+
+function _sponsoredAdHTML(ad){
+  var img = ad.imageUrl || '';
+  var discount = ad.discountText || '';
+  var rating = ad.rating || '';
+  var hours = ad.hours || '';
+  var loc = ad.location || '';
+  var tagline = ad.tagline || ad.title || '';
+  var link = ad.linkUrl || '#';
+
+  var infoBits = [];
+  if(rating) infoBits.push('<span>⭐ <strong style="color:var(--navy);">'+rating+'</strong> <span class="lang-bn">রেটিং</span><span class="lang-en">Rating</span></span>');
+  if(hours) infoBits.push('<span>🕐 '+hours+'</span>');
+  if(loc) infoBits.push('<span>📍 '+loc+'</span>');
+  var infoStrip = infoBits.length ? (
+    '<div style="display:flex;flex-wrap:wrap;gap:14px;padding:10px 18px;border-top:1px solid var(--border);'+
+      'font-size:.72rem;color:var(--muted);">'+infoBits.join('')+'</div>'
+  ) : '';
+
+  return '<section class="section" style="padding-top:4px;padding-bottom:4px;">'+
+    '<div style="background:var(--white);border-radius:16px;overflow:hidden;position:relative;'+
+      'box-shadow:0 4px 18px rgba(10,31,53,.08);border:1px solid var(--border);cursor:pointer;" '+
+      'onclick="window.location.href=\''+link+'\'">'+
+      '<div style="display:flex;align-items:stretch;gap:12px;padding:16px 18px 14px;">'+
+        '<div style="flex:1;min-width:0;">'+
+          '<div style="display:inline-flex;align-items:center;gap:4px;background:var(--green2);color:var(--green);'+
+            'font-size:.62rem;font-weight:800;padding:4px 10px;border-radius:20px;margin-bottom:8px;letter-spacing:.3px;">'+
+            '⭐ <span class="lang-bn">স্পনসরড শপ</span><span class="lang-en">SPONSORED SHOP</span></div>'+
+          '<div style="font-family:\'Playfair Display\',serif;font-size:1.15rem;font-weight:900;color:var(--navy);margin-bottom:4px;">'+
+            (ad.shopName||ad.title)+'</div>'+
+          '<div style="font-size:.78rem;color:var(--muted);margin-bottom:12px;line-height:1.4;">'+tagline+'</div>'+
+          '<div style="display:inline-flex;align-items:center;gap:4px;background:var(--navy);color:#fff;'+
+            'padding:9px 16px;border-radius:20px;font-size:.76rem;font-weight:700;">'+
+            '<span class="lang-bn">এখনই কিনুন →</span><span class="lang-en">Shop Now →</span></div>'+
+        '</div>'+
+        (img ? (
+          '<div style="width:110px;flex-shrink:0;border-radius:12px;overflow:hidden;position:relative;">'+
+            '<img src="'+img+'" style="width:100%;height:100%;object-fit:cover;" loading="lazy">'+
+            (discount ? '<div style="position:absolute;top:6px;right:6px;background:var(--green);color:#fff;'+
+              'width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;'+
+              'flex-direction:column;font-size:.5rem;font-weight:800;line-height:1;text-align:center;'+
+              'box-shadow:0 2px 8px rgba(0,0,0,.25);">'+discount+'</div>' : '')+
+          '</div>'
+        ) : '')+
+      '</div>'+
+      infoStrip+
+    '</div></section>';
+}
+
+// ══ FEATURE 8: FESTIVAL BANNER (Image + Carousel) ══
+var _festSlides = [];
+var _festIdx = 0;
+var _festAutoplayTimer = null;
+
 function initFestivalBanner(){
-  if(!db){ renderFestivalBanner(null, null); return; }
+  if(!db){ renderFestivalCarousel(_fallbackFestivals()); return; }
 
   // First check admin override
   db.collection('cities').doc(CITY).collection('settings').doc('festivalBanner').get()
@@ -4133,12 +4250,16 @@ function initFestivalBanner(){
       var overrideKey = doc.exists ? doc.data().activeFestival : null;
       var customBanner = doc.exists ? doc.data().customBanner : null;
 
-      if(overrideKey === 'hidden'){ return; }
-      if(overrideKey === 'custom' && customBanner){
-        renderFestivalBanner('custom', customBanner); return;
+      if(overrideKey === 'hidden'){
+        var w = document.getElementById('festivalBannerWrap');
+        if(w) w.innerHTML = '';
+        return;
       }
-      // Single festival override (specific key set) — but first check if multiple are active
-      // No override OR override = 'auto' — load from festivalCategories
+      if(overrideKey === 'custom' && customBanner && customBanner.name){
+        renderFestivalCarousel([_customToFest(customBanner)]);
+        return;
+      }
+      // No override OR override = 'auto'/specific key — load from festivalCategories
       db.collection('cities').doc(CITY).collection('settings').doc('festivalCategories')
         .get().then(function(catDoc){
           var cats = catDoc.exists ? (catDoc.data().festivals||[]) : [];
@@ -4148,261 +4269,124 @@ function initFestivalBanner(){
             var diff = new Date(f.date) - new Date();
             return diff > 0 && diff < 180*86400000;
           });
-          if(active.length > 1){
-            // Multiple active → always show all
-            renderMultipleFestivalBanners(active);
-          } else if(active.length === 1){
-            // Single active → use override if set, else show that festival
-            var key = (overrideKey && overrideKey!=='hidden') ? overrideKey : active[0].key;
-            renderFestivalBanner(key, null);
-          } else if(overrideKey && overrideKey!=='hidden'){
-            // No active festivals but override set
-            renderFestivalBanner(overrideKey, null);
-          } else {
-            renderFestivalBanner(null, null);
+
+          // নির্দিষ্ট festival override করা থাকলে সেটাই দেখাও (single slide)
+          if(overrideKey && overrideKey!=='auto'){
+            var single = cats.find(function(f){ return f.key===overrideKey; });
+            if(single){ renderFestivalCarousel([single]); return; }
           }
-        }).catch(function(){
-          if(overrideKey && overrideKey!=='hidden') renderFestivalBanner(overrideKey, null);
-          else renderFestivalBanner(null, null);
-        });
-    }).catch(function(){ renderFestivalBanner(null, null); });
+
+          if(active.length){ renderFestivalCarousel(active); return; }
+          // Firestore এ কিছু configured নেই — hardcoded fallback ব্যবহার করো
+          renderFestivalCarousel(_fallbackFestivals());
+        }).catch(function(){ renderFestivalCarousel(_fallbackFestivals()); });
+    }).catch(function(){ renderFestivalCarousel(_fallbackFestivals()); });
 }
 
-function renderMultipleFestivalBanners(festivals){
-  var wrap = document.getElementById('festivalBannerWrap');
-  if(!wrap) return;
-
-  // Banner Ads load করো এবং festivals এর সাথে merge করো
-  var today = new Date().toISOString().slice(0,10);
-  db.collection('cities').doc(CITY).collection('bannerAds')
-    .where('status','==','active')
-    .get().then(function(snap){
-      var ads = [];
-      snap.forEach(function(d){
-        var b = Object.assign({id:d.id},d.data());
-        if(b.endDate && b.endDate < today) return;
-        if(b.startDate && b.startDate > today) return;
-        if(b.type==='festival') return;
-        ads.push(b);
-      });
-      ads.sort(function(a,b){ return (b.priority||0)-(a.priority||0); });
-
-      var total = festivals.length + ads.length;
-
-      if(total === 1 && festivals.length === 1 && ads.length === 0){
-        // Single festival — existing design
-        var f = festivals[0];
-        var bg = 'linear-gradient(135deg,'+f.color1+','+f.color2+')';
-        var festDate = f.date ? new Date(f.date) : null;
-        var days = festDate ? Math.max(0,Math.floor((festDate-new Date())/86400000)) : 0;
-        var hours = festDate ? Math.max(0,Math.floor(((festDate-new Date())%86400000)/3600000)) : 0;
-        wrap.innerHTML = _festivalBannerHTML(bg, f.emoji+' '+f.name, f.name+' এ কেনাকাটা করুন →', days, hours, f.key);
-        _startFestivalCountdown(festDate);
-        return;
-      }
-
-      // Multiple — horizontal scroll with festivals + ads
-      var festCards = festivals.map(function(f){
-        var bg = 'linear-gradient(135deg,'+f.color1+','+f.color2+')';
-        var festDate = f.date ? new Date(f.date) : null;
-        var days = festDate ? Math.max(0,Math.floor((festDate-new Date())/86400000)) : 0;
-        return '<div onclick="showFestivalOffers(\''+f.key+'\')" '+
-          'style="flex-shrink:0;width:200px;background:'+bg+';border-radius:16px;padding:16px;cursor:pointer;'+
-          'box-shadow:0 4px 16px rgba(0,0,0,.15);position:relative;overflow:hidden;">'+
-          '<div style="position:absolute;right:-15px;top:-15px;width:80px;height:80px;'+
-            'background:rgba(255,255,255,.08);border-radius:50%;"></div>'+
-          '<div style="font-size:1.6rem;margin-bottom:6px;">'+f.emoji+'</div>'+
-          '<div style="font-size:.88rem;font-weight:800;color:#fff;margin-bottom:4px;">'+f.name+'</div>'+
-          '<div style="display:flex;align-items:center;justify-content:space-between;">'+
-            '<div style="font-size:.7rem;color:rgba(255,255,255,.75);">'+days+' দিন বাকি</div>'+
-            '<div style="background:rgba(255,255,255,.2);color:#fff;padding:4px 10px;border-radius:12px;font-size:.7rem;font-weight:700;">→</div>'+
-          '</div>'+
-        '</div>';
-      }).join('');
-
-      var adCards = ads.map(function(b){
-        var bg = 'linear-gradient(135deg,'+b.color1+','+b.color2+')';
-        var link = b.linkUrl||'#';
-        return '<div onclick="window.location.href=\''+link+'\'" '+
-          'style="flex-shrink:0;width:200px;background:'+bg+';border-radius:16px;padding:16px;cursor:pointer;'+
-          'box-shadow:0 4px 16px rgba(0,0,0,.15);position:relative;overflow:hidden;">'+
-          '<div style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,.25);color:#fff;'+
-            'font-size:.6rem;font-weight:700;padding:2px 7px;border-radius:20px;">AD</div>'+
-          '<div style="font-size:1.6rem;margin-bottom:6px;">'+b.emoji+'</div>'+
-          '<div style="font-size:.88rem;font-weight:800;color:#fff;margin-bottom:4px;">'+b.title+'</div>'+
-          (b.shopName?'<div style="font-size:.7rem;color:rgba(255,255,255,.75);">🏪 '+b.shopName+'</div>':'')+
-        '</div>';
-      }).join('');
-
-      var html = '<section class="section" style="padding-top:4px;padding-bottom:4px;">'+
-        '<div style="display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-bottom:4px;">'+
-        festCards + adCards +
-        '</div></section>';
-      wrap.innerHTML = html;
-
-      // First festival এ countdown start করো
-      if(festivals.length > 0 && festivals[0].date){
-        _startFestivalCountdown(new Date(festivals[0].date));
-      }
-    }).catch(function(){
-      // Error হলে শুধু festival cards দেখাও
-      if(festivals.length === 1){
-        var f = festivals[0];
-        var bg = 'linear-gradient(135deg,'+f.color1+','+f.color2+')';
-        var festDate = f.date ? new Date(f.date) : null;
-        var days = festDate ? Math.max(0,Math.floor((festDate-new Date())/86400000)) : 0;
-        var hours = festDate ? Math.max(0,Math.floor(((festDate-new Date())%86400000)/3600000)) : 0;
-        wrap.innerHTML = _festivalBannerHTML(bg, f.emoji+' '+f.name, f.name+' এ কেনাকাটা করুন →', days, hours, f.key);
-        _startFestivalCountdown(festDate);
-      }
-    });
+function _customToFest(c){
+  return {
+    name: c.name, key: 'custom', date: c.date||'',
+    color1: c.color1||'#b5451b', color2: c.color2||'#e8863a',
+    imageUrl: c.imageUrl||'', tagline: c.tagline||'', btnText: c.btn||'এখনই দেখুন →'
+  };
 }
 
-function _festivalBannerHTML(bg, name, btnText, days, hours, festivalKey){
-  return '<section class="section" style="padding-top:4px;padding-bottom:4px;">'+
-    '<div class="festival-banner" style="background:'+bg+';'+
-      'border-radius:18px;padding:20px 22px;display:flex;align-items:center;'+
-      'justify-content:space-between;gap:14px;overflow:hidden;position:relative;cursor:pointer;'+
-      'box-shadow:0 6px 24px rgba(0,0,0,.18);"'+
-      ' onclick="showFestivalOffers(\''+festivalKey+'\')">'+
-      '<div style="position:absolute;right:-30px;top:-30px;width:160px;height:160px;'+
-        'background:rgba(255,255,255,.07);border-radius:50%;pointer-events:none;"></div>'+
-      '<div style="position:absolute;left:-20px;bottom:-20px;width:100px;height:100px;'+
-        'background:rgba(255,255,255,.04);border-radius:50%;pointer-events:none;"></div>'+
-      '<div style="flex:1;min-width:0;position:relative;z-index:1;">'+
-        '<div style="font-family:\'Playfair Display\',serif;font-size:1.2rem;font-weight:900;color:#fff;'+
-          'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px;">'+name+'</div>'+
-        '<div style="font-size:.76rem;color:rgba(255,255,255,.8);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+btnText+'</div>'+
-      '</div>'+
-      '<div style="display:flex;align-items:center;gap:8px;flex-shrink:0;position:relative;z-index:1;">'+
-        '<div style="text-align:center;background:rgba(0,0,0,.2);border-radius:10px;padding:8px 10px;min-width:44px;">'+
-          '<div style="font-size:1.5rem;font-weight:900;color:#fff;font-family:monospace;line-height:1;" id="cdDays">'+days+'</div>'+
-          '<div style="font-size:.58rem;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:.5px;margin-top:2px;"><span class="lang-bn">দিন</span><span class="lang-en">days</span></div>'+
-        '</div>'+
-        '<div style="color:rgba(255,255,255,.35);font-size:1.2rem;font-weight:300;">:</div>'+
-        '<div style="text-align:center;background:rgba(0,0,0,.2);border-radius:10px;padding:8px 10px;min-width:44px;">'+
-          '<div style="font-size:1.5rem;font-weight:900;color:#fff;font-family:monospace;line-height:1;" id="cdHours">'+String(hours).padStart(2,'0')+'</div>'+
-          '<div style="font-size:.58rem;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:.5px;margin-top:2px;"><span class="lang-bn">ঘণ্টা</span><span class="lang-en">hrs</span></div>'+
-        '</div>'+
-        '<div style="color:rgba(255,255,255,.35);font-size:1.2rem;font-weight:300;">:</div>'+
-        '<div style="text-align:center;background:rgba(0,0,0,.2);border-radius:10px;padding:8px 10px;min-width:44px;">'+
-          '<div style="font-size:1.5rem;font-weight:900;color:#fff;font-family:monospace;line-height:1;" id="cdMins">00</div>'+
-          '<div style="font-size:.58rem;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:.5px;margin-top:2px;"><span class="lang-bn">মিনিট</span><span class="lang-en">min</span></div>'+
-        '</div>'+
-        '<div style="margin-left:6px;background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.4);'+
-          'color:#fff;padding:10px 14px;border-radius:22px;font-size:.78rem;font-weight:800;letter-spacing:.5px;">→</div>'+
-      '</div>'+
-    '</div></section>';
-}
-
-function _startFestivalCountdown(targetDate){
-  if(!targetDate) return;
-  setInterval(function(){
-    var rem = targetDate - new Date();
-    if(rem <= 0) return;
-    var d=Math.floor(rem/(1000*60*60*24));
-    var h=Math.floor((rem%(1000*60*60*24))/(1000*60*60));
-    var m=Math.floor((rem%(1000*60*60))/(1000*60));
-    var dEl=document.getElementById('cdDays');
-    var hEl=document.getElementById('cdHours');
-    var mEl=document.getElementById('cdMins');
-    if(dEl) dEl.textContent=d;
-    if(hEl) hEl.textContent=String(h).padStart(2,'0');
-    if(mEl) mEl.textContent=String(m).padStart(2,'0');
-  }, 1000);
-}
-
-function renderFestivalBanner(overrideKey, customBanner){
-  // Admin বলেছে লুকাও
-  if(overrideKey === 'hidden') return;
-
+function _fallbackFestivals(){
   var now = new Date();
-  var festivals = [
-    {
-      name_bn: '🎊 দুর্গাপূজা স্পেশাল', name_en: '🎊 Durga Puja Special',
-      date: new Date('2026-10-20'), festivalKey: 'durga_puja',
-      bg: 'linear-gradient(135deg,#b5451b,#e8863a)',
-      desc_bn: 'মন্তেশ্বরের সেরা দোকান থেকে পূজার কেনাকাটা। বিশেষ ছাড় ও উপহার।',
-      desc_en: 'Best Pujo shopping from Manteswar\'s top shops. Special discounts & gifts.',
-      btn_bn: 'পূজার শপিং শুরু করুন →', btn_en: 'Start Pujo Shopping →'
-    },
-    {
-      name_bn: '🌙 ঈদ স্পেশাল', name_en: '🌙 Eid Special',
-      date: new Date('2027-03-20'), festivalKey: 'eid',
-      bg: 'linear-gradient(135deg,#1a5c3a,#2e8b57)',
-      desc_bn: 'ঈদের কেনাকাটা এখন আরও সহজ। পোশাক, মিষ্টি, সব কিছু।',
-      desc_en: 'Eid shopping made easy. Clothes, sweets, everything.',
-      btn_bn: 'ঈদ শপিং →', btn_en: 'Eid Shopping →'
-    },
-    {
-      name_bn: '🌸 পহেলা বৈশাখ', name_en: '🌸 Poila Boishakh',
-      date: new Date('2027-04-14'), festivalKey: 'poila_boishakh',
-      bg: 'linear-gradient(135deg,#8b1a1a,#c0392b)',
-      desc_bn: 'নববর্ষের শুভেচ্ছা! বিশেষ উপহার বাক্স অর্ডার করুন।',
-      desc_en: 'Happy New Year! Order special gift boxes.',
-      btn_bn: 'উপহার অর্ডার করুন →', btn_en: 'Order Gifts →'
-    },
-    {
-      name_bn: '🪔 কালীপূজা স্পেশাল', name_en: '🪔 Kali Puja Special',
-      date: new Date('2026-11-01'), festivalKey: 'kali_puja',
-      bg: 'linear-gradient(135deg,#1a0533,#6a0dad)',
-      desc_bn: 'কালীপূজার আলোয় কেনাকাটা করুন DELTA তে।',
-      desc_en: 'Shop for Kali Puja on DELTA.',
-      btn_bn: 'কালীপূজা শপিং →', btn_en: 'Kali Puja Shopping →'
-    }
+  var raw = [
+    {name:'🎊 দুর্গাপূজা স্পেশাল', key:'durga_puja', date:'2026-10-20', color1:'#b5451b', color2:'#e8863a',
+      tagline:'মন্তেশ্বরের সেরা দোকান থেকে পূজার কেনাকাটা। বিশেষ ছাড় ও উপহার।', btnText:'পূজার শপিং শুরু করুন →'},
+    {name:'🌙 ঈদ স্পেশাল', key:'eid', date:'2027-03-20', color1:'#1a5c3a', color2:'#2e8b57',
+      tagline:'ঈদের কেনাকাটা এখন আরও সহজ। পোশাক, মিষ্টি, সব কিছু।', btnText:'ঈদ শপিং →'},
+    {name:'🌸 পহেলা বৈশাখ', key:'poila_boishakh', date:'2027-04-14', color1:'#8b1a1a', color2:'#c0392b',
+      tagline:'নববর্ষের শুভেচ্ছা! বিশেষ উপহার বাক্স অর্ডার করুন।', btnText:'উপহার অর্ডার করুন →'},
+    {name:'🪔 কালীপূজা স্পেশাল', key:'kali_puja', date:'2026-11-01', color1:'#1a0533', color2:'#6a0dad',
+      tagline:'কালীপূজার আলোয় কেনাকাটা করুন DELTA তে।', btnText:'কালীপূজা শপিং →'}
   ];
+  var upcoming = raw.filter(function(f){ return new Date(f.date) > now; })
+    .sort(function(a,b){ return new Date(a.date)-new Date(b.date); })[0];
+  if(!upcoming) return [];
+  var diffDays = Math.ceil((new Date(upcoming.date)-now)/86400000);
+  if(diffDays > 90) return [];
+  return [upcoming];
+}
 
-  var upcoming;
-  var isOverride = false;
-
-  // Custom banner — Admin এর নিজের তৈরি
-  if(overrideKey === 'custom' && customBanner && customBanner.name){
-    var bg = 'linear-gradient(135deg,'+customBanner.color1+','+customBanner.color2+')';
-    var festDate = customBanner.date ? new Date(customBanner.date) : null;
-    var days = 0, hours = 0;
-    if(festDate){
-      var diff = festDate - new Date();
-      days = Math.max(0, Math.floor(diff/(1000*60*60*24)));
-      hours = Math.max(0, Math.floor((diff%(1000*60*60*24))/(1000*60*60)));
-    }
-    var wrap = document.getElementById('festivalBannerWrap');
-    if(!wrap) return;
-    wrap.innerHTML = _festivalBannerHTML(bg, customBanner.name, customBanner.btn||'এখনই দেখুন →', days, hours, 'custom');
-    _startFestivalCountdown(festDate);
-    return;
-  }
-
-  // Admin override — 90-day limit নেই, সরাসরি দেখাও
-  if(overrideKey){
-    upcoming = festivals.find(function(f){ return f.festivalKey === overrideKey; });
-    if(upcoming) isOverride = true;
-  }
-
-  // Auto-detect — শুধু ৯০ দিনের মধ্যে হলে
-  if(!upcoming){
-    upcoming = festivals
-      .filter(function(f){ return f.date > now; })
-      .sort(function(a,b){ return a.date - b.date; })[0];
-    if(upcoming){
-      var autoDiff = Math.ceil((upcoming.date - now) / (1000*60*60*24));
-      if(autoDiff > 90) upcoming = null;
-    }
-  }
-
-  if(!upcoming) return;
-
-  var diff = upcoming.date - now;
-  var days  = Math.max(0, Math.floor(diff/(1000*60*60*24)));
-  var hours = Math.max(0, Math.floor((diff%(1000*60*60*24))/(1000*60*60)));
-
+function renderFestivalCarousel(festivals){
   var wrap = document.getElementById('festivalBannerWrap');
   if(!wrap) return;
+  if(_festAutoplayTimer){ clearInterval(_festAutoplayTimer); _festAutoplayTimer = null; }
+  if(!festivals || !festivals.length){ wrap.innerHTML=''; _festSlides=[]; return; }
 
-  var name = '<span class="lang-bn">'+upcoming.name_bn+'</span><span class="lang-en">'+upcoming.name_en+'</span>';
-  var btn = '<span class="lang-bn">'+upcoming.btn_bn+'</span><span class="lang-en">'+upcoming.btn_en+'</span>';
-  wrap.innerHTML = _festivalBannerHTML(upcoming.bg, name, btn, days, hours, upcoming.festivalKey);
-  _startFestivalCountdown(upcoming.date);
+  _festSlides = festivals;
+  _festIdx = 0;
+
+  var slidesHTML = festivals.map(function(f, i){ return _festivalSlideHTML(f, i); }).join('');
+  var dotsHTML = festivals.length > 1 ? (
+    '<div style="position:absolute;left:16px;bottom:14px;display:flex;gap:5px;z-index:2;">'+
+      festivals.map(function(f, i){
+        return '<span onclick="event.stopPropagation();goFestSlide('+i+')" '+
+          'data-fest-dot="'+i+'" style="width:'+(i===0?'16px':'6px')+';height:6px;border-radius:4px;'+
+          'background:'+(i===0?'#fff':'rgba(255,255,255,.5)')+';transition:all .25s;cursor:pointer;"></span>';
+      }).join('')+
+    '</div>'
+  ) : '';
+
+  wrap.innerHTML = '<section class="section" style="padding-top:4px;padding-bottom:4px;">'+
+    '<div style="border-radius:18px;overflow:hidden;position:relative;box-shadow:0 6px 24px rgba(0,0,0,.18);">'+
+      '<div id="festTrack" style="display:flex;width:'+(festivals.length*100)+'%;transition:transform .5s ease;">'+
+        slidesHTML+
+      '</div>'+
+      dotsHTML+
+    '</div></section>';
+
+  if(festivals.length > 1){
+    _festAutoplayTimer = setInterval(function(){ goFestSlide((_festIdx+1) % _festSlides.length); }, 4500);
+  }
 }
+
+function _festivalSlideHTML(f, idx){
+  var bg = f.imageUrl ?
+    ('background:linear-gradient(rgba(0,0,0,.35),rgba(0,0,0,.45)),url(\''+f.imageUrl+'\') center/cover;') :
+    ('background:linear-gradient(135deg,'+f.color1+','+f.color2+');');
+  var festDate = f.date ? new Date(f.date) : null;
+  var days = festDate ? Math.max(0, Math.ceil((festDate-new Date())/86400000)) : null;
+  var tagline = f.tagline || '';
+  var btnText = f.btnText || (f.name+' দেখুন →');
+
+  return '<div onclick="showFestivalOffers(\''+f.key+'\')" style="flex-shrink:0;width:'+(100/_festSlides.length)+'%;'+
+      'min-height:180px;'+bg+'padding:20px 22px;position:relative;cursor:pointer;display:flex;'+
+      'flex-direction:column;justify-content:flex-end;box-sizing:border-box;">'+
+      (days!==null ? (
+        '<div style="position:absolute;top:14px;right:14px;background:rgba(255,255,255,.94);'+
+          'color:var(--navy);border-radius:12px;padding:6px 12px;text-align:center;box-shadow:0 3px 10px rgba(0,0,0,.15);">'+
+          '<div style="font-size:1.1rem;font-weight:900;line-height:1;">'+days+'</div>'+
+          '<div style="font-size:.56rem;font-weight:700;color:var(--muted);white-space:nowrap;">'+
+            '<span class="lang-bn">দিন বাকি</span><span class="lang-en">days left</span></div>'+
+        '</div>'
+      ) : '')+
+      '<div style="position:relative;z-index:1;max-width:78%;">'+
+        '<div style="font-family:\'Playfair Display\',serif;font-size:1.3rem;font-weight:900;color:#fff;'+
+          'margin-bottom:5px;text-shadow:0 2px 8px rgba(0,0,0,.3);">'+f.name+'</div>'+
+        (tagline ? '<div style="font-size:.78rem;color:rgba(255,255,255,.88);margin-bottom:12px;'+
+          'line-height:1.4;text-shadow:0 1px 4px rgba(0,0,0,.3);">'+tagline+'</div>' : '')+
+        '<div style="display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.22);'+
+          'border:1.5px solid rgba(255,255,255,.5);color:#fff;padding:8px 16px;border-radius:20px;'+
+          'font-size:.76rem;font-weight:800;">'+btnText+'</div>'+
+      '</div>'+
+    '</div>';
+}
+
+function goFestSlide(i){
+  _festIdx = i;
+  var track = document.getElementById('festTrack');
+  if(track) track.style.transform = 'translateX(-'+(i*(100/_festSlides.length))+'%)';
+  document.querySelectorAll('[data-fest-dot]').forEach(function(dot, j){
+    dot.style.width = j===i ? '16px' : '6px';
+    dot.style.background = j===i ? '#fff' : 'rgba(255,255,255,.5)';
+  });
+}
+
+
 
 // ══ FEATURE 5: SELLER OF THE WEEK ══
 function loadSellerOfWeek(shops){
@@ -4698,11 +4682,11 @@ function startFlashCountdown(){
 }
 
 function renderFlashSection(flashProds){
-  // Find flash grid in DOM and re-render with correct salePrice + timers
-  var grid = document.querySelector('.flash-grid') || document.getElementById('flashGrid');
+  // Flash grid এ compact product thumbnails render করো (image + discount + price)
+  var grid = document.getElementById('flashGrid') || document.querySelector('.flash-grid');
   if(!grid) return;
   grid.innerHTML = flashProds.map(function(p){
-    return productCardHTML(p, true);
+    return flashCardHTML(p);
   }).join('');
   // Start individual timers
   startFlashCardTimers(flashProds);
@@ -4777,32 +4761,38 @@ function buildFeatured(prods){
 function flashCardHTML(p){
   var img=p.imageUrl||(p.images&&p.images[0])||'';
   var name=p.nameBn||p.nameEn||p.name||'পণ্য';
-  var price=p.price||p.sellPrice||0;
+  var origPrice=p.price||p.sellPrice||0;
+  var disc=p.discount||0;
+  var salePrice=p.salePrice||(disc?Math.round(origPrice*(1-disc/100)):origPrice);
   var inCart=cart.find(function(c){return c.id===p.id&&c.shopId===p.shopId;});
   var qty=inCart?inCart.qty:0;
   var timerId='ftimer_'+p.id;
-  var disc=p.discount||0;
   return '<div class="flash-card">'+
     '<div class="flash-card-img">'+
       (img?'<img src="'+img+'" alt="'+name+'" loading="lazy">':prodEmoji(p.category))+
       '<div class="flash-card-badges">'+
-        '<span class="badge badge-flash">⚡ Flash</span>'+
-        (disc?'<span class="badge badge-disc">'+disc+'% OFF</span>':'')+
+        (disc?'<span class="badge badge-disc">-'+disc+'%</span>':'')+
       '</div>'+
     '</div>'+
     '<div class="flash-card-timer">'+
-      '<span class="flash-card-timer-label">⏱ শেষ হচ্ছে</span>'+
+      '<span class="flash-card-timer-label">⏱</span>'+
       '<span class="flash-card-timer-digits" id="'+timerId+'">--:--</span>'+
     '</div>'+
     '<div class="flash-card-body">'+
       '<div class="flash-card-name">'+name+'</div>'+
-      '<div class="flash-card-price">'+
-        '<span class="flash-card-price-now">₹'+price+'</span>'+
-        (p.mrp&&p.mrp!==price?'<span class="flash-card-price-old">₹'+p.mrp+'</span>':'')+
+      '<div class="flash-card-price" style="justify-content:space-between;">'+
+        '<div>'+
+          '<span class="flash-card-price-now">₹'+salePrice+'</span>'+
+          (salePrice!==origPrice?'<span class="flash-card-price-old">₹'+origPrice+'</span>':'')+
+        '</div>'+
+        (qty>0
+          ?'<div style="display:flex;align-items:center;gap:5px;" id="pqc-'+p.id+'">'+
+            '<button onclick="prodQtyChange(\''+p.id+'\',\''+p.shopId+'\',-1)" style="width:20px;height:20px;border:none;border-radius:50%;background:var(--sand);color:var(--navy);font-weight:700;font-size:.75rem;cursor:pointer;">−</button>'+
+            '<span style="font-size:.75rem;font-weight:700;color:var(--navy);">'+qty+'</span>'+
+            '<button onclick="prodQtyChange(\''+p.id+'\',\''+p.shopId+'\',1)" style="width:20px;height:20px;border:none;border-radius:50%;background:var(--orange);color:#fff;font-weight:700;font-size:.75rem;cursor:pointer;">+</button>'+
+          '</div>'
+          :'<button onclick="addToCartCard(event,\''+p.id+'\',\''+p.shopId+'\',this)" style="width:24px;height:24px;flex-shrink:0;border:none;border-radius:50%;background:var(--orange);color:#fff;font-weight:900;font-size:.9rem;cursor:pointer;line-height:1;">+</button>')+
       '</div>'+
-      (qty>0
-        ?'<div class="flash-card-qty" id="pqc-'+p.id+'"><button onclick="prodQtyChange(\''+p.id+'\',\''+p.shopId+'\',-1)">−</button><span>'+qty+'</span><button onclick="prodQtyChange(\''+p.id+'\',\''+p.shopId+'\',1)">+</button></div>'
-        :'<button class="flash-card-btn" onclick="addToCartCard(event,\''+p.id+'\',\''+p.shopId+'\',this)">+ কার্টে যোগ করুন</button>')+
     '</div></div>';
 }
 
