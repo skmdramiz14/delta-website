@@ -4137,11 +4137,8 @@ function initFestivalBanner(){
       if(overrideKey === 'custom' && customBanner){
         renderFestivalBanner('custom', customBanner); return;
       }
-      if(overrideKey && overrideKey !== 'hidden'){
-        renderFestivalBanner(overrideKey, null); return;
-      }
-
-      // No override — load from festivalCategories (multiple)
+      // Single festival override (specific key set) — but first check if multiple are active
+      // No override OR override = 'auto' — load from festivalCategories
       db.collection('cities').doc(CITY).collection('settings').doc('festivalCategories')
         .get().then(function(catDoc){
           var cats = catDoc.exists ? (catDoc.data().festivals||[]) : [];
@@ -4149,14 +4146,25 @@ function initFestivalBanner(){
             if(!f.active) return false;
             if(!f.date) return true;
             var diff = new Date(f.date) - new Date();
-            return diff > 0 && diff < 90*86400000; // 90 days
+            return diff > 0 && diff < 90*86400000;
           });
-          if(active.length){
+          if(active.length > 1){
+            // Multiple active → always show all
             renderMultipleFestivalBanners(active);
+          } else if(active.length === 1){
+            // Single active → use override if set, else show that festival
+            var key = (overrideKey && overrideKey!=='hidden') ? overrideKey : active[0].key;
+            renderFestivalBanner(key, null);
+          } else if(overrideKey && overrideKey!=='hidden'){
+            // No active festivals but override set
+            renderFestivalBanner(overrideKey, null);
           } else {
-            renderFestivalBanner(null, null); // auto detect from hardcoded list
+            renderFestivalBanner(null, null);
           }
-        }).catch(function(){ renderFestivalBanner(null, null); });
+        }).catch(function(){
+          if(overrideKey && overrideKey!=='hidden') renderFestivalBanner(overrideKey, null);
+          else renderFestivalBanner(null, null);
+        });
     }).catch(function(){ renderFestivalBanner(null, null); });
 }
 
@@ -4168,17 +4176,16 @@ function renderMultipleFestivalBanners(festivals){
   var today = new Date().toISOString().slice(0,10);
   db.collection('cities').doc(CITY).collection('bannerAds')
     .where('status','==','active')
-    .orderBy('priority','desc')
     .get().then(function(snap){
       var ads = [];
       snap.forEach(function(d){
         var b = Object.assign({id:d.id},d.data());
         if(b.endDate && b.endDate < today) return;
         if(b.startDate && b.startDate > today) return;
-        // Festival type banner — already festivals list এ আছে, skip
         if(b.type==='festival') return;
         ads.push(b);
       });
+      ads.sort(function(a,b){ return (b.priority||0)-(a.priority||0); });
 
       var total = festivals.length + ads.length;
 
