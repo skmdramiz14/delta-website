@@ -231,56 +231,72 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 .why-card p{color:var(--muted);font-size:.86rem;line-height:1.7;}
 
 /* ── FLASH SALE BANNER ── */
+.flash-outer-wrap{position:relative;margin:0 4%;}
 .flash-outer-card{
-  background:linear-gradient(135deg,#1a0000 0%,#7f0000 40%,#B71C1C 70%,#E53935 100%);
-  border-radius:18px;padding:18px;
-  margin:0 4%;position:relative;overflow:hidden;
-  box-shadow:0 8px 32px rgba(183,28,28,.35);
+  background:linear-gradient(135deg,#4A0000 0%,#7B0000 55%,#B01616 100%);
+  border-radius:18px;padding:16px 14px;
+  position:relative;overflow:hidden;
+  box-shadow:0 8px 32px rgba(176,22,22,.35);
 }
-.flash-card-row{display:flex;gap:16px;position:relative;z-index:1;}
-.flash-left{flex:0 0 34%;display:flex;flex-direction:column;justify-content:center;min-width:0;}
-.flash-left-sub{font-size:.86rem;font-weight:700;color:#fff;line-height:1.35;margin-bottom:2px;}
-.flash-left-sub2{font-size:.72rem;color:rgba(255,255,255,.75);margin-bottom:14px;line-height:1.3;}
+/* ডেকোরেটিভ ব্যাকগ্রাউন্ড — শুধু ডান দিকে, হালকা opacity */
+.flash-outer-card::before{
+  content:'🛍️';position:absolute;right:6%;top:8%;font-size:3.2rem;opacity:.08;
+  pointer-events:none;transform:rotate(-8deg);
+}
+.flash-outer-card::after{
+  content:'';position:absolute;right:-40px;bottom:-40px;width:180px;height:180px;
+  background:radial-gradient(circle,rgba(255,255,255,.1) 0%,transparent 70%);
+  pointer-events:none;
+}
+.flash-card-row{display:flex;gap:10px;position:relative;z-index:1;align-items:stretch;}
+.flash-left{flex:0 0 32%;display:flex;flex-direction:column;justify-content:center;min-width:0;}
+.flash-left-sub{font-size:.78rem;font-weight:700;color:#fff;line-height:1.3;margin-bottom:2px;}
+.flash-left-sub2{font-size:.64rem;color:rgba(255,255,255,.75);margin-bottom:12px;line-height:1.25;}
 .flash-left-btn{
-  background:#fff;border:none;color:#B71C1C;font-weight:800;font-size:.74rem;
-  padding:9px 12px;border-radius:20px;cursor:pointer;white-space:nowrap;
-  box-shadow:0 3px 10px rgba(0,0,0,.2);align-self:flex-start;
+  background:#fff;border:none;color:#B01616;font-weight:800;font-size:.72rem;
+  padding:13px 14px;border-radius:999px;cursor:pointer;white-space:nowrap;
+  box-shadow:0 4px 14px rgba(0,0,0,.25);align-self:flex-start;
+  min-height:44px;display:flex;align-items:center;
 }
-.flash-right{flex:1;min-width:0;display:flex;flex-direction:column;gap:10px;}
+.flash-right{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px;position:relative;}
 
-/* Countdown */
-.flash-banner-countdown{display:flex;align-items:center;gap:5px;}
-.fbc-block{display:flex;flex-direction:column;align-items:center;background:rgba(0,0,0,.35);border-radius:8px;padding:5px 8px;min-width:36px;}
-.fbc-num{font-size:1.05rem;font-weight:800;color:#fff;font-family:monospace;line-height:1;}
-.fbc-label{font-size:.48rem;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.5px;margin-top:1px;}
-.fbc-sep{font-size:1rem;font-weight:700;color:rgba(255,255,255,.4);margin-bottom:8px;}
+/* Countdown — right column-এর top-এ floating */
+.flash-banner-countdown{display:flex;align-items:center;gap:4px;align-self:flex-end;}
+.fbc-block{display:flex;flex-direction:column;align-items:center;background:rgba(0,0,0,.4);border-radius:7px;padding:4px 7px;min-width:32px;}
+.fbc-num{font-size:.92rem;font-weight:800;color:#fff;font-family:monospace;line-height:1;}
+.fbc-label{font-size:.44rem;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.4px;margin-top:1px;}
+.fbc-sep{font-size:.9rem;font-weight:700;color:rgba(255,255,255,.4);margin-bottom:6px;}
 
-.flash-grid{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-bottom:2px;scroll-snap-type:x mandatory;}
+.flash-grid{display:flex;gap:16px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-bottom:2px;scroll-snap-type:x mandatory;}
 
-/* Mobile — narrow স্ক্রিনে left column নিচে চলে আসবে */
-@media(max-width:560px){
-  .flash-card-row{flex-direction:column;gap:12px;}
-  .flash-left{flex:none;}
-  .flash-left-btn{align-self:flex-start;}
+/* Floating right arrow — card-এর ডান edge-এ আধা বাইরে, wrapper-relative তাই clip হবে না */
+.flash-scroll-arrow{
+  position:absolute;right:-14px;top:50%;transform:translateY(-50%);
+  width:34px;height:34px;border-radius:50%;background:#fff;border:none;
+  box-shadow:0 3px 10px rgba(0,0,0,.3);color:#B01616;font-weight:800;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:2;font-size:.85rem;
 }
-@media(max-width:480px){
-  .flash-outer-card{padding:16px 14px;}
+
+@media(max-width:400px){
+  .flash-left-sub{font-size:.7rem;}
+  .flash-left-sub2{display:none;}
+  .flash-left-btn{font-size:.66rem;padding:11px 10px;}
 }
 
 
 /* ── FLASH CARD COMPACT ── */
-.flash-card{background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;position:relative;flex-shrink:0;width:128px;box-shadow:0 4px 14px rgba(0,0,0,.2);scroll-snap-align:start;}
-.flash-card-img{height:88px;background:var(--sand);display:flex;align-items:center;justify-content:center;font-size:2rem;position:relative;overflow:hidden;}
+.flash-card{background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;position:relative;flex-shrink:0;width:clamp(150px,46vw,185px);box-shadow:0 4px 14px rgba(0,0,0,.2);scroll-snap-align:start;}
+.flash-card-img{height:145px;background:var(--sand);display:flex;align-items:center;justify-content:center;font-size:2rem;position:relative;overflow:hidden;}
 .flash-card-img img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;}
 .flash-card-badges{position:absolute;top:5px;left:5px;display:flex;gap:3px;}
 .flash-card-timer{background:linear-gradient(135deg,#B71C1C,#E53935);padding:4px 10px;display:flex;align-items:center;justify-content:space-between;}
 .flash-card-timer-label{color:rgba(255,255,255,.85);font-size:.58rem;font-weight:600;}
 .flash-card-timer-digits{font-family:monospace;font-size:.78rem;font-weight:800;color:#fff;letter-spacing:1px;}
-.flash-card-body{padding:7px 8px;}
-.flash-card-name{font-weight:700;font-size:.68rem;color:var(--charcoal);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px;}
-.flash-card-price{display:flex;align-items:center;gap:4px;margin-bottom:5px;}
-.flash-card-price-now{font-size:.78rem;font-weight:800;color:var(--orange);}
-.flash-card-price-old{font-size:.6rem;color:var(--muted);text-decoration:line-through;}
+.flash-card-body{padding:10px 12px;}
+.flash-card-name{font-weight:700;font-size:.82rem;color:var(--charcoal);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:5px;}
+.flash-card-price{display:flex;align-items:center;gap:5px;margin-bottom:6px;}
+.flash-card-price-now{font-size:.95rem;font-weight:800;color:var(--orange);}
+.flash-card-price-old{font-size:.68rem;color:var(--muted);text-decoration:line-through;}
 .flash-card-btn{width:100%;background:var(--navy);color:#fff;border:none;padding:7px 6px;border-radius:7px;font-weight:700;font-size:.72rem;cursor:pointer;}
 .flash-card-btn:active{background:var(--orange);}
 .flash-card-qty{display:flex;align-items:center;justify-content:space-between;background:var(--sand);border-radius:7px;}
@@ -1878,6 +1894,7 @@ img{max-width:100%;height:auto;}
     </a>
   </div>
 
+  <div class="flash-outer-wrap">
   <div class="flash-outer-card">
     <div class="flash-card-row">
       <!-- Left: subtitle + button -->
@@ -1923,6 +1940,8 @@ img{max-width:100%;height:auto;}
         <div class="flash-grid" id="flashGrid"></div>
       </div>
     </div>
+  </div>
+  <button class="flash-scroll-arrow" onclick="document.getElementById('flashGrid').scrollBy({left:190,behavior:'smooth'})">→</button>
   </div>
 </section>
 
@@ -4746,7 +4765,7 @@ function flashCardHTML(p){
             '<span style="font-size:.75rem;font-weight:700;color:var(--navy);">'+qty+'</span>'+
             '<button onclick="prodQtyChange(\''+p.id+'\',\''+p.shopId+'\',1)" style="width:20px;height:20px;border:none;border-radius:50%;background:var(--orange);color:#fff;font-weight:700;font-size:.75rem;cursor:pointer;">+</button>'+
           '</div>'
-          :'<button onclick="addToCartCard(event,\''+p.id+'\',\''+p.shopId+'\',this)" style="width:24px;height:24px;flex-shrink:0;border:none;border-radius:50%;background:var(--orange);color:#fff;font-weight:900;font-size:.9rem;cursor:pointer;line-height:1;">+</button>')+
+          :'<button onclick="addToCartCard(event,\''+p.id+'\',\''+p.shopId+'\',this)" style="width:28px;height:28px;flex-shrink:0;border:none;border-radius:50%;background:var(--orange);color:#fff;font-weight:900;font-size:1rem;cursor:pointer;line-height:1;">+</button>')+
       '</div>'+
     '</div></div>';
 }
