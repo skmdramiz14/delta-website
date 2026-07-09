@@ -87,7 +87,10 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 /* ── HERO ── */
 .hero{
   background:linear-gradient(135deg,#061309 0%,#0f2818 40%,#17351f 70%,#1a3a24 100%);
-  padding:60px 5% 52px;position:relative;overflow:hidden;
+  padding:36px 6%;position:relative;overflow:hidden;
+  margin:20px 4% 0;border-radius:26px;border:1px solid rgba(201,162,39,.25);
+  min-height:400px;display:flex;align-items:center;
+  box-shadow:0 16px 44px rgba(6,19,9,.28);
 }
 /* Ambient glow orbs */
 .hero::before{
@@ -104,9 +107,9 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 }
 .hero::before{content:'';position:absolute;top:-120px;right:-80px;width:520px;height:520px;background:radial-gradient(circle,rgba(201,162,39,.14) 0%,transparent 68%);border-radius:50%;}
 .hero::after{content:'△';position:absolute;right:6%;bottom:-20px;font-size:220px;font-weight:900;color:rgba(255,255,255,.03);line-height:1;pointer-events:none;}
-.hero-inner{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center;max-width:1200px;margin:0 auto;position:relative;z-index:2;}
+.hero-inner{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center;max-width:1200px;width:100%;margin:0 auto;position:relative;z-index:2;}
 .hero-tag{display:inline-flex;align-items:center;gap:7px;background:rgba(201,162,39,.18);border:1px solid rgba(201,162,39,.35);color:#ffb07a;padding:6px 14px;border-radius:20px;font-size:.75rem;font-weight:600;letter-spacing:.8px;text-transform:uppercase;margin-bottom:18px;}
-.hero h1{font-family:'Playfair Display',serif;font-size:clamp(2rem,4.5vw,3.2rem);font-weight:900;color:#fff;line-height:1.15;margin-bottom:10px;text-shadow:0 2px 20px rgba(0,0,0,.3);}
+.hero h1{font-family:'Playfair Display',serif;font-size:clamp(2rem,4.5vw,3.2rem);font-weight:900;color:#fff;line-height:1.22;margin-bottom:12px;text-shadow:0 2px 20px rgba(0,0,0,.3);}
 .hero h1 em{color:var(--orange);font-style:normal;filter:drop-shadow(0 0 12px rgba(201,162,39,.4));}
 .hero-bn{font-family:'Tiro Bangla',serif;font-size:1.1rem;color:rgba(255,255,255,.7);margin-bottom:10px;}
 .hero p{color:rgba(255,255,255,.65);font-size:.95rem;line-height:1.75;margin-bottom:28px;max-width:460px;}
@@ -123,14 +126,24 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 .hero-stats{display:flex;gap:24px;flex-wrap:wrap;margin-top:28px;padding-top:22px;border-top:1px solid rgba(255,255,255,.12);}
 .hero-stat strong{display:block;font-size:1.4rem;font-weight:800;color:#fff;line-height:1.1;}
 .hero-stat span{display:block;font-size:.72rem;color:rgba(255,255,255,.55);margin-top:2px;}
-/* ── HERO PHOTO PANEL ── */
+/* ── HERO PHOTO PANEL — layered placeholder until a real photo URL is supplied ── */
 .hero-photo{
-  position:relative;border-radius:18px;overflow:hidden;min-height:240px;height:100%;
-  background:linear-gradient(160deg,#1a3a24,#2d5a35 55%,#3d7a45);
+  position:relative;border-radius:20px;overflow:hidden;min-height:260px;height:100%;
+  background:
+    radial-gradient(circle at 65% 30%,rgba(212,175,55,.35) 0%,transparent 45%),
+    radial-gradient(circle at 20% 85%,rgba(45,90,53,.5) 0%,transparent 55%),
+    linear-gradient(160deg,#0f2818 0%,#1e4028 45%,#2d5a35 75%,#3d7a45 100%);
   background-size:cover;background-position:center;
+  border:1px solid rgba(212,175,55,.3);
+  box-shadow:inset 0 0 60px rgba(0,0,0,.25);
+}
+.hero-photo::before{
+  content:'';position:absolute;inset:0;
+  background-image:linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px);
+  background-size:28px 28px;pointer-events:none;
 }
 .hero-photo::after{
-  content:'';position:absolute;top:0;right:0;width:64px;height:64px;
+  content:'';position:absolute;top:0;right:0;width:72px;height:72px;
   border-top:2px solid rgba(212,175,55,.7);border-right:2px solid rgba(212,175,55,.7);
   pointer-events:none;
 }
@@ -441,11 +454,11 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 .hero-cta-sub{font-size:.75rem;font-weight:500;color:rgba(255,255,255,.45);text-align:center;margin-top:4px;}
 
 /* ── HERO STATS NEW ── */
-.hero-stats-box{background:var(--navy);border:1px solid rgba(201,162,39,.3);border-radius:16px;padding:18px 10px;margin-top:4px;}
-.hero-stats-new{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
-.hero-stat-new{text-align:center;padding:6px 4px;}
+.hero-stats-box{background:var(--navy);border:1px solid rgba(201,162,39,.3);border-radius:18px;padding:24px 12px;margin-top:8px;}
+.hero-stats-new{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.hero-stat-new{text-align:center;padding:6px 4px;display:flex;flex-direction:column;align-items:center;}
 .hero-stat-new+.hero-stat-new{border-left:1px solid rgba(255,255,255,.1);}
-.hsn-icon{font-size:1.2rem;margin-bottom:5px;}
+.hsn-icon{font-size:1.3rem;margin-bottom:6px;}
 .hsn-num{font-size:1rem;font-weight:800;color:#fff;line-height:1.1;margin-bottom:2px;}
 .hsn-label{font-size:.62rem;color:var(--orange2);font-weight:700;line-height:1.3;}
 .hsn-sub{font-size:.56rem;color:rgba(255,255,255,.45);line-height:1.25;margin-top:2px;display:block;}
@@ -518,9 +531,9 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 .hero-btns{display:flex;flex-direction:column;gap:10px;margin-bottom:20px;}
 .hero-btn-primary{
   background:linear-gradient(135deg,#c9a227,#d4af37);
-  color:#1a2010;border:none;padding:14px 28px;border-radius:12px;
-  font-size:.95rem;font-weight:800;cursor:pointer;transition:all .25s;
-  box-shadow:0 4px 20px rgba(201,162,39,.45), 0 1px 0 rgba(255,255,255,.15) inset;
+  color:#1a2010;border:none;padding:17px 32px;border-radius:14px;min-height:56px;
+  font-size:1.02rem;font-weight:800;cursor:pointer;transition:all .25s;
+  box-shadow:0 6px 24px rgba(201,162,39,.5), 0 1px 0 rgba(255,255,255,.15) inset;
   letter-spacing:.3px;
 }
 .hero-btn-primary:hover{
@@ -535,16 +548,16 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 .hero-btn-full{width:100%;text-align:center;justify-content:center;}
 .hero-pill-row{display:flex;gap:10px;}
 .hero-pill{
-  flex:1;padding:12px 14px;border-radius:14px;
+  flex:1;padding:18px 16px;border-radius:16px;
   background:var(--navy);
   border:1px solid rgba(201,162,39,.25);
-  color:#fff;font-size:.82rem;font-weight:700;
+  color:#fff;font-size:.84rem;font-weight:700;
   cursor:pointer;transition:all .25s;
-  display:flex;align-items:center;gap:10px;text-align:left;
+  display:flex;align-items:center;gap:12px;text-align:left;
   box-shadow:0 4px 16px rgba(15,40,24,.18);
   letter-spacing:.2px;
 }
-.hero-pill-icon{font-size:1.3rem;flex-shrink:0;}
+.hero-pill-icon{font-size:1.7rem;flex-shrink:0;}
 .hero-pill-text{flex:1;min-width:0;}
 .hero-pill-sub{display:block;font-size:.66rem;font-weight:500;color:rgba(255,255,255,.55);margin-top:2px;}
 .hero-pill-arrow{flex-shrink:0;color:var(--orange2);font-weight:800;}
@@ -954,7 +967,8 @@ body.lang-bn .lang-en{display:none!important;}
 @media(max-width:900px){
   .hero-inner{grid-template-columns:1.3fr 1fr;gap:16px;}
   .hero-phone{display:none;}
-  .hero-photo{min-height:180px;}
+  .hero-photo{min-height:200px;}
+  .hero{min-height:360px;margin:16px 4% 0;border-radius:22px;}
   .cat-grid{grid-template-columns:repeat(4,1fr);}
   .why-grid{grid-template-columns:1fr 1fr;}
   .footer-grid{grid-template-columns:1fr 1fr;}
@@ -1006,9 +1020,9 @@ body.lang-bn .lang-en{display:none!important;}
   .mobile-search-bar{display:none!important;}
 
   /* ── HERO ── */
-  .hero{padding:22px 4% 28px;}
-  .hero h1{font-size:1.85rem;line-height:1.2;}
-  .hero-bn{font-size:.9rem;margin-bottom:8px;}
+  .hero{padding:28px 5%;min-height:340px;margin:14px 4% 0;border-radius:22px;}
+  .hero h1{font-size:1.85rem;line-height:1.25;}
+  .hero-bn{font-size:.9rem;margin-bottom:10px;}
   .hero p{font-size:.85rem;line-height:1.65;margin-bottom:20px;}
   .hero-tag{font-size:.7rem;padding:5px 11px;margin-bottom:14px;}
 
@@ -1026,7 +1040,7 @@ body.lang-bn .lang-en{display:none!important;}
   .hero-btn-primary{font-size:.9rem;padding:13px 20px;}
 
   /* Hero photo panel — shorter on mobile */
-  .hero-photo{min-height:150px;}
+  .hero-photo{min-height:170px;}
   .hero-about-btn{font-size:.8rem;padding:10px 18px;}
 
   /* ── SECTIONS ── */
@@ -1178,8 +1192,8 @@ body.lang-bn .lang-en{display:none!important;}
   .hamburger-btn{width:30px;height:30px;font-size:.85rem;}
 
   /* HERO */
-  .hero{padding:18px 4% 24px;}
-  .hero h1{font-size:1.6rem!important;line-height:1.22!important;}
+  .hero{padding:24px 5%;min-height:320px;margin:12px 3% 0;border-radius:20px;}
+  .hero h1{font-size:1.6rem!important;line-height:1.28!important;}
   .hero p{font-size:.82rem!important;margin-bottom:16px;}
   .hero-search-big input{font-size:.82rem;padding:11px 12px;}
 
@@ -1826,7 +1840,7 @@ img{max-width:100%;height:auto;}
 </div>
 
 <!-- FRESH TODAY FULL CARDS — relocated here to match reference layout -->
-<section class="section" id="freshTodaySection" style="display:none;padding-top:16px;padding-bottom:16px;">
+<section class="section" id="freshTodaySection" style="display:none;padding-top:28px;padding-bottom:24px;">
   <div class="section-head">
     <div>
       <div class="section-label"><span class="lang-bn">আজকের তাজা</span><span class="lang-en">Fresh Today</span></div>
@@ -1868,8 +1882,8 @@ img{max-width:100%;height:auto;}
 </section>
 
 <!-- HERO CTA + STATS — sits below the hero card on the cream background (matches reference layout) -->
-<div class="hero-search-outer" style="padding-top:18px;padding-bottom:4px;">
-  <div class="hero-btns" style="margin-bottom:14px;">
+<div class="hero-search-outer" style="padding-top:28px;padding-bottom:24px;">
+  <div class="hero-btns" style="margin-bottom:18px;">
     <button class="hero-btn-primary hero-btn-full" onclick="document.getElementById('productsSection').scrollIntoView({behavior:'smooth'})">
       🛒 <span class="lang-bn">এখনই কিনুন</span><span class="lang-en">Shop Now</span>
     </button>
@@ -5185,7 +5199,7 @@ function buildFreshCards(prods){
     var badgeClass = hoursOld <= 24 ? 'fc-just' : 'fc-special';
     var badgeLabel = hoursOld <= 24 ? 'JUST IN' : 'তাজা';
     var isSpecial = !!p.discount;
-    var tagline = p.tagline || FRESH_TAGLINE_MAP[p.category] || (p.shopName?'🏪 '+p.shopName:'সেরা মানের পণ্য');
+    var tagline = p.tagline || FRESH_TAGLINE_MAP[p.category] || 'সেরা মানের নিশ্চয়তা';
     return '<div class="fresh-card">'+
       '<div class="fresh-card-img">'+(img?'<img src="'+img+'" alt="'+name+'" loading="lazy">':prodEmoji(p.category))+
       '<div class="fresh-card-badges"><span class="'+badgeClass+'">'+badgeLabel+'</span>'+
@@ -5204,7 +5218,11 @@ function buildFreshCards(prods){
 }
 var FRESH_TAGLINE_MAP={
   farm:'তাজা সবজি · দেশি', food:'সুস্বাদু ও তাজা', grocery:'প্রতিদিনের প্রয়োজন',
-  medicine:'বিশ্বস্ত মানের', clothing:'নতুন কালেকশন', livestock:'তাজা ও স্বাস্থ্যকর'
+  farmtools:'কৃষিকাজে সহায়ক', livestock:'তাজা ও স্বাস্থ্যকর', medicine:'বিশ্বস্ত মানের',
+  clothing:'নতুন কালেকশন', electronics:'সেরা প্রযুক্তি', home:'বাড়ির জন্য সেরা',
+  construction:'নির্মাণ সামগ্রী', automotive:'যানবাহনের যত্নে', arts:'হাতের তৈরি শিল্প',
+  education:'শেখার নতুন উপায়', services:'বিশ্বস্ত সেবা', health:'স্বাস্থ্যের যত্ন',
+  events:'উৎসবের আয়োজনে', rental:'সহজে ভাড়া নিন', remarket:'পুনঃব্যবহারযোগ্য পণ্য'
 };
 
 // ── LOCAL ENTREPRENEURS STRIP ──
