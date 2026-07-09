@@ -717,6 +717,7 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 
 /* ── RESPONSIVE UPDATES ── */
 .fresh-cards-scroll{display:flex;gap:30px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none;}
+.fresh-dots{display:none;} /* mobile-only indicator — the @media(max-width:480px) block below turns it on */
 .fresh-cards-scroll::-webkit-scrollbar{display:none;}
 
 /* Static promo card — first item in the scroll (wider than product cards, matching reference) */
@@ -760,9 +761,10 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 .fresh-card-img{height:170px;background:linear-gradient(160deg,var(--sand),#ece2d0);display:flex;align-items:center;justify-content:center;font-size:2.5rem;position:relative;overflow:hidden;}
 .fresh-card-img img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;filter:saturate(1.08) contrast(1.04) brightness(1.01);transition:transform .4s ease;}
 .fresh-card:hover .fresh-card-img img{transform:scale(1.045);}
-/* soft editorial vignette so every photo — whatever the seller uploaded — reads consistently lit */
+/* soft editorial vignette so every photo — whatever the seller uploaded — reads consistently lit,
+   fading out well before the bottom edge so the image meets the card body seamlessly */
 .fresh-card-img::after{content:'';position:absolute;inset:0;pointer-events:none;
-  background:linear-gradient(180deg,rgba(0,0,0,.10) 0%,transparent 22%,transparent 70%,rgba(0,0,0,.16) 100%);
+  background:linear-gradient(180deg,rgba(0,0,0,.09) 0%,transparent 26%,transparent 82%,rgba(0,0,0,.07) 100%);
   box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);}
 .fresh-card-badges{position:absolute;top:10px;left:10px;display:flex;gap:5px;flex-wrap:wrap;z-index:1;}
 .fc-just{background:rgba(16,57,45,.88);backdrop-filter:blur(3px);color:#fff;font-size:.56rem;font-weight:700;letter-spacing:.4px;padding:5px 11px 5px 9px;border-radius:999px;text-transform:uppercase;height:23px;display:inline-flex;align-items:center;gap:4px;}
@@ -809,17 +811,22 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 
   .fresh-card{width:180px;border-radius:16px;scroll-snap-align:start;
     box-shadow:0 4px 14px rgba(20,30,25,.10);} /* identical shadow — one shared, softer elevation */
-  .fresh-card-img{height:152px;} /* rebalanced — image no longer dominates, more room for content below */
+  .fresh-card-img{height:186px;} /* image is the primary focus — ~72% of total card height */
   .fresh-card-img img{object-fit:cover;}
-  .fresh-card-body{padding:13px 14px 14px;}
-  .fresh-card-name{font-size:.94rem;margin-bottom:6px;}
-  .fresh-card-tagline{font-size:.66rem;margin-bottom:11px;}
+  .fresh-card-body{padding:12px 14px 13px;}
+  .fresh-card-name{font-size:.94rem;margin-bottom:4px;}
+  .fresh-card-tagline{font-size:.65rem;margin-bottom:9px;}
   .fresh-card-badges{top:8px;left:8px;}
 
   /* Badges — pill-shaped, 30–32px tall, balanced internal padding */
   .fc-just,.fc-special,.fc-limited,.fc-discount{height:31px;font-size:.6rem;padding:0 15px;border-radius:999px;}
   .fresh-card-pill{height:31px;font-size:.62rem;padding:0 15px;border-radius:999px;}
   .fresh-card-plus{width:27px;height:27px;font-size:.92rem;}
+
+  /* Dot pagination — one dot per card (featured + products), tracks scroll position */
+  .fresh-dots{display:flex;justify-content:center;align-items:center;gap:6px;margin-top:14px;flex-wrap:wrap;}
+  .fresh-dot{width:6px;height:6px;border-radius:999px;background:rgba(16,57,45,.16);transition:all .25s ease;flex-shrink:0;}
+  .fresh-dot.active{width:18px;background:var(--orange);}
 }
 
 /* ── FARMERS STRIP ── */
@@ -2023,6 +2030,7 @@ img{max-width:100%;height:auto;}
     </div>
     <div id="freshCardsGrid" style="display:contents;"></div>
   </div>
+  <div class="fresh-dots" id="freshDots"></div>
 </section>
 
 <!-- HERO -->
@@ -5381,6 +5389,44 @@ function buildFreshCards(prods){
       '</div></div>';
   }).join('');
   sec.style.display='block';
+  buildFreshDots(1 + freshList.length); // 1 for the featured card + each product card
+  initFreshDotsScroll();
+}
+
+// ── FRESH TODAY DOT PAGINATION (mobile) ──
+function buildFreshDots(count){
+  var wrap = document.getElementById('freshDots');
+  if(!wrap) return;
+  var html = '';
+  for(var i=0;i<count;i++){ html += '<span class="fresh-dot'+(i===0?' active':'')+'"></span>'; }
+  wrap.innerHTML = html;
+}
+var _freshDotsScrollBound = false;
+function initFreshDotsScroll(){
+  if(_freshDotsScrollBound) return; // bind once — buildFreshCards may re-run when data refreshes
+  var scroll = document.querySelector('#freshTodaySection .fresh-cards-scroll');
+  var wrap = document.getElementById('freshDots');
+  if(!scroll || !wrap) return;
+  _freshDotsScrollBound = true;
+  var ticking = false;
+  scroll.addEventListener('scroll', function(){
+    if(ticking) return;
+    ticking = true;
+    requestAnimationFrame(function(){
+      var cardEls = Array.prototype.slice.call(scroll.querySelectorAll('.fresh-promo-card,.fresh-card'));
+      var dots = wrap.querySelectorAll('.fresh-dot');
+      if(cardEls.length && dots.length){
+        var scrollLeft = scroll.scrollLeft;
+        var closestIdx = 0, closestDist = Infinity;
+        cardEls.forEach(function(el, idx){
+          var dist = Math.abs(el.offsetLeft - scrollLeft);
+          if(dist < closestDist){ closestDist = dist; closestIdx = idx; }
+        });
+        dots.forEach(function(d,i){ d.classList.toggle('active', i===closestIdx); });
+      }
+      ticking = false;
+    });
+  }, {passive:true});
 }
 var FRESH_TAGLINE_MAP={
   farm:'তাজা সবজি · দেশি', food:'সুস্বাদু ও তাজা', grocery:'প্রতিদিনের প্রয়োজন',
