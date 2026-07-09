@@ -788,26 +788,26 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
    Desktop/tablet rules above are untouched. Below applies only under 480px.
    One unified soft shadow + radius across every card. Both cards use
    min-height (not a fixed height) at the same value, so flex's default
-   `stretch` reliably equalizes their top and bottom edges — this is what
-   was actually causing the baseline mismatch before. */
+   `stretch` reliably equalizes their top and bottom edges. The featured
+   card is ~7% wider than a product card so it reads as the hero. */
 @media(max-width:480px){
   #freshTodaySection{padding:30px 4% 20px;}
   .fresh-cards-scroll{gap:17px;padding-right:4%;
     scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;}
 
-  .fresh-promo-card{width:146px;min-height:240px;padding:18px 15px 15px;border-radius:16px;
+  .fresh-promo-card{width:192px;min-height:240px;padding:20px 18px 18px;border-radius:16px;
     scroll-snap-align:start;margin-right:-6px; /* tighter hero→first-card gap, ~11px effective */
     background:
       radial-gradient(120% 90% at 85% 0%,rgba(210,180,120,.22) 0%,rgba(210,180,120,0) 42%),
       radial-gradient(90% 70% at 15% 105%,#0c2a1f 0%,rgba(12,42,31,0) 60%),
       linear-gradient(165deg,#1b4433 0%,#0f2c20 50%,#091d15 100%);
     box-shadow:0 4px 14px rgba(20,30,25,.10);} /* same soft shadow value as product cards below */
-  .fpc-decor{width:124px;height:164px;top:-4px;right:-8px;filter:blur(.3px);}
+  .fpc-decor{width:150px;height:198px;top:-4px;right:-9px;filter:blur(.3px);}
   .fpc-eyebrow{display:none;}
-  .fpc-title{font-size:1.32rem;margin-bottom:7px;line-height:1.13;}
-  .fpc-sub{font-size:.7rem;margin-bottom:11px;line-height:1.48;}
-  .fpc-btn{padding:6px 5px 6px 14px;font-size:.62rem;gap:7px;border-width:2px;border-color:var(--orange);}
-  .fpc-btn .fpc-arrow{width:20px;height:20px;font-size:.76rem;}
+  .fpc-title{font-size:1.4rem;margin-bottom:8px;line-height:1.13;}
+  .fpc-sub{font-size:.74rem;margin-bottom:13px;line-height:1.48;}
+  .fpc-btn{padding:7px 6px 7px 15px;font-size:.66rem;gap:8px;border-width:2px;border-color:var(--orange);}
+  .fpc-btn .fpc-arrow{width:21px;height:21px;font-size:.78rem;}
 
   /* Product cards — full-bleed photo, text/badge/button overlaid directly on the image */
   .fresh-card{width:180px;min-height:240px;position:relative;border-radius:16px;scroll-snap-align:start;
@@ -815,16 +815,18 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
   .fresh-card-img{position:absolute;inset:0;width:100%;height:100%;}
   .fresh-card-img img{width:100%;height:100%;object-fit:cover;}
   .fresh-card-img::after{display:none;} /* replaced by the bottom scrim on .fresh-card-body below */
-  .fresh-card-body{position:absolute;left:0;right:0;bottom:0;z-index:2;padding:16px 14px 14px;
-    background:linear-gradient(180deg,transparent 0%,rgba(8,20,14,.18) 40%,rgba(6,16,11,.82) 100%);}
-  .fresh-card-name{font-size:.96rem;margin-bottom:4px;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.35);}
-  .fresh-card-tagline{font-size:.65rem;margin-bottom:9px;color:rgba(255,255,255,.78);}
+  .fresh-card-body{position:absolute;left:0;right:0;bottom:0;z-index:2;padding:26px 14px 18px;
+    /* lighter scrim (~30% max opacity) — just enough for legible white text, no heavy black wash */
+    background:linear-gradient(180deg,transparent 0%,rgba(8,20,14,.10) 45%,rgba(6,16,11,.30) 100%);}
+  .fresh-card-name{font-size:.96rem;margin-bottom:4px;color:#fff;text-shadow:0 1px 8px rgba(0,0,0,.55);}
+  .fresh-card-tagline{font-size:.65rem;margin-bottom:9px;color:rgba(255,255,255,.85);text-shadow:0 1px 6px rgba(0,0,0,.5);}
   .fresh-card-badges{top:8px;left:8px;z-index:3;}
 
   /* Badges — pill-shaped, 30–32px tall, balanced internal padding */
   .fc-just,.fc-special,.fc-limited,.fc-discount{height:31px;font-size:.6rem;padding:0 15px;border-radius:999px;}
   .fresh-card-pill{height:31px;font-size:.62rem;padding:0 15px;border-radius:999px;}
-  .fresh-card-plus{width:27px;height:27px;font-size:.92rem;box-shadow:0 2px 8px rgba(0,0,0,.25),0 0 0 1.5px rgba(255,255,255,.25);}
+  .fresh-card-plus{width:27px;height:27px;font-size:.92rem;margin-right:9px;
+    box-shadow:0 3px 10px rgba(0,0,0,.16),0 0 0 1.5px rgba(255,255,255,.2);}
 
   /* Dot pagination — one dot per card (featured + products), tracks scroll position */
   .fresh-dots{display:flex;justify-content:center;align-items:center;gap:6px;margin-top:14px;flex-wrap:wrap;}
