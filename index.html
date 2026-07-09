@@ -813,28 +813,32 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 
 /* ── FRESH TODAY — MOBILE-ONLY LAYOUT (390px reference) ──
    Desktop/tablet rules above are untouched. Below applies only under 480px,
-   rebuilding proportions to match the app-mockup reference: a narrower
+   rebuilding proportions to match the app-mockup reference: a narrow
    featured card, wider product cards, tighter section edges, and
    snap-scrolling so the featured card + first product card sit fully in
    the first screen with the next card peeking in to invite scrolling. */
 @media(max-width:480px){
   #freshTodaySection{padding:30px 4% 20px;}
   .fresh-cards-scroll{gap:16px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;}
-  .fresh-promo-card{width:143px;min-height:202px;padding:20px 16px 16px;border-radius:16px;
-    scroll-snap-align:start;margin-right:-5px; /* tightens the hero→first-card gap by ~5px, per spec */
-    box-shadow:0 8px 20px rgba(10,30,22,.16),0 2px 6px rgba(10,30,22,.10);}
-  .fpc-decor{width:120px;height:159px;top:-5px;right:-9px;}
+  .fresh-promo-card{width:133px;min-height:188px;padding:18px 15px 15px;border-radius:16px;
+    scroll-snap-align:start;margin-right:-5px; /* tightens the hero→first-card gap by ~5px */
+    background:
+      radial-gradient(120% 90% at 85% 0%,rgba(210,180,120,.22) 0%,rgba(210,180,120,0) 42%),
+      radial-gradient(90% 70% at 15% 105%,#0c2a1f 0%,rgba(12,42,31,0) 60%),
+      linear-gradient(165deg,#1b4433 0%,#0f2c20 50%,#091d15 100%); /* more pronounced highlight+depth for the narrower card */
+    box-shadow:0 6px 16px rgba(10,30,22,.12),0 1px 4px rgba(10,30,22,.07);}
+  .fpc-decor{width:112px;height:148px;top:-4px;right:-8px;filter:blur(.3px);}
   .fpc-eyebrow{display:none;} /* not present in the reference — title/subtitle/CTA only */
-  .fpc-title{font-size:1.34rem;margin-bottom:6px;line-height:1.13;}
-  .fpc-sub{font-size:.7rem;margin-bottom:10px;line-height:1.48;} /* tighter, so the CTA sits higher */
-  .fpc-btn{padding:6px 5px 6px 13px;font-size:.64rem;gap:7px;}
-  .fpc-btn .fpc-arrow{width:17px;height:17px;font-size:.66rem;}
-  .fresh-card{width:178px;border-radius:16px;scroll-snap-align:start;
-    box-shadow:0 1px 2px rgba(30,33,31,.03),0 6px 16px rgba(30,33,31,.05);}
+  .fpc-title{font-size:1.3rem;margin-bottom:6px;line-height:1.13;}
+  .fpc-sub{font-size:.68rem;margin-bottom:10px;line-height:1.48;}
+  .fpc-btn{padding:6px 4px 6px 12px;font-size:.62rem;gap:6px;border-width:1px;border-color:rgba(199,161,90,.5);}
+  .fpc-btn .fpc-arrow{width:15px;height:15px;font-size:.58rem;}
+  .fresh-card{width:187px;border-radius:16px;scroll-snap-align:start;
+    box-shadow:0 1px 2px rgba(30,33,31,.02),0 5px 14px rgba(30,33,31,.04);}
   .fresh-card-img{height:164px;} /* ~66% of total card height, image-forward like the reference */
   .fresh-card-body{padding:11px 13px 12px;}
-  .fresh-card-name{font-size:.94rem;}
-  .fresh-card-tagline{font-size:.66rem;margin-bottom:9px;}
+  .fresh-card-name{font-size:.94rem;margin-bottom:6px;}
+  .fresh-card-tagline{font-size:.66rem;margin-bottom:13px;}
   .fresh-card-badges{top:8px;left:8px;}
   .fc-just,.fc-special,.fc-limited,.fc-discount{height:20px;font-size:.52rem;padding:4px 9px;}
   .fresh-card-pill{height:20px;font-size:.56rem;padding:4px 9px;}
@@ -1999,16 +2003,17 @@ img{max-width:100%;height:auto;}
       <div class="fpc-decor"><svg viewBox="0 0 172 230" fill="none">
         <defs>
           <linearGradient id="leafG1" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stop-color="#eadfc0" stop-opacity=".9"/>
-            <stop offset="100%" stop-color="#eadfc0" stop-opacity=".05"/>
+            <stop offset="0%" stop-color="#cdd9b8" stop-opacity=".5"/>
+            <stop offset="100%" stop-color="#cdd9b8" stop-opacity=".04"/>
           </linearGradient>
           <linearGradient id="leafG2" x1="0" y1="1" x2="1" y2="0">
-            <stop offset="0%" stop-color="#fff" stop-opacity=".85"/>
-            <stop offset="100%" stop-color="#fff" stop-opacity=".08"/>
+            <stop offset="0%" stop-color="#f4f7ec" stop-opacity=".8"/>
+            <stop offset="60%" stop-color="#a9c497" stop-opacity=".35"/>
+            <stop offset="100%" stop-color="#3f5c42" stop-opacity=".14"/>
           </linearGradient>
           <radialGradient id="dropG2" cx="35%" cy="30%" r="70%">
-            <stop offset="0%" stop-color="#fff" stop-opacity=".9"/>
-            <stop offset="55%" stop-color="#fff" stop-opacity=".2"/>
+            <stop offset="0%" stop-color="#fff" stop-opacity=".85"/>
+            <stop offset="55%" stop-color="#e8f0e0" stop-opacity=".18"/>
             <stop offset="100%" stop-color="#fff" stop-opacity="0"/>
           </radialGradient>
           <filter id="leafBlur" x="-50%" y="-50%" width="200%" height="200%">
