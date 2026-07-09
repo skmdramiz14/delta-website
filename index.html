@@ -820,18 +820,21 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 @media(max-width:480px){
   #freshTodaySection{padding:30px 4% 20px;}
   .fresh-cards-scroll{gap:16px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;}
-  .fresh-promo-card{width:158px;min-height:222px;padding:22px 18px 18px;border-radius:20px;scroll-snap-align:start;}
-  .fpc-decor{width:132px;height:176px;top:-6px;right:-10px;}
+  .fresh-promo-card{width:143px;min-height:202px;padding:20px 16px 16px;border-radius:16px;
+    scroll-snap-align:start;margin-right:-5px; /* tightens the hero→first-card gap by ~5px, per spec */
+    box-shadow:0 8px 20px rgba(10,30,22,.16),0 2px 6px rgba(10,30,22,.10);}
+  .fpc-decor{width:120px;height:159px;top:-5px;right:-9px;}
   .fpc-eyebrow{display:none;} /* not present in the reference — title/subtitle/CTA only */
-  .fpc-title{font-size:1.26rem;margin-bottom:7px;line-height:1.15;}
-  .fpc-sub{font-size:.71rem;margin-bottom:15px;line-height:1.5;}
+  .fpc-title{font-size:1.34rem;margin-bottom:6px;line-height:1.13;}
+  .fpc-sub{font-size:.7rem;margin-bottom:10px;line-height:1.48;} /* tighter, so the CTA sits higher */
   .fpc-btn{padding:6px 5px 6px 13px;font-size:.64rem;gap:7px;}
   .fpc-btn .fpc-arrow{width:17px;height:17px;font-size:.66rem;}
-  .fresh-card{width:172px;border-radius:20px;scroll-snap-align:start;}
-  .fresh-card-img{height:150px;}
-  .fresh-card-body{padding:13px 14px 14px;}
+  .fresh-card{width:178px;border-radius:16px;scroll-snap-align:start;
+    box-shadow:0 1px 2px rgba(30,33,31,.03),0 6px 16px rgba(30,33,31,.05);}
+  .fresh-card-img{height:164px;} /* ~66% of total card height, image-forward like the reference */
+  .fresh-card-body{padding:11px 13px 12px;}
   .fresh-card-name{font-size:.94rem;}
-  .fresh-card-tagline{font-size:.66rem;margin-bottom:11px;}
+  .fresh-card-tagline{font-size:.66rem;margin-bottom:9px;}
   .fresh-card-badges{top:8px;left:8px;}
   .fc-just,.fc-special,.fc-limited,.fc-discount{height:20px;font-size:.52rem;padding:4px 9px;}
   .fresh-card-pill{height:20px;font-size:.56rem;padding:4px 9px;}
