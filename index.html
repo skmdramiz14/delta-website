@@ -65,23 +65,23 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 .nav-cat:active{transform:scale(.96);}
 .nav-cat-icon{width:56px;height:56px;border-radius:50%;background:#fff;border:none;display:flex;align-items:center;justify-content:center;font-size:1.45rem;transition:all .2s;box-shadow:0 4px 12px rgba(0,0,0,.02);}
 .nav-cat-icon svg{width:26px;height:26px;overflow:visible;}
-.nav-cat-icon svg .ic-stroke{fill:none;stroke:#1A1A1A;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}
+.nav-cat-icon svg .ic-stroke{fill:none;stroke:#000;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}
 .nav-cat-icon svg .ic-gold{fill:var(--gold-muted);stroke:none;}
 .nav-cat-icon svg .ic-gold-line{fill:none;stroke:var(--gold-muted);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}
 .nav-cat-label{font-size:.56rem;font-weight:500;color:#202020;text-align:center;line-height:1.2;white-space:nowrap;}
 .nav-cat:hover .nav-cat-icon{box-shadow:0 4px 12px rgba(0,0,0,.06);}
-.nav-cat.active .nav-cat-icon{background:var(--navy);border:2px solid var(--orange);box-shadow:0 4px 10px rgba(0,0,0,.04);}
+.nav-cat.active .nav-cat-icon{background:var(--navy);border:2px solid #C7A15A;box-shadow:0 4px 10px rgba(0,0,0,.04);}
 .nav-cat.active .nav-cat-icon svg .ic-stroke{stroke:#fff;}
 .nav-cat.active .nav-cat-label{color:var(--navy);font-weight:700;}
 .nav-cat.nav-cat-all{gap:11px;}
-.nav-cat.nav-cat-all .nav-cat-icon{width:56px;height:53px;border-radius:16px;border:2px solid var(--orange);position:relative;padding-bottom:6px;}
-.nav-cat.nav-cat-all .nav-cat-icon::after{content:'';position:absolute;bottom:6px;left:50%;transform:translateX(-50%);width:18px;height:2.5px;border-radius:2.5px;background:var(--orange);}
-.nav-cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:3px;width:16px;height:16px;}
-.nav-cat-grid i{background:rgba(255,255,255,.5);border-radius:2px;display:block;}
+.nav-cat.nav-cat-all .nav-cat-icon{width:56px;height:53px;border-radius:16px;border:2px solid #C7A15A;position:relative;padding-bottom:6px;}
+.nav-cat.nav-cat-all .nav-cat-icon::after{content:'';position:absolute;bottom:6px;left:50%;transform:translateX(-50%);width:14px;height:2px;border-radius:2px;background:#C7A15A;}
+.nav-cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;width:18px;height:18px;}
+.nav-cat-grid i{background:#C7A15A;border-radius:2px;display:block;}
 .nav-cat.nav-cat-all.active .nav-cat-icon{background:var(--navy);}
-.nav-cat.nav-cat-all.active .nav-cat-grid i{background:#fff;}
+.nav-cat.nav-cat-all.active .nav-cat-grid i{background:#C7A15A;}
 .nav-cat.nav-cat-all:not(.active) .nav-cat-icon{background:var(--navy);}
-.nav-cat.nav-cat-all:not(.active) .nav-cat-grid i{background:rgba(255,255,255,.6);}
+.nav-cat.nav-cat-all:not(.active) .nav-cat-grid i{background:#C7A15A;}
 
 /* ── LOCATION / DELIVERY INFO PILL — merged into a single elegant pill ── */
 .loc-deliver-strip{display:flex;align-items:center;gap:0;background:#FEFCF7;border-radius:28px;height:50px;margin:24px 5% 0;padding:0 8px;font-size:.72rem;color:#333;box-shadow:0 6px 18px rgba(0,0,0,.04);}
@@ -1850,7 +1850,7 @@ img{max-width:100%;height:auto;}
     <div class="nav-cat" onclick="filterCat('farmtools',this)"><div class="nav-cat-icon"><svg viewBox="0 0 24 24"><path class="ic-stroke" d="M3 15h4l2-4h6l3 4h3"/><path class="ic-stroke" d="M9 11V7h3"/><circle class="ic-gold" cx="8" cy="17" r="2.3"/><circle class="ic-stroke" cx="17" cy="17" r="1.6"/></svg></div><div class="nav-cat-label">কৃষি সরঞ্জাম</div></div>
     <div class="nav-cat" onclick="filterCat('livestock',this)"><div class="nav-cat-icon"><svg viewBox="0 0 24 24"><path class="ic-stroke" d="M6 10a6 5 0 0 1 12 0v3a5 5 0 0 1-5 5h-2a5 5 0 0 1-5-5v-3Z"/><path class="ic-stroke" d="M7 9 5 6.5M17 9l2-2.5"/><ellipse class="ic-gold" cx="12" cy="15" rx="3" ry="2"/></svg></div><div class="nav-cat-label">পশুপালন</div></div>
     <div class="nav-cat" onclick="filterCat('medicine',this)"><div class="nav-cat-icon"><svg viewBox="0 0 24 24"><rect class="ic-stroke" x="4" y="9" width="16" height="7" rx="3.5"/><path class="ic-gold" d="M12 9h4.5A3.5 3.5 0 0 1 20 12.5 3.5 3.5 0 0 1 16.5 16H12V9Z"/></svg></div><div class="nav-cat-label">ওষুধ</div></div>
-    <div class="nav-cat" onclick="filterCat('clothing',this)"><div class="nav-cat-icon"><svg viewBox="0 0 24 24"><path class="ic-stroke" d="M8 4 4 7l2 3 2-1.5V20h8V8.5L18 10l2-3-4-3-2 1.5h-4L8 4Z"/><path class="ic-gold-line" d="M9.5 4.5a2.5 2.5 0 0 0 5 0"/></svg></div><div class="nav-cat-label">পোশাক</div></div>
+    <div class="nav-cat" onclick="filterCat('clothing',this)"><div class="nav-cat-icon"><svg viewBox="0 0 24 24"><path class="ic-stroke" d="M8 4 4 7l2 3 2-1.5V20h8V8.5L18 10l2-3-4-3-2 1.5h-4L8 4Z"/><path class="ic-gold-line" d="M9.5 4.5a2.5 2.5 0 0 0 5 0"/></svg></div><div class="nav-cat-label">ফ্যাশন</div></div>
     <div class="nav-cat" onclick="filterCat('electronics',this)"><div class="nav-cat-icon"><svg viewBox="0 0 24 24"><rect class="ic-stroke" x="7" y="3" width="10" height="18" rx="2"/><circle class="ic-gold" cx="12" cy="17.5" r="1.2"/></svg></div><div class="nav-cat-label">ইলেকট্রনিক্স</div></div>
     <div class="nav-cat" onclick="filterCat('home',this)"><div class="nav-cat-icon"><svg viewBox="0 0 24 24"><path class="ic-stroke" d="M4 11 12 4l8 7"/><path class="ic-stroke" d="M6 10v10h12V10"/><rect class="ic-gold" x="10" y="14" width="4" height="6"/></svg></div><div class="nav-cat-label">বাড়ি</div></div>
     <div class="nav-cat" onclick="filterCat('construction',this)"><div class="nav-cat-icon"><svg viewBox="0 0 24 24"><path class="ic-stroke" d="M4 15a8 8 0 0 1 16 0Z"/><rect class="ic-stroke" x="3" y="15" width="18" height="2.4" rx="1.2"/><rect class="ic-gold" x="11" y="6" width="2" height="4"/></svg></div><div class="nav-cat-label">নির্মাণ</div></div>
