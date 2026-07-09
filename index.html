@@ -749,7 +749,7 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 .fresh-card-pill{font-size:.6rem;font-weight:800;padding:4px 10px;border-radius:999px;white-space:nowrap;height:22px;display:inline-flex;align-items:center;}
 .fc-pill-fresh{background:var(--green2);color:var(--green);}
 .fc-pill-special{background:var(--orange-light);color:var(--orange-dark,var(--orange));}
-.fresh-card-plus{width:30px;height:30px;border-radius:50%;background:var(--navy);color:#fff;border:none;font-weight:900;font-size:.92rem;cursor:pointer;flex-shrink:0;line-height:1;transition:all .18s;box-shadow:var(--shadow-sm);display:flex;align-items:center;justify-content:center;}
+.fresh-card-plus{width:28px;height:28px;border-radius:50%;background:var(--navy);color:#fff;border:none;font-weight:900;font-size:.86rem;cursor:pointer;flex-shrink:0;line-height:1;transition:all .18s;box-shadow:var(--shadow-sm);display:flex;align-items:center;justify-content:center;}
 .fresh-card-plus:hover{background:var(--orange);}
 .fresh-card-plus:active{transform:scale(.9);}
 
@@ -1905,13 +1905,7 @@ img{max-width:100%;height:auto;}
 
 <!-- FRESH TODAY FULL CARDS — relocated here to match reference layout -->
 <section class="section" id="freshTodaySection" style="display:none;padding-top:28px;padding-bottom:24px;">
-  <div class="section-head">
-    <div>
-      <div class="section-label"><span class="lang-bn">আজকের তাজা</span><span class="lang-en">Fresh Today</span></div>
-      <div class="section-title">🌿 <span class="lang-bn">তাজা পণ্য</span><span class="lang-en">Fresh Today</span> <span id="freshTodayDate" style="font-size:.75rem;font-weight:400;color:var(--muted);font-family:'DM Sans',sans-serif;"></span></div>
-    </div>
-    <button class="view-all" onclick="filterCat('farm',null);document.getElementById('productsSection').scrollIntoView({behavior:'smooth'})"><span class="lang-bn">সব দেখুন →</span><span class="lang-en">View All →</span></button>
-  </div>
+  <span id="freshTodayDate" style="display:none;"></span>
   <div class="fresh-cards-scroll">
     <div class="fresh-promo-card" onclick="filterCat('farm',null);document.getElementById('productsSection').scrollIntoView({behavior:'smooth'})">
       <div class="fpc-decor"><svg viewBox="0 0 120 150" fill="none"><path d="M95 8C80 30 78 55 90 78" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/><ellipse cx="88" cy="20" rx="14" ry="7" fill="#fff" transform="rotate(-35 88 20)"/><ellipse cx="76" cy="38" rx="15" ry="7.5" fill="#fff" transform="rotate(-15 76 38)"/><ellipse cx="80" cy="58" rx="14" ry="7" fill="#fff" transform="rotate(20 80 58)"/><ellipse cx="92" cy="74" rx="12" ry="6" fill="#fff" transform="rotate(45 92 74)"/></svg></div>
