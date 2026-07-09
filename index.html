@@ -716,16 +716,16 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 .footer-badge{background:rgba(255,255,255,.08);color:rgba(255,255,255,.6);font-size:.72rem;padding:4px 12px;border-radius:20px;border:1px solid rgba(255,255,255,.12);}
 
 /* ── RESPONSIVE UPDATES ── */
-.fresh-cards-scroll{display:flex;gap:22px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none;}
+.fresh-cards-scroll{display:flex;gap:30px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none;}
 .fresh-cards-scroll::-webkit-scrollbar{display:none;}
 
 /* Static promo card — first item in the scroll (wider than product cards, matching reference) */
-.fresh-promo-card{flex-shrink:0;width:206px;background:
+.fresh-promo-card{flex-shrink:0;width:188px;background:
     radial-gradient(160% 120% at 82% -10%,rgba(199,161,90,.16) 0%,rgba(199,161,90,0) 38%),
     radial-gradient(120% 90% at 20% 100%,#0c2a1f 0%,rgba(12,42,31,0) 55%),
     linear-gradient(165deg,#173d2d 0%,#0f2c20 48%,#0a1f17 100%);
-  border-radius:24px;padding:28px 24px 24px;position:relative;overflow:hidden;cursor:pointer;
-  display:flex;flex-direction:column;justify-content:flex-end;min-height:286px;
+  border-radius:22px;padding:24px 20px 20px;position:relative;overflow:hidden;cursor:pointer;
+  display:flex;flex-direction:column;justify-content:flex-end;min-height:260px;
   box-shadow:0 14px 34px rgba(10,30,22,.28),0 2px 8px rgba(10,30,22,.18);transition:all .25s cubic-bezier(.2,.7,.3,1);}
 .fresh-promo-card:hover{transform:translateY(-5px);box-shadow:0 20px 44px rgba(10,30,22,.34),0 4px 12px rgba(10,30,22,.2);}
 .fresh-promo-card:active{transform:scale(.98);}
@@ -737,26 +737,26 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
   background:
     radial-gradient(90% 60% at 50% 0%,rgba(255,255,255,.10) 0%,rgba(255,255,255,0) 55%),
     radial-gradient(140% 100% at 50% 100%,transparent 38%,rgba(0,0,0,.38) 100%);}
-.fpc-decor{position:absolute;top:-8px;right:-14px;width:172px;height:230px;opacity:.9;pointer-events:none;z-index:0;}
+.fpc-decor{position:absolute;top:-8px;right:-12px;width:156px;height:208px;opacity:.9;pointer-events:none;z-index:0;}
 .fpc-eyebrow{position:relative;display:inline-flex;align-items:center;gap:6px;color:var(--orange2);
-  font-size:.62rem;font-weight:600;letter-spacing:1.6px;text-transform:uppercase;margin-bottom:14px;opacity:.85;}
-.fpc-title{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;letter-spacing:.2px;
-  color:#fff;line-height:1.14;margin-bottom:9px;position:relative;text-shadow:0 2px 14px rgba(0,0,0,.25);}
-.fpc-sub{font-size:.76rem;color:rgba(255,255,255,.66);line-height:1.55;margin-bottom:22px;position:relative;font-weight:300;}
+  font-size:.6rem;font-weight:600;letter-spacing:1.6px;text-transform:uppercase;margin-bottom:15px;opacity:.85;}
+.fpc-title{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;letter-spacing:.2px;
+  color:#fff;line-height:1.16;margin-bottom:10px;position:relative;text-shadow:0 2px 14px rgba(0,0,0,.25);}
+.fpc-sub{font-size:.74rem;color:rgba(255,255,255,.66);line-height:1.55;margin-bottom:20px;position:relative;font-weight:300;}
 .fpc-btn{background:transparent;border:1px solid rgba(199,161,90,.65);color:var(--orange2);
-  padding:9px 8px 9px 18px;border-radius:999px;font-size:.72rem;font-weight:600;letter-spacing:.2px;cursor:pointer;
-  align-self:flex-start;transition:all .2s;position:relative;display:inline-flex;align-items:center;gap:10px;}
-.fpc-btn .fpc-arrow{width:22px;height:22px;border-radius:50%;background:rgba(199,161,90,.16);display:inline-flex;
-  align-items:center;justify-content:center;font-size:.8rem;transition:all .2s;flex-shrink:0;}
+  padding:7px 6px 7px 15px;border-radius:999px;font-size:.68rem;font-weight:600;letter-spacing:.2px;cursor:pointer;
+  align-self:flex-start;transition:all .2s;position:relative;display:inline-flex;align-items:center;gap:8px;}
+.fpc-btn .fpc-arrow{width:19px;height:19px;border-radius:50%;background:rgba(199,161,90,.16);display:inline-flex;
+  align-items:center;justify-content:center;font-size:.72rem;transition:all .2s;flex-shrink:0;}
 .fpc-btn:hover{border-color:var(--orange2);background:rgba(255,255,255,.05);}
 .fpc-btn:hover .fpc-arrow{background:var(--orange);color:#1a2010;transform:translateX(2px);}
 .fpc-btn:active{transform:scale(.96);}
 
 /* Product card — near-square image, matching reference proportions */
-.fresh-card{flex-shrink:0;width:176px;background:var(--surface);border:1px solid rgba(0,0,0,.04);border-radius:24px;overflow:hidden;cursor:pointer;transition:all .25s cubic-bezier(.2,.7,.3,1);box-shadow:0 1px 3px rgba(30,33,31,.04),0 10px 24px rgba(30,33,31,.06);}
+.fresh-card{flex-shrink:0;width:163px;background:var(--surface);border:1px solid rgba(0,0,0,.04);border-radius:22px;overflow:hidden;cursor:pointer;transition:all .25s cubic-bezier(.2,.7,.3,1);box-shadow:0 1px 3px rgba(30,33,31,.04),0 10px 24px rgba(30,33,31,.06);}
 .fresh-card:hover{transform:translateY(-5px);box-shadow:0 4px 10px rgba(30,33,31,.05),0 18px 36px rgba(30,33,31,.1);}
 .fresh-card:active{transform:scale(.98);}
-.fresh-card-img{height:176px;background:linear-gradient(160deg,var(--sand),#ece2d0);display:flex;align-items:center;justify-content:center;font-size:2.5rem;position:relative;overflow:hidden;}
+.fresh-card-img{height:170px;background:linear-gradient(160deg,var(--sand),#ece2d0);display:flex;align-items:center;justify-content:center;font-size:2.5rem;position:relative;overflow:hidden;}
 .fresh-card-img img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;filter:saturate(1.08) contrast(1.04) brightness(1.01);transition:transform .4s ease;}
 .fresh-card:hover .fresh-card-img img{transform:scale(1.045);}
 /* soft editorial vignette so every photo — whatever the seller uploaded — reads consistently lit */
@@ -1932,7 +1932,7 @@ img{max-width:100%;height:auto;}
 </div>
 
 <!-- FRESH TODAY FULL CARDS — relocated here to match reference layout -->
-<section class="section" id="freshTodaySection" style="display:none;padding-top:28px;padding-bottom:24px;">
+<section class="section" id="freshTodaySection" style="display:none;padding-top:38px;padding-bottom:24px;">
   <span id="freshTodayDate" style="display:none;"></span>
   <div class="fresh-cards-scroll">
     <div class="fresh-promo-card" onclick="filterCat('farm',null);document.getElementById('productsSection').scrollIntoView({behavior:'smooth'})">
