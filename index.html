@@ -720,9 +720,10 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 .fresh-cards-scroll::-webkit-scrollbar{display:none;}
 
 /* Static promo card — first item in the scroll (wider than product cards, matching reference) */
-.fresh-promo-card{flex-shrink:0;width:196px;background:linear-gradient(165deg,var(--navy),var(--navy2));border-radius:22px;padding:24px;position:relative;overflow:hidden;cursor:pointer;display:flex;flex-direction:column;justify-content:flex-end;min-height:278px;box-shadow:var(--shadow-card);transition:all .2s;}
+.fresh-promo-card{flex-shrink:0;width:196px;background:linear-gradient(165deg,var(--navy),var(--navy2));border-radius:22px;padding:26px;position:relative;overflow:hidden;cursor:pointer;display:flex;flex-direction:column;justify-content:flex-end;min-height:278px;box-shadow:var(--shadow-card);transition:all .2s;}
 .fresh-promo-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);}
 .fresh-promo-card:active{transform:scale(.98);}
+.fresh-promo-card::before{content:'';position:absolute;top:-40%;right:-30%;width:70%;height:70%;background:radial-gradient(circle,rgba(255,255,255,.08) 0%,transparent 70%);pointer-events:none;}
 .fpc-decor{position:absolute;top:0;right:0;width:120px;height:150px;opacity:.1;pointer-events:none;}
 .fpc-title{font-family:'Playfair Display',serif;font-size:1.32rem;font-weight:700;letter-spacing:.3px;color:#fff;line-height:1.22;margin-bottom:10px;}
 .fpc-sub{font-size:.75rem;color:rgba(255,255,255,.72);line-height:1.5;margin-bottom:20px;}
@@ -735,19 +736,20 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 .fresh-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);}
 .fresh-card:active{transform:scale(.98);}
 .fresh-card-img{height:168px;background:var(--sand);display:flex;align-items:center;justify-content:center;font-size:2.5rem;position:relative;overflow:hidden;}
-.fresh-card-img img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;}
-.fresh-card-badges{position:absolute;top:8px;left:8px;display:flex;gap:4px;flex-wrap:wrap;}
-.fc-just{background:var(--navy);color:#fff;font-size:.56rem;font-weight:800;padding:3px 9px;border-radius:999px;text-transform:uppercase;height:22px;display:inline-flex;align-items:center;}
-.fc-special{background:var(--orange);color:#1a2010;font-size:.56rem;font-weight:800;padding:3px 9px;border-radius:999px;height:22px;display:inline-flex;align-items:center;}
-.fc-limited{background:var(--red);color:#fff;font-size:.56rem;font-weight:800;padding:3px 9px;border-radius:999px;height:22px;display:inline-flex;align-items:center;}
+.fresh-card-img img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;filter:saturate(1.06) contrast(1.03);}
+.fresh-card-img::after{content:'';position:absolute;inset:0;box-shadow:inset 0 -24px 20px -20px rgba(0,0,0,.12);pointer-events:none;}
+.fresh-card-badges{position:absolute;top:8px;left:8px;display:flex;gap:4px;flex-wrap:wrap;z-index:1;}
+.fc-just{background:var(--navy);color:#fff;font-size:.56rem;font-weight:800;padding:4px 10px;border-radius:999px;text-transform:uppercase;height:22px;display:inline-flex;align-items:center;}
+.fc-special{background:var(--orange);color:#1a2010;font-size:.56rem;font-weight:800;padding:4px 10px;border-radius:999px;height:22px;display:inline-flex;align-items:center;}
+.fc-limited{background:var(--red);color:#fff;font-size:.56rem;font-weight:800;padding:4px 10px;border-radius:999px;height:22px;display:inline-flex;align-items:center;}
 .fresh-card-body{padding:16px;}
 .fresh-card-name{font-size:1.02rem;font-weight:700;letter-spacing:.2px;color:var(--charcoal);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .fresh-card-tagline{font-size:.72rem;color:var(--muted);margin-bottom:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .fresh-card-foot{display:flex;align-items:center;justify-content:space-between;gap:6px;}
-.fresh-card-pill{font-size:.6rem;font-weight:800;padding:3px 10px;border-radius:999px;white-space:nowrap;height:22px;display:inline-flex;align-items:center;}
+.fresh-card-pill{font-size:.6rem;font-weight:800;padding:4px 10px;border-radius:999px;white-space:nowrap;height:22px;display:inline-flex;align-items:center;}
 .fc-pill-fresh{background:var(--green2);color:var(--green);}
 .fc-pill-special{background:var(--orange-light);color:var(--orange-dark,var(--orange));}
-.fresh-card-plus{width:32px;height:32px;border-radius:50%;background:var(--navy);color:#fff;border:none;font-weight:900;font-size:1rem;cursor:pointer;flex-shrink:0;line-height:1;transition:all .18s;box-shadow:var(--shadow-sm);display:flex;align-items:center;justify-content:center;}
+.fresh-card-plus{width:30px;height:30px;border-radius:50%;background:var(--navy);color:#fff;border:none;font-weight:900;font-size:.92rem;cursor:pointer;flex-shrink:0;line-height:1;transition:all .18s;box-shadow:var(--shadow-sm);display:flex;align-items:center;justify-content:center;}
 .fresh-card-plus:hover{background:var(--orange);}
 .fresh-card-plus:active{transform:scale(.9);}
 
