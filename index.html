@@ -32,7 +32,7 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 #nav{background:var(--cream);padding:0 5%;position:sticky;top:0;z-index:1000;}
 .nav-top{display:flex;align-items:center;gap:12px;padding:16px 0;min-height:76px;}
 .logo-block{display:flex;flex-direction:column;justify-content:center;cursor:pointer;flex-shrink:0;}
-.logo{font-family:'Playfair Display',serif;font-size:1.7rem;font-weight:900;color:var(--charcoal);cursor:pointer;white-space:nowrap;letter-spacing:1px;line-height:1.15;}
+.logo{font-family:'Playfair Display',serif;font-size:1.85rem;font-weight:900;color:var(--charcoal);cursor:pointer;white-space:nowrap;letter-spacing:1px;line-height:1.15;}
 .logo em{color:var(--orange);font-style:normal;}
 .logo-tagline{font-size:.6rem;color:var(--muted);letter-spacing:.5px;white-space:nowrap;}
 .nav-search-wrap{flex:1;max-width:460px;}
@@ -42,7 +42,7 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 .nav-search input::placeholder{color:#8C8C8C;opacity:1;}
 .nav-search button{background:var(--orange);border:none;padding:10px 16px;cursor:pointer;color:#fff;font-size:.95rem;border-radius:0 8px 8px 0;transition:background .2s;}
 .nav-search button:hover{background:var(--orange2);}
-.nav-actions{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.nav-actions{display:flex;align-items:center;gap:12px;flex-shrink:0;}
 .btn-nav{background:transparent;border:1px solid var(--border);color:var(--charcoal);padding:8px 15px;border-radius:16px;cursor:pointer;font-size:.82rem;font-weight:500;transition:all .2s;white-space:nowrap;}
 .btn-nav:hover{border-color:var(--orange);color:var(--orange);}
 .btn-nav.filled{background:var(--orange);border-color:var(--orange);color:#fff;font-weight:600;}
@@ -52,7 +52,7 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 .cart-btn:active{transform:scale(.97);}
 .cart-btn svg{width:20px;height:20px;flex-shrink:0;}
 .cart-badge{position:absolute;top:-7px;right:-7px;background:var(--orange);color:#1a2010;font-size:.62rem;font-weight:800;width:18px;height:18px;border-radius:50%;display:none;align-items:center;justify-content:center;border:2px solid var(--cream);}
-.user-chip{background:#fff;border:1px solid var(--border);color:var(--navy);padding:0 16px;height:56px;border-radius:20px;cursor:pointer;font-size:.82rem;display:flex;align-items:center;gap:6px;font-weight:600;transition:transform .18s;box-shadow:var(--shadow-card);}
+.user-chip{background:#fff;border:1px solid var(--border);color:var(--navy);padding:0 16px;height:56px;border-radius:20px;cursor:pointer;font-size:.82rem;display:flex;align-items:center;gap:6px;font-weight:600;transition:transform .18s;box-shadow:0 6px 18px rgba(0,0,0,.04);}
 .user-chip:active{transform:scale(.97);}
 .hamburger-btn{background:#fff;border:1px solid var(--border);color:var(--charcoal);width:56px;height:56px;border-radius:20px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .18s;box-shadow:var(--shadow-card);}
 .hamburger-btn:hover{border-color:var(--orange);color:var(--orange);}
@@ -644,9 +644,9 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 .voice-overlay.active{display:flex;}
 .voice-circle{width:100px;height:100px;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center;font-size:2.5rem;animation:voicePulse 1.2s infinite;}
 @keyframes voicePulse{0%,100%{box-shadow:0 0 0 0 rgba(201,162,39,.4);}70%{box-shadow:0 0 0 20px rgba(201,162,39,0);}}
-.nav-loc-btn{color:var(--charcoal);font-size:.78rem;white-space:nowrap;cursor:pointer;padding:0 18px;height:54px;border-radius:20px;background:#fff;border:none;display:flex;align-items:center;gap:7px;transition:all .18s;flex-shrink:0;box-shadow:0 6px 20px rgba(0,0,0,.045);}
-.nav-loc-btn .lds-arrow{font-size:.85rem;opacity:.7;color:var(--charcoal);display:flex;align-items:center;}
-@media(min-width:769px){.nav-loc-btn{min-width:224px;}}
+.nav-loc-btn{color:var(--charcoal);font-size:.78rem;white-space:nowrap;cursor:pointer;padding:0 18px;height:54px;border-radius:16px;background:#fff;border:none;display:flex;align-items:center;gap:7px;transition:all .18s;flex-shrink:0;box-shadow:0 8px 24px rgba(0,0,0,.05);}
+.nav-loc-btn .lds-arrow{font-size:.95rem;opacity:.7;color:var(--charcoal);display:flex;align-items:center;line-height:1;}
+@media(min-width:769px){.nav-loc-btn{min-width:238px;}}
 .nav-loc-btn span:first-of-type{color:var(--charcoal);font-weight:600;}
 .nav-loc-btn:hover{background:#fff;}
 .nav-loc-btn:active{transform:scale(.97);}
@@ -1040,7 +1040,7 @@ body.lang-bn .lang-en{display:none!important;}
 
   /* Nav actions — ডানে push করা */
   .nav-actions .btn-nav{display:none;}
-  .nav-actions{gap:6px;margin-left:auto;}
+  .nav-actions{gap:10px;margin-left:auto;}
 
   /* Location button — compact, দেখাবে */
   .nav-loc-btn{font-size:.68rem;padding:0 10px;height:50px;display:flex;}
@@ -1811,7 +1811,7 @@ img{max-width:100%;height:auto;}
       </div>
     </div>
     <div class="nav-loc-btn" id="navLocBtn" onclick="openPinModal()">
-      <svg viewBox="0 0 24 24" width="13" height="13" style="flex-shrink:0"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Z" fill="#B99A5E"/><circle cx="12" cy="9" r="2.6" fill="#fff"/></svg> <span>Manteswar</span> <span class="lds-arrow">▾</span>
+      <svg viewBox="0 0 24 24" width="12" height="12" style="flex-shrink:0"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Z" fill="#C7A15A"/><circle cx="12" cy="9" r="2.6" fill="#fff"/></svg> <span>Manteswar</span> <span class="lds-arrow">▾</span>
     </div>
     <div class="nav-actions">
       <div class="lang-toggle">
@@ -1819,7 +1819,7 @@ img{max-width:100%;height:auto;}
         <button class="lang-btn" id="langEn" onclick="setLang('en')">ENG</button>
       </div>
       <button class="cart-btn" onclick="openCart()">
-        <svg viewBox="0 0 24 24" fill="none"><path d="M3 4h2l2.2 11.2a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.6L21 8H6.2" stroke="#B99A5E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="10" cy="20" r="1.3" fill="#B99A5E"/><circle cx="17" cy="20" r="1.3" fill="#B99A5E"/></svg> <span class="cart-btn-label">কার্ট</span>
+        <svg viewBox="0 0 24 24" fill="none"><path d="M3 4h2l2.2 11.2a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.6L21 8H6.2" stroke="#C7A15A" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="10" cy="20" r="1.2" fill="#C7A15A"/><circle cx="17" cy="20" r="1.2" fill="#C7A15A"/></svg> <span class="cart-btn-label">কার্ট</span>
         <span class="cart-badge" id="cartBadge">0</span>
       </button>
       <div class="user-chip" id="userChip" onclick="handleUserBtn()">👤 <span id="userLabel" class="user-chip-label">লগইন</span></div>
