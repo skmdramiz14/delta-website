@@ -12,7 +12,7 @@
   --navy:#10392D;--navy2:#1a4a3a;--navy3:#0E1E18;
   --orange:#C7A15A;--orange2:#d6bd8a;--orange-dark:#b8925a;--orange-light:#F3EFE6;
   --gold-search:#C7A15A;--gold-muted:#B99A5E;
-  --cream:#F8F5EF;--sand:#F3EFE6;--white:#fff;
+  --cream:#F7F2E9;--sand:#F3EFE6;--white:#fff;
   --border:#F0ECE5;--divider:rgba(0,0,0,.07);--muted:#8A8A8A;--charcoal:#1A1A1A;
   --green:#1a8a4a;--green2:#e8f7ef;--red:#c0392b;--red2:#ffeaea;
   --shadow-sm:0 3px 12px rgba(30,33,31,.04);
@@ -53,7 +53,7 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 .cart-btn:active{transform:scale(.97);}
 .cart-btn svg{width:20px;height:20px;flex-shrink:0;}
 .cart-badge{position:absolute;top:-7px;right:-7px;background:var(--orange);color:#1a2010;font-size:.62rem;font-weight:800;width:18px;height:18px;border-radius:50%;display:none;align-items:center;justify-content:center;border:2px solid var(--cream);}
-.user-chip{background:#fff;border:1px solid var(--border);color:var(--navy);padding:0 16px;height:56px;border-radius:17px;cursor:pointer;font-size:.82rem;display:flex;align-items:center;justify-content:center;gap:6px;font-weight:600;transition:transform .18s;box-shadow:0 6px 18px rgba(0,0,0,.04);}
+.user-chip{background:#fff;border:1px solid var(--border);color:var(--navy);padding:0 16px;height:56px;border-radius:17px;cursor:pointer;font-size:.82rem;display:flex;align-items:center;justify-content:center;gap:6px;font-weight:600;transition:transform .18s;box-shadow:0 8px 24px rgba(0,0,0,.04);}
 .user-chip:active{transform:scale(.97);}
 .hamburger-btn{background:#fff;border:1px solid var(--border);color:var(--charcoal);width:56px;height:56px;border-radius:17px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .18s;box-shadow:0 8px 24px rgba(0,0,0,.05);}
 .hamburger-btn:hover{border-color:var(--orange);color:var(--orange);}
@@ -645,9 +645,9 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 .voice-overlay.active{display:flex;}
 .voice-circle{width:100px;height:100px;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center;font-size:2.5rem;animation:voicePulse 1.2s infinite;}
 @keyframes voicePulse{0%,100%{box-shadow:0 0 0 0 rgba(201,162,39,.4);}70%{box-shadow:0 0 0 20px rgba(201,162,39,0);}}
-.nav-loc-btn{color:var(--charcoal);font-size:.78rem;white-space:nowrap;cursor:pointer;padding:0 22px;height:50px;border-radius:13px;background:#fff;border:none;display:flex;align-items:center;gap:7px;transition:all .18s;flex-shrink:0;box-shadow:0 8px 24px rgba(0,0,0,.05);}
+.nav-loc-btn{color:var(--charcoal);font-size:.78rem;white-space:nowrap;cursor:pointer;padding:0 22px;height:47px;border-radius:11px;background:#fff;border:none;display:flex;align-items:center;gap:7px;transition:all .18s;flex-shrink:0;box-shadow:0 8px 24px rgba(0,0,0,.04);}
 .nav-loc-btn .lds-arrow{font-size:1.09rem;opacity:.7;color:var(--charcoal);display:flex;align-items:center;line-height:1;}
-@media(min-width:769px){.nav-loc-btn{min-width:248px;}}
+@media(min-width:769px){.nav-loc-btn{min-width:256px;}}
 .nav-loc-btn span:first-of-type{color:var(--charcoal);font-weight:600;font-size:.72rem;}
 .nav-loc-btn:hover{background:#fff;}
 .nav-loc-btn:active{transform:scale(.97);}
@@ -1820,7 +1820,7 @@ img{max-width:100%;height:auto;}
         <button class="lang-btn" id="langEn" onclick="setLang('en')">ENG</button>
       </div>
       <button class="cart-btn" onclick="openCart()">
-        <svg viewBox="0 0 24 24" fill="none"><path d="M3 4h2l2.2 11.2a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.6L21 8H6.2" stroke="#C7A15A" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="10" cy="20" r="1.2" fill="#C7A15A"/><circle cx="17" cy="20" r="1.2" fill="#C7A15A"/></svg> <span class="cart-btn-label">কার্ট</span>
+        <svg viewBox="0 0 24 24" fill="none"><path d="M3 4h2l2.2 11.2a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.6L21 8H6.2" stroke="#C7A15A" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/><circle cx="10" cy="20" r="1.1" fill="#C7A15A"/><circle cx="17" cy="20" r="1.1" fill="#C7A15A"/></svg> <span class="cart-btn-label">কার্ট</span>
         <span class="cart-badge" id="cartBadge">0</span>
       </button>
       <div class="user-chip" id="userChip" onclick="handleUserBtn()">👤 <span id="userLabel" class="user-chip-label">লগইন</span></div>
