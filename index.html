@@ -9,16 +9,17 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 :root{
-  --navy:#123B2E;--navy2:#1e4a38;--navy3:#0E1E18;
-  --orange:#C8A25A;--orange2:#d6bd8a;--orange-dark:#b8925a;--orange-light:#F3EFE6;
-  --cream:#F8F3EA;--sand:#F3EFE6;--white:#fff;
-  --border:#ECE6DC;--muted:#4E534F;--charcoal:#111111;
+  --navy:#10392D;--navy2:#1a4a3a;--navy3:#0E1E18;
+  --orange:#C7A15A;--orange2:#d6bd8a;--orange-dark:#b8925a;--orange-light:#F3EFE6;
+  --gold-search:#D0A95C;
+  --cream:#FAF8F3;--sand:#F3EFE6;--white:#fff;
+  --border:#F0ECE5;--divider:#ECECEC;--muted:#8A8A8A;--charcoal:#1A1A1A;
   --green:#1a8a4a;--green2:#e8f7ef;--red:#c0392b;--red2:#ffeaea;
   --shadow-sm:0 3px 12px rgba(30,33,31,.04);
   --shadow-md:0 10px 32px rgba(30,33,31,.05);
   --shadow-lg:0 24px 56px rgba(30,33,31,.08);
-  --shadow-card:0 14px 38px rgba(0,0,0,.06);
-  --shadow-cat:0 5px 16px rgba(0,0,0,.045);
+  --shadow-card:0 10px 30px rgba(0,0,0,.06);
+  --shadow-cat:0 6px 20px rgba(0,0,0,.05);
 }
 html{scroll-behavior:smooth;}
 body{font-family:'Poppins','Noto Sans Bengali','Hind Siliguri',sans-serif;background:var(--cream);color:var(--charcoal);overflow-x:hidden;}
@@ -38,7 +39,7 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 .nav-search{display:flex;background:#fff;border:1px solid var(--border);border-radius:8px;transition:all .2s;position:relative;overflow:visible;}
 .nav-search:focus-within{border-color:var(--orange);}
 .nav-search input{flex:1;border:none;background:transparent;color:var(--charcoal);padding:10px 14px;font-size:.875rem;outline:none;border-radius:8px 0 0 8px;}
-.nav-search input::placeholder{color:var(--muted);opacity:.7;}
+.nav-search input::placeholder{color:#8C8C8C;opacity:1;}
 .nav-search button{background:var(--orange);border:none;padding:10px 16px;cursor:pointer;color:#fff;font-size:.95rem;border-radius:0 8px 8px 0;transition:background .2s;}
 .nav-search button:hover{background:var(--orange2);}
 .nav-actions{display:flex;align-items:center;gap:8px;flex-shrink:0;}
@@ -46,13 +47,14 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 .btn-nav:hover{border-color:var(--orange);color:var(--orange);}
 .btn-nav.filled{background:var(--orange);border-color:var(--orange);color:#fff;font-weight:600;}
 .btn-nav.filled:hover{background:var(--orange2);}
-.cart-btn{position:relative;background:var(--navy);border:none;color:#fff;padding:0 16px;height:56px;border-radius:18px;cursor:pointer;font-size:.875rem;font-weight:600;display:flex;align-items:center;gap:7px;transition:all .18s;box-shadow:var(--shadow-card);}
+.cart-btn{position:relative;background:var(--navy);border:none;color:#fff;padding:0 16px;height:56px;border-radius:20px;cursor:pointer;font-size:.875rem;font-weight:600;display:flex;align-items:center;gap:7px;transition:all .18s;box-shadow:var(--shadow-card);}
 .cart-btn:hover{background:var(--navy2);}
 .cart-btn:active{transform:scale(.97);}
+.cart-btn svg{width:20px;height:20px;flex-shrink:0;}
 .cart-badge{position:absolute;top:-7px;right:-7px;background:var(--orange);color:#1a2010;font-size:.62rem;font-weight:800;width:18px;height:18px;border-radius:50%;display:none;align-items:center;justify-content:center;border:2px solid var(--cream);}
-.user-chip{background:#fff;border:1px solid var(--border);color:var(--navy);padding:0 16px;height:56px;border-radius:18px;cursor:pointer;font-size:.82rem;display:flex;align-items:center;gap:6px;font-weight:600;transition:transform .18s;box-shadow:var(--shadow-card);}
+.user-chip{background:#fff;border:1px solid var(--border);color:var(--navy);padding:0 16px;height:56px;border-radius:20px;cursor:pointer;font-size:.82rem;display:flex;align-items:center;gap:6px;font-weight:600;transition:transform .18s;box-shadow:var(--shadow-card);}
 .user-chip:active{transform:scale(.97);}
-.hamburger-btn{background:#fff;border:1px solid var(--border);color:var(--charcoal);width:56px;height:56px;border-radius:18px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .18s;box-shadow:var(--shadow-card);}
+.hamburger-btn{background:#fff;border:1px solid var(--border);color:var(--charcoal);width:56px;height:56px;border-radius:20px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .18s;box-shadow:var(--shadow-card);}
 .hamburger-btn:hover{border-color:var(--orange);color:var(--orange);}
 .hamburger-btn:active{transform:scale(.97);}
 @media(max-width:768px){.hamburger-btn{display:none;}}
@@ -62,37 +64,37 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 .nav-cat:active{transform:scale(.96);}
 .nav-cat-icon{width:66px;height:66px;border-radius:50%;background:#fff;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.45rem;transition:all .2s;box-shadow:var(--shadow-cat);}
 .nav-cat-icon svg{width:30px;height:30px;overflow:visible;}
-.nav-cat-icon svg .ic-stroke{fill:none;stroke:var(--charcoal);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}
+.nav-cat-icon svg .ic-stroke{fill:none;stroke:#262626;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}
 .nav-cat-icon svg .ic-gold{fill:var(--orange);stroke:none;}
 .nav-cat-icon svg .ic-gold-line{fill:none;stroke:var(--orange);stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;}
-.nav-cat-label{font-size:.68rem;font-weight:500;color:var(--muted);text-align:center;line-height:1.2;white-space:nowrap;}
+.nav-cat-label{font-size:.68rem;font-weight:500;color:#202020;text-align:center;line-height:1.2;white-space:nowrap;}
 .nav-cat:hover .nav-cat-icon{border-color:var(--orange);}
-.nav-cat.active .nav-cat-icon{background:var(--navy);border-color:var(--navy);box-shadow:0 0 0 3px var(--orange);}
+.nav-cat.active .nav-cat-icon{background:var(--navy);border:2px solid var(--orange);box-shadow:none;}
 .nav-cat.active .nav-cat-icon svg .ic-stroke{stroke:#fff;}
 .nav-cat.active .nav-cat-label{color:var(--navy);font-weight:700;}
-.nav-cat.nav-cat-all .nav-cat-icon{border-radius:18px;position:relative;padding-bottom:5px;}
-.nav-cat.nav-cat-all .nav-cat-icon::after{content:'';position:absolute;bottom:6px;left:50%;transform:translateX(-50%);width:22px;height:3px;border-radius:2px;background:var(--orange);}
+.nav-cat.nav-cat-all .nav-cat-icon{border-radius:20px;border:2px solid var(--orange);position:relative;padding-bottom:8px;}
+.nav-cat.nav-cat-all .nav-cat-icon::after{content:'';position:absolute;bottom:7px;left:50%;transform:translateX(-50%);width:38px;height:6px;border-radius:6px;background:var(--orange);}
 .nav-cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:3px;width:16px;height:16px;}
 .nav-cat-grid i{background:rgba(255,255,255,.5);border-radius:2px;display:block;}
-.nav-cat.nav-cat-all.active .nav-cat-icon{background:var(--navy);border-color:var(--navy);}
+.nav-cat.nav-cat-all.active .nav-cat-icon{background:var(--navy);}
 .nav-cat.nav-cat-all.active .nav-cat-grid i{background:#fff;}
-.nav-cat.nav-cat-all:not(.active) .nav-cat-icon{background:var(--navy);border-color:var(--navy);}
+.nav-cat.nav-cat-all:not(.active) .nav-cat-icon{background:var(--navy);}
 .nav-cat.nav-cat-all:not(.active) .nav-cat-grid i{background:rgba(255,255,255,.6);}
 
 /* ── LOCATION / DELIVERY INFO PILL — merged into a single elegant pill ── */
-.loc-deliver-strip{display:flex;align-items:center;gap:0;background:var(--sand);border-radius:19px;height:38px;margin:24px 5% 0;padding:0 4px;font-size:.72rem;color:var(--muted);box-shadow:var(--shadow-sm);}
-.lds-item{display:flex;align-items:center;gap:6px;flex:1;min-width:0;cursor:default;padding:0 12px;line-height:1;}
+.loc-deliver-strip{display:flex;align-items:center;gap:0;background:#fff;border-radius:30px;height:54px;margin:24px 5% 0;padding:0 6px;font-size:.72rem;color:#333;box-shadow:0 8px 24px rgba(0,0,0,.05);}
+.lds-item{display:flex;align-items:center;gap:6px;flex:1;min-width:0;cursor:default;padding:0 14px;line-height:1;}
 .lds-item[onclick]{cursor:pointer;}
 .lds-icon{flex-shrink:0;font-size:.85rem;display:flex;align-items:center;}
-.lds-item span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.3;}
-.lds-sep{width:1px;height:16px;background:#D9D9D9;flex-shrink:0;}
+.lds-item span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.3;color:#333;}
+.lds-sep{width:1px;height:22px;background:var(--divider);flex-shrink:0;}
 @media(max-width:768px){
-  .loc-deliver-strip{font-size:.66rem;margin:22px 4% 0;height:36px;}
-  .lds-item{padding:0 10px;}
+  .loc-deliver-strip{font-size:.66rem;margin:22px 4% 0;height:48px;}
+  .lds-item{padding:0 12px;}
 }
 @media(max-width:480px){
-  .loc-deliver-strip{font-size:.6rem;}
-  .lds-item{padding:0 8px;}
+  .loc-deliver-strip{font-size:.6rem;height:44px;}
+  .lds-item{padding:0 9px;}
 }
 
 /* ── MARQUEE ── */
@@ -134,10 +136,10 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 .hero-search-row{display:flex;align-items:center;gap:12px;margin-bottom:20px;}
 .hero-search-big{flex:1;display:flex;align-items:center;background:#fff;border-radius:28px;overflow:visible;box-shadow:var(--shadow-md);position:relative;height:56px;min-width:0;padding-right:58px;}
 .hero-search-big input{flex:1;padding:0 20px;border:none;outline:none;font-size:16px;font-weight:400;color:var(--charcoal);border-radius:28px 0 0 28px;min-width:0;height:56px;background:transparent;}
-.hero-search-big input::placeholder{color:#7A7A7A;font-weight:500;}
-.hero-search-big button{position:absolute;right:4px;top:4px;background:var(--orange);color:#fff;border:none;width:48px;height:48px;border-radius:50%;cursor:pointer;transition:background .2s;flex-shrink:0;box-shadow:var(--shadow-sm);-webkit-tap-highlight-color:transparent;display:flex;align-items:center;justify-content:center;}
-.hero-search-big button:hover{background:var(--orange2);}
-.hero-search-big button:active{transform:scale(.94);}
+.hero-search-big input::placeholder{color:#8C8C8C;font-weight:500;}
+.hero-search-big button{position:absolute;right:4px;top:50%;transform:translateY(-50%);background:var(--gold-search);color:#fff;border:none;width:48px;height:48px;border-radius:50%;cursor:pointer;transition:background .2s;flex-shrink:0;box-shadow:var(--shadow-sm);-webkit-tap-highlight-color:transparent;display:flex;align-items:center;justify-content:center;}
+.hero-search-big button:hover{background:var(--orange-dark);}
+.hero-search-big button:active{transform:translateY(-50%) scale(.94);}
 .hero-search-big button svg,.hero-mic-btn svg{width:20px;height:20px;}
 .hero-mic-btn{width:52px;height:52px;border-radius:50%;background:var(--navy);border:none;color:#fff;cursor:pointer;flex-shrink:0;box-shadow:var(--shadow-sm);transition:all .18s;display:flex;align-items:center;justify-content:center;}
 .hero-mic-btn:hover{background:var(--navy2);}
@@ -641,7 +643,9 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 .voice-overlay.active{display:flex;}
 .voice-circle{width:100px;height:100px;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center;font-size:2.5rem;animation:voicePulse 1.2s infinite;}
 @keyframes voicePulse{0%,100%{box-shadow:0 0 0 0 rgba(201,162,39,.4);}70%{box-shadow:0 0 0 20px rgba(201,162,39,0);}}
-.nav-loc-btn{color:var(--charcoal);font-size:.78rem;white-space:nowrap;cursor:pointer;padding:0 16px;height:58px;border-radius:22px;background:#fff;border:none;display:flex;align-items:center;gap:6px;transition:all .18s;flex-shrink:0;box-shadow:var(--shadow-card);}
+.nav-loc-btn{color:var(--charcoal);font-size:.78rem;white-space:nowrap;cursor:pointer;padding:0 18px;height:58px;border-radius:22px;background:#fff;border:none;display:flex;align-items:center;gap:7px;transition:all .18s;flex-shrink:0;box-shadow:var(--shadow-card);}
+.nav-loc-btn .lds-arrow{font-size:.78rem;opacity:.75;color:var(--charcoal);}
+@media(min-width:769px){.nav-loc-btn{min-width:210px;}}
 .nav-loc-btn span:first-of-type{color:var(--charcoal);font-weight:600;}
 .nav-loc-btn:hover{background:#fff;}
 .nav-loc-btn:active{transform:scale(.97);}
@@ -1241,7 +1245,7 @@ body.lang-bn .lang-en{display:none!important;}
   .hero-search-big input{font-size:.95rem;padding:0 16px;}
   .hero-search-big,.hero-search-big input{height:52px;}
   .hero-search-big{padding-right:52px;}
-  .hero-search-big button{width:44px;height:44px;right:4px;top:4px;}
+  .hero-search-big button{width:44px;height:44px;right:4px;}
   .hero-mic-btn{width:46px;height:46px;}
 
   /* CATEGORY GRID — 4 column tight */
@@ -1801,12 +1805,12 @@ img{max-width:100%;height:auto;}
       <div class="nav-search" id="navSearchWrap">
         <input type="text" id="navSearch" placeholder="দোকান বা পণ্য খুঁজুন... / Search shops or products" oninput="handleSearch(this.value)" onkeydown="handleSearchKey(event,'nav')" onfocus="showSuggestions(this.value)" autocomplete="off">
         <button class="nav-voice-btn" id="voiceBtn" onclick="startVoiceSearch()" title="Voice Search"><svg viewBox="0 0 24 24" fill="none" width="16" height="16"><rect x="9" y="3" width="6" height="11" rx="3" stroke="currentColor" stroke-width="1.8"/><path d="M5 11a7 7 0 0 0 14 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="12" y1="18" x2="12" y2="21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="8" y1="21" x2="16" y2="21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
-        <button onclick="doSearch()"><svg viewBox="0 0 24 24" fill="none" width="17" height="17"><circle cx="10.5" cy="10.5" r="6.5" stroke="#1E1B16" stroke-width="2"/><line x1="15.5" y1="15.5" x2="20" y2="20" stroke="#1E1B16" stroke-width="2" stroke-linecap="round"/></svg></button>
+        <button onclick="doSearch()"><svg viewBox="0 0 24 24" fill="none" width="17" height="17"><circle cx="10.5" cy="10.5" r="6.5" stroke="#111111" stroke-width="2"/><line x1="15.5" y1="15.5" x2="20" y2="20" stroke="#111111" stroke-width="2" stroke-linecap="round"/></svg></button>
         <div class="search-suggestions" id="navSuggestions"></div>
       </div>
     </div>
     <div class="nav-loc-btn" id="navLocBtn" onclick="openPinModal()">
-      📍 <span>Manteswar</span> <span style="font-size:.6rem;opacity:.6">▾</span>
+      <svg viewBox="0 0 24 24" width="15" height="15" style="flex-shrink:0"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Z" fill="#C7A15A"/><circle cx="12" cy="9" r="2.6" fill="#fff"/></svg> <span>Manteswar</span> <span class="lds-arrow">▾</span>
     </div>
     <div class="nav-actions">
       <div class="lang-toggle">
@@ -1814,7 +1818,7 @@ img{max-width:100%;height:auto;}
         <button class="lang-btn" id="langEn" onclick="setLang('en')">ENG</button>
       </div>
       <button class="cart-btn" onclick="openCart()">
-        🛒 <span class="cart-btn-label">কার্ট</span>
+        <svg viewBox="0 0 24 24" fill="none"><path d="M3 4h2l2.2 11.2a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.6L21 8H6.2" stroke="#C7A15A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="10" cy="20" r="1.4" fill="#C7A15A"/><circle cx="17" cy="20" r="1.4" fill="#C7A15A"/></svg> <span class="cart-btn-label">কার্ট</span>
         <span class="cart-badge" id="cartBadge">0</span>
       </button>
       <div class="user-chip" id="userChip" onclick="handleUserBtn()">👤 <span id="userLabel" class="user-chip-label">লগইন</span></div>
@@ -1826,7 +1830,7 @@ img{max-width:100%;height:auto;}
     <div class="hero-search-row">
       <div class="hero-search-big">
         <input type="text" id="heroSearch" placeholder="আজ কী দরকার? যেমন: ইলিশ মাছ, রসগোল্লা, ইলেকট্রিশিয়ান..." oninput="handleSearch(this.value)" onkeydown="handleSearchKey(event,'hero')" onfocus="showSuggestions(this.value)" autocomplete="off">
-        <button onclick="doSearch()"><svg viewBox="0 0 24 24" fill="none"><circle cx="10.5" cy="10.5" r="6.5" stroke="#1E1B16" stroke-width="2"/><line x1="15.5" y1="15.5" x2="20" y2="20" stroke="#1E1B16" stroke-width="2" stroke-linecap="round"/></svg></button>
+        <button onclick="doSearch()"><svg viewBox="0 0 24 24" fill="none"><circle cx="10.5" cy="10.5" r="6.5" stroke="#111111" stroke-width="2"/><line x1="15.5" y1="15.5" x2="20" y2="20" stroke="#111111" stroke-width="2" stroke-linecap="round"/></svg></button>
         <div class="search-suggestions" id="heroSuggestions" style="border-radius:18px;"></div>
       </div>
       <button class="hero-mic-btn" onclick="startVoiceSearch()" id="heroVoiceBtn" title="Voice Search"><svg viewBox="0 0 24 24" fill="none"><rect x="9" y="3" width="6" height="11" rx="3" stroke="#fff" stroke-width="1.8"/><path d="M5 11a7 7 0 0 0 14 0" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/><line x1="12" y1="18" x2="12" y2="21" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/><line x1="8" y1="21" x2="16" y2="21" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg></button>
