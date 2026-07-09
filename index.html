@@ -784,29 +784,33 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 
 /* ── FRESH TODAY — MOBILE-ONLY LAYOUT (390px reference) ──
    Desktop/tablet rules above are untouched. Below applies only under 480px.
-   Single unified soft shadow across every card, uniform 17px gaps, equal
-   left/right carousel insets, and top-aligned row for a clean premium read. */
+   One unified soft shadow + radius across every card, uniform 17px gaps,
+   equal left/right carousel insets, and — critically — no explicit
+   align-items override, so flex's default `stretch` makes the featured
+   card automatically match the product cards' full height: same top edge,
+   same bottom edge, one shared baseline, and the hero card keeps its
+   presence instead of reading as a smaller side tile. */
 @media(max-width:480px){
   #freshTodaySection{padding:30px 4% 20px;}
-  .fresh-cards-scroll{gap:17px;align-items:flex-start;padding-right:4%;
+  .fresh-cards-scroll{gap:17px;padding-right:4%;
     scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;}
 
-  .fresh-promo-card{width:124px;min-height:179px;padding:16px 14px 14px;border-radius:16px;
+  .fresh-promo-card{width:138px;min-height:260px;padding:18px 15px 15px;border-radius:16px;
     scroll-snap-align:start;
     background:
       radial-gradient(120% 90% at 85% 0%,rgba(210,180,120,.22) 0%,rgba(210,180,120,0) 42%),
       radial-gradient(90% 70% at 15% 105%,#0c2a1f 0%,rgba(12,42,31,0) 60%),
       linear-gradient(165deg,#1b4433 0%,#0f2c20 50%,#091d15 100%);
-    box-shadow:0 6px 18px rgba(20,30,25,.12);} /* one soft shadow, shared value below */
-  .fpc-decor{width:104px;height:138px;top:-4px;right:-7px;filter:blur(.3px);}
+    box-shadow:0 6px 18px rgba(20,30,25,.12);} /* same shadow value as product cards below */
+  .fpc-decor{width:118px;height:156px;top:-4px;right:-8px;filter:blur(.3px);}
   .fpc-eyebrow{display:none;}
-  .fpc-title{font-size:1.24rem;margin-bottom:6px;line-height:1.12;}
-  .fpc-sub{font-size:.66rem;margin-bottom:9px;line-height:1.45;}
-  .fpc-btn{padding:6px 5px 6px 13px;font-size:.6rem;gap:7px;border-width:2px;border-color:var(--orange);}
+  .fpc-title{font-size:1.32rem;margin-bottom:7px;line-height:1.13;}
+  .fpc-sub{font-size:.7rem;margin-bottom:11px;line-height:1.48;}
+  .fpc-btn{padding:6px 5px 6px 14px;font-size:.62rem;gap:7px;border-width:2px;border-color:var(--orange);}
   .fpc-btn .fpc-arrow{width:20px;height:20px;font-size:.76rem;}
 
   .fresh-card{width:180px;border-radius:16px;scroll-snap-align:start;
-    box-shadow:0 6px 18px rgba(20,30,25,.12);} /* same shadow as the featured card — one consistent elevation */
+    box-shadow:0 6px 18px rgba(20,30,25,.12);} /* identical shadow — one shared elevation system */
   .fresh-card-img{height:168px;} /* ≈70% of total card height */
   .fresh-card-img img{object-fit:cover;}
   .fresh-card-body{padding:10px 12px 11px;}
