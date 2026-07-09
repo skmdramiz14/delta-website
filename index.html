@@ -5,64 +5,72 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DELTA — পরিবর্তনের ব-দ্বীপ | Local Roots. Global Wings.</title>
 <meta name="description" content="West Bengal's first local super app. Order from local shops, farmers, and artisans.">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600;700&family=Tiro+Bangla&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Poppins:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600;700&family=Tiro+Bangla&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 :root{
-  --navy:#153A2C;--navy2:#1e4a38;--navy3:#0E1E18;
-  --orange:#C9A96E;--orange2:#d6bd8a;--orange-dark:#b8925a;--orange-light:#F3EFE6;
-  --cream:#FFFDF8;--sand:#F3EFE6;--white:#fff;
-  --border:#E4DDD0;--muted:#4E534F;--charcoal:#1E211F;
+  --navy:#123B2E;--navy2:#1e4a38;--navy3:#0E1E18;
+  --orange:#C9A45A;--orange2:#d6bd8a;--orange-dark:#b8925a;--orange-light:#F3EFE6;
+  --cream:#F9F6F1;--sand:#F3EFE6;--white:#fff;
+  --border:#ECE6DC;--muted:#4E534F;--charcoal:#111111;
   --green:#1a8a4a;--green2:#e8f7ef;--red:#c0392b;--red2:#ffeaea;
   --shadow-sm:0 2px 10px rgba(30,33,31,.05);
   --shadow-md:0 8px 28px rgba(30,33,31,.07);
   --shadow-lg:0 20px 50px rgba(30,33,31,.11);
+  --shadow-card:0 10px 30px rgba(0,0,0,.08);
 }
 html{scroll-behavior:smooth;}
-body{font-family:'Hind Siliguri','DM Sans',sans-serif;background:var(--cream);color:var(--charcoal);overflow-x:hidden;}
+body{font-family:'Poppins','Noto Sans Bengali','Hind Siliguri',sans-serif;background:var(--cream);color:var(--charcoal);overflow-x:hidden;}
 .bn{font-family:'Tiro Bangla',serif;}
 ::-webkit-scrollbar{width:5px;}
 ::-webkit-scrollbar-thumb{background:#c0cdd8;border-radius:3px;}
-button,input,select{font-family:'DM Sans',sans-serif;}
+button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 
 /* ── NAV ── */
-#nav{background:var(--navy);padding:0 5%;position:sticky;top:0;z-index:1000;box-shadow:var(--shadow-sm);}
-.nav-top{display:flex;align-items:center;gap:12px;padding:12px 0;min-height:72px;}
+#nav{background:var(--cream);padding:0 5%;position:sticky;top:0;z-index:1000;}
+.nav-top{display:flex;align-items:center;gap:12px;padding:16px 0;min-height:72px;}
 .logo-block{display:flex;flex-direction:column;cursor:pointer;flex-shrink:0;}
-.logo{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:900;color:#fff;cursor:pointer;white-space:nowrap;letter-spacing:1px;line-height:1.15;}
+.logo{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:900;color:var(--charcoal);cursor:pointer;white-space:nowrap;letter-spacing:1px;line-height:1.15;}
 .logo em{color:var(--orange);font-style:normal;}
-.logo-tagline{font-size:.6rem;color:rgba(255,255,255,.55);letter-spacing:.5px;white-space:nowrap;}
+.logo-tagline{font-size:.6rem;color:var(--muted);letter-spacing:.5px;white-space:nowrap;}
 .nav-search-wrap{flex:1;max-width:460px;}
-.nav-search{display:flex;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:8px;transition:all .2s;position:relative;overflow:visible;}
-.nav-search:focus-within{background:rgba(255,255,255,.16);border-color:var(--orange);}
-.nav-search input{flex:1;border:none;background:transparent;color:#fff;padding:10px 14px;font-size:.875rem;outline:none;border-radius:8px 0 0 8px;}
-.nav-search input::placeholder{color:rgba(255,255,255,.4);}
+.nav-search{display:flex;background:#fff;border:1px solid var(--border);border-radius:8px;transition:all .2s;position:relative;overflow:visible;}
+.nav-search:focus-within{border-color:var(--orange);}
+.nav-search input{flex:1;border:none;background:transparent;color:var(--charcoal);padding:10px 14px;font-size:.875rem;outline:none;border-radius:8px 0 0 8px;}
+.nav-search input::placeholder{color:var(--muted);opacity:.7;}
 .nav-search button{background:var(--orange);border:none;padding:10px 16px;cursor:pointer;color:#fff;font-size:.95rem;border-radius:0 8px 8px 0;transition:background .2s;}
 .nav-search button:hover{background:var(--orange2);}
 .nav-actions{display:flex;align-items:center;gap:8px;flex-shrink:0;}
-.btn-nav{background:transparent;border:1px solid rgba(255,255,255,.25);color:#fff;padding:8px 15px;border-radius:16px;cursor:pointer;font-size:.82rem;font-weight:500;transition:all .2s;white-space:nowrap;}
+.btn-nav{background:transparent;border:1px solid var(--border);color:var(--charcoal);padding:8px 15px;border-radius:16px;cursor:pointer;font-size:.82rem;font-weight:500;transition:all .2s;white-space:nowrap;}
 .btn-nav:hover{border-color:var(--orange);color:var(--orange);}
-.btn-nav.filled{background:var(--orange);border-color:var(--orange);font-weight:600;}
+.btn-nav.filled{background:var(--orange);border-color:var(--orange);color:#fff;font-weight:600;}
 .btn-nav.filled:hover{background:var(--orange2);}
-.cart-btn{position:relative;background:var(--navy2);border:1px solid rgba(201,162,39,.3);color:#fff;padding:0 14px;height:48px;border-radius:16px;cursor:pointer;font-size:.875rem;font-weight:600;display:flex;align-items:center;gap:7px;transition:all .18s;}
-.cart-btn:hover{background:var(--navy3);}
+.cart-btn{position:relative;background:var(--navy);border:none;color:#fff;padding:0 14px;height:48px;border-radius:18px;cursor:pointer;font-size:.875rem;font-weight:600;display:flex;align-items:center;gap:7px;transition:all .18s;box-shadow:var(--shadow-card);}
+.cart-btn:hover{background:var(--navy2);}
 .cart-btn:active{transform:scale(.97);}
-.cart-badge{position:absolute;top:-7px;right:-7px;background:var(--orange);color:#1a2010;font-size:.62rem;font-weight:800;width:18px;height:18px;border-radius:50%;display:none;align-items:center;justify-content:center;border:2px solid var(--navy);}
-.user-chip{background:#fff;border:1px solid rgba(255,255,255,.2);color:var(--navy);padding:0 14px;height:48px;border-radius:16px;cursor:pointer;font-size:.82rem;display:flex;align-items:center;gap:6px;font-weight:600;transition:transform .18s;}
+.cart-badge{position:absolute;top:-7px;right:-7px;background:var(--orange);color:#1a2010;font-size:.62rem;font-weight:800;width:18px;height:18px;border-radius:50%;display:none;align-items:center;justify-content:center;border:2px solid var(--cream);}
+.user-chip{background:#fff;border:1px solid var(--border);color:var(--navy);padding:0 14px;height:48px;border-radius:18px;cursor:pointer;font-size:.82rem;display:flex;align-items:center;gap:6px;font-weight:600;transition:transform .18s;box-shadow:var(--shadow-card);}
 .user-chip:active{transform:scale(.97);}
-.hamburger-btn{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);color:#fff;width:48px;height:48px;border-radius:16px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .18s;}
-.hamburger-btn:hover{background:rgba(255,255,255,.15);}
+.hamburger-btn{background:#fff;border:1px solid var(--border);color:var(--charcoal);width:48px;height:48px;border-radius:18px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .18s;box-shadow:var(--shadow-card);}
+.hamburger-btn:hover{border-color:var(--orange);color:var(--orange);}
 .hamburger-btn:active{transform:scale(.97);}
-.nav-cats{display:flex;gap:24px;overflow-x:auto;background:var(--cream);padding:16px 16px 16px;}
+@media(max-width:768px){.hamburger-btn{display:none;}}
+.nav-cats{display:flex;gap:16px;overflow-x:auto;background:var(--cream);padding:20px 16px 20px;}
 .nav-cats::-webkit-scrollbar{display:none;}
 .nav-cat{display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;flex-shrink:0;width:64px;transition:transform .18s;}
 .nav-cat:active{transform:scale(.96);}
-.nav-cat-icon{width:58px;height:58px;border-radius:50%;background:#fff;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.45rem;transition:all .2s;box-shadow:var(--shadow-sm);}
-.nav-cat-label{font-size:.68rem;font-weight:600;color:var(--muted);text-align:center;line-height:1.2;white-space:nowrap;}
+.nav-cat-icon{width:58px;height:58px;border-radius:50%;background:#fff;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.45rem;transition:all .2s;box-shadow:var(--shadow-card);}
+.nav-cat-icon svg{width:26px;height:26px;overflow:visible;}
+.nav-cat-icon svg .ic-stroke{fill:none;stroke:var(--charcoal);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}
+.nav-cat-icon svg .ic-gold{fill:var(--orange);stroke:none;}
+.nav-cat-icon svg .ic-gold-line{fill:none;stroke:var(--orange);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.nav-cat-label{font-size:.68rem;font-weight:500;color:var(--muted);text-align:center;line-height:1.2;white-space:nowrap;}
 .nav-cat:hover .nav-cat-icon{border-color:var(--orange);}
 .nav-cat.active .nav-cat-icon{background:var(--navy);border-color:var(--navy);box-shadow:0 0 0 3px var(--orange);}
-.nav-cat.active .nav-cat-label{color:var(--navy);font-weight:800;}
-.nav-cat.nav-cat-all .nav-cat-icon{border-radius:16px;}
+.nav-cat.active .nav-cat-icon svg .ic-stroke{stroke:#fff;}
+.nav-cat.active .nav-cat-label{color:var(--navy);font-weight:700;}
+.nav-cat.nav-cat-all .nav-cat-icon{border-radius:22px;position:relative;padding-bottom:5px;}
+.nav-cat.nav-cat-all .nav-cat-icon::after{content:'';position:absolute;bottom:6px;left:50%;transform:translateX(-50%);width:22px;height:3px;border-radius:2px;background:var(--orange);}
 .nav-cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:3px;width:16px;height:16px;}
 .nav-cat-grid i{background:rgba(255,255,255,.5);border-radius:2px;display:block;}
 .nav-cat.nav-cat-all.active .nav-cat-icon{background:var(--navy);border-color:var(--navy);}
@@ -620,8 +628,8 @@ button,input,select{font-family:'DM Sans',sans-serif;}
   body{padding-bottom:74px;}
   .wa-float{bottom:94px;}
 }
-.nav-voice-btn{background:transparent;border:none;color:rgba(255,255,255,.6);font-size:1rem;padding:0 10px;cursor:pointer;transition:color .2s;}
-.nav-voice-btn:hover{color:#fff;}
+.nav-voice-btn{background:transparent;border:none;color:var(--muted);font-size:1rem;padding:0 10px;cursor:pointer;transition:color .2s;}
+.nav-voice-btn:hover{color:var(--navy);}
 .nav-voice-btn.listening{color:#f87171;animation:pulse 1s infinite;}
 @keyframes pulse{0%,100%{transform:scale(1);opacity:1;}50%{transform:scale(1.2);opacity:.7;}}
 /* Voice overlay */
@@ -629,12 +637,12 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 .voice-overlay.active{display:flex;}
 .voice-circle{width:100px;height:100px;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center;font-size:2.5rem;animation:voicePulse 1.2s infinite;}
 @keyframes voicePulse{0%,100%{box-shadow:0 0 0 0 rgba(201,162,39,.4);}70%{box-shadow:0 0 0 20px rgba(201,162,39,0);}}
-.nav-loc-btn{color:var(--charcoal);font-size:.78rem;white-space:nowrap;cursor:pointer;padding:0 14px;height:48px;border-radius:16px;background:var(--cream);border:none;display:flex;align-items:center;gap:6px;transition:all .18s;flex-shrink:0;box-shadow:var(--shadow-sm);}
+.nav-loc-btn{color:var(--charcoal);font-size:.78rem;white-space:nowrap;cursor:pointer;padding:0 14px;height:48px;border-radius:22px;background:#fff;border:none;display:flex;align-items:center;gap:6px;transition:all .18s;flex-shrink:0;box-shadow:var(--shadow-card);}
 .nav-loc-btn span:first-of-type{color:var(--charcoal);font-weight:600;}
 .nav-loc-btn:hover{background:#fff;}
 .nav-loc-btn:active{transform:scale(.97);}
-.lang-toggle{display:flex;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:20px;padding:2px;gap:0;}
-.lang-btn{border:none;background:transparent;padding:4px 10px;border-radius:18px;font-size:.72rem;font-weight:800;cursor:pointer;color:rgba(255,255,255,.6);transition:all .18s;letter-spacing:.3px;}
+.lang-toggle{display:flex;background:#fff;border:1px solid var(--border);border-radius:20px;padding:2px;gap:0;}
+.lang-btn{border:none;background:transparent;padding:4px 10px;border-radius:18px;font-size:.72rem;font-weight:800;cursor:pointer;color:var(--muted);transition:all .18s;letter-spacing:.3px;}
 .lang-btn.active{background:var(--orange);color:#fff;}
 
 /* ── FREE DELIVERY STRIP ── */
@@ -1825,24 +1833,24 @@ img{max-width:100%;height:auto;}
       <div class="nav-cat-icon"><span class="nav-cat-grid"><i></i><i></i><i></i><i></i></span></div>
       <div class="nav-cat-label">সব / All</div>
     </div>
-    <div class="nav-cat" onclick="filterCat('food',this)"><div class="nav-cat-icon">🍛</div><div class="nav-cat-label">খাবার</div></div>
-    <div class="nav-cat" onclick="filterCat('grocery',this)"><div class="nav-cat-icon">🛒</div><div class="nav-cat-label">মুদিখানা</div></div>
-    <div class="nav-cat" onclick="filterCat('farm',this)"><div class="nav-cat-icon">🌾</div><div class="nav-cat-label">কৃষি</div></div>
-    <div class="nav-cat" onclick="filterCat('farmtools',this)"><div class="nav-cat-icon">🌿</div><div class="nav-cat-label">কৃষি সরঞ্জাম</div></div>
-    <div class="nav-cat" onclick="filterCat('livestock',this)"><div class="nav-cat-icon">🐄</div><div class="nav-cat-label">পশুপালন</div></div>
-    <div class="nav-cat" onclick="filterCat('medicine',this)"><div class="nav-cat-icon">💊</div><div class="nav-cat-label">ওষুধ</div></div>
-    <div class="nav-cat" onclick="filterCat('clothing',this)"><div class="nav-cat-icon">👗</div><div class="nav-cat-label">পোশাক</div></div>
-    <div class="nav-cat" onclick="filterCat('electronics',this)"><div class="nav-cat-icon">📱</div><div class="nav-cat-label">ইলেকট্রনিক্স</div></div>
-    <div class="nav-cat" onclick="filterCat('home',this)"><div class="nav-cat-icon">🏠</div><div class="nav-cat-label">বাড়ি</div></div>
-    <div class="nav-cat" onclick="filterCat('construction',this)"><div class="nav-cat-icon">🏗️</div><div class="nav-cat-label">নির্মাণ</div></div>
-    <div class="nav-cat" onclick="filterCat('automotive',this)"><div class="nav-cat-icon">🚗</div><div class="nav-cat-label">যানবাহন</div></div>
-    <div class="nav-cat" onclick="filterCat('arts',this)"><div class="nav-cat-icon">🎨</div><div class="nav-cat-label">শিল্প</div></div>
-    <div class="nav-cat" onclick="filterCat('education',this)"><div class="nav-cat-icon">📚</div><div class="nav-cat-label">শিক্ষা</div></div>
-    <div class="nav-cat" onclick="filterCat('services',this)"><div class="nav-cat-icon">🔧</div><div class="nav-cat-label">সেবা</div></div>
-    <div class="nav-cat" onclick="filterCat('health',this)"><div class="nav-cat-icon">🏥</div><div class="nav-cat-label">স্বাস্থ্য</div></div>
-    <div class="nav-cat" onclick="filterCat('events',this)"><div class="nav-cat-icon">🎉</div><div class="nav-cat-label">ইভেন্ট</div></div>
-    <div class="nav-cat" onclick="filterCat('rental',this)"><div class="nav-cat-icon">🔑</div><div class="nav-cat-label">ভাড়া</div></div>
-    <div class="nav-cat" onclick="filterCat('remarket',this)"><div class="nav-cat-icon">♻️</div><div class="nav-cat-label">রিমার্কেট</div></div>
+    <div class="nav-cat" onclick="filterCat('food',this)"><div class="nav-cat-icon"><svg viewBox="0 0 24 24"><path class="ic-stroke" d="M4 11a8 8 0 0 0 16 0"/><path class="ic-stroke" d="M4 11h16"/><path class="ic-stroke" d="M8 11c0-2 1.8-3.5 4-3.5s4 1.5 4 3.5"/><ellipse class="ic-gold" cx="12" cy="8.2" rx="2.6" ry="1.6"/></svg></div><div class="nav-cat-label">খাবার</div></div>
+    <div class="nav-cat" onclick="filterCat('grocery',this)"><div class="nav-cat-icon"><svg viewBox="0 0 24 24"><path class="ic-stroke" d="M6 8h12l-1 12H7L6 8Z"/><path class="ic-stroke" d="M9 8V6a3 3 0 0 1 6 0v2"/><circle class="ic-gold" cx="12" cy="13" r="1.4"/></svg></div><div class="nav-cat-label">মুদিখানা</div></div>
+    <div class="nav-cat" onclick="filterCat('farm',this)"><div class="nav-cat-icon"><svg viewBox="0 0 24 24"><line class="ic-stroke" x1="12" y1="20" x2="12" y2="5"/><path class="ic-gold-line" d="M12 8l-3-2M12 8l3-2M12 12l-3-2M12 12l3-2M12 16l-3-2M12 16l3-2"/></svg></div><div class="nav-cat-label">কৃষি</div></div>
+    <div class="nav-cat" onclick="filterCat('farmtools',this)"><div class="nav-cat-icon"><svg viewBox="0 0 24 24"><path class="ic-stroke" d="M3 15h4l2-4h6l3 4h3"/><path class="ic-stroke" d="M9 11V7h3"/><circle class="ic-gold" cx="8" cy="17" r="2.3"/><circle class="ic-stroke" cx="17" cy="17" r="1.6"/></svg></div><div class="nav-cat-label">কৃষি সরঞ্জাম</div></div>
+    <div class="nav-cat" onclick="filterCat('livestock',this)"><div class="nav-cat-icon"><svg viewBox="0 0 24 24"><path class="ic-stroke" d="M6 10a6 5 0 0 1 12 0v3a5 5 0 0 1-5 5h-2a5 5 0 0 1-5-5v-3Z"/><path class="ic-stroke" d="M7 9 5 6.5M17 9l2-2.5"/><ellipse class="ic-gold" cx="12" cy="15" rx="3" ry="2"/></svg></div><div class="nav-cat-label">পশুপালন</div></div>
+    <div class="nav-cat" onclick="filterCat('medicine',this)"><div class="nav-cat-icon"><svg viewBox="0 0 24 24"><rect class="ic-stroke" x="4" y="9" width="16" height="7" rx="3.5"/><path class="ic-gold" d="M12 9h4.5A3.5 3.5 0 0 1 20 12.5 3.5 3.5 0 0 1 16.5 16H12V9Z"/></svg></div><div class="nav-cat-label">ওষুধ</div></div>
+    <div class="nav-cat" onclick="filterCat('clothing',this)"><div class="nav-cat-icon"><svg viewBox="0 0 24 24"><path class="ic-stroke" d="M8 4 4 7l2 3 2-1.5V20h8V8.5L18 10l2-3-4-3-2 1.5h-4L8 4Z"/><path class="ic-gold-line" d="M9.5 4.5a2.5 2.5 0 0 0 5 0"/></svg></div><div class="nav-cat-label">পোশাক</div></div>
+    <div class="nav-cat" onclick="filterCat('electronics',this)"><div class="nav-cat-icon"><svg viewBox="0 0 24 24"><rect class="ic-stroke" x="7" y="3" width="10" height="18" rx="2"/><circle class="ic-gold" cx="12" cy="17.5" r="1.2"/></svg></div><div class="nav-cat-label">ইলেকট্রনিক্স</div></div>
+    <div class="nav-cat" onclick="filterCat('home',this)"><div class="nav-cat-icon"><svg viewBox="0 0 24 24"><path class="ic-stroke" d="M4 11 12 4l8 7"/><path class="ic-stroke" d="M6 10v10h12V10"/><rect class="ic-gold" x="10" y="14" width="4" height="6"/></svg></div><div class="nav-cat-label">বাড়ি</div></div>
+    <div class="nav-cat" onclick="filterCat('construction',this)"><div class="nav-cat-icon"><svg viewBox="0 0 24 24"><path class="ic-stroke" d="M4 15a8 8 0 0 1 16 0Z"/><rect class="ic-stroke" x="3" y="15" width="18" height="2.4" rx="1.2"/><rect class="ic-gold" x="11" y="6" width="2" height="4"/></svg></div><div class="nav-cat-label">নির্মাণ</div></div>
+    <div class="nav-cat" onclick="filterCat('automotive',this)"><div class="nav-cat-icon"><svg viewBox="0 0 24 24"><path class="ic-stroke" d="M4 15 5.3 10.8A2 2 0 0 1 7.2 9.3h9.6a2 2 0 0 1 1.9 1.5L20 15Z"/><rect class="ic-stroke" x="3" y="15" width="18" height="3" rx="1.5"/><circle class="ic-gold" cx="7.5" cy="19" r="1.4"/><circle class="ic-gold" cx="16.5" cy="19" r="1.4"/></svg></div><div class="nav-cat-label">যানবাহন</div></div>
+    <div class="nav-cat" onclick="filterCat('arts',this)"><div class="nav-cat-icon"><svg viewBox="0 0 24 24"><path class="ic-stroke" d="M12 4a8 7 0 1 0 0 14h1.5a1.8 1.8 0 0 0 1-3.3 1.8 1.8 0 0 1 1-3.3H17a3 3 0 0 0 0-6c-1.5-1-3.2-1.4-5-1.4Z"/><circle class="ic-gold" cx="8.5" cy="10" r="1.2"/><circle class="ic-gold" cx="9.5" cy="14.5" r="1.2"/></svg></div><div class="nav-cat-label">শিল্প</div></div>
+    <div class="nav-cat" onclick="filterCat('education',this)"><div class="nav-cat-icon"><svg viewBox="0 0 24 24"><path class="ic-stroke" d="M12 6.5c-1.8-1.3-4-2-6.5-2v12c2.5 0 4.7.7 6.5 2 1.8-1.3 4-2 6.5-2v-12c-2.5 0-4.7.7-6.5 2Z"/><path class="ic-gold-line" d="M12 6.5v12"/></svg></div><div class="nav-cat-label">শিক্ষা</div></div>
+    <div class="nav-cat" onclick="filterCat('services',this)"><div class="nav-cat-icon"><svg viewBox="0 0 24 24"><path class="ic-stroke" d="M14.7 6.3a3.5 3.5 0 0 0-4.6 4.6L4 17l3 3 6.1-6.1a3.5 3.5 0 0 0 4.6-4.6l-2.3 2.3-2-2 2.3-2.3Z"/><circle class="ic-gold" cx="6.5" cy="18.5" r="1"/></svg></div><div class="nav-cat-label">সেবা</div></div>
+    <div class="nav-cat" onclick="filterCat('health',this)"><div class="nav-cat-icon"><svg viewBox="0 0 24 24"><rect class="ic-stroke" x="4" y="4" width="16" height="16" rx="4"/><path class="ic-gold-line" d="M12 8v8M8 12h8" stroke-width="2.2"/></svg></div><div class="nav-cat-label">স্বাস্থ্য</div></div>
+    <div class="nav-cat" onclick="filterCat('events',this)"><div class="nav-cat-icon"><svg viewBox="0 0 24 24"><path class="ic-stroke" d="M5 19 15 9"/><path class="ic-stroke" d="M13 6l1.5-2M17 9l2-1.5M15 12l2.3-.6"/><circle class="ic-gold" cx="8" cy="16" r="1"/><circle class="ic-gold" cx="11" cy="13" r="1"/><circle class="ic-gold" cx="6" cy="19.5" r=".8"/></svg></div><div class="nav-cat-label">ইভেন্ট</div></div>
+    <div class="nav-cat" onclick="filterCat('rental',this)"><div class="nav-cat-icon"><svg viewBox="0 0 24 24"><circle class="ic-stroke" cx="8" cy="9" r="4"/><path class="ic-stroke" d="M11 12l7 7"/><path class="ic-stroke" d="M15 16l2-2M17 18l2-2"/><circle class="ic-gold" cx="8" cy="9" r="1.6"/></svg></div><div class="nav-cat-label">ভাড়া</div></div>
+    <div class="nav-cat" onclick="filterCat('remarket',this)"><div class="nav-cat-icon"><svg viewBox="0 0 24 24"><path class="ic-stroke" d="M5 12a7 7 0 0 1 12-5"/><path class="ic-gold" d="M17 4v4h-4Z"/><path class="ic-stroke" d="M19 12a7 7 0 0 1-12 5"/><path class="ic-gold" d="M7 20v-4h4Z"/></svg></div><div class="nav-cat-label">রিমার্কেট</div></div>
   </div>
 </nav>
 
