@@ -716,23 +716,23 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 .footer-badge{background:rgba(255,255,255,.08);color:rgba(255,255,255,.6);font-size:.72rem;padding:4px 12px;border-radius:20px;border:1px solid rgba(255,255,255,.12);}
 
 /* ── RESPONSIVE UPDATES ── */
-.fresh-cards-scroll{display:flex;gap:16px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none;}
+.fresh-cards-scroll{display:flex;gap:22px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none;}
 .fresh-cards-scroll::-webkit-scrollbar{display:none;}
 
 /* Static promo card — first item in the scroll (wider than product cards, matching reference) */
-.fresh-promo-card{flex-shrink:0;width:196px;background:linear-gradient(165deg,var(--navy),var(--navy2));border-radius:22px;padding:26px;position:relative;overflow:hidden;cursor:pointer;display:flex;flex-direction:column;justify-content:flex-end;min-height:278px;box-shadow:var(--shadow-card);transition:all .2s;}
+.fresh-promo-card{flex-shrink:0;width:196px;background:radial-gradient(120% 90% at 78% 8%,#1c4a38 0%,var(--navy) 45%,var(--navy3) 100%);border-radius:22px;padding:26px;position:relative;overflow:hidden;cursor:pointer;display:flex;flex-direction:column;justify-content:flex-end;min-height:278px;box-shadow:var(--shadow-card);transition:all .2s;}
 .fresh-promo-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);}
 .fresh-promo-card:active{transform:scale(.98);}
-.fresh-promo-card::before{content:'';position:absolute;top:-40%;right:-30%;width:70%;height:70%;background:radial-gradient(circle,rgba(255,255,255,.08) 0%,transparent 70%);pointer-events:none;}
-.fpc-decor{position:absolute;top:0;right:0;width:120px;height:150px;opacity:.1;pointer-events:none;}
-.fpc-title{font-family:'Playfair Display',serif;font-size:1.32rem;font-weight:700;letter-spacing:.3px;color:#fff;line-height:1.22;margin-bottom:10px;}
-.fpc-sub{font-size:.75rem;color:rgba(255,255,255,.72);line-height:1.5;margin-bottom:20px;}
-.fpc-btn{background:transparent;border:1px solid rgba(255,255,255,.45);color:var(--orange2);padding:8px 18px;border-radius:999px;font-size:.72rem;font-weight:600;cursor:pointer;align-self:flex-start;transition:all .18s;}
+.fresh-promo-card::before{content:'';position:absolute;inset:0;background:radial-gradient(140% 100% at 50% 100%,transparent 40%,rgba(0,0,0,.32) 100%);pointer-events:none;}
+.fpc-decor{position:absolute;top:0;right:0;width:150px;height:190px;opacity:.55;pointer-events:none;mix-blend-mode:soft-light;}
+.fpc-title{font-family:'Playfair Display',serif;font-size:1.32rem;font-weight:700;letter-spacing:.3px;color:#fff;line-height:1.22;margin-bottom:10px;position:relative;}
+.fpc-sub{font-size:.75rem;color:rgba(255,255,255,.72);line-height:1.5;margin-bottom:20px;position:relative;}
+.fpc-btn{background:transparent;border:1px solid rgba(255,255,255,.45);color:var(--orange2);padding:8px 18px;border-radius:999px;font-size:.72rem;font-weight:600;cursor:pointer;align-self:flex-start;transition:all .18s;position:relative;}
 .fpc-btn:hover{border-color:var(--orange2);background:rgba(255,255,255,.06);}
 .fpc-btn:active{transform:scale(.95);}
 
 /* Product card — near-square image, matching reference proportions */
-.fresh-card{flex-shrink:0;width:168px;background:var(--white);border:1px solid var(--border);border-radius:22px;overflow:hidden;cursor:pointer;transition:all .2s;box-shadow:var(--shadow-card);}
+.fresh-card{flex-shrink:0;width:168px;background:var(--surface);border:1px solid var(--border);border-radius:22px;overflow:hidden;cursor:pointer;transition:all .2s;box-shadow:var(--shadow-card);}
 .fresh-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);}
 .fresh-card:active{transform:scale(.98);}
 .fresh-card-img{height:168px;background:var(--sand);display:flex;align-items:center;justify-content:center;font-size:2.5rem;position:relative;overflow:hidden;}
@@ -742,7 +742,7 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 .fc-just{background:var(--navy);color:#fff;font-size:.56rem;font-weight:800;padding:4px 10px;border-radius:999px;text-transform:uppercase;height:22px;display:inline-flex;align-items:center;}
 .fc-special{background:var(--orange);color:#1a2010;font-size:.56rem;font-weight:800;padding:4px 10px;border-radius:999px;height:22px;display:inline-flex;align-items:center;}
 .fc-limited{background:var(--red);color:#fff;font-size:.56rem;font-weight:800;padding:4px 10px;border-radius:999px;height:22px;display:inline-flex;align-items:center;}
-.fresh-card-body{padding:16px;}
+.fresh-card-body{padding:18px;}
 .fresh-card-name{font-size:1.02rem;font-weight:700;letter-spacing:.2px;color:var(--charcoal);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .fresh-card-tagline{font-size:.72rem;color:var(--muted);margin-bottom:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .fresh-card-foot{display:flex;align-items:center;justify-content:space-between;gap:6px;}
@@ -1908,7 +1908,26 @@ img{max-width:100%;height:auto;}
   <span id="freshTodayDate" style="display:none;"></span>
   <div class="fresh-cards-scroll">
     <div class="fresh-promo-card" onclick="filterCat('farm',null);document.getElementById('productsSection').scrollIntoView({behavior:'smooth'})">
-      <div class="fpc-decor"><svg viewBox="0 0 120 150" fill="none"><path d="M95 8C80 30 78 55 90 78" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/><ellipse cx="88" cy="20" rx="14" ry="7" fill="#fff" transform="rotate(-35 88 20)"/><ellipse cx="76" cy="38" rx="15" ry="7.5" fill="#fff" transform="rotate(-15 76 38)"/><ellipse cx="80" cy="58" rx="14" ry="7" fill="#fff" transform="rotate(20 80 58)"/><ellipse cx="92" cy="74" rx="12" ry="6" fill="#fff" transform="rotate(45 92 74)"/></svg></div>
+      <div class="fpc-decor"><svg viewBox="0 0 150 190" fill="none">
+        <defs>
+          <linearGradient id="leafG" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#fff" stop-opacity=".95"/>
+            <stop offset="100%" stop-color="#fff" stop-opacity=".15"/>
+          </linearGradient>
+          <radialGradient id="dropG" cx="35%" cy="30%" r="70%">
+            <stop offset="0%" stop-color="#fff" stop-opacity=".95"/>
+            <stop offset="55%" stop-color="#fff" stop-opacity=".25"/>
+            <stop offset="100%" stop-color="#fff" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <path d="M120 -10C100 25 96 65 112 100" stroke="url(#leafG)" stroke-width="2" stroke-linecap="round"/>
+        <g transform="translate(112,10) rotate(-40)"><path d="M0 0C10 -14 26 -14 34 0C26 14 10 14 0 0Z" fill="url(#leafG)"/></g>
+        <g transform="translate(96,38) rotate(-10)"><path d="M0 0C11 -15 28 -15 37 0C28 15 11 15 0 0Z" fill="url(#leafG)"/></g>
+        <g transform="translate(100,66) rotate(28)"><path d="M0 0C10 -14 26 -14 34 0C26 14 10 14 0 0Z" fill="url(#leafG)"/></g>
+        <g transform="translate(114,90) rotate(55)"><path d="M0 0C8 -11 21 -11 28 0C21 11 8 11 0 0Z" fill="url(#leafG)"/></g>
+        <circle cx="88" cy="52" r="4" fill="url(#dropG)"/>
+        <circle cx="106" cy="78" r="3" fill="url(#dropG)"/>
+      </svg></div>
       <div class="fpc-title"><span class="lang-bn">FRESH<br>TODAY</span><span class="lang-en">FRESH<br>TODAY</span></div>
       <div class="fpc-sub"><span class="lang-bn">আজ পণ্য,<br>বিশ্বাসের সাথে</span><span class="lang-en">Today's goods,<br>with trust</span></div>
       <button class="fpc-btn"><span class="lang-bn">সব দেখুন →</span><span class="lang-en">View All →</span></button>
