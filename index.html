@@ -92,6 +92,13 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 .lds-icon{flex-shrink:0;display:flex;align-items:center;line-height:1;}
 .lds-item span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1;color:#2B2B2B;font-weight:600;display:flex;align-items:center;}
 .lds-sep{width:1px;height:16px;background:rgba(0,0,0,.05);flex-shrink:0;}
+.lds-scroll-mask{overflow:hidden;flex:1;min-width:0;}
+.lds-scroll-track{display:inline-flex;white-space:nowrap;}
+.lds-scroll-seg{padding-right:36px;flex-shrink:0;}
+@media(max-width:768px){
+  .lds-scroll-track{animation:ldsScroll 9s linear infinite;}
+}
+@keyframes ldsScroll{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
 @media(max-width:768px){
   .loc-deliver-strip{font-size:.66rem;margin:22px 4% 0;height:39px;}
   .lds-item{padding:0 12px;}
@@ -1877,7 +1884,10 @@ img{max-width:100%;height:auto;}
   <div class="lds-sep"></div>
   <div class="lds-item">
     <span class="lds-icon"><svg viewBox="0 0 24 24" width="16" height="16"><path class="ic-stroke" d="M2 8h11v8H2z"/><path class="ic-stroke" d="M13 11h4l3 3v2h-7z"/><circle class="ic-stroke" cx="6" cy="18" r="1.6"/><circle class="ic-stroke" cx="16.5" cy="18" r="1.6"/><circle class="ic-gold" cx="18" cy="13.3" r="1.1"/></svg></span>
-    <span><span class="lang-bn">ভারতের সেরা লোকাল মার্কেট — Order Local, Support Local</span><span class="lang-en">India's Best Local Market — Order Local, Support Local</span></span>
+    <span class="lds-scroll-mask"><span class="lds-scroll-track">
+      <span class="lds-scroll-seg"><span class="lang-bn">ভারতের সেরা লোকাল মার্কেট — Order Local, Support Local</span><span class="lang-en">India's Best Local Market — Order Local, Support Local</span></span>
+      <span class="lds-scroll-seg"><span class="lang-bn">ভারতের সেরা লোকাল মার্কেট — Order Local, Support Local</span><span class="lang-en">India's Best Local Market — Order Local, Support Local</span></span>
+    </span></span>
   </div>
 </div>
 
