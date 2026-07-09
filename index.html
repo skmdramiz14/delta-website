@@ -720,37 +720,65 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 .fresh-cards-scroll::-webkit-scrollbar{display:none;}
 
 /* Static promo card — first item in the scroll (wider than product cards, matching reference) */
-.fresh-promo-card{flex-shrink:0;width:196px;background:radial-gradient(120% 90% at 78% 8%,#1c4a38 0%,var(--navy) 45%,var(--navy3) 100%);border-radius:22px;padding:26px;position:relative;overflow:hidden;cursor:pointer;display:flex;flex-direction:column;justify-content:flex-end;min-height:278px;box-shadow:var(--shadow-card);transition:all .2s;}
-.fresh-promo-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);}
+.fresh-promo-card{flex-shrink:0;width:206px;background:
+    radial-gradient(160% 120% at 82% -10%,rgba(199,161,90,.16) 0%,rgba(199,161,90,0) 38%),
+    radial-gradient(120% 90% at 20% 100%,#0c2a1f 0%,rgba(12,42,31,0) 55%),
+    linear-gradient(165deg,#173d2d 0%,#0f2c20 48%,#0a1f17 100%);
+  border-radius:24px;padding:28px 24px 24px;position:relative;overflow:hidden;cursor:pointer;
+  display:flex;flex-direction:column;justify-content:flex-end;min-height:286px;
+  box-shadow:0 14px 34px rgba(10,30,22,.28),0 2px 8px rgba(10,30,22,.18);transition:all .25s cubic-bezier(.2,.7,.3,1);}
+.fresh-promo-card:hover{transform:translateY(-5px);box-shadow:0 20px 44px rgba(10,30,22,.34),0 4px 12px rgba(10,30,22,.2);}
 .fresh-promo-card:active{transform:scale(.98);}
-.fresh-promo-card::before{content:'';position:absolute;inset:0;background:radial-gradient(140% 100% at 50% 100%,transparent 40%,rgba(0,0,0,.32) 100%);pointer-events:none;}
-.fpc-decor{position:absolute;top:0;right:0;width:150px;height:190px;opacity:.55;pointer-events:none;mix-blend-mode:soft-light;}
-.fpc-title{font-family:'Playfair Display',serif;font-size:1.32rem;font-weight:700;letter-spacing:.3px;color:#fff;line-height:1.22;margin-bottom:10px;position:relative;}
-.fpc-sub{font-size:.75rem;color:rgba(255,255,255,.72);line-height:1.5;margin-bottom:20px;position:relative;}
-.fpc-btn{background:transparent;border:1px solid rgba(255,255,255,.45);color:var(--orange2);padding:8px 18px;border-radius:999px;font-size:.72rem;font-weight:600;cursor:pointer;align-self:flex-start;transition:all .18s;position:relative;}
-.fpc-btn:hover{border-color:var(--orange2);background:rgba(255,255,255,.06);}
-.fpc-btn:active{transform:scale(.95);}
+/* fine grain texture, so the green never reads as a flat fill */
+.fresh-promo-card::before{content:'';position:absolute;inset:0;opacity:.5;mix-blend-mode:overlay;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E");}
+/* soft vignette + top sheen for depth */
+.fresh-promo-card::after{content:'';position:absolute;inset:0;pointer-events:none;
+  background:
+    radial-gradient(90% 60% at 50% 0%,rgba(255,255,255,.10) 0%,rgba(255,255,255,0) 55%),
+    radial-gradient(140% 100% at 50% 100%,transparent 38%,rgba(0,0,0,.38) 100%);}
+.fpc-decor{position:absolute;top:-8px;right:-14px;width:172px;height:230px;opacity:.9;pointer-events:none;z-index:0;}
+.fpc-eyebrow{position:relative;display:inline-flex;align-items:center;gap:6px;color:var(--orange2);
+  font-size:.62rem;font-weight:600;letter-spacing:1.6px;text-transform:uppercase;margin-bottom:14px;opacity:.85;}
+.fpc-title{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;letter-spacing:.2px;
+  color:#fff;line-height:1.14;margin-bottom:9px;position:relative;text-shadow:0 2px 14px rgba(0,0,0,.25);}
+.fpc-sub{font-size:.76rem;color:rgba(255,255,255,.66);line-height:1.55;margin-bottom:22px;position:relative;font-weight:300;}
+.fpc-btn{background:transparent;border:1px solid rgba(199,161,90,.65);color:var(--orange2);
+  padding:9px 8px 9px 18px;border-radius:999px;font-size:.72rem;font-weight:600;letter-spacing:.2px;cursor:pointer;
+  align-self:flex-start;transition:all .2s;position:relative;display:inline-flex;align-items:center;gap:10px;}
+.fpc-btn .fpc-arrow{width:22px;height:22px;border-radius:50%;background:rgba(199,161,90,.16);display:inline-flex;
+  align-items:center;justify-content:center;font-size:.8rem;transition:all .2s;flex-shrink:0;}
+.fpc-btn:hover{border-color:var(--orange2);background:rgba(255,255,255,.05);}
+.fpc-btn:hover .fpc-arrow{background:var(--orange);color:#1a2010;transform:translateX(2px);}
+.fpc-btn:active{transform:scale(.96);}
 
 /* Product card — near-square image, matching reference proportions */
-.fresh-card{flex-shrink:0;width:168px;background:var(--surface);border:1px solid var(--border);border-radius:22px;overflow:hidden;cursor:pointer;transition:all .2s;box-shadow:var(--shadow-card);}
-.fresh-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);}
+.fresh-card{flex-shrink:0;width:176px;background:var(--surface);border:1px solid rgba(0,0,0,.04);border-radius:24px;overflow:hidden;cursor:pointer;transition:all .25s cubic-bezier(.2,.7,.3,1);box-shadow:0 1px 3px rgba(30,33,31,.04),0 10px 24px rgba(30,33,31,.06);}
+.fresh-card:hover{transform:translateY(-5px);box-shadow:0 4px 10px rgba(30,33,31,.05),0 18px 36px rgba(30,33,31,.1);}
 .fresh-card:active{transform:scale(.98);}
-.fresh-card-img{height:168px;background:var(--sand);display:flex;align-items:center;justify-content:center;font-size:2.5rem;position:relative;overflow:hidden;}
-.fresh-card-img img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;filter:saturate(1.06) contrast(1.03);}
-.fresh-card-img::after{content:'';position:absolute;inset:0;box-shadow:inset 0 -24px 20px -20px rgba(0,0,0,.12);pointer-events:none;}
-.fresh-card-badges{position:absolute;top:8px;left:8px;display:flex;gap:4px;flex-wrap:wrap;z-index:1;}
-.fc-just{background:var(--navy);color:#fff;font-size:.56rem;font-weight:800;padding:4px 10px;border-radius:999px;text-transform:uppercase;height:22px;display:inline-flex;align-items:center;}
-.fc-special{background:var(--orange);color:#1a2010;font-size:.56rem;font-weight:800;padding:4px 10px;border-radius:999px;height:22px;display:inline-flex;align-items:center;}
-.fc-limited{background:var(--red);color:#fff;font-size:.56rem;font-weight:800;padding:4px 10px;border-radius:999px;height:22px;display:inline-flex;align-items:center;}
-.fresh-card-body{padding:18px;}
-.fresh-card-name{font-size:1.02rem;font-weight:700;letter-spacing:.2px;color:var(--charcoal);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.fresh-card-tagline{font-size:.72rem;color:var(--muted);margin-bottom:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.fresh-card-img{height:176px;background:linear-gradient(160deg,var(--sand),#ece2d0);display:flex;align-items:center;justify-content:center;font-size:2.5rem;position:relative;overflow:hidden;}
+.fresh-card-img img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;filter:saturate(1.08) contrast(1.04) brightness(1.01);transition:transform .4s ease;}
+.fresh-card:hover .fresh-card-img img{transform:scale(1.045);}
+/* soft editorial vignette so every photo — whatever the seller uploaded — reads consistently lit */
+.fresh-card-img::after{content:'';position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(180deg,rgba(0,0,0,.10) 0%,transparent 22%,transparent 70%,rgba(0,0,0,.16) 100%);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);}
+.fresh-card-badges{position:absolute;top:10px;left:10px;display:flex;gap:5px;flex-wrap:wrap;z-index:1;}
+.fc-just{background:rgba(16,57,45,.88);backdrop-filter:blur(3px);color:#fff;font-size:.56rem;font-weight:700;letter-spacing:.4px;padding:5px 11px 5px 9px;border-radius:999px;text-transform:uppercase;height:23px;display:inline-flex;align-items:center;gap:4px;}
+.fc-just::before{content:'✦';font-size:.62rem;color:var(--orange2);}
+.fc-special{background:rgba(16,57,45,.88);backdrop-filter:blur(3px);color:var(--orange2);font-size:.56rem;font-weight:700;letter-spacing:.4px;padding:5px 11px 5px 9px;border-radius:999px;text-transform:uppercase;height:23px;display:inline-flex;align-items:center;gap:4px;}
+.fc-special::before{content:'★';font-size:.62rem;}
+.fc-limited{background:rgba(192,57,43,.92);backdrop-filter:blur(3px);color:#fff;font-size:.56rem;font-weight:700;letter-spacing:.4px;padding:5px 11px;border-radius:999px;height:23px;display:inline-flex;align-items:center;}
+.fc-discount{background:var(--orange);color:#1a2010;font-size:.56rem;font-weight:800;letter-spacing:.3px;padding:5px 11px;border-radius:999px;height:23px;display:inline-flex;align-items:center;}
+.fresh-card-body{padding:16px 17px 17px;}
+.fresh-card-name{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;letter-spacing:.15px;color:var(--charcoal);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.fresh-card-tagline{font-size:.7rem;color:var(--muted);letter-spacing:.2px;margin-bottom:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .fresh-card-foot{display:flex;align-items:center;justify-content:space-between;gap:6px;}
-.fresh-card-pill{font-size:.6rem;font-weight:800;padding:4px 10px;border-radius:999px;white-space:nowrap;height:22px;display:inline-flex;align-items:center;}
+.fresh-card-pill{font-size:.6rem;font-weight:700;letter-spacing:.3px;padding:5px 11px;border-radius:999px;white-space:nowrap;height:23px;display:inline-flex;align-items:center;}
 .fc-pill-fresh{background:var(--green2);color:var(--green);}
 .fc-pill-special{background:var(--orange-light);color:var(--orange-dark,var(--orange));}
-.fresh-card-plus{width:28px;height:28px;border-radius:50%;background:var(--navy);color:#fff;border:none;font-weight:900;font-size:.86rem;cursor:pointer;flex-shrink:0;line-height:1;transition:all .18s;box-shadow:var(--shadow-sm);display:flex;align-items:center;justify-content:center;}
-.fresh-card-plus:hover{background:var(--orange);}
+.fresh-card-plus{width:30px;height:30px;border-radius:50%;background:var(--navy);color:#fff;border:none;font-weight:600;font-size:1rem;cursor:pointer;flex-shrink:0;line-height:1;transition:all .2s;box-shadow:0 3px 8px rgba(16,57,45,.25);display:flex;align-items:center;justify-content:center;}
+.fresh-card-plus:hover{background:var(--orange);box-shadow:0 3px 8px rgba(199,161,90,.35);}
 .fresh-card-plus:active{transform:scale(.9);}
 
 /* ── FARMERS STRIP ── */
@@ -1908,29 +1936,48 @@ img{max-width:100%;height:auto;}
   <span id="freshTodayDate" style="display:none;"></span>
   <div class="fresh-cards-scroll">
     <div class="fresh-promo-card" onclick="filterCat('farm',null);document.getElementById('productsSection').scrollIntoView({behavior:'smooth'})">
-      <div class="fpc-decor"><svg viewBox="0 0 150 190" fill="none">
+      <div class="fpc-decor"><svg viewBox="0 0 172 230" fill="none">
         <defs>
-          <linearGradient id="leafG" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stop-color="#fff" stop-opacity=".95"/>
-            <stop offset="100%" stop-color="#fff" stop-opacity=".15"/>
+          <linearGradient id="leafG1" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#eadfc0" stop-opacity=".9"/>
+            <stop offset="100%" stop-color="#eadfc0" stop-opacity=".05"/>
           </linearGradient>
-          <radialGradient id="dropG" cx="35%" cy="30%" r="70%">
-            <stop offset="0%" stop-color="#fff" stop-opacity=".95"/>
-            <stop offset="55%" stop-color="#fff" stop-opacity=".25"/>
+          <linearGradient id="leafG2" x1="0" y1="1" x2="1" y2="0">
+            <stop offset="0%" stop-color="#fff" stop-opacity=".85"/>
+            <stop offset="100%" stop-color="#fff" stop-opacity=".08"/>
+          </linearGradient>
+          <radialGradient id="dropG2" cx="35%" cy="30%" r="70%">
+            <stop offset="0%" stop-color="#fff" stop-opacity=".9"/>
+            <stop offset="55%" stop-color="#fff" stop-opacity=".2"/>
             <stop offset="100%" stop-color="#fff" stop-opacity="0"/>
           </radialGradient>
+          <filter id="leafBlur" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="2.2"/>
+          </filter>
         </defs>
-        <path d="M120 -10C100 25 96 65 112 100" stroke="url(#leafG)" stroke-width="2" stroke-linecap="round"/>
-        <g transform="translate(112,10) rotate(-40)"><path d="M0 0C10 -14 26 -14 34 0C26 14 10 14 0 0Z" fill="url(#leafG)"/></g>
-        <g transform="translate(96,38) rotate(-10)"><path d="M0 0C11 -15 28 -15 37 0C28 15 11 15 0 0Z" fill="url(#leafG)"/></g>
-        <g transform="translate(100,66) rotate(28)"><path d="M0 0C10 -14 26 -14 34 0C26 14 10 14 0 0Z" fill="url(#leafG)"/></g>
-        <g transform="translate(114,90) rotate(55)"><path d="M0 0C8 -11 21 -11 28 0C21 11 8 11 0 0Z" fill="url(#leafG)"/></g>
-        <circle cx="88" cy="52" r="4" fill="url(#dropG)"/>
-        <circle cx="106" cy="78" r="3" fill="url(#dropG)"/>
+        <!-- back layer: soft blurred shadow leaves for depth -->
+        <g opacity=".5" filter="url(#leafBlur)">
+          <path d="M150 6C118 46 110 96 132 140" stroke="url(#leafG1)" stroke-width="3" stroke-linecap="round"/>
+          <g transform="translate(140,26) rotate(-38)"><path d="M0 0C14 -20 36 -20 48 0C36 20 14 20 0 0Z" fill="url(#leafG1)"/></g>
+          <g transform="translate(122,64) rotate(-6)"><path d="M0 0C15 -21 39 -21 52 0C39 21 15 21 0 0Z" fill="url(#leafG1)"/></g>
+        </g>
+        <!-- main leaf branch, layered for a hand-illustrated botanical feel -->
+        <path d="M148 2C114 44 105 98 130 146" stroke="url(#leafG2)" stroke-width="2.4" stroke-linecap="round"/>
+        <g transform="translate(140,18) rotate(-42)"><path d="M0 0C13 -18 33 -18 45 0C33 18 13 18 0 0Z" fill="url(#leafG2)"/></g>
+        <g transform="translate(121,48) rotate(-12)"><path d="M0 0C14 -19 36 -19 48 0C36 19 14 19 0 0Z" fill="url(#leafG2)"/></g>
+        <g transform="translate(126,82) rotate(24)"><path d="M0 0C13 -18 33 -18 44 0C33 18 13 18 0 0Z" fill="url(#leafG2)"/></g>
+        <g transform="translate(140,112) rotate(52)"><path d="M0 0C10 -14 27 -14 36 0C27 14 10 14 0 0Z" fill="url(#leafG2)"/></g>
+        <g transform="translate(132,140) rotate(78)"><path d="M0 0C8 -11 21 -11 28 0C21 11 8 11 0 0Z" fill="url(#leafG2)" opacity=".8"/></g>
+        <!-- a stray small sprig lower-left, breaks the symmetry -->
+        <g transform="translate(30,196) rotate(20)" opacity=".55"><path d="M0 0C9 -12 24 -12 32 0C24 12 9 12 0 0Z" fill="url(#leafG2)"/></g>
+        <circle cx="112" cy="60" r="4.5" fill="url(#dropG2)"/>
+        <circle cx="128" cy="96" r="3.2" fill="url(#dropG2)"/>
+        <circle cx="118" cy="128" r="2.4" fill="url(#dropG2)"/>
       </svg></div>
+      <div class="fpc-eyebrow"><span class="lang-bn">🌿 আজকের নির্বাচন</span><span class="lang-en">🌿 Today's Selection</span></div>
       <div class="fpc-title"><span class="lang-bn">FRESH<br>TODAY</span><span class="lang-en">FRESH<br>TODAY</span></div>
       <div class="fpc-sub"><span class="lang-bn">আজ পণ্য,<br>বিশ্বাসের সাথে</span><span class="lang-en">Today's goods,<br>with trust</span></div>
-      <button class="fpc-btn"><span class="lang-bn">সব দেখুন →</span><span class="lang-en">View All →</span></button>
+      <button class="fpc-btn"><span class="lang-bn">সব দেখুন</span><span class="lang-en">View All</span><span class="fpc-arrow">→</span></button>
     </div>
     <div id="freshCardsGrid" style="display:contents;"></div>
   </div>
@@ -5280,7 +5327,7 @@ function buildFreshCards(prods){
     return '<div class="fresh-card">'+
       '<div class="fresh-card-img">'+(img?'<img src="'+img+'" alt="'+name+'" loading="lazy">':prodEmoji(p.category))+
       '<div class="fresh-card-badges"><span class="'+badgeClass+'">'+badgeLabel+'</span>'+
-      (p.discount?'<span class="fc-special">'+p.discount+'% OFF</span>':'')+
+      (p.discount?'<span class="fc-discount">'+p.discount+'% OFF</span>':'')+
       '</div></div>'+
       '<div class="fresh-card-body">'+
       '<div class="fresh-card-name">'+name+'</div>'+
