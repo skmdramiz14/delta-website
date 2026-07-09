@@ -786,41 +786,39 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 
 /* ── FRESH TODAY — MOBILE-ONLY LAYOUT (390px reference) ──
    Desktop/tablet rules above are untouched. Below applies only under 480px.
-   One unified soft shadow + radius across every card, no align-items
-   override (flex `stretch` keeps every card's top and bottom edge on the
-   same baseline), and the featured card is deliberately ~6% wider than a
-   product card so it reads as the hero, not a narrower side tile. */
+   One unified soft shadow + radius across every card. Both cards use
+   min-height (not a fixed height) at the same value, so flex's default
+   `stretch` reliably equalizes their top and bottom edges — this is what
+   was actually causing the baseline mismatch before. */
 @media(max-width:480px){
   #freshTodaySection{padding:30px 4% 20px;}
   .fresh-cards-scroll{gap:17px;padding-right:4%;
     scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;}
 
-  .fresh-promo-card{width:192px;min-height:260px;padding:20px 18px 18px;border-radius:20px;
+  .fresh-promo-card{width:146px;min-height:240px;padding:18px 15px 15px;border-radius:16px;
     scroll-snap-align:start;margin-right:-6px; /* tighter hero→first-card gap, ~11px effective */
     background:
       radial-gradient(120% 90% at 85% 0%,rgba(210,180,120,.22) 0%,rgba(210,180,120,0) 42%),
       radial-gradient(90% 70% at 15% 105%,#0c2a1f 0%,rgba(12,42,31,0) 60%),
       linear-gradient(165deg,#1b4433 0%,#0f2c20 50%,#091d15 100%);
     box-shadow:0 4px 14px rgba(20,30,25,.10);} /* same soft shadow value as product cards below */
-  .fpc-decor{width:150px;height:198px;top:-4px;right:-9px;filter:blur(.3px);}
+  .fpc-decor{width:124px;height:164px;top:-4px;right:-8px;filter:blur(.3px);}
   .fpc-eyebrow{display:none;}
-  .fpc-title{font-size:1.4rem;margin-bottom:8px;line-height:1.13;}
-  .fpc-sub{font-size:.74rem;margin-bottom:13px;line-height:1.48;}
-  .fpc-btn{padding:7px 6px 7px 15px;font-size:.66rem;gap:8px;border-width:2px;border-color:var(--orange);}
-  .fpc-btn .fpc-arrow{width:21px;height:21px;font-size:.78rem;}
+  .fpc-title{font-size:1.32rem;margin-bottom:7px;line-height:1.13;}
+  .fpc-sub{font-size:.7rem;margin-bottom:11px;line-height:1.48;}
+  .fpc-btn{padding:6px 5px 6px 14px;font-size:.62rem;gap:7px;border-width:2px;border-color:var(--orange);}
+  .fpc-btn .fpc-arrow{width:20px;height:20px;font-size:.76rem;}
 
-  /* Product cards — image inset with its own padding/radius (not edge-to-edge),
-     text+badge+button overlay only within that inset image area */
-  .fresh-card{width:180px;min-height:260px;position:relative;border-radius:20px;scroll-snap-align:start;
+  /* Product cards — full-bleed photo, text/badge/button overlaid directly on the image */
+  .fresh-card{width:180px;min-height:240px;position:relative;border-radius:16px;scroll-snap-align:start;
     box-shadow:0 4px 14px rgba(20,30,25,.10);} /* identical shadow to the featured card */
-  .fresh-card-img{position:absolute;inset:9px;width:auto;height:auto;border-radius:18px;overflow:hidden;}
+  .fresh-card-img{position:absolute;inset:0;width:100%;height:100%;}
   .fresh-card-img img{width:100%;height:100%;object-fit:cover;}
   .fresh-card-img::after{display:none;} /* replaced by the bottom scrim on .fresh-card-body below */
-  .fresh-card-body{position:absolute;left:9px;right:9px;bottom:9px;z-index:2;
-    border-radius:0 0 18px 18px;padding:18px 15px 15px;
-    background:linear-gradient(180deg,transparent 0%,rgba(8,20,14,.2) 42%,rgba(6,16,11,.84) 100%);}
-  .fresh-card-name{font-size:.96rem;margin-bottom:6px;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.35);}
-  .fresh-card-tagline{font-size:.66rem;margin-bottom:12px;color:rgba(255,255,255,.78);}
+  .fresh-card-body{position:absolute;left:0;right:0;bottom:0;z-index:2;padding:16px 14px 14px;
+    background:linear-gradient(180deg,transparent 0%,rgba(8,20,14,.18) 40%,rgba(6,16,11,.82) 100%);}
+  .fresh-card-name{font-size:.96rem;margin-bottom:4px;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.35);}
+  .fresh-card-tagline{font-size:.65rem;margin-bottom:9px;color:rgba(255,255,255,.78);}
   .fresh-card-badges{top:8px;left:8px;z-index:3;}
 
   /* Badges — pill-shaped, 30–32px tall, balanced internal padding */
