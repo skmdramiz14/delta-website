@@ -782,35 +782,6 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 .fresh-card-plus:hover{background:var(--orange);box-shadow:0 3px 8px rgba(199,161,90,.35);}
 .fresh-card-plus:active{transform:scale(.9);}
 
-/* Smooth native snap-scrolling for the whole carousel (desktop + mobile) */
-.fresh-cards-scroll{scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;}
-.fresh-promo-card,.fresh-card{scroll-snap-align:start;}
-
-/* ══ FRESH TODAY — MOBILE-ONLY REBUILD (not a scaled-down desktop version) ══
-   Featured card goes narrower + a touch shorter; product cards go wider so the
-   row reads as "one hero card + a premium product queue" instead of two
-   squeezed tiles. Tuned for a 390px reference viewport (section padding 4%). */
-@media(max-width:480px){
-  .fresh-cards-scroll{gap:16px;}
-
-  .fresh-promo-card{width:156px;min-height:224px;padding:20px 18px 18px;border-radius:20px;}
-  .fpc-decor{width:132px;height:176px;top:-6px;right:-10px;}
-  .fpc-eyebrow{font-size:.56rem;letter-spacing:1.3px;margin-bottom:12px;}
-  .fpc-title{font-size:1.26rem;margin-bottom:8px;}
-  .fpc-sub{font-size:.7rem;line-height:1.5;margin-bottom:16px;}
-  .fpc-btn{padding:6px 5px 6px 13px;font-size:.66rem;gap:7px;}
-  .fpc-btn .fpc-arrow{width:18px;height:18px;font-size:.68rem;}
-
-  .fresh-card{width:176px;border-radius:20px;}
-  .fresh-card-img{height:180px;}
-  .fresh-card-body{padding:14px 15px 15px;}
-  .fresh-card-name{font-size:1rem;}
-  .fresh-card-tagline{font-size:.68rem;margin-bottom:11px;}
-  .fc-just,.fc-special,.fc-discount,.fc-limited{font-size:.54rem;height:21px;padding:4px 10px 4px 8px;}
-  .fresh-card-pill{font-size:.58rem;height:21px;padding:4px 10px;}
-  .fresh-card-plus{width:28px;height:28px;font-size:.94rem;}
-}
-
 /* ── FRESH TODAY — MOBILE-ONLY LAYOUT (390px reference) ──
    Desktop/tablet rules above are untouched. Below applies only under 480px,
    rebuilding proportions to match the app-mockup reference: a narrow
@@ -2041,7 +2012,7 @@ img{max-width:100%;height:auto;}
       </svg></div>
       <div class="fpc-eyebrow"><span class="lang-bn">🌿 আজকের নির্বাচন</span><span class="lang-en">🌿 Today's Selection</span></div>
       <div class="fpc-title"><span class="lang-bn">FRESH<br>TODAY</span><span class="lang-en">FRESH<br>TODAY</span></div>
-      <div class="fpc-sub"><span class="lang-bn">আজ পণ্য,<br>বিশ্বাসের সাথে</span><span class="lang-en">Today's goods,<br>with trust</span></div>
+      <div class="fpc-sub"><span class="lang-bn">তাজা পণ্য,<br>বিশ্বাসের সাথে</span><span class="lang-en">Today's goods,<br>with trust</span></div>
       <button class="fpc-btn"><span class="lang-bn">সব দেখুন</span><span class="lang-en">View All</span><span class="fpc-arrow">→</span></button>
     </div>
     <div id="freshCardsGrid" style="display:contents;"></div>
