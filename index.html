@@ -92,9 +92,9 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 .lds-icon{flex-shrink:0;display:flex;align-items:center;line-height:1;}
 .lds-item span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1;color:#2B2B2B;font-weight:600;display:flex;align-items:center;}
 .lds-sep{width:1px;height:16px;background:rgba(0,0,0,.05);flex-shrink:0;}
-.lds-scroll-mask{overflow:hidden;flex:1;min-width:0;}
-.lds-scroll-track{display:inline-flex;white-space:nowrap;}
-.lds-scroll-seg{padding-right:36px;flex-shrink:0;}
+.lds-scroll-mask{display:block!important;overflow:hidden!important;text-overflow:clip!important;flex:1;min-width:0;}
+.lds-scroll-track{display:inline-flex;white-space:nowrap;width:max-content;}
+.lds-scroll-seg{padding-right:36px;flex-shrink:0;display:inline-flex;align-items:center;}
 @media(max-width:768px){
   .lds-scroll-track{animation:ldsScroll 9s linear infinite;}
 }
