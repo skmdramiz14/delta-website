@@ -809,19 +809,21 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
   .fpc-btn{padding:6px 5px 6px 14px;font-size:.62rem;gap:7px;border-width:2px;border-color:var(--orange);}
   .fpc-btn .fpc-arrow{width:20px;height:20px;font-size:.76rem;}
 
-  .fresh-card{width:180px;border-radius:16px;scroll-snap-align:start;
-    box-shadow:0 4px 14px rgba(20,30,25,.10);} /* identical shadow — one shared, softer elevation */
-  .fresh-card-img{height:186px;} /* image is the primary focus — ~72% of total card height */
-  .fresh-card-img img{object-fit:cover;}
-  .fresh-card-body{padding:12px 14px 13px;}
-  .fresh-card-name{font-size:.94rem;margin-bottom:4px;}
-  .fresh-card-tagline{font-size:.65rem;margin-bottom:9px;}
-  .fresh-card-badges{top:8px;left:8px;}
+  .fresh-card{width:180px;height:240px;position:relative;border-radius:16px;scroll-snap-align:start;
+    box-shadow:0 4px 14px rgba(20,30,25,.10);} /* the whole card is now the photo — text overlays on top of it */
+  .fresh-card-img{position:absolute;inset:0;width:100%;height:100%;}
+  .fresh-card-img img{width:100%;height:100%;object-fit:cover;}
+  .fresh-card-img::after{display:none;} /* replaced by the bottom scrim on .fresh-card-body below */
+  .fresh-card-body{position:absolute;left:0;right:0;bottom:0;z-index:2;padding:16px 14px 14px;
+    background:linear-gradient(180deg,transparent 0%,rgba(8,20,14,.18) 40%,rgba(6,16,11,.82) 100%);}
+  .fresh-card-name{font-size:.96rem;margin-bottom:4px;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.35);}
+  .fresh-card-tagline{font-size:.65rem;margin-bottom:9px;color:rgba(255,255,255,.78);}
+  .fresh-card-badges{top:8px;left:8px;z-index:3;}
 
   /* Badges — pill-shaped, 30–32px tall, balanced internal padding */
   .fc-just,.fc-special,.fc-limited,.fc-discount{height:31px;font-size:.6rem;padding:0 15px;border-radius:999px;}
   .fresh-card-pill{height:31px;font-size:.62rem;padding:0 15px;border-radius:999px;}
-  .fresh-card-plus{width:27px;height:27px;font-size:.92rem;}
+  .fresh-card-plus{width:27px;height:27px;font-size:.92rem;box-shadow:0 2px 8px rgba(0,0,0,.25),0 0 0 1.5px rgba(255,255,255,.25);}
 
   /* Dot pagination — one dot per card (featured + products), tracks scroll position */
   .fresh-dots{display:flex;justify-content:center;align-items:center;gap:6px;margin-top:14px;flex-wrap:wrap;}
