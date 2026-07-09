@@ -87,18 +87,18 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 
 /* ── LOCATION / DELIVERY INFO PILL — merged into a single elegant pill ── */
 .loc-deliver-strip{display:flex;align-items:center;gap:0;background:var(--bar-bg);border-radius:24px;height:42px;margin:24px 5% 0;padding:0 10px;font-size:.72rem;color:#333;box-shadow:0 8px 24px rgba(0,0,0,.05);}
-.lds-item{display:flex;align-items:center;gap:6px;flex:1;min-width:0;cursor:default;padding:0 20px;line-height:1;}
+.lds-item{display:flex;align-items:center;gap:6px;flex:1;min-width:0;cursor:default;padding:0 16px;line-height:1;}
 .lds-item[onclick]{cursor:pointer;}
 .lds-icon{flex-shrink:0;display:flex;align-items:center;line-height:1;}
 .lds-item span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1;color:#333;font-weight:500;display:flex;align-items:center;}
 .lds-sep{width:1px;height:16px;background:rgba(0,0,0,.02);flex-shrink:0;}
 @media(max-width:768px){
   .loc-deliver-strip{font-size:.66rem;margin:22px 4% 0;height:39px;}
-  .lds-item{padding:0 16px;}
+  .lds-item{padding:0 12px;}
 }
 @media(max-width:480px){
   .loc-deliver-strip{font-size:.6rem;height:36px;}
-  .lds-item{padding:0 12px;}
+  .lds-item{padding:0 9px;}
 }
 
 /* ── MARQUEE ── */
@@ -651,6 +651,7 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 .nav-loc-btn{color:var(--charcoal);font-size:.78rem;white-space:nowrap;cursor:pointer;padding:0 22px;height:47px;border-radius:11px;background:var(--surface);border:none;display:flex;align-items:center;gap:7px;transition:all .18s;flex-shrink:0;box-shadow:0 8px 24px rgba(0,0,0,.05);}
 .nav-loc-btn .lds-arrow{font-size:1.09rem;opacity:.7;color:var(--charcoal);display:flex;align-items:center;line-height:1;}
 @media(min-width:769px){.nav-loc-btn{min-width:256px;}}
+@media(min-width:341px){.nav-loc-btn{margin-left:8px;}}
 .nav-loc-btn span:first-of-type{color:var(--charcoal);font-weight:600;font-size:.72rem;}
 .nav-loc-btn:hover{background:#fff;}
 .nav-loc-btn:active{transform:scale(.97);}
@@ -1871,12 +1872,12 @@ img{max-width:100%;height:auto;}
 <div class="loc-deliver-strip">
   <div class="lds-item" onclick="openPinModal()">
     <span class="lds-icon"><svg viewBox="0 0 24 24" width="15" height="15"><path class="ic-stroke" d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Z"/><circle class="ic-gold" cx="12" cy="9" r="1.6"/></svg></span>
-    <span><span class="lang-bn">লোকেশন — Manteswar ও আশপাশ</span><span class="lang-en">Location — Manteswar &amp; nearby</span></span>
+    <span><span class="lang-bn">Manteswar ও আশপাশ</span><span class="lang-en">Manteswar &amp; nearby</span></span>
   </div>
   <div class="lds-sep"></div>
   <div class="lds-item">
     <span class="lds-icon"><svg viewBox="0 0 24 24" width="16" height="16"><path class="ic-stroke" d="M2 8h11v8H2z"/><path class="ic-stroke" d="M13 11h4l3 3v2h-7z"/><circle class="ic-stroke" cx="6" cy="18" r="1.6"/><circle class="ic-stroke" cx="16.5" cy="18" r="1.6"/><circle class="ic-gold" cx="18" cy="13.3" r="1.1"/></svg></span>
-    <span><span class="lang-bn">বাংলার সেরা সিটি — Order Local, Support Local</span><span class="lang-en">Bengal's Best City — Order Local, Support Local</span></span>
+    <span><span class="lang-bn">বাংলার সেরা সিটি</span><span class="lang-en">Bengal's Best City</span></span>
   </div>
 </div>
 
