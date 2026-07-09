@@ -784,25 +784,23 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 
 /* ── FRESH TODAY — MOBILE-ONLY LAYOUT (390px reference) ──
    Desktop/tablet rules above are untouched. Below applies only under 480px.
-   One unified soft shadow + radius across every card, uniform 17px gaps,
-   equal left/right carousel insets, and — critically — no explicit
-   align-items override, so flex's default `stretch` makes the featured
-   card automatically match the product cards' full height: same top edge,
-   same bottom edge, one shared baseline, and the hero card keeps its
-   presence instead of reading as a smaller side tile. */
+   One unified soft shadow + radius across every card, no align-items
+   override (flex `stretch` keeps every card's top and bottom edge on the
+   same baseline), and a tighter hero→first-card gap so the row reads as
+   one connected carousel rather than two separate groups. */
 @media(max-width:480px){
   #freshTodaySection{padding:30px 4% 20px;}
   .fresh-cards-scroll{gap:17px;padding-right:4%;
     scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;}
 
-  .fresh-promo-card{width:138px;min-height:260px;padding:18px 15px 15px;border-radius:16px;
-    scroll-snap-align:start;
+  .fresh-promo-card{width:146px;min-height:260px;padding:18px 15px 15px;border-radius:16px;
+    scroll-snap-align:start;margin-right:-6px; /* tighter hero→first-card gap, ~11px effective */
     background:
       radial-gradient(120% 90% at 85% 0%,rgba(210,180,120,.22) 0%,rgba(210,180,120,0) 42%),
       radial-gradient(90% 70% at 15% 105%,#0c2a1f 0%,rgba(12,42,31,0) 60%),
       linear-gradient(165deg,#1b4433 0%,#0f2c20 50%,#091d15 100%);
-    box-shadow:0 6px 18px rgba(20,30,25,.12);} /* same shadow value as product cards below */
-  .fpc-decor{width:118px;height:156px;top:-4px;right:-8px;filter:blur(.3px);}
+    box-shadow:0 4px 14px rgba(20,30,25,.10);} /* same soft shadow value as product cards below */
+  .fpc-decor{width:124px;height:164px;top:-4px;right:-8px;filter:blur(.3px);}
   .fpc-eyebrow{display:none;}
   .fpc-title{font-size:1.32rem;margin-bottom:7px;line-height:1.13;}
   .fpc-sub{font-size:.7rem;margin-bottom:11px;line-height:1.48;}
@@ -810,12 +808,12 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
   .fpc-btn .fpc-arrow{width:20px;height:20px;font-size:.76rem;}
 
   .fresh-card{width:180px;border-radius:16px;scroll-snap-align:start;
-    box-shadow:0 6px 18px rgba(20,30,25,.12);} /* identical shadow — one shared elevation system */
-  .fresh-card-img{height:168px;} /* ≈70% of total card height */
+    box-shadow:0 4px 14px rgba(20,30,25,.10);} /* identical shadow — one shared, softer elevation */
+  .fresh-card-img{height:152px;} /* rebalanced — image no longer dominates, more room for content below */
   .fresh-card-img img{object-fit:cover;}
-  .fresh-card-body{padding:10px 12px 11px;}
-  .fresh-card-name{font-size:.92rem;margin-bottom:5px;}
-  .fresh-card-tagline{font-size:.64rem;margin-bottom:9px;}
+  .fresh-card-body{padding:13px 14px 14px;}
+  .fresh-card-name{font-size:.94rem;margin-bottom:6px;}
+  .fresh-card-tagline{font-size:.66rem;margin-bottom:11px;}
   .fresh-card-badges{top:8px;left:8px;}
 
   /* Badges — pill-shaped, 30–32px tall, balanced internal padding */
