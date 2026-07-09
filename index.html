@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="bn">
 <head>
 <meta charset="UTF-8">
@@ -9,10 +9,10 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 :root{
-  --navy:#0a1f35;--navy2:#122840;--navy3:#061526;
-  --orange:#f07018;--orange2:#ff8c3a;--orange-light:#fff4ec;
-  --cream:#f7f9fc;--sand:#eef2f7;--white:#fff;
-  --border:#dde5ef;--muted:#6b7b8d;--charcoal:#1a2535;
+  --navy:#0f2818;--navy2:#1a3a24;--navy3:#0a1c10;
+  --orange:#c9a227;--orange2:#d4af37;--orange-light:#f7ecd0;
+  --cream:#faf6ec;--sand:#f5f0e0;--white:#fff;
+  --border:#e6dcc3;--muted:#7a7060;--charcoal:#2b2620;
   --green:#1a8a4a;--green2:#e8f7ef;--red:#c0392b;--red2:#ffeaea;
 }
 html{scroll-behavior:smooth;}
@@ -25,8 +25,10 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 /* ── NAV ── */
 #nav{background:var(--navy);padding:0 5%;position:sticky;top:0;z-index:1000;box-shadow:0 2px 20px rgba(0,0,0,.3);}
 .nav-top{display:flex;align-items:center;gap:14px;padding:13px 0;}
-.logo{font-family:'Playfair Display',serif;font-size:1.62rem;font-weight:900;color:#fff;cursor:pointer;white-space:nowrap;letter-spacing:1px;}
+.logo-block{display:flex;flex-direction:column;cursor:pointer;flex-shrink:0;}
+.logo{font-family:'Playfair Display',serif;font-size:1.62rem;font-weight:900;color:#fff;cursor:pointer;white-space:nowrap;letter-spacing:1px;line-height:1.1;}
 .logo em{color:var(--orange);font-style:normal;}
+.logo-tagline{font-size:.6rem;color:rgba(255,255,255,.55);letter-spacing:.5px;white-space:nowrap;}
 .nav-search-wrap{flex:1;max-width:460px;}
 .nav-search{display:flex;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:8px;transition:all .2s;position:relative;overflow:visible;}
 .nav-search:focus-within{background:rgba(255,255,255,.16);border-color:var(--orange);}
@@ -39,14 +41,41 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 .btn-nav:hover{border-color:var(--orange);color:var(--orange);}
 .btn-nav.filled{background:var(--orange);border-color:var(--orange);font-weight:600;}
 .btn-nav.filled:hover{background:var(--orange2);}
-.cart-btn{position:relative;background:var(--orange);border:none;color:#fff;padding:9px 16px;border-radius:8px;cursor:pointer;font-size:.875rem;font-weight:600;display:flex;align-items:center;gap:7px;transition:background .2s;}
-.cart-btn:hover{background:var(--orange2);}
-.cart-badge{position:absolute;top:-7px;right:-7px;background:#c0392b;color:#fff;font-size:.6rem;font-weight:800;width:18px;height:18px;border-radius:50%;display:none;align-items:center;justify-content:center;}
-.user-chip{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;padding:8px 13px;border-radius:7px;cursor:pointer;font-size:.82rem;display:flex;align-items:center;gap:6px;}
-.nav-cats{display:flex;border-top:1px solid rgba(255,255,255,.08);overflow-x:auto;gap:0;}
+.cart-btn{position:relative;background:var(--navy2);border:1px solid rgba(201,162,39,.3);color:#fff;padding:9px 14px;border-radius:8px;cursor:pointer;font-size:.875rem;font-weight:600;display:flex;align-items:center;gap:7px;transition:background .2s;}
+.cart-btn:hover{background:var(--navy3);}
+.cart-badge{position:absolute;top:-7px;right:-7px;background:var(--orange);color:#1a2010;font-size:.62rem;font-weight:800;width:18px;height:18px;border-radius:50%;display:none;align-items:center;justify-content:center;border:2px solid var(--navy);}
+.user-chip{background:#fff;border:1px solid rgba(255,255,255,.2);color:var(--navy);padding:8px 13px;border-radius:7px;cursor:pointer;font-size:.82rem;display:flex;align-items:center;gap:6px;font-weight:600;}
+.hamburger-btn{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);color:#fff;width:36px;height:36px;border-radius:7px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.hamburger-btn:hover{background:rgba(255,255,255,.15);}
+.nav-cats{display:flex;gap:14px;overflow-x:auto;background:var(--cream);padding:14px 5px 12px;}
 .nav-cats::-webkit-scrollbar{display:none;}
-.nav-cat{color:rgba(255,255,255,.65);font-size:.8rem;padding:10px 16px;cursor:pointer;white-space:nowrap;border-bottom:3px solid transparent;transition:all .2s;font-weight:500;display:flex;align-items:center;gap:7px;}
-.nav-cat:hover,.nav-cat.active{color:#fff;border-bottom-color:var(--orange);}
+.nav-cat{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;flex-shrink:0;width:64px;transition:all .2s;}
+.nav-cat-icon{width:56px;height:56px;border-radius:50%;background:#fff;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.4rem;transition:all .2s;}
+.nav-cat-label{font-size:.66rem;font-weight:600;color:var(--charcoal);text-align:center;line-height:1.2;white-space:nowrap;}
+.nav-cat:hover .nav-cat-icon{border-color:var(--orange);}
+.nav-cat.active .nav-cat-icon{background:var(--navy);border-color:var(--navy);box-shadow:0 0 0 2px var(--orange2);}
+.nav-cat.active .nav-cat-label{color:var(--navy);font-weight:800;}
+.nav-cat.nav-cat-all .nav-cat-icon{border-radius:16px;}
+.nav-cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:3px;width:16px;height:16px;}
+.nav-cat-grid i{background:rgba(255,255,255,.5);border-radius:2px;display:block;}
+.nav-cat.nav-cat-all.active .nav-cat-icon{background:var(--navy);border-color:var(--navy);}
+.nav-cat.nav-cat-all.active .nav-cat-grid i{background:#fff;}
+.nav-cat.nav-cat-all:not(.active) .nav-cat-icon{background:var(--navy);border-color:var(--navy);}
+.nav-cat.nav-cat-all:not(.active) .nav-cat-grid i{background:rgba(255,255,255,.6);}
+
+/* ── LOCATION / DELIVERY STRIP ── */
+.loc-deliver-strip{display:flex;align-items:center;gap:10px;background:var(--white);border-bottom:1px solid var(--border);padding:10px 5%;font-size:.76rem;color:var(--charcoal);}
+.lds-item{display:flex;align-items:center;gap:6px;flex:1;min-width:0;cursor:default;}
+.lds-item[onclick]{cursor:pointer;}
+.lds-icon{flex-shrink:0;font-size:.9rem;}
+.lds-sep{width:1px;height:16px;background:var(--border);flex-shrink:0;}
+@media(max-width:768px){
+  .loc-deliver-strip{font-size:.68rem;padding:8px 4%;gap:8px;}
+  .lds-item span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+}
+@media(max-width:480px){
+  .loc-deliver-strip{font-size:.62rem;}
+}
 
 /* ── MARQUEE ── */
 .marquee-wrap{background:var(--orange);overflow:hidden;padding:8px 0;}
@@ -57,14 +86,14 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 
 /* ── HERO ── */
 .hero{
-  background:linear-gradient(135deg,#020c18 0%,#0a1f35 40%,#0d2d4a 70%,#1a1a3e 100%);
+  background:linear-gradient(135deg,#061309 0%,#0f2818 40%,#17351f 70%,#1a3a24 100%);
   padding:60px 5% 52px;position:relative;overflow:hidden;
 }
 /* Ambient glow orbs */
 .hero::before{
   content:'';position:absolute;
   width:420px;height:420px;border-radius:50%;
-  background:radial-gradient(circle,rgba(240,112,24,.18) 0%,transparent 70%);
+  background:radial-gradient(circle,rgba(201,162,39,.18) 0%,transparent 70%);
   top:-80px;right:-80px;pointer-events:none;
 }
 .hero::after{
@@ -73,12 +102,12 @@ button,input,select{font-family:'DM Sans',sans-serif;}
   background:radial-gradient(circle,rgba(99,102,241,.15) 0%,transparent 70%);
   bottom:-60px;left:-60px;pointer-events:none;
 }
-.hero::before{content:'';position:absolute;top:-120px;right:-80px;width:520px;height:520px;background:radial-gradient(circle,rgba(240,112,24,.14) 0%,transparent 68%);border-radius:50%;}
+.hero::before{content:'';position:absolute;top:-120px;right:-80px;width:520px;height:520px;background:radial-gradient(circle,rgba(201,162,39,.14) 0%,transparent 68%);border-radius:50%;}
 .hero::after{content:'△';position:absolute;right:6%;bottom:-20px;font-size:220px;font-weight:900;color:rgba(255,255,255,.03);line-height:1;pointer-events:none;}
 .hero-inner{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center;max-width:1200px;margin:0 auto;position:relative;z-index:2;}
-.hero-tag{display:inline-flex;align-items:center;gap:7px;background:rgba(240,112,24,.18);border:1px solid rgba(240,112,24,.35);color:#ffb07a;padding:6px 14px;border-radius:20px;font-size:.75rem;font-weight:600;letter-spacing:.8px;text-transform:uppercase;margin-bottom:18px;}
+.hero-tag{display:inline-flex;align-items:center;gap:7px;background:rgba(201,162,39,.18);border:1px solid rgba(201,162,39,.35);color:#ffb07a;padding:6px 14px;border-radius:20px;font-size:.75rem;font-weight:600;letter-spacing:.8px;text-transform:uppercase;margin-bottom:18px;}
 .hero h1{font-family:'Playfair Display',serif;font-size:clamp(2rem,4.5vw,3.2rem);font-weight:900;color:#fff;line-height:1.15;margin-bottom:10px;text-shadow:0 2px 20px rgba(0,0,0,.3);}
-.hero h1 em{color:var(--orange);font-style:normal;filter:drop-shadow(0 0 12px rgba(240,112,24,.4));}
+.hero h1 em{color:var(--orange);font-style:normal;filter:drop-shadow(0 0 12px rgba(201,162,39,.4));}
 .hero-bn{font-family:'Tiro Bangla',serif;font-size:1.1rem;color:rgba(255,255,255,.7);margin-bottom:10px;}
 .hero p{color:rgba(255,255,255,.65);font-size:.95rem;line-height:1.75;margin-bottom:28px;max-width:460px;}
 .hero-search-big{display:flex;background:#fff;border-radius:12px;overflow:visible;box-shadow:0 8px 32px rgba(0,0,0,.25);margin-bottom:20px;position:relative;}
@@ -87,11 +116,25 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 .hero-search-big button:hover{background:var(--orange2);}
 .hero-tags{display:flex;gap:8px;flex-wrap:wrap;}
 .hero-tag-pill{background:rgba(255,255,255,.1);color:rgba(255,255,255,.8);border:1px solid rgba(255,255,255,.15);border-radius:20px;padding:5px 13px;font-size:.78rem;cursor:pointer;transition:all .2s;}
-.hero-tag-pill:hover{background:rgba(240,112,24,.25);border-color:var(--orange);color:#fff;}
+.hero-tag-pill:hover{background:rgba(201,162,39,.25);border-color:var(--orange);color:#fff;}
+.hero-search-outer{max-width:1200px;margin:0 auto;padding:16px 5% 0;}
+.hero-search-outer .hero-search-big{margin-bottom:0;box-shadow:0 4px 18px rgba(15,40,24,.1);border:1px solid var(--border);}
+.hero-search-outer .hero-search-big input{color:var(--charcoal);}
 .hero-stats{display:flex;gap:24px;flex-wrap:wrap;margin-top:28px;padding-top:22px;border-top:1px solid rgba(255,255,255,.12);}
 .hero-stat strong{display:block;font-size:1.4rem;font-weight:800;color:#fff;line-height:1.1;}
 .hero-stat span{display:block;font-size:.72rem;color:rgba(255,255,255,.55);margin-top:2px;}
-/* Phone mockup */
+/* ── HERO PHOTO PANEL ── */
+.hero-photo{
+  position:relative;border-radius:18px;overflow:hidden;min-height:240px;height:100%;
+  background:linear-gradient(160deg,#1a3a24,#2d5a35 55%,#3d7a45);
+  background-size:cover;background-position:center;
+}
+.hero-photo::after{
+  content:'';position:absolute;top:0;right:0;width:64px;height:64px;
+  border-top:2px solid rgba(212,175,55,.7);border-right:2px solid rgba(212,175,55,.7);
+  pointer-events:none;
+}
+/* Phone mockup (legacy, unused) */
 .hero-phone{display:flex;align-items:center;justify-content:center;}
 .phone-wrap{background:linear-gradient(145deg,#1e3a58,#0d2035);border-radius:36px;padding:18px;box-shadow:0 30px 80px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.08);width:220px;position:relative;}
 .phone-notch{width:70px;height:10px;background:#0a1620;border-radius:0 0 10px 10px;margin:0 auto 14px;}
@@ -125,7 +168,7 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 /* ── CATEGORY GRID ── */
 .cat-grid{display:grid;grid-template-columns:repeat(10,1fr);gap:12px;}
 .cat-card{background:var(--white);border:1.5px solid var(--border);border-radius:16px;padding:20px 8px;text-align:center;cursor:pointer;transition:all .22s;}
-.cat-card:hover,.cat-card.active{background:var(--orange-light);border-color:var(--orange);transform:translateY(-3px);box-shadow:0 8px 24px rgba(240,112,24,.12);}
+.cat-card:hover,.cat-card.active{background:var(--orange-light);border-color:var(--orange);transform:translateY(-3px);box-shadow:0 8px 24px rgba(201,162,39,.12);}
 .cat-emoji{font-size:2rem;display:block;margin-bottom:8px;}
 .cat-name{font-weight:700;font-size:.78rem;color:var(--charcoal);}
 .cat-name-en{font-size:.68rem;color:var(--muted);margin-top:2px;}
@@ -225,7 +268,7 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 /* ── WHY DELTA ── */
 .why-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
 .why-card{background:var(--white);border-radius:20px;padding:28px 24px;border:1.5px solid var(--border);transition:all .25s;}
-.why-card:hover{border-color:var(--orange);transform:translateY(-4px);box-shadow:0 12px 40px rgba(240,112,24,.1);}
+.why-card:hover{border-color:var(--orange);transform:translateY(-4px);box-shadow:0 12px 40px rgba(201,162,39,.1);}
 .why-icon{width:52px;height:52px;border-radius:14px;background:var(--orange-light);display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin-bottom:16px;}
 .why-card h3{font-weight:800;margin-bottom:8px;font-size:1rem;color:var(--charcoal);}
 .why-card p{color:var(--muted);font-size:.86rem;line-height:1.7;}
@@ -392,17 +435,20 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 .popular-chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-bottom:2px;}
 .popular-chips::-webkit-scrollbar{display:none;}
 .pop-chip{flex-shrink:0;height:34px;padding:0 13px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:20px;color:#fff;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:5px;white-space:nowrap;}
-.pop-chip:hover,.pop-chip:active{background:rgba(240,112,24,.25);border-color:var(--orange);}
+.pop-chip:hover,.pop-chip:active{background:rgba(201,162,39,.25);border-color:var(--orange);}
 
 /* ── CTA SUB TEXT ── */
 .hero-cta-sub{font-size:.75rem;font-weight:500;color:rgba(255,255,255,.45);text-align:center;margin-top:4px;}
 
 /* ── HERO STATS NEW ── */
-.hero-stats-new{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:24px;padding-top:20px;border-top:1px solid rgba(255,255,255,.1);}
-.hero-stat-new{text-align:center;padding:10px 4px;background:rgba(255,255,255,.05);border-radius:10px;border:1px solid rgba(255,255,255,.08);}
-.hsn-icon{font-size:1.1rem;margin-bottom:4px;}
+.hero-stats-box{background:var(--navy);border:1px solid rgba(201,162,39,.3);border-radius:16px;padding:18px 10px;margin-top:4px;}
+.hero-stats-new{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
+.hero-stat-new{text-align:center;padding:6px 4px;}
+.hero-stat-new+.hero-stat-new{border-left:1px solid rgba(255,255,255,.1);}
+.hsn-icon{font-size:1.2rem;margin-bottom:5px;}
 .hsn-num{font-size:1rem;font-weight:800;color:#fff;line-height:1.1;margin-bottom:2px;}
-.hsn-label{font-size:.6rem;color:rgba(255,255,255,.5);line-height:1.3;}
+.hsn-label{font-size:.62rem;color:var(--orange2);font-weight:700;line-height:1.3;}
+.hsn-sub{font-size:.56rem;color:rgba(255,255,255,.45);line-height:1.25;margin-top:2px;display:block;}
 
 /* ── TRUST STRIP ── */
 .hero-trust-strip{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:14px;padding:10px 12px;background:rgba(255,255,255,.05);border-radius:10px;border:1px solid rgba(255,255,255,.08);}
@@ -410,18 +456,20 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 .hts-sep{width:1px;height:14px;background:rgba(255,255,255,.2);flex-shrink:0;}
 
 /* ── HERO TAG improvement ── */
-.hero-tag{display:inline-flex;align-items:center;gap:7px;background:rgba(240,112,24,.15);border:1px solid rgba(240,112,24,.25);color:#ffb07a;padding:7px 18px;border-radius:20px;font-size:.75rem;font-weight:600;letter-spacing:.8px;text-transform:uppercase;margin-bottom:18px;box-shadow:0 2px 12px rgba(240,112,24,.1);}
+.hero-tag{display:inline-flex;align-items:center;gap:7px;background:rgba(201,162,39,.15);border:1px solid rgba(201,162,39,.25);color:#ffb07a;padding:7px 18px;border-radius:20px;font-size:.75rem;font-weight:600;letter-spacing:.8px;text-transform:uppercase;margin-bottom:18px;box-shadow:0 2px 12px rgba(201,162,39,.1);}
 
 @media(max-width:768px){
-  .hero-stats-new{gap:6px;}
+  .hero-stats-box{padding:14px 6px;}
+  .hero-stats-new{gap:4px;}
   .hsn-num{font-size:.88rem;}
   .hsn-label{font-size:.55rem;}
+  .hsn-sub{display:none;}
   .hero-trust-strip{gap:8px;padding:8px 10px;}
   .hts-item{font-size:.65rem;}
   .hero-benefit-line{font-size:.72rem;}
 }
 @media(max-width:480px){
-  .hero-stat-new{padding:8px 2px;}
+  .hero-stat-new{padding:6px 2px;}
   .hsn-icon{font-size:.9rem;}
   .hsn-num{font-size:.78rem;}
   .hsn-label{font-size:.5rem;}
@@ -469,42 +517,47 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 /* ── HERO BUTTONS ── */
 .hero-btns{display:flex;flex-direction:column;gap:10px;margin-bottom:20px;}
 .hero-btn-primary{
-  background:linear-gradient(135deg,#f07018,#ff8c3a);
-  color:#fff;border:none;padding:14px 28px;border-radius:12px;
+  background:linear-gradient(135deg,#c9a227,#d4af37);
+  color:#1a2010;border:none;padding:14px 28px;border-radius:12px;
   font-size:.95rem;font-weight:800;cursor:pointer;transition:all .25s;
-  box-shadow:0 4px 20px rgba(240,112,24,.45), 0 1px 0 rgba(255,255,255,.15) inset;
+  box-shadow:0 4px 20px rgba(201,162,39,.45), 0 1px 0 rgba(255,255,255,.15) inset;
   letter-spacing:.3px;
 }
 .hero-btn-primary:hover{
-  background:linear-gradient(135deg,#ff8c3a,#f07018);
+  background:linear-gradient(135deg,#d4af37,#c9a227);
   transform:translateY(-2px);
-  box-shadow:0 8px 28px rgba(240,112,24,.5);
+  box-shadow:0 8px 28px rgba(201,162,39,.5);
 }
 .hero-btn-outline{background:transparent;color:#fff;border:2px solid rgba(255,255,255,.35);padding:13px 28px;border-radius:9px;font-size:.95rem;cursor:pointer;transition:all .2s;}
 .hero-btn-outline:hover{border-color:#fff;background:rgba(255,255,255,.1);}
-.hero-btn-full{width:100%;text-align:center;}
+.hero-about-btn{background:transparent;color:#ffd98a;border:1.5px solid rgba(201,162,39,.55);padding:12px 24px;border-radius:9px;font-size:.86rem;font-weight:700;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px;}
+.hero-about-btn:hover{background:rgba(201,162,39,.15);border-color:var(--orange);}
+.hero-btn-full{width:100%;text-align:center;justify-content:center;}
 .hero-pill-row{display:flex;gap:10px;}
 .hero-pill{
-  flex:1;padding:11px 14px;border-radius:30px;
-  background:rgba(255,255,255,.08);
-  border:1px solid rgba(255,255,255,.18);
+  flex:1;padding:12px 14px;border-radius:14px;
+  background:var(--navy);
+  border:1px solid rgba(201,162,39,.25);
   color:#fff;font-size:.82rem;font-weight:700;
   cursor:pointer;transition:all .25s;
-  display:flex;align-items:center;justify-content:center;gap:6px;
-  backdrop-filter:blur(12px);
-  -webkit-backdrop-filter:blur(12px);
-  box-shadow:0 2px 12px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.1);
+  display:flex;align-items:center;gap:10px;text-align:left;
+  box-shadow:0 4px 16px rgba(15,40,24,.18);
   letter-spacing:.2px;
 }
+.hero-pill-icon{font-size:1.3rem;flex-shrink:0;}
+.hero-pill-text{flex:1;min-width:0;}
+.hero-pill-sub{display:block;font-size:.66rem;font-weight:500;color:rgba(255,255,255,.55);margin-top:2px;}
+.hero-pill-arrow{flex-shrink:0;color:var(--orange2);font-weight:800;}
 .hero-pill:hover{
-  background:rgba(255,255,255,.14);
-  border-color:rgba(255,255,255,.35);
+  border-color:rgba(201,162,39,.5);
   transform:translateY(-1px);
-  box-shadow:0 4px 20px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.15);
+  box-shadow:0 6px 20px rgba(15,40,24,.25);
 }
 .hero-pill:active{transform:translateY(0);}
 @media(max-width:480px){
-  .hero-pill{font-size:.76rem;padding:9px 10px;}
+  .hero-pill{font-size:.76rem;padding:10px 12px;gap:8px;}
+  .hero-pill-icon{font-size:1.1rem;}
+  .hero-pill-sub{font-size:.6rem;}
 }
 
 /* ── FREE DELIVERY STRIP (green like Appayan) ── */
@@ -542,9 +595,9 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 .voice-overlay{display:none;position:fixed;inset:0;background:rgba(6,21,38,.85);z-index:5000;align-items:center;justify-content:center;flex-direction:column;gap:20px;}
 .voice-overlay.active{display:flex;}
 .voice-circle{width:100px;height:100px;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center;font-size:2.5rem;animation:voicePulse 1.2s infinite;}
-@keyframes voicePulse{0%,100%{box-shadow:0 0 0 0 rgba(240,112,24,.4);}70%{box-shadow:0 0 0 20px rgba(240,112,24,0);}}
-.nav-loc-btn{color:rgba(255,255,255,.7);font-size:.78rem;white-space:nowrap;cursor:pointer;padding:6px 10px;border-radius:6px;border:1px solid rgba(255,255,255,.18);display:flex;align-items:center;gap:4px;transition:background .2s;flex-shrink:0;}
-.nav-loc-btn:hover{background:rgba(255,255,255,.1);}
+@keyframes voicePulse{0%,100%{box-shadow:0 0 0 0 rgba(201,162,39,.4);}70%{box-shadow:0 0 0 20px rgba(201,162,39,0);}}
+.nav-loc-btn{color:#fff;font-size:.78rem;white-space:nowrap;cursor:pointer;padding:8px 12px;border-radius:20px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.22);display:flex;align-items:center;gap:5px;transition:background .2s;flex-shrink:0;}
+.nav-loc-btn:hover{background:rgba(255,255,255,.15);}
 .lang-toggle{display:flex;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:20px;padding:2px;gap:0;}
 .lang-btn{border:none;background:transparent;padding:4px 10px;border-radius:18px;font-size:.72rem;font-weight:800;cursor:pointer;color:rgba(255,255,255,.6);transition:all .18s;letter-spacing:.3px;}
 .lang-btn.active{background:var(--orange);color:#fff;}
@@ -561,7 +614,7 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 .delivery-card{
   background:var(--white);border:1px solid var(--border);border-radius:16px;
   padding:14px 16px;display:flex;align-items:center;gap:14px;
-  box-shadow:0 4px 16px rgba(10,31,53,.06);
+  box-shadow:0 4px 16px rgba(15,40,24,.06);
 }
 .delivery-card-icon{
   width:48px;height:48px;flex-shrink:0;border-radius:12px;background:var(--green2);
@@ -601,21 +654,31 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 /* ── RESPONSIVE UPDATES ── */
 .fresh-cards-scroll{display:flex;gap:14px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none;}
 .fresh-cards-scroll::-webkit-scrollbar{display:none;}
-.fresh-card{flex-shrink:0;width:170px;background:var(--white);border:1px solid var(--border);border-radius:14px;overflow:hidden;cursor:pointer;transition:all .2s;}
+
+/* Static promo card — first item in the scroll */
+.fresh-promo-card{flex-shrink:0;width:150px;background:linear-gradient(160deg,#0f2818,#1a3a24);border-radius:16px;padding:16px 14px;position:relative;overflow:hidden;cursor:pointer;display:flex;flex-direction:column;justify-content:flex-end;min-height:200px;}
+.fpc-decor{position:absolute;top:-16px;right:-10px;font-size:5rem;opacity:.15;transform:rotate(12deg);pointer-events:none;}
+.fpc-title{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:900;color:#fff;line-height:1.15;margin-bottom:6px;}
+.fpc-sub{font-size:.72rem;color:rgba(255,255,255,.75);line-height:1.35;margin-bottom:12px;}
+.fpc-btn{background:transparent;border:1.5px solid var(--orange2);color:var(--orange2);padding:8px 12px;border-radius:8px;font-size:.72rem;font-weight:700;cursor:pointer;align-self:flex-start;}
+
+.fresh-card{flex-shrink:0;width:150px;background:var(--white);border:1px solid var(--border);border-radius:16px;overflow:hidden;cursor:pointer;transition:all .2s;}
 .fresh-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.1);}
-.fresh-card-img{height:110px;background:var(--sand);display:flex;align-items:center;justify-content:center;font-size:2.5rem;position:relative;overflow:hidden;}
+.fresh-card-img{height:130px;background:var(--sand);display:flex;align-items:center;justify-content:center;font-size:2.5rem;position:relative;overflow:hidden;}
 .fresh-card-img img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;}
 .fresh-card-badges{position:absolute;top:7px;left:7px;display:flex;gap:4px;flex-wrap:wrap;}
-.fc-just{background:var(--green);color:#fff;font-size:.56rem;font-weight:800;padding:2px 6px;border-radius:4px;text-transform:uppercase;}
+.fc-just{background:var(--navy);color:#fff;font-size:.56rem;font-weight:800;padding:2px 6px;border-radius:4px;text-transform:uppercase;}
 .fc-special{background:var(--orange);color:#fff;font-size:.56rem;font-weight:800;padding:2px 6px;border-radius:4px;}
 .fc-limited{background:var(--red);color:#fff;font-size:.56rem;font-weight:800;padding:2px 6px;border-radius:4px;}
 .fresh-card-body{padding:10px 11px;}
 .fresh-card-name{font-size:.82rem;font-weight:700;color:var(--charcoal);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.fresh-card-shop{font-size:.68rem;color:var(--muted);margin-bottom:7px;}
-.fresh-card-price{font-size:.9rem;font-weight:800;color:var(--navy);display:inline;}
-.fresh-card-mrp{font-size:.68rem;color:var(--muted);text-decoration:line-through;margin-left:4px;display:inline;}
-.fresh-card-add{width:100%;background:var(--navy);color:#fff;border:none;padding:8px;border-radius:8px;font-size:.75rem;font-weight:700;cursor:pointer;margin-top:7px;transition:background .2s;}
-.fresh-card-add:hover{background:var(--orange);}
+.fresh-card-tagline{font-size:.66rem;color:var(--muted);margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.fresh-card-foot{display:flex;align-items:center;justify-content:space-between;gap:6px;}
+.fresh-card-pill{font-size:.6rem;font-weight:800;padding:3px 10px;border-radius:20px;white-space:nowrap;}
+.fc-pill-fresh{background:var(--green2);color:var(--green);}
+.fc-pill-special{background:var(--orange-light);color:var(--orange-dark,var(--orange));}
+.fresh-card-plus{width:26px;height:26px;border-radius:50%;background:var(--navy);color:#fff;border:none;font-weight:900;font-size:1rem;cursor:pointer;flex-shrink:0;line-height:1;}
+.fresh-card-plus:hover{background:var(--orange);}
 
 /* ── FARMERS STRIP ── */
 .farmers-scroll{display:flex;gap:12px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none;}
@@ -628,7 +691,7 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 .farmer-chip-badge{font-size:.68rem;color:var(--orange);font-weight:700;margin-top:3px;}
 
 /* ── FARMER/SELLER DETAIL MODAL ── */
-.fm-overlay{position:fixed;inset:0;background:rgba(10,31,53,.55);z-index:2000;display:flex;align-items:flex-end;justify-content:center;animation:fmFadeIn .25s ease;}
+.fm-overlay{position:fixed;inset:0;background:rgba(15,40,24,.55);z-index:2000;display:flex;align-items:flex-end;justify-content:center;animation:fmFadeIn .25s ease;}
 @keyframes fmFadeIn{from{opacity:0}to{opacity:1}}
 .fm-sheet{background:var(--white);width:100%;max-width:480px;max-height:88vh;overflow-y:auto;border-radius:22px 22px 0 0;animation:fmSlideUp .3s ease;}
 @keyframes fmSlideUp{from{transform:translateY(40px)}to{transform:translateY(0)}}
@@ -654,10 +717,10 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 .fm-video-placeholder{padding:40px 20px;text-align:center;color:#fff;}
 .fm-video-play{width:54px;height:54px;border-radius:50%;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:1.3rem;}
 .fm-shop-btn{width:100%;background:var(--orange);color:#fff;border:none;padding:13px;border-radius:12px;font-weight:700;font-size:.9rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;}
-.fm-shop-btn:hover{background:var(--orange-dark,#d9610f);}
+.fm-shop-btn:hover{background:var(--orange-dark,#a8841c);}
 
 /* ── PINCODE DELIVERY CHECK MODAL ── */
-.pin-overlay{position:fixed;inset:0;background:rgba(10,31,53,.55);z-index:2100;display:flex;align-items:center;justify-content:center;padding:20px;animation:fmFadeIn .2s ease;}
+.pin-overlay{position:fixed;inset:0;background:rgba(15,40,24,.55);z-index:2100;display:flex;align-items:center;justify-content:center;padding:20px;animation:fmFadeIn .2s ease;}
 .pin-sheet{background:var(--white);width:100%;max-width:380px;border-radius:18px;overflow:hidden;animation:fmSlideUp .25s ease;}
 .pin-head{background:linear-gradient(135deg,var(--navy3),var(--navy));padding:22px 22px 18px;position:relative;text-align:center;color:#fff;}
 .pin-close{position:absolute;top:12px;right:12px;background:rgba(255,255,255,.15);border:none;color:#fff;width:30px;height:30px;border-radius:50%;font-size:1rem;cursor:pointer;}
@@ -669,7 +732,7 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 .pin-input{flex:1;padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:1rem;font-weight:600;letter-spacing:1px;}
 .pin-input:focus{outline:none;border-color:var(--orange);}
 .pin-check-btn{background:var(--orange);color:#fff;border:none;padding:0 18px;border-radius:10px;font-weight:700;font-size:.85rem;cursor:pointer;white-space:nowrap;}
-.pin-check-btn:hover{background:var(--orange-dark,#d9610f);}
+.pin-check-btn:hover{background:var(--orange-dark,#a8841c);}
 .pin-check-btn:disabled{opacity:.6;cursor:not-allowed;}
 .pin-result{margin-top:16px;border-radius:12px;padding:14px 16px;font-size:.82rem;line-height:1.6;display:none;}
 .pin-result.success{background:#eef9f0;color:#1a7a4c;display:block;}
@@ -693,7 +756,7 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 .gate-input{flex:1;padding:13px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:1.05rem;font-weight:700;letter-spacing:1.5px;text-align:center;}
 .gate-input:focus{outline:none;border-color:var(--orange);}
 .gate-check-btn{background:var(--orange);color:#fff;border:none;padding:0 20px;border-radius:10px;font-weight:700;font-size:.85rem;cursor:pointer;}
-.gate-check-btn:hover{background:var(--orange-dark,#d9610f);}
+.gate-check-btn:hover{background:var(--orange-dark,#a8841c);}
 .gate-result{margin-top:14px;border-radius:12px;padding:14px 16px;font-size:.8rem;line-height:1.6;display:none;text-align:left;}
 .gate-result.success{background:#eef9f0;color:#1a7a4c;display:block;}
 .gate-result.fail{background:#fdeeec;color:#c0392b;display:block;}
@@ -823,7 +886,7 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 @keyframes bounce{0%,100%{transform:scale(1)}50%{transform:scale(1.2)}}
 .success-h{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:900;color:var(--green);margin-bottom:8px;}
 .success-p{font-size:.86rem;color:var(--muted);line-height:1.7;margin-bottom:16px;}
-.order-id-pill{background:var(--orange-light);border:1px solid rgba(240,112,24,.3);border-radius:10px;padding:12px 20px;display:inline-block;font-size:.88rem;color:var(--navy);}
+.order-id-pill{background:var(--orange-light);border:1px solid rgba(201,162,39,.3);border-radius:10px;padding:12px 20px;display:inline-block;font-size:.88rem;color:var(--navy);}
 .order-id-pill strong{color:var(--orange);font-size:1.1rem;}
 .ok-btn{margin-top:20px;padding:12px 32px;background:var(--navy);color:#fff;border:none;border-radius:10px;font-size:.9rem;font-weight:700;cursor:pointer;}
 
@@ -839,7 +902,7 @@ footer{background:var(--navy3);color:rgba(255,255,255,.55);padding:44px 5% 28px;
 .footer-bottom{border-top:1px solid rgba(255,255,255,.08);padding-top:20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;font-size:.78rem;}
 
 /* ── REQUEST A PRODUCT ── */
-.request-section{display:none;background:linear-gradient(135deg,#fff4ec,#fff8f3);border:2px dashed var(--orange);border-radius:20px;padding:32px 24px;text-align:center;margin:16px 0;}
+.request-section{display:none;background:linear-gradient(135deg,#f7ecd0,#faf3e0);border:2px dashed var(--orange);border-radius:20px;padding:32px 24px;text-align:center;margin:16px 0;}
 .request-section.show{display:block;}
 .request-icon{font-size:3rem;margin-bottom:12px;}
 .request-title{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:800;color:var(--navy);margin-bottom:8px;}
@@ -889,8 +952,9 @@ body.lang-bn .lang-en{display:none!important;}
   .why-grid{grid-template-columns:1fr 1fr 1fr;}
 }
 @media(max-width:900px){
-  .hero-inner{grid-template-columns:1fr;}
+  .hero-inner{grid-template-columns:1.3fr 1fr;gap:16px;}
   .hero-phone{display:none;}
+  .hero-photo{min-height:180px;}
   .cat-grid{grid-template-columns:repeat(4,1fr);}
   .why-grid{grid-template-columns:1fr 1fr;}
   .footer-grid{grid-template-columns:1fr 1fr;}
@@ -920,13 +984,16 @@ body.lang-bn .lang-en{display:none!important;}
   .nav-actions{gap:6px;margin-left:auto;}
 
   /* Location button — compact, দেখাবে */
-  .nav-loc-btn{font-size:.68rem;padding:5px 8px;display:flex;}
+  .nav-loc-btn{font-size:.68rem;padding:6px 10px;display:flex;}
+  .logo-tagline{font-size:.5rem;}
 
-  /* Cart button mobile friendly */
-  .cart-btn{padding:9px 13px;font-size:.8rem;gap:5px;}
+  /* Cart button mobile friendly — icon-only, matches reference */
+  .cart-btn{padding:9px 11px;font-size:.8rem;gap:0;}
+  .cart-btn-label{display:none;}
 
   /* User chip compact */
   .user-chip{padding:8px 10px;font-size:.78rem;}
+  .hamburger-btn{width:34px;height:34px;font-size:.9rem;}
 
   /* Category scrollbar mobile smooth */
   .nav-cats{padding-bottom:2px;-webkit-overflow-scrolling:touch;}
@@ -958,15 +1025,9 @@ body.lang-bn .lang-en{display:none!important;}
   .hero-btns{gap:8px;margin-bottom:16px;}
   .hero-btn-primary{font-size:.9rem;padding:13px 20px;}
 
-  /* Hero stats — 3 column grid */
-  .hero-stats{
-    display:grid;grid-template-columns:repeat(3,1fr);
-    gap:10px;margin-top:18px;padding-top:16px;
-    border-top:1px solid rgba(255,255,255,.12);
-  }
-  .hero-stat{text-align:center;}
-  .hero-stat strong{font-size:1.1rem;display:block;}
-  .hero-stat span{font-size:.62rem;}
+  /* Hero photo panel — shorter on mobile */
+  .hero-photo{min-height:150px;}
+  .hero-about-btn{font-size:.8rem;padding:10px 18px;}
 
   /* ── SECTIONS ── */
   .section{padding:20px 4%;}
@@ -981,7 +1042,7 @@ body.lang-bn .lang-en{display:none!important;}
     padding:13px 5px;border-radius:12px;
     border-width:1px;
   }
-  .cat-card:hover,.cat-card.active{transform:none;box-shadow:0 4px 12px rgba(240,112,24,.15);}
+  .cat-card:hover,.cat-card.active{transform:none;box-shadow:0 4px 12px rgba(201,162,39,.15);}
   .cat-emoji{font-size:1.65rem;margin-bottom:6px;}
   .cat-name{font-size:.7rem;line-height:1.2;}
   .cat-name-en{font-size:.6rem;margin-top:1px;}
@@ -1107,12 +1168,14 @@ body.lang-bn .lang-en{display:none!important;}
    ══════════════════════════════════════════ */
 @media(max-width:480px){
 
-  /* NAV — location compact রাখো */
-  .nav-loc-btn{font-size:.62rem;padding:4px 6px;}
-  .nav-loc-btn span:first-of-type{display:none;} /* "Manteswar" text ছোট করা — শুধু 📍 icon */
+  /* NAV — compact করো কিন্তু "Manteswar" text দেখাও (reference layout অনুযায়ী) */
+  .nav-top{gap:8px;}
+  .nav-loc-btn{font-size:.62rem;padding:5px 8px;gap:3px;}
+  .logo-tagline{display:none;}
   .logo{font-size:1.2rem;}
   .cart-btn{padding:8px 10px;font-size:.75rem;}
   .user-chip{padding:7px 9px;font-size:.72rem;}
+  .hamburger-btn{width:30px;height:30px;font-size:.85rem;}
 
   /* HERO */
   .hero{padding:18px 4% 24px;}
@@ -1256,7 +1319,7 @@ img{max-width:100%;height:auto;}
 .hap-banner{padding:16px;position:relative;min-height:120px;display:flex;flex-direction:column;justify-content:space-between;}
 .hap-tags{display:flex;gap:6px;flex-wrap:wrap;}
 .hap-tag{font-size:.65rem;font-weight:700;padding:3px 8px;border-radius:20px;backdrop-filter:blur(4px);}
-.hap-tag.festival{background:rgba(240,112,24,.85);color:#fff;}
+.hap-tag.festival{background:rgba(201,162,39,.85);color:#fff;}
 .hap-tag.gift{background:rgba(26,138,74,.85);color:#fff;}
 .hap-tag.eid{background:rgba(21,101,192,.85);color:#fff;}
 .hap-tag.boishakh{background:rgba(46,125,50,.85);color:#fff;}
@@ -1278,7 +1341,7 @@ img{max-width:100%;height:auto;}
 .hap-prices{display:flex;align-items:center;gap:6px;}
 .hap-price{font-size:1.1rem;font-weight:800;color:var(--charcoal);}
 .hap-orig{font-size:.78rem;color:var(--muted);text-decoration:line-through;}
-.hap-off{background:rgba(240,112,24,.12);color:var(--orange);font-size:.7rem;font-weight:700;padding:2px 7px;border-radius:8px;}
+.hap-off{background:rgba(201,162,39,.12);color:var(--orange);font-size:.7rem;font-weight:700;padding:2px 7px;border-radius:8px;}
 .hap-sold{font-size:.72rem;color:var(--muted);display:flex;align-items:center;gap:3px;}
 .hap-fire{font-size:.8rem;}
 /* Stock bar */
@@ -1301,7 +1364,7 @@ img{max-width:100%;height:auto;}
 .sotw-card::before{content:'🏆';position:absolute;right:-10px;top:-10px;font-size:5rem;opacity:.08;}
 .sotw-avatar{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--orange),var(--orange2));display:flex;align-items:center;justify-content:center;font-size:2rem;flex-shrink:0;border:3px solid rgba(255,255,255,.2);}
 .sotw-info{flex:1;min-width:200px;}
-.sotw-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(240,112,24,.2);border:1px solid rgba(240,112,24,.4);color:var(--orange);padding:4px 10px;border-radius:20px;font-size:.7rem;font-weight:700;margin-bottom:8px;}
+.sotw-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(201,162,39,.2);border:1px solid rgba(201,162,39,.4);color:var(--orange);padding:4px 10px;border-radius:20px;font-size:.7rem;font-weight:700;margin-bottom:8px;}
 .sotw-name{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:900;color:#fff;margin-bottom:4px;}
 .sotw-shop-type{color:rgba(255,255,255,.6);font-size:.82rem;margin-bottom:12px;}
 .sotw-stats{display:flex;gap:16px;flex-wrap:wrap;}
@@ -1337,7 +1400,7 @@ img{max-width:100%;height:auto;}
 .pwa-close-btn{background:none;border:none;color:rgba(255,255,255,.4);cursor:pointer;font-size:1rem;padding:0 0 0 4px;flex-shrink:0;}
 
 /* ══ FEATURE 3: FARM TO TABLE ══ */
-.farm-section{padding:40px 20px;background:linear-gradient(180deg,#e8f5e9,#f7f9fc);}
+.farm-section{padding:40px 20px;background:linear-gradient(180deg,#e8f5e9,#faf6ec);}
 .farm-timeline{display:flex;align-items:center;justify-content:space-between;margin-top:28px;position:relative;flex-wrap:wrap;gap:16px;}
 .farm-timeline::before{content:'';position:absolute;top:36px;left:0;right:0;height:2px;background:repeating-linear-gradient(90deg,var(--green) 0,var(--green) 8px,transparent 8px,transparent 16px);z-index:0;}
 .farm-step{text-align:center;flex:1;min-width:100px;position:relative;z-index:1;}
@@ -1395,7 +1458,7 @@ img{max-width:100%;height:auto;}
 .how-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:28px;position:relative;}
 .how-steps::before{content:'';position:absolute;top:36px;left:12.5%;right:12.5%;height:2px;background:linear-gradient(90deg,var(--orange),var(--orange2));z-index:0;}
 .how-step{text-align:center;position:relative;z-index:1;}
-.how-step-circle{width:72px;height:72px;border-radius:50%;background:#fff;border:3px solid var(--orange);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:1.8rem;box-shadow:0 4px 16px rgba(240,112,24,.2);transition:transform .3s;}
+.how-step-circle{width:72px;height:72px;border-radius:50%;background:#fff;border:3px solid var(--orange);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:1.8rem;box-shadow:0 4px 16px rgba(201,162,39,.2);transition:transform .3s;}
 .how-step:hover .how-step-circle{transform:scale(1.12);}
 .how-step-num{position:absolute;top:-4px;right:calc(50% - 42px);width:20px;height:20px;background:var(--orange);color:#fff;border-radius:50%;font-size:.65rem;font-weight:800;display:flex;align-items:center;justify-content:center;}
 .how-step-title{font-weight:700;font-size:.88rem;color:var(--navy);margin-bottom:4px;}
@@ -1488,7 +1551,7 @@ img{max-width:100%;height:auto;}
 }
 .smd-left-item:hover{background:rgba(255,255,255,.06);}
 .smd-left-item.active{
-  background:rgba(240,112,24,.15);
+  background:rgba(201,162,39,.15);
   border-left-color:var(--orange);
 }
 .smd-li-icon{font-size:1.2rem;line-height:1;}
@@ -1509,7 +1572,7 @@ img{max-width:100%;height:auto;}
 
 /* Location strip */
 .smd-loc-strip{
-  background:var(--orange-light);border-bottom:1px solid rgba(240,112,24,.2);
+  background:var(--orange-light);border-bottom:1px solid rgba(201,162,39,.2);
   padding:10px 14px;display:flex;align-items:center;gap:6px;
   font-size:.78rem;color:var(--navy);font-weight:600;cursor:pointer;
 }
@@ -1658,7 +1721,10 @@ img{max-width:100%;height:auto;}
 <!-- NAV -->
 <nav id="nav">
   <div class="nav-top">
-    <div class="logo" onclick="resetFilters()">△ DELT<em>A</em></div>
+    <div class="logo-block" onclick="resetFilters()">
+      <div class="logo">△ DELT<em>A</em></div>
+      <div class="logo-tagline">Local Roots. Global Wings.</div>
+    </div>
     <div class="nav-search-wrap">
       <div class="nav-search" id="navSearchWrap">
         <input type="text" id="navSearch" placeholder="দোকান বা পণ্য খুঁজুন... / Search shops or products" oninput="handleSearch(this.value)" onkeydown="handleSearchKey(event,'nav')" onfocus="showSuggestions(this.value)" autocomplete="off">
@@ -1676,34 +1742,60 @@ img{max-width:100%;height:auto;}
         <button class="lang-btn" id="langEn" onclick="setLang('en')">ENG</button>
       </div>
       <button class="cart-btn" onclick="openCart()">
-        🛒 কার্ট
+        🛒 <span class="cart-btn-label">কার্ট</span>
         <span class="cart-badge" id="cartBadge">0</span>
       </button>
       <div class="user-chip" id="userChip" onclick="handleUserBtn()">👤 <span id="userLabel">লগইন</span></div>
+      <button class="hamburger-btn" onclick="openSideMenu()" title="Menu">☰</button>
+    </div>
+  </div>
+  <!-- SEARCH — sits right below the header row, above categories (matches reference layout) -->
+  <div class="hero-search-outer" style="max-width:none;padding-left:0;padding-right:0;padding-top:12px;padding-bottom:12px;">
+    <div class="hero-search-big" style="position:relative;">
+      <input type="text" id="heroSearch" placeholder="আজ কী দরকার? যেমন: ইলিশ মাছ, রসগোল্লা, ইলেকট্রিশিয়ান..." oninput="handleSearch(this.value)" onkeydown="handleSearchKey(event,'hero')" onfocus="showSuggestions(this.value)" autocomplete="off">
+      <button onclick="startVoiceSearch()" id="heroVoiceBtn" style="background:transparent;border:none;color:var(--muted);padding:0 12px;font-size:1.1rem;cursor:pointer;min-height:48px;flex-shrink:0;" title="Voice Search">🎙️</button>
+      <button onclick="doSearch()" style="border-radius:0 12px 12px 0;">🔍</button>
+      <div class="search-suggestions" id="heroSuggestions" style="border-radius:0 0 12px 12px;"></div>
     </div>
   </div>
   <div class="nav-cats">
-    <div class="nav-cat active" onclick="filterCat('all',this)">সব / All</div>
-    <div class="nav-cat" onclick="filterCat('food',this)">🍛 খাবার</div>
-    <div class="nav-cat" onclick="filterCat('grocery',this)">🛒 মুদিখানা</div>
-    <div class="nav-cat" onclick="filterCat('farm',this)">🌾 কৃষি</div>
-    <div class="nav-cat" onclick="filterCat('farmtools',this)">🌿 কৃষি সরঞ্জাম</div>
-    <div class="nav-cat" onclick="filterCat('livestock',this)">🐄 পশুপালন</div>
-    <div class="nav-cat" onclick="filterCat('medicine',this)">💊 ওষুধ</div>
-    <div class="nav-cat" onclick="filterCat('clothing',this)">👗 পোশাক</div>
-    <div class="nav-cat" onclick="filterCat('electronics',this)">📱 ইলেকট্রনিক্স</div>
-    <div class="nav-cat" onclick="filterCat('home',this)">🏠 বাড়ি</div>
-    <div class="nav-cat" onclick="filterCat('construction',this)">🏗️ নির্মাণ</div>
-    <div class="nav-cat" onclick="filterCat('automotive',this)">🚗 যানবাহন</div>
-    <div class="nav-cat" onclick="filterCat('arts',this)">🎨 শিল্প</div>
-    <div class="nav-cat" onclick="filterCat('education',this)">📚 শিক্ষা</div>
-    <div class="nav-cat" onclick="filterCat('services',this)">🔧 সেবা</div>
-    <div class="nav-cat" onclick="filterCat('health',this)">🏥 স্বাস্থ্য</div>
-    <div class="nav-cat" onclick="filterCat('events',this)">🎉 ইভেন্ট</div>
-    <div class="nav-cat" onclick="filterCat('rental',this)">🔑 ভাড়া</div>
-    <div class="nav-cat" onclick="filterCat('remarket',this)">♻️ রিমার্কেট</div>
+    <div class="nav-cat nav-cat-all active" onclick="filterCat('all',this)">
+      <div class="nav-cat-icon"><span class="nav-cat-grid"><i></i><i></i><i></i><i></i></span></div>
+      <div class="nav-cat-label">সব / All</div>
+    </div>
+    <div class="nav-cat" onclick="filterCat('food',this)"><div class="nav-cat-icon">🍛</div><div class="nav-cat-label">খাবার</div></div>
+    <div class="nav-cat" onclick="filterCat('grocery',this)"><div class="nav-cat-icon">🛒</div><div class="nav-cat-label">মুদিখানা</div></div>
+    <div class="nav-cat" onclick="filterCat('farm',this)"><div class="nav-cat-icon">🌾</div><div class="nav-cat-label">কৃষি</div></div>
+    <div class="nav-cat" onclick="filterCat('farmtools',this)"><div class="nav-cat-icon">🌿</div><div class="nav-cat-label">কৃষি সরঞ্জাম</div></div>
+    <div class="nav-cat" onclick="filterCat('livestock',this)"><div class="nav-cat-icon">🐄</div><div class="nav-cat-label">পশুপালন</div></div>
+    <div class="nav-cat" onclick="filterCat('medicine',this)"><div class="nav-cat-icon">💊</div><div class="nav-cat-label">ওষুধ</div></div>
+    <div class="nav-cat" onclick="filterCat('clothing',this)"><div class="nav-cat-icon">👗</div><div class="nav-cat-label">পোশাক</div></div>
+    <div class="nav-cat" onclick="filterCat('electronics',this)"><div class="nav-cat-icon">📱</div><div class="nav-cat-label">ইলেকট্রনিক্স</div></div>
+    <div class="nav-cat" onclick="filterCat('home',this)"><div class="nav-cat-icon">🏠</div><div class="nav-cat-label">বাড়ি</div></div>
+    <div class="nav-cat" onclick="filterCat('construction',this)"><div class="nav-cat-icon">🏗️</div><div class="nav-cat-label">নির্মাণ</div></div>
+    <div class="nav-cat" onclick="filterCat('automotive',this)"><div class="nav-cat-icon">🚗</div><div class="nav-cat-label">যানবাহন</div></div>
+    <div class="nav-cat" onclick="filterCat('arts',this)"><div class="nav-cat-icon">🎨</div><div class="nav-cat-label">শিল্প</div></div>
+    <div class="nav-cat" onclick="filterCat('education',this)"><div class="nav-cat-icon">📚</div><div class="nav-cat-label">শিক্ষা</div></div>
+    <div class="nav-cat" onclick="filterCat('services',this)"><div class="nav-cat-icon">🔧</div><div class="nav-cat-label">সেবা</div></div>
+    <div class="nav-cat" onclick="filterCat('health',this)"><div class="nav-cat-icon">🏥</div><div class="nav-cat-label">স্বাস্থ্য</div></div>
+    <div class="nav-cat" onclick="filterCat('events',this)"><div class="nav-cat-icon">🎉</div><div class="nav-cat-label">ইভেন্ট</div></div>
+    <div class="nav-cat" onclick="filterCat('rental',this)"><div class="nav-cat-icon">🔑</div><div class="nav-cat-label">ভাড়া</div></div>
+    <div class="nav-cat" onclick="filterCat('remarket',this)"><div class="nav-cat-icon">♻️</div><div class="nav-cat-label">রিমার্কেট</div></div>
   </div>
 </nav>
+
+<!-- LOCATION / DELIVERY STRIP -->
+<div class="loc-deliver-strip">
+  <div class="lds-item" onclick="openPinModal()">
+    <span class="lds-icon">📍</span>
+    <span><span class="lang-bn">লোকেশন — Manteswar ও আশপাশ</span><span class="lang-en">Location — Manteswar &amp; nearby</span></span>
+  </div>
+  <div class="lds-sep"></div>
+  <div class="lds-item">
+    <span class="lds-icon">🚚</span>
+    <span><span class="lang-bn">বাংলার সেরা সিটি — Order Local, Support Local</span><span class="lang-en">Bengal's Best City — Order Local, Support Local</span></span>
+  </div>
+</div>
 
 <!-- MOBILE SEARCH BAR (shown below nav on mobile) -->
 <div class="mobile-search-bar" id="mobileSearchBar">
@@ -1733,19 +1825,25 @@ img{max-width:100%;height:auto;}
   </div>
 </div>
 
-<!-- FRESH TODAY STRIP -->
-<div class="fresh-strip" id="freshStrip">
-  <div class="fresh-strip-inner">
-    <div class="fresh-strip-label">
-      <div class="fresh-strip-label-icon">🌿</div>
-      <div class="fresh-strip-label-text">Fresh Today</div>
-      <div class="fresh-strip-label-date" id="freshDate"></div>
+<!-- FRESH TODAY FULL CARDS — relocated here to match reference layout -->
+<section class="section" id="freshTodaySection" style="display:none;padding-top:16px;padding-bottom:16px;">
+  <div class="section-head">
+    <div>
+      <div class="section-label"><span class="lang-bn">আজকের তাজা</span><span class="lang-en">Fresh Today</span></div>
+      <div class="section-title">🌿 <span class="lang-bn">তাজা পণ্য</span><span class="lang-en">Fresh Today</span> <span id="freshTodayDate" style="font-size:.75rem;font-weight:400;color:var(--muted);font-family:'DM Sans',sans-serif;"></span></div>
     </div>
-    <div class="fresh-strip-track-wrap">
-      <div class="fresh-strip-track" id="freshTrack"></div>
-    </div>
+    <button class="view-all" onclick="filterCat('farm',null);document.getElementById('productsSection').scrollIntoView({behavior:'smooth'})"><span class="lang-bn">সব দেখুন →</span><span class="lang-en">View All →</span></button>
   </div>
-</div>
+  <div class="fresh-cards-scroll">
+    <div class="fresh-promo-card" onclick="filterCat('farm',null);document.getElementById('productsSection').scrollIntoView({behavior:'smooth'})">
+      <div class="fpc-decor">🌿</div>
+      <div class="fpc-title"><span class="lang-bn">FRESH<br>TODAY</span><span class="lang-en">FRESH<br>TODAY</span></div>
+      <div class="fpc-sub"><span class="lang-bn">আজ পণ্য,<br>বিশ্বাসের সাথে</span><span class="lang-en">Today's goods,<br>with trust</span></div>
+      <button class="fpc-btn"><span class="lang-bn">সব দেখুন →</span><span class="lang-en">View All →</span></button>
+    </div>
+    <div id="freshCardsGrid" style="display:contents;"></div>
+  </div>
+</section>
 
 <!-- HERO -->
 <section class="hero">
@@ -1759,95 +1857,68 @@ img{max-width:100%;height:auto;}
       <h1>△ DELT<em>A</em></h1>
       <div class="hero-bn"><span class="lang-bn">পরিবর্তনের ব-দ্বীপ</span><span class="lang-en">The Delta of Change</span></div>
       <p><span class="lang-bn">আপনার শহরের প্রতিটি দোকান, কৃষক ও শিল্পী — এক প্ল্যাটফর্মে। Local Roots. Global Wings.</span><span class="lang-en">Every shop, farmer and artisan in your town — one platform. Local Roots. Global Wings.</span></p>
-      <div class="hero-search-big" style="position:relative;">
-        <input type="text" id="heroSearch" placeholder="আজ কী দরকার? যেমন: ইলিশ মাছ, রসগোল্লা, ইলেকট্রিশিয়ান..." oninput="handleSearch(this.value)" onkeydown="handleSearchKey(event,'hero')" onfocus="showSuggestions(this.value)" autocomplete="off">
-        <button onclick="startVoiceSearch()" id="heroVoiceBtn" style="background:transparent;border:none;color:var(--muted);padding:0 12px;font-size:1.1rem;cursor:pointer;min-height:48px;flex-shrink:0;" title="Voice Search">🎙️</button>
-        <button onclick="doSearch()" style="border-radius:0 12px 12px 0;">🔍</button>
-        <div class="search-suggestions" id="heroSuggestions" style="border-radius:0 0 12px 12px;"></div>
-      </div>
-      <div class="hero-btns">
-        <button class="hero-btn-primary hero-btn-full" onclick="document.getElementById('productsSection').scrollIntoView({behavior:'smooth'})">
-          🛒 <span class="lang-bn">এখনই কিনুন</span><span class="lang-en">Shop Now</span>
-        </button>
-        <div class="hero-pill-row">
-          <button class="hero-pill" onclick="document.getElementById('shopsSection').scrollIntoView({behavior:'smooth'})">
-            🏪 <span class="lang-bn">কাছের দোকান</span><span class="lang-en">Nearby Shops</span>
-          </button>
-          <button class="hero-pill" onclick="document.getElementById('cat-all').closest('section').scrollIntoView({behavior:'smooth'})">
-            🛍️ <span class="lang-bn">ক্যাটাগরি</span><span class="lang-en">Categories</span>
-          </button>
-        </div>
-      </div>
-      <div class="hero-stats">
-        <div class="hero-stat">
-          <strong>18+</strong>
-          <span><span class="lang-bn">ক্যাটাগরি</span><span class="lang-en">Categories</span></span>
-          <span style="font-size:.62rem;color:rgba(255,255,255,.35);"><span class="lang-bn">পণ্য ও সেবা</span><span class="lang-en">Products & Services</span></span>
-        </div>
-        <div class="hero-stat">
-          <strong>500+</strong>
-          <span><span class="lang-bn">স্থানীয় উদ্যোক্তা</span><span class="lang-en">Local Sellers</span></span>
-          <span style="font-size:.62rem;color:rgba(255,255,255,.35);"><span class="lang-bn">দোকানদার, কৃষক, সেবাদাতা</span><span class="lang-en">Shops, Farmers, Services</span></span>
-        </div>
-        <div class="hero-stat">
-          <strong><span class="lang-bn">২ ঘণ্টা</span><span class="lang-en">2 Hours</span></strong>
-          <span><span class="lang-bn">লোকাল ডেলিভারি</span><span class="lang-en">Local Delivery</span></span>
-          <span style="font-size:.62rem;color:rgba(255,255,255,.35);"><span class="lang-bn">কাছের দোকান থেকে</span><span class="lang-en">From nearby shops</span></span>
-        </div>
-        <div class="hero-stat">
-          <strong style="color:#a5d6a7;">FREE</strong>
-          <span><span class="lang-bn">প্রথম অর্ডারে</span><span class="lang-en">First Order</span></span>
-          <span style="font-size:.62rem;color:rgba(255,255,255,.35);"><span class="lang-bn">ডেলিভারি বিনামূল্যে</span><span class="lang-en">Free delivery</span></span>
-        </div>
-      </div>
+      <button class="hero-about-btn" onclick="document.getElementById('whyDeltaSection').scrollIntoView({behavior:'smooth'})">
+        <span class="lang-bn">আমাদের সম্পর্কে জানুন →</span><span class="lang-en">Learn About Us →</span>
+      </button>
     </div>
-    <div class="hero-phone">
-      <div class="phone-wrap">
-        <div class="phone-notch"></div>
-        <div class="phone-screen">
-          <div class="ps-topbar">
-            <div class="ps-logo">△ DELT<em>A</em></div>
-            <div class="ps-cart">🛒 2</div>
-          </div>
-          <div class="ps-cats">
-            <div class="ps-cat active">সব</div>
-            <div class="ps-cat">খাবার</div>
-            <div class="ps-cat">কৃষি</div>
-            <div class="ps-cat">ওষুধ</div>
-          </div>
-          <div class="ps-product">
-            <div class="ps-prod-img">🍬</div>
-            <div style="flex:1">
-              <div class="ps-prod-name">রসগোল্লা ১ কেজি</div>
-              <div class="ps-prod-shop">🏪 রহমান মিষ্টি ঘর</div>
-              <div class="ps-prod-price">₹120 <span style="font-size:.48rem;text-decoration:line-through;color:#aaa">₹150</span></div>
-            </div>
-            <button class="ps-add">+</button>
-          </div>
-          <div class="ps-product">
-            <div class="ps-prod-img">🐟</div>
-            <div style="flex:1">
-              <div class="ps-prod-name">তাজা ইলিশ ১ কেজি</div>
-              <div class="ps-prod-shop">🏪 সিং ফিশ কর্নার</div>
-              <div class="ps-prod-price">₹320</div>
-            </div>
-            <button class="ps-add">+</button>
-          </div>
-          <div class="ps-product">
-            <div class="ps-prod-img">🥬</div>
-            <div style="flex:1">
-              <div class="ps-prod-name">টমেটো ২ কেজি</div>
-              <div class="ps-prod-shop">🏪 শাহ ভেজিটেবল</div>
-              <div class="ps-prod-price">₹40</div>
-            </div>
-            <button class="ps-add">+</button>
-          </div>
-        </div>
-        <div class="phone-home"></div>
+    <!-- HERO PHOTO — a plain gradient placeholder for now. To use a real photo, add
+         style="background-image:url('YOUR_IMAGE_URL')" to the div below. -->
+    <div class="hero-photo"></div>
+  </div>
+</section>
+
+<!-- HERO CTA + STATS — sits below the hero card on the cream background (matches reference layout) -->
+<div class="hero-search-outer" style="padding-top:18px;padding-bottom:4px;">
+  <div class="hero-btns" style="margin-bottom:14px;">
+    <button class="hero-btn-primary hero-btn-full" onclick="document.getElementById('productsSection').scrollIntoView({behavior:'smooth'})">
+      🛒 <span class="lang-bn">এখনই কিনুন</span><span class="lang-en">Shop Now</span>
+    </button>
+  </div>
+  <div class="hero-pill-row" style="margin-bottom:16px;">
+    <button class="hero-pill" onclick="document.getElementById('shopsSection').scrollIntoView({behavior:'smooth'})">
+      <span class="hero-pill-icon">🏪</span>
+      <span class="hero-pill-text"><span class="lang-bn">কাছের দোকান</span><span class="lang-en">Nearby Shops</span>
+        <span class="hero-pill-sub"><span class="lang-bn">আপনার আশেপাশের সেরা দোকান</span><span class="lang-en">Best shops near you</span></span>
+      </span>
+      <span class="hero-pill-arrow">→</span>
+    </button>
+    <button class="hero-pill" onclick="document.getElementById('cat-all').closest('section').scrollIntoView({behavior:'smooth'})">
+      <span class="hero-pill-icon">🛍️</span>
+      <span class="hero-pill-text"><span class="lang-bn">ক্যাটাগরি</span><span class="lang-en">Categories</span>
+        <span class="hero-pill-sub"><span class="lang-bn">সব ক্যাটাগরি এক নজরে</span><span class="lang-en">All categories at a glance</span></span>
+      </span>
+      <span class="hero-pill-arrow">→</span>
+    </button>
+  </div>
+  <div class="hero-stats-box">
+    <div class="hero-stats-new">
+      <div class="hero-stat-new">
+        <div class="hsn-icon">✅</div>
+        <div class="hsn-num">18+</div>
+        <div class="hsn-label"><span class="lang-bn">ক্যাটাগরি</span><span class="lang-en">Categories</span></div>
+        <span class="hsn-sub"><span class="lang-bn">সেরা মানের নিশ্চয়তা</span><span class="lang-en">Quality assured</span></span>
+      </div>
+      <div class="hero-stat-new">
+        <div class="hsn-icon">👥</div>
+        <div class="hsn-num">500+</div>
+        <div class="hsn-label"><span class="lang-bn">স্থানীয় উদ্যোক্তা</span><span class="lang-en">Local Sellers</span></div>
+        <span class="hsn-sub"><span class="lang-bn">আমাদের পরিবারের অংশ</span><span class="lang-en">Part of our family</span></span>
+      </div>
+      <div class="hero-stat-new">
+        <div class="hsn-icon">🚚</div>
+        <div class="hsn-num">FREE</div>
+        <div class="hsn-label"><span class="lang-bn">প্রথম অর্ডারে</span><span class="lang-en">First Order</span></div>
+        <span class="hsn-sub"><span class="lang-bn">ডেলিভারি বিনামূল্যে</span><span class="lang-en">Free delivery</span></span>
+      </div>
+      <div class="hero-stat-new">
+        <div class="hsn-icon">⚡</div>
+        <div class="hsn-num"><span class="lang-bn">২ ঘণ্টা</span><span class="lang-en">2 Hrs</span></div>
+        <div class="hsn-label"><span class="lang-bn">লোকাল ডেলিভারি</span><span class="lang-en">Local Delivery</span></div>
+        <span class="hsn-sub"><span class="lang-bn">দ্রুত, নির্ভরযোগ্য</span><span class="lang-en">Fast & reliable</span></span>
       </div>
     </div>
   </div>
-</section>
+</div>
 
 <!-- CATEGORIES -->
 <section class="section">
@@ -1989,7 +2060,7 @@ img{max-width:100%;height:auto;}
 
 <!-- DELTA BAZAAR ENTRY CARD — after shops -->
 <section class="section">
-  <div onclick="window.location.href='bazaar.html'" style="background:linear-gradient(120deg,#0a1f35 0%,#3d2a6b 55%,#5b3aa0 100%);border-radius:18px;padding:18px 20px;cursor:pointer;position:relative;overflow:hidden;display:flex;align-items:center;gap:14px;">
+  <div onclick="window.location.href='bazaar.html'" style="background:linear-gradient(120deg,#0f2818 0%,#3d2a6b 55%,#5b3aa0 100%);border-radius:18px;padding:18px 20px;cursor:pointer;position:relative;overflow:hidden;display:flex;align-items:center;gap:14px;">
     <div style="position:absolute;right:-20px;top:50%;transform:translateY(-50%);font-size:5rem;opacity:.08;pointer-events:none;">🏮</div>
     <div style="flex:1;min-width:0;position:relative;z-index:1;">
       <div style="display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);color:#c4b0ff;padding:3px 10px;border-radius:20px;font-size:.62rem;font-weight:700;margin-bottom:7px;">
@@ -2112,18 +2183,6 @@ img{max-width:100%;height:auto;}
   <div class="products-grid" id="bestsellersGrid"></div>
 </section>
 
-<!-- FRESH TODAY FULL CARDS -->
-<section class="section gray" id="freshTodaySection" style="display:none;">
-  <div class="section-head">
-    <div>
-      <div class="section-label"><span class="lang-bn">আজকের তাজা</span><span class="lang-en">Fresh Today</span></div>
-      <div class="section-title">🌿 <span class="lang-bn">তাজা পণ্য</span><span class="lang-en">Fresh Today</span> <span id="freshTodayDate" style="font-size:.75rem;font-weight:400;color:var(--muted);font-family:'DM Sans',sans-serif;"></span></div>
-    </div>
-    <button class="view-all" onclick="filterCat('farm',null);document.getElementById('productsSection').scrollIntoView({behavior:'smooth'})"><span class="lang-bn">সব দেখুন →</span><span class="lang-en">View All →</span></button>
-  </div>
-  <div class="fresh-cards-scroll" id="freshCardsGrid"></div>
-</section>
-
 <!-- LOCAL ENTREPRENEURS STRIP -->
 <section class="section" id="farmersSection" style="display:none;">
   <div class="section-head">
@@ -2172,7 +2231,7 @@ img{max-width:100%;height:auto;}
 </section>
 
 <!-- WHY DELTA -->
-<section class="section">
+<section class="section" id="whyDeltaSection">
   <div class="section-head">
     <div>
       <div class="section-label"><span class="lang-bn">কেন আমরা</span><span class="lang-en">Why Choose Us</span></div>
@@ -2504,7 +2563,7 @@ img{max-width:100%;height:auto;}
 <section class="section gray">
   <div style="background:linear-gradient(135deg,var(--navy3),var(--navy));border-radius:20px;padding:32px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;">
     <div>
-      <div style="display:inline-flex;align-items:center;gap:7px;background:rgba(240,112,24,.2);border:1px solid rgba(240,112,24,.4);color:#ffb07a;padding:5px 12px;border-radius:20px;font-size:.72rem;font-weight:600;letter-spacing:.8px;text-transform:uppercase;margin-bottom:12px;">শীঘ্রই আসছে / Coming Soon</div>
+      <div style="display:inline-flex;align-items:center;gap:7px;background:rgba(201,162,39,.2);border:1px solid rgba(201,162,39,.4);color:#ffb07a;padding:5px 12px;border-radius:20px;font-size:.72rem;font-weight:600;letter-spacing:.8px;text-transform:uppercase;margin-bottom:12px;">শীঘ্রই আসছে / Coming Soon</div>
       <h3 style="font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:900;color:#fff;margin-bottom:8px;">🔑 DELTA Rental Club</h3>
       <p style="color:rgba(255,255,255,.75);font-size:.88rem;line-height:1.7;max-width:420px;">ট্র্যাক্টর, ক্যামেরা, সাউন্ড সিস্টেম, যন্ত্রপাতি — ভাড়া নিন বা ভাড়া দিন। আপনার অলস সম্পদ থেকে আয় করুন।</p>
       <p style="color:rgba(255,255,255,.5);font-size:.78rem;margin-top:6px;">Rent or lend — Tractor, Camera, Equipment, Venue. Earn from your idle assets.</p>
@@ -2881,7 +2940,7 @@ img{max-width:100%;height:auto;}
           <div><div class="smd-sc-name">Hampers</div><div class="smd-sc-sub">উৎসবের গিফট বক্স</div></div>
           <span class="smd-sc-arr">→</span>
         </a>
-        <a class="smd-special-card" href="seller.html" onclick="closeSideMenu()" style="background:linear-gradient(135deg,#0a1f35,#122840)">
+        <a class="smd-special-card" href="seller.html" onclick="closeSideMenu()" style="background:linear-gradient(135deg,#0f2818,#1a3a24)">
           <div class="smd-sc-icon">🏬</div>
           <div><div class="smd-sc-name">DELTA তে যুক্ত হন</div><div class="smd-sc-sub">বিক্রেতা, কৃষক, সেবাদাতা — সবার জন্য</div></div>
           <span class="smd-sc-arr">→</span>
@@ -4212,12 +4271,12 @@ function renderSponsoredCarousel(ads){
   var slidesHTML = ads.map(function(ad,i){ return _sponsoredSlideHTML(ad,i); }).join('');
   var dotsHTML = ads.length > 1 ? (
     '<div style="position:absolute;left:16px;bottom:14px;display:flex;align-items:center;gap:8px;z-index:2;">'+
-      '<span id="adSlideCounter" style="font-size:.68rem;font-weight:700;color:rgba(10,31,53,.6);">1/'+ads.length+'</span>'+
+      '<span id="adSlideCounter" style="font-size:.68rem;font-weight:700;color:rgba(15,40,24,.6);">1/'+ads.length+'</span>'+
       '<div style="display:flex;gap:5px;">'+
       ads.map(function(a,i){
         return '<span onclick="event.stopPropagation();goSponsoredSlide('+i+')" '+
           'data-ad-dot="'+i+'" style="width:'+(i===0?'16px':'6px')+';height:6px;border-radius:4px;'+
-          'background:'+(i===0?'var(--navy)':'rgba(10,31,53,.25)')+';transition:all .25s;cursor:pointer;"></span>';
+          'background:'+(i===0?'var(--navy)':'rgba(15,40,24,.25)')+';transition:all .25s;cursor:pointer;"></span>';
       }).join('')+
       '</div>'+
     '</div>'
@@ -4232,7 +4291,7 @@ function renderSponsoredCarousel(ads){
 
   wrap.innerHTML = '<section class="section" style="padding-top:4px;padding-bottom:4px;">'+
     header+
-    '<div style="border-radius:16px;overflow:hidden;position:relative;box-shadow:0 4px 18px rgba(10,31,53,.08);border:1px solid var(--border);">'+
+    '<div style="border-radius:16px;overflow:hidden;position:relative;box-shadow:0 4px 18px rgba(15,40,24,.08);border:1px solid var(--border);">'+
       '<div id="adTrack" style="display:flex;width:'+(ads.length*100)+'%;transition:transform .5s ease;">'+
         slidesHTML+
       '</div>'+
@@ -4250,7 +4309,7 @@ function goSponsoredSlide(i){
   if(track) track.style.transform = 'translateX(-'+(i*(100/_adSlides.length))+'%)';
   document.querySelectorAll('[data-ad-dot]').forEach(function(dot,j){
     dot.style.width = j===i?'16px':'6px';
-    dot.style.background = j===i?'var(--navy)':'rgba(10,31,53,.25)';
+    dot.style.background = j===i?'var(--navy)':'rgba(15,40,24,.25)';
   });
   var counter = document.getElementById('adSlideCounter');
   if(counter) counter.textContent = (i+1)+'/'+_adSlides.length;
@@ -4287,7 +4346,7 @@ function _sponsoredSlideHTML(ad, idx){
             (ad.shopName||ad.title)+'</div>'+
           '<div style="font-size:.78rem;color:var(--muted);margin-bottom:12px;line-height:1.4;">'+tagline+'</div>'+
           '<div style="display:inline-flex;align-items:center;gap:4px;background:#fff;color:var(--navy);'+
-            'padding:9px 16px;border-radius:20px;font-size:.76rem;font-weight:700;box-shadow:0 2px 8px rgba(10,31,53,.1);">'+
+            'padding:9px 16px;border-radius:20px;font-size:.76rem;font-weight:700;box-shadow:0 2px 8px rgba(15,40,24,.1);">'+
             (btnText ? btnText : '<span class="lang-bn">এখনই কিনুন →</span><span class="lang-en">Shop Now →</span>')+'</div>'+
         '</div>'+
         (img ? (
@@ -5100,7 +5159,9 @@ function buildFreshCards(prods){
 
   // Automatic recency-based selection: products added in the last 48 hours, newest first.
   // Falls back to the 10 most-recently-added products if nothing qualifies (e.g. early launch days),
-  // so the section is never empty. No manual seller toggle — keeps this fair/neutral across sellers.
+  // and finally to just the first 10 products if none have a createdAt at all — so the section
+  // is never empty just because older/manually-added listings are missing that field.
+  // No manual seller toggle — keeps this fair/neutral across sellers.
   var now = Date.now();
   var FRESH_WINDOW_MS = 48 * 60 * 60 * 1000;
   var withDates = prods.filter(function(p){ return !!p.createdAt; }).map(function(p){
@@ -5112,9 +5173,9 @@ function buildFreshCards(prods){
 
   var freshList = recentlyAdded.length
     ? recentlyAdded.slice(0,10)
-    : withDates.sort(function(a,b){ return b._createdMs - a._createdMs; }).slice(0,10);
-
-  if(!freshList.length) return; // no products have createdAt at all — nothing to show
+    : withDates.length
+      ? withDates.sort(function(a,b){ return b._createdMs - a._createdMs; }).slice(0,10)
+      : prods.slice(0,10).map(function(p){ return Object.assign({}, p, {_createdMs: now - 72*3600000}); });
 
   grid.innerHTML=freshList.map(function(p){
     var img=p.imageUrl||(p.images&&p.images[0])||'';
@@ -5123,6 +5184,8 @@ function buildFreshCards(prods){
     var hoursOld = (now - p._createdMs) / 3600000;
     var badgeClass = hoursOld <= 24 ? 'fc-just' : 'fc-special';
     var badgeLabel = hoursOld <= 24 ? 'JUST IN' : 'তাজা';
+    var isSpecial = !!p.discount;
+    var tagline = p.tagline || FRESH_TAGLINE_MAP[p.category] || (p.shopName?'🏪 '+p.shopName:'সেরা মানের পণ্য');
     return '<div class="fresh-card">'+
       '<div class="fresh-card-img">'+(img?'<img src="'+img+'" alt="'+name+'" loading="lazy">':prodEmoji(p.category))+
       '<div class="fresh-card-badges"><span class="'+badgeClass+'">'+badgeLabel+'</span>'+
@@ -5130,13 +5193,19 @@ function buildFreshCards(prods){
       '</div></div>'+
       '<div class="fresh-card-body">'+
       '<div class="fresh-card-name">'+name+'</div>'+
-      '<div class="fresh-card-shop">🏪 '+(p.shopName||'')+'</div>'+
-      '<div><span class="fresh-card-price">₹'+price+'</span>'+(p.mrp&&p.mrp!==price?'<span class="fresh-card-mrp">₹'+p.mrp+'</span>':'')+'</div>'+
-      '<button class="fresh-card-add" onclick="addToCartById(\''+p.id+'\',\''+p.shopId+'\');showToast(\'কার্টে যোগ হয়েছে ✅\',\'green\')">+ কার্টে যোগ করুন</button>'+
+      '<div class="fresh-card-tagline">'+tagline+'</div>'+
+      '<div class="fresh-card-foot">'+
+        '<span class="fresh-card-pill '+(isSpecial?'fc-pill-special':'fc-pill-fresh')+'">'+(isSpecial?'SPECIAL':'FRESH')+'</span>'+
+        '<button class="fresh-card-plus" onclick="event.stopPropagation();addToCartById(\''+p.id+'\',\''+p.shopId+'\');showToast(\'কার্টে যোগ হয়েছে ✅\',\'green\')">+</button>'+
+      '</div>'+
       '</div></div>';
   }).join('');
   sec.style.display='block';
 }
+var FRESH_TAGLINE_MAP={
+  farm:'তাজা সবজি · দেশি', food:'সুস্বাদু ও তাজা', grocery:'প্রতিদিনের প্রয়োজন',
+  medicine:'বিশ্বস্ত মানের', clothing:'নতুন কালেকশন', livestock:'তাজা ও স্বাস্থ্যকর'
+};
 
 // ── LOCAL ENTREPRENEURS STRIP ──
 var FARMERS=[
