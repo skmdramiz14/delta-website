@@ -791,7 +791,7 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
    uniform 16px gap throughout the whole row. */
 @media(max-width:480px){
   #freshTodaySection{padding:30px 4% 20px;}
-  .fresh-cards-scroll{gap:16px;padding-right:4%;
+  .fresh-cards-scroll{gap:22px;padding-right:4%;
     scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;}
 
   .fresh-promo-card{width:192px;min-height:240px;padding:20px 18px 18px;border-radius:16px;
@@ -808,37 +808,39 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
   .fpc-btn{padding:7px 6px 7px 15px;font-size:.66rem;gap:8px;border-width:2px;border-color:var(--orange);margin-top:4px;}
   .fpc-btn .fpc-arrow{width:21px;height:21px;font-size:.78rem;}
 
-  /* Product cards — full-bleed photo, image stays fully visible above the text panel */
+  /* Product cards — photo framed with breathing space (object-fit:contain, ~9px inset)
+     so the subject is never cropped at the edges, always centered */
   .fresh-card{width:190px;min-height:240px;position:relative;border-radius:16px;scroll-snap-align:start;
     border:1px solid rgba(255,255,255,.4);
     box-shadow:0 10px 30px rgba(0,0,0,.08);} /* subtle refined drop shadow + thin white edge */
-  .fresh-card-img{position:absolute;inset:0;width:100%;height:100%;border-radius:16px;} /* matches card radius exactly */
-  .fresh-card-img img{width:100%;height:100%;object-fit:cover;object-position:center 42%;} /* consistent framing across every product photo */
+  .fresh-card-img{position:absolute;inset:9px;width:auto;height:auto;border-radius:12px;
+    overflow:hidden;background:var(--sand);} /* the inset itself is the "breathing space" frame */
+  .fresh-card-img img{width:100%;height:100%;object-fit:contain;object-position:center;} /* shows the whole product, never cuts off edges */
   .fresh-card-img::after{display:none;} /* no separate scrim needed — the glass panel below handles contrast */
 
   /* Glassmorphism text panel — frosted, semi-transparent, identical on every card regardless
      of the photo's own brightness. Sits at the bottom ~30% of the image (the "safe text zone"),
-     leaving the product photo fully visible above it. Opacity lowered ~13% so more photo shows. */
+     leaving the product photo fully visible above it. Opacity lowered further + smoother fade. */
   .fresh-card-body{position:absolute;left:0;right:0;bottom:0;z-index:2;min-height:70px;
     padding:10px 14px 10px 16px;border-radius:16px 16px 0 0;
-    background:rgba(6,14,10,.28);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+    background:rgba(6,14,10,.24);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
     border-top:1px solid rgba(255,255,255,.08);}
   .fresh-card-name{font-size:17px;font-weight:600;line-height:1.12;margin-bottom:3px;color:#fff;
     text-shadow:0 2px 8px rgba(0,0,0,.35);}
-  .fresh-card-tagline{font-size:12px;font-weight:400;margin-bottom:6px;color:rgba(255,255,255,.8);
-    text-shadow:0 1px 5px rgba(0,0,0,.25);}
+  .fresh-card-tagline{font-size:11px;font-weight:400;margin-bottom:6px;color:rgba(255,255,255,.68);
+    text-shadow:0 1px 5px rgba(0,0,0,.22);} /* smaller + lighter than the title, clearer hierarchy */
   .fresh-card-badges{top:8px;left:8px;gap:8px;z-index:3;} /* stays on the image, never overlaps the panel below */
 
   /* Badges — 7% OFF and তাজা share the exact same height/padding/alignment via one selector */
   .fc-just,.fc-special,.fc-limited,.fc-discount{height:27px;font-size:.58rem;padding:0 12px;border-radius:999px;}
   .fresh-card-pill{height:21px;font-size:.52rem;padding:0 8px;border-radius:999px;position:relative;top:-5px;} /* SPECIAL/FRESH — smaller, shifted up ~5px */
-  .fresh-card-plus{width:26px;height:26px;font-size:.9rem;margin-right:0;position:static;
-    box-shadow:0 2px 8px rgba(0,0,0,.12),0 0 0 1.5px rgba(255,255,255,.18);} /* sits inside the panel, never covers title/subtitle */
+  .fresh-card-plus{width:26px;height:26px;font-size:.9rem;margin-right:6px;
+    box-shadow:0 3px 10px rgba(0,0,0,.16),0 0 0 1.5px rgba(255,255,255,.2);} /* moved further inward, equal spacing from bottom/right, softer shadow */
 
   /* Dot pagination — one dot per card (featured + products), tracks scroll position */
   .fresh-dots{display:flex;justify-content:center;align-items:center;gap:6px;margin-top:7px;flex-wrap:wrap;}
   .fresh-dot{width:6px;height:6px;border-radius:999px;background:rgba(16,57,45,.16);transition:all .25s ease;flex-shrink:0;}
-  .fresh-dot.active{width:18px;background:var(--orange);}
+  .fresh-dot.active{width:22px;background:#E0B563;} /* wider + brighter gold, easier to notice */
 }
 
 /* ── FARMERS STRIP ── */
