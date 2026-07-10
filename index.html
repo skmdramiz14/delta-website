@@ -117,16 +117,20 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 
 /* ── HERO ── */
 .hero{
-  background:
-    linear-gradient(rgba(6,19,9,.42),rgba(6,19,9,.5)),
-    radial-gradient(120% 90% at 50% 100%,rgba(0,0,0,.35) 0%,transparent 60%), /* soft vignette */
-    url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1600&auto=format&fit=crop') center/cover no-repeat,
-    linear-gradient(135deg,#061309 0%,#0f2818 40%,#17351f 70%,#1a3a24 100%);
+  background:linear-gradient(135deg,#061309 0%,#0f2818 40%,#17351f 70%,#1a3a24 100%);
   padding:36px 6%;position:relative;overflow:hidden;
   margin:24px 4% 0;border-radius:26px;border:1px solid rgba(201,162,39,.28);
   min-height:400px;display:flex;align-items:center;
   box-shadow:0 24px 56px rgba(6,19,9,.32),0 2px 0 rgba(255,255,255,.04) inset;
 }
+/* Cinematic photo layer — richer contrast/saturation/warmth than the raw source photo */
+.hero-bg-img{position:absolute;inset:0;background-size:cover;background-position:center;
+  filter:contrast(1.22) saturate(1.3) brightness(1.04) sepia(.08);z-index:0;}
+/* Dark scrim + soft vignette, sits above the photo so text stays legible without flattening the image itself */
+.hero-bg-overlay{position:absolute;inset:0;z-index:0;
+  background:
+    linear-gradient(100deg,rgba(6,19,9,.62) 0%,rgba(6,19,9,.38) 42%,rgba(6,19,9,.15) 68%),
+    radial-gradient(120% 90% at 50% 100%,rgba(0,0,0,.32) 0%,transparent 60%);}
 /* Subtle glass panel behind the text so it stays readable over any part of the photo */
 .hero-glass{background:rgba(0,0,0,.18);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-radius:18px;padding:22px 24px;}
 /* Thin gold geometric accent line, right side — echoes the reference's diagonal light line */
@@ -202,23 +206,24 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 
 /* ── HERO — MOBILE-ONLY REFINEMENT (390px reference) ──
    Desktop hero (side-by-side grid + placeholder panel) is untouched above.
-   Below 480px: the empty hero-photo placeholder is dropped (the full-width
-   background photo added to .hero now carries that role), the banner is
-   capped at ~320px tall, spacing/radius/shadow match the approved spec,
-   and the CTA gets the larger, more tappable proportions requested. */
+   Below 480px: content column is ~40% width so the photo dominates the
+   remaining ~60% (visible through the now-hidden hero-photo placeholder —
+   the real photo lives on .hero itself). Banner capped at ~320-340px tall,
+   spacing/radius/shadow match the approved spec, CTA is larger/tappable. */
 @media(max-width:480px){
-  .hero-inner{grid-template-columns:1fr;gap:0;}
+  .hero-inner{grid-template-columns:42% 58%;gap:0;}
   .hero-photo{display:none;}
-  .hero{padding:30px 28px;border-radius:28px;min-height:300px;max-height:340px;
+  .hero{padding:30px 28px;border-radius:28px;min-height:320px;max-height:360px;
     box-shadow:0 18px 50px rgba(0,0,0,.12);}
-  .hero-glass{padding:20px 20px;}
-  .hero h1{font-size:2.1rem;margin-bottom:10px;}
-  .hero-bn{font-size:1.05rem;margin-bottom:9px;}
-  .hero p{font-size:.88rem;line-height:1.55;margin-bottom:22px;max-width:none;}
-  .hero-about-btn{height:54px;padding:0 27px;border-width:2px;font-size:.88rem;
+  .hero-glass{padding:18px 16px;}
+  .hero-tag{font-size:.62rem;padding:5px 10px;margin-bottom:14px;letter-spacing:.5px;}
+  .hero h1{font-size:2.3rem;margin-bottom:9px;} /* ~9% larger — DELTA wordmark is the focal point */
+  .hero-bn{font-size:1.14rem;margin-bottom:9px;} /* headline, slightly larger */
+  .hero p{font-size:.82rem;line-height:1.62;margin-bottom:20px;max-width:100%;} /* narrower column = naturally shorter lines */
+  .hero-about-btn{height:52px;padding:0 20px;border-width:2px;font-size:.8rem;white-space:nowrap;
     transition:transform .15s ease,background .2s ease;}
   .hero-about-btn:active{transform:scale(.96);background:rgba(201,162,39,.12);}
-  .hero-gold-line{right:6%;}
+  .hero-gold-line{right:5%;opacity:.9;z-index:2;} /* clearly above the photo/overlay layers now */
 }
 /* Phone mockup (legacy, unused) */
 .hero-phone{display:flex;align-items:center;justify-content:center;}
@@ -555,10 +560,12 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
   .hero-benefit-line{font-size:.72rem;}
 }
 @media(max-width:480px){
-  .hero-stat-new{padding:6px 2px;}
-  .hsn-icon{font-size:.9rem;}
-  .hsn-num{font-size:.78rem;}
-  .hsn-label{font-size:.5rem;}
+  .hero-stats-box{padding:28px 12px;}
+  .hero-stat-new{padding:10px 4px;}
+  .hero-stat-new+.hero-stat-new{border-left:1px solid rgba(255,255,255,.06);} /* much more subtle divider */
+  .hsn-icon{font-size:1.4rem;margin-bottom:8px;}
+  .hsn-num{font-size:1.05rem;}
+  .hsn-label{font-size:.64rem;}
   .hts-sep{display:none;}
   .hero-trust-strip{flex-wrap:wrap;gap:6px;}
 }
@@ -607,7 +614,7 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
   color:#1a2010;border:none;padding:17px 32px;border-radius:14px;min-height:56px;
   font-size:1.02rem;font-weight:800;cursor:pointer;transition:all .25s;
   box-shadow:0 6px 24px rgba(201,162,39,.5), 0 1px 0 rgba(255,255,255,.15) inset;
-  letter-spacing:.3px;
+  letter-spacing:.3px;display:inline-flex;align-items:center;justify-content:center;gap:8px;
 }
 .hero-btn-primary:hover{
   background:linear-gradient(135deg,#d4af37,#c9a227);
@@ -641,9 +648,12 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 }
 .hero-pill:active{transform:translateY(0);}
 @media(max-width:480px){
-  .hero-pill{font-size:.76rem;padding:10px 12px;gap:8px;}
+  .hero-pill{font-size:.76rem;padding:20px 18px;gap:8px;border-radius:22px;
+    border:1px solid rgba(212,175,55,.18);box-shadow:0 6px 20px rgba(15,40,24,.1);}
   .hero-pill-icon{font-size:1.1rem;}
   .hero-pill-sub{font-size:.6rem;}
+  .hero-btn-primary{display:flex;align-items:center;justify-content:center;gap:9px;
+    min-height:60px;font-weight:900;font-size:1.05rem;}
 }
 
 /* ── FREE DELIVERY STRIP (green like Appayan) ── */
@@ -2081,6 +2091,11 @@ img{max-width:100%;height:auto;}
 
 <!-- HERO -->
 <section class="hero">
+  <!-- Cinematic background photo — its own layer so a contrast/saturation filter can be
+       applied without affecting the dark overlay or text above it -->
+  <div class="hero-bg-img" style="background-image:url('https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?q=80&w=1600&auto=format&fit=crop');"></div>
+  <!-- Dark overlay + vignette, sits above the photo, below the content -->
+  <div class="hero-bg-overlay"></div>
   <!-- Subtle grid pattern — opacity কমানো -->
   <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;"></div>
   <!-- Logo পিছনে subtle radial glow -->
