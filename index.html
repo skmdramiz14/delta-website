@@ -232,8 +232,8 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
   .hero-below-panel{
     position:relative;
     background:
-      linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px),
-      radial-gradient(90% 70% at 50% 35%,rgba(255,255,255,.05) 0%,transparent 60%),
+      linear-gradient(rgba(255,255,255,.009) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.009) 1px,transparent 1px),
+      radial-gradient(90% 70% at 50% 35%,rgba(255,255,255,.065) 0%,transparent 60%),
       linear-gradient(135deg,#0f2818 0%,#17351f 60%,#1a3a24 100%);
     background-size:40px 40px,40px 40px,cover,cover;
     margin:0 4% 18px;padding:16px 24px 24px;border-radius:0 0 22px 22px;
@@ -580,7 +580,7 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 @media(max-width:480px){
   .hero-stats-box{padding:28px 12px;}
   .hero-stat-new{padding:10px 4px;}
-  .hero-stat-new+.hero-stat-new{border-left:.5px solid rgba(255,255,255,.04);} /* thinner + lighter divider */
+  .hero-stat-new+.hero-stat-new{border-left:.5px solid rgba(255,255,255,.03);} /* thinner + lighter divider */
   .hsn-icon{font-size:1.7rem;margin-bottom:12px;} /* ~10% larger than the previous pass, more space before the number */
   .hsn-num{font-size:1.05rem;}
   .hsn-label{font-size:.64rem;}
@@ -667,14 +667,19 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 }
 .hero-pill:active{transform:translateY(0);}
 @media(max-width:480px){
-  .hero-pill{font-size:.82rem;padding:16px 14px;gap:12px;border-radius:22px;align-items:center;
-    border:1px solid rgba(212,175,55,.14);box-shadow:none;} /* thinner gold border, no elevation — part of the shared panel */
-  .hero-pill-icon{font-size:1.38rem;} /* ~25% larger */
-  .hero-pill-sub{font-size:.62rem;margin-top:3px;color:rgba(255,255,255,.72);} /* brighter subtitle */
-  .hero-pill-arrow{font-size:1.3rem;margin-left:-2px;} /* pulled closer to the card edge */
+  .hero-pill-row{flex-direction:column;gap:10px;} /* stacked full-width rows instead of two narrow halves */
+  .hero-pill{font-size:.88rem;padding:14px 16px;gap:14px;border-radius:16px;align-items:center;
+    border:1px solid rgba(212,175,55,.10);box-shadow:0 4px 14px rgba(0,0,0,.08);} /* thinner border, soft shadow instead of glow */
+  .hero-pill-icon{font-size:1.38rem;}
+  .hero-pill-text{text-align:left;}
+  .hero-pill-sub{font-size:.68rem;margin-top:5px;color:rgba(255,255,255,.72);line-height:1.4;} /* more gap from title, brighter */
+  .hero-pill-arrow{font-size:1.2rem;margin-left:4px;} /* pinned to the far right */
   .hero-btn-primary{display:flex;align-items:center;justify-content:center;gap:9px;
-    min-height:60px;font-weight:900;font-size:1.05rem;}
-  .hero-stats-box{box-shadow:none;} /* same reasoning — one unified panel, no separate elevation */
+    min-height:52px;font-weight:900;font-size:1rem;border-radius:16px;} /* slightly shorter, same radius family */
+  .hero-stats-box{box-shadow:none;border-radius:16px;padding:22px 18px;} /* more horizontal padding, unified radius */
+  .hero-stats-new{align-items:center;} /* every stat vertically centered against its row */
+  .hsn-icon{margin-bottom:13px;} /* a touch more space before the number */
+  .hsn-label{margin-top:2px;} /* a touch more space after the number */
 }
 
 /* ── FREE DELIVERY STRIP (green like Appayan) ── */
