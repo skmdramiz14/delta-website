@@ -242,9 +242,9 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
       url('panel-bg.jpg');
     background-size:40px 40px,40px 40px,cover,cover,cover,cover;
     background-position:center,center,center,center,center,center;
-    padding:20px 20px 22px;
+    padding:8px 20px 22px;
   }
-  .hero-below-panel .hero-btns{margin-top:2px;} /* CTA breathes inside the panel instead of floating at its own top edge */
+  .hero-below-panel .hero-btns{margin-top:0;}
 }
 @keyframes heroFadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
 /* Phone mockup (legacy, unused) */
@@ -2163,12 +2163,12 @@ img{max-width:100%;height:auto;}
 
 <!-- HERO CTA + STATS — sits below the hero card on the cream background (matches reference layout) -->
 <div class="hero-search-outer hero-below-panel" style="padding-top:28px;padding-bottom:24px;">
-  <div class="hero-btns" style="margin-bottom:14px;">
+  <div class="hero-btns" style="margin-bottom:10px;">
     <button class="hero-btn-primary hero-btn-full" onclick="document.getElementById('productsSection').scrollIntoView({behavior:'smooth'})">
       🛒 <span class="lang-bn">এখনই কিনুন</span><span class="lang-en">Shop Now</span>
     </button>
   </div>
-  <div class="hero-pill-row" style="margin-bottom:14px;">
+  <div class="hero-pill-row" style="margin-bottom:10px;">
     <button class="hero-pill" onclick="document.getElementById('shopsSection').scrollIntoView({behavior:'smooth'})">
       <span class="hero-pill-icon">🏪</span>
       <span class="hero-pill-text"><span class="lang-bn">কাছের দোকান</span><span class="lang-en">Nearby Shops</span>
