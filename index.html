@@ -213,7 +213,8 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 @media(max-width:480px){
   .hero-inner{grid-template-columns:42% 58%;gap:0;}
   .hero-photo{display:none;}
-  .hero{padding:30px 28px;border-radius:28px;min-height:320px;max-height:360px;
+  .hero{padding:30px 28px;border-radius:28px 28px 0 0;min-height:320px;max-height:360px;
+    margin-bottom:0;border-bottom:none;
     box-shadow:0 18px 50px rgba(0,0,0,.12);animation:heroFadeIn .5s ease both;}
   .hero-glass{padding:18px 16px;}
   .hero-tag{font-size:.62rem;padding:5px 10px;margin-bottom:16px;letter-spacing:.5px;}
@@ -225,6 +226,15 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
     transition:transform .18s ease,background .2s ease,box-shadow .2s ease;}
   .hero-about-btn:active{transform:scale(.96);background:rgba(201,162,39,.12);}
   .hero-gold-line{right:5%;opacity:.9;z-index:2;} /* clearly above the photo/overlay layers now */
+
+  /* Fuses seamlessly with the hero above — same dark tone, no cream gap, shared border,
+     rounded only at the bottom — the whole hero+CTA+cards+stats reads as one panel */
+  .hero-below-panel{
+    background:linear-gradient(135deg,#0f2818 0%,#17351f 60%,#1a3a24 100%);
+    margin:0 4% 24px;padding:22px 20px 24px;border-radius:0 0 28px 28px;
+    border:1px solid rgba(201,162,39,.28);border-top:none;
+    box-shadow:0 18px 50px rgba(0,0,0,.12);
+  }
 }
 @keyframes heroFadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
 /* Phone mockup (legacy, unused) */
@@ -2122,7 +2132,7 @@ img{max-width:100%;height:auto;}
 </section>
 
 <!-- HERO CTA + STATS — sits below the hero card on the cream background (matches reference layout) -->
-<div class="hero-search-outer" style="padding-top:28px;padding-bottom:24px;">
+<div class="hero-search-outer hero-below-panel" style="padding-top:28px;padding-bottom:24px;">
   <div class="hero-btns" style="margin-bottom:18px;">
     <button class="hero-btn-primary hero-btn-full" onclick="document.getElementById('productsSection').scrollIntoView({behavior:'smooth'})">
       🛒 <span class="lang-bn">এখনই কিনুন</span><span class="lang-en">Shop Now</span>
