@@ -117,12 +117,23 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 
 /* ── HERO ── */
 .hero{
-  background:linear-gradient(135deg,#061309 0%,#0f2818 40%,#17351f 70%,#1a3a24 100%);
+  background:
+    linear-gradient(rgba(6,19,9,.42),rgba(6,19,9,.5)),
+    radial-gradient(120% 90% at 50% 100%,rgba(0,0,0,.35) 0%,transparent 60%), /* soft vignette */
+    url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1600&auto=format&fit=crop') center/cover no-repeat,
+    linear-gradient(135deg,#061309 0%,#0f2818 40%,#17351f 70%,#1a3a24 100%);
   padding:36px 6%;position:relative;overflow:hidden;
   margin:24px 4% 0;border-radius:26px;border:1px solid rgba(201,162,39,.28);
   min-height:400px;display:flex;align-items:center;
   box-shadow:0 24px 56px rgba(6,19,9,.32),0 2px 0 rgba(255,255,255,.04) inset;
 }
+/* Subtle glass panel behind the text so it stays readable over any part of the photo */
+.hero-glass{background:rgba(0,0,0,.18);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-radius:18px;padding:22px 24px;}
+/* Thin gold geometric accent line, right side — echoes the reference's diagonal light line */
+.hero-gold-line{position:absolute;top:8%;right:9%;width:1px;height:70%;
+  background:linear-gradient(180deg,transparent 0%,rgba(212,175,55,.55) 25%,rgba(212,175,55,.55) 75%,transparent 100%);
+  pointer-events:none;z-index:1;}
+.hero-tagline-strong{color:#fff;font-weight:600;opacity:1;}
 /* Ambient glow orbs */
 .hero::before{
   content:'';position:absolute;
@@ -137,7 +148,7 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
   bottom:-60px;left:-60px;pointer-events:none;
 }
 .hero::before{content:'';position:absolute;top:-120px;right:-80px;width:520px;height:520px;background:radial-gradient(circle,rgba(201,162,39,.14) 0%,transparent 68%);border-radius:50%;}
-.hero::after{content:'△';position:absolute;right:6%;bottom:-20px;font-size:220px;font-weight:900;color:rgba(255,255,255,.03);line-height:1;pointer-events:none;}
+.hero::after{content:'△';position:absolute;right:6%;bottom:-20px;font-size:220px;font-weight:900;color:rgba(255,255,255,.06);line-height:1;pointer-events:none;z-index:0;}
 .hero-inner{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center;max-width:1200px;width:100%;margin:0 auto;position:relative;z-index:2;}
 .hero-tag{display:inline-flex;align-items:center;gap:7px;background:rgba(201,162,39,.18);border:1px solid rgba(201,162,39,.35);color:#ffb07a;padding:6px 14px;border-radius:20px;font-size:.75rem;font-weight:600;letter-spacing:.8px;text-transform:uppercase;margin-bottom:18px;}
 .hero h1{font-family:'Playfair Display',serif;font-size:clamp(2rem,4.5vw,3.2rem);font-weight:900;color:#fff;line-height:1.22;margin-bottom:12px;text-shadow:0 2px 20px rgba(0,0,0,.3);}
@@ -187,6 +198,27 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
   content:'';position:absolute;top:0;right:0;width:72px;height:72px;
   border-top:2px solid rgba(212,175,55,.7);border-right:2px solid rgba(212,175,55,.7);
   pointer-events:none;
+}
+
+/* ── HERO — MOBILE-ONLY REFINEMENT (390px reference) ──
+   Desktop hero (side-by-side grid + placeholder panel) is untouched above.
+   Below 480px: the empty hero-photo placeholder is dropped (the full-width
+   background photo added to .hero now carries that role), the banner is
+   capped at ~320px tall, spacing/radius/shadow match the approved spec,
+   and the CTA gets the larger, more tappable proportions requested. */
+@media(max-width:480px){
+  .hero-inner{grid-template-columns:1fr;gap:0;}
+  .hero-photo{display:none;}
+  .hero{padding:30px 28px;border-radius:28px;min-height:300px;max-height:340px;
+    box-shadow:0 18px 50px rgba(0,0,0,.12);}
+  .hero-glass{padding:20px 20px;}
+  .hero h1{font-size:2.1rem;margin-bottom:10px;}
+  .hero-bn{font-size:1.05rem;margin-bottom:9px;}
+  .hero p{font-size:.88rem;line-height:1.55;margin-bottom:22px;max-width:none;}
+  .hero-about-btn{height:54px;padding:0 27px;border-width:2px;font-size:.88rem;
+    transition:transform .15s ease,background .2s ease;}
+  .hero-about-btn:active{transform:scale(.96);background:rgba(201,162,39,.12);}
+  .hero-gold-line{right:6%;}
 }
 /* Phone mockup (legacy, unused) */
 .hero-phone{display:flex;align-items:center;justify-content:center;}
@@ -2053,12 +2085,14 @@ img{max-width:100%;height:auto;}
   <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;"></div>
   <!-- Logo পিছনে subtle radial glow -->
   <div style="position:absolute;top:10%;left:3%;width:340px;height:340px;background:radial-gradient(circle,rgba(99,102,241,.1) 0%,transparent 65%);border-radius:50%;pointer-events:none;z-index:0;"></div>
+  <!-- Thin gold geometric accent line (right side) -->
+  <div class="hero-gold-line" aria-hidden="true"></div>
   <div class="hero-inner" style="position:relative;z-index:1;">
-    <div class="hero-content">
+    <div class="hero-content hero-glass">
       <div class="hero-tag">🌟 <span class="lang-bn">পশ্চিমবঙ্গের প্রথম লোকাল সুপার অ্যাপ</span><span class="lang-en">West Bengal's First Local Super App</span></div>
       <h1>△ DELT<em>A</em></h1>
       <div class="hero-bn"><span class="lang-bn">পরিবর্তনের ব-দ্বীপ</span><span class="lang-en">The Delta of Change</span></div>
-      <p><span class="lang-bn">আপনার শহরের প্রতিটি দোকান, কৃষক ও শিল্পী — এক প্ল্যাটফর্মে। Local Roots. Global Wings.</span><span class="lang-en">Every shop, farmer and artisan in your town — one platform. Local Roots. Global Wings.</span></p>
+      <p><span class="lang-bn">আপনার শহরের প্রতিটি দোকান, কৃষক ও শিল্পী — এক প্ল্যাটফর্মে। <span class="hero-tagline-strong">Local Roots. Global Wings.</span></span><span class="lang-en">Every shop, farmer and artisan in your town — one platform. <span class="hero-tagline-strong">Local Roots. Global Wings.</span></span></p>
       <button class="hero-about-btn" onclick="document.getElementById('whyDeltaSection').scrollIntoView({behavior:'smooth'})">
         <span class="lang-bn">আমাদের সম্পর্কে জানুন →</span><span class="lang-en">Learn About Us →</span>
       </button>
