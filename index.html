@@ -210,7 +210,7 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
   .hero-photo{display:none;}
   .hero{padding:38px 32px 34px 34px;border-radius:22px 22px 0 0;min-height:320px;max-height:370px;
     margin-bottom:0;border-bottom:none;
-    box-shadow:0 18px 50px rgba(0,0,0,.12);animation:heroFadeIn .5s ease both;}
+    box-shadow:0 11px 30px rgba(0,0,0,.072);animation:heroFadeIn .5s ease both;} /* shadow reduced ~40% */
   .hero-content{padding:0;transform:translateY(-24px);} /* text block shifted up */
   .hero-tag{font-size:.62rem;padding:5px 10px;margin-bottom:19px;letter-spacing:.5px;}
   .hero h1{font-size:2.3rem;margin-bottom:13px;font-weight:900;} /* ~9% larger, bolder — DELTA wordmark is the focal point */
@@ -222,16 +222,25 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
     transition:transform .18s ease,background .2s ease,box-shadow .2s ease;}
   .hero-about-btn:active{transform:scale(.96);background:rgba(201,162,39,.12);}
 
-  /* Fuses seamlessly with the hero above — same dark tone, no cream gap, shared border,
-     rounded only at the bottom, with a soft central glow for depth instead of a flat fill */
+  /* A faint glow line right at the seam — reads as a natural transition, not a cut-off */
+  .hero-below-panel::before{content:'';position:absolute;top:0;left:8%;right:8%;height:1px;
+    background:linear-gradient(90deg,transparent,rgba(212,175,55,.35),transparent);}
+
+  /* Fuses seamlessly with the hero above — same dark tone, faint grid + soft central glow
+     (matching the hero's own texture) so it reads as one continuous surface, not a new
+     section. Rounded only at the bottom. One shared, much softer shadow for the whole card. */
   .hero-below-panel{
+    position:relative;
     background:
+      linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px),
       radial-gradient(90% 70% at 50% 35%,rgba(255,255,255,.05) 0%,transparent 60%),
       linear-gradient(135deg,#0f2818 0%,#17351f 60%,#1a3a24 100%);
-    margin:0 4% 18px;padding:22px 24px 24px;border-radius:0 0 22px 22px;
+    background-size:40px 40px,40px 40px,cover,cover;
+    margin:0 4% 18px;padding:16px 24px 24px;border-radius:0 0 22px 22px;
     border:1px solid rgba(201,162,39,.28);border-top:none;
-    box-shadow:0 18px 50px rgba(0,0,0,.12);
+    box-shadow:0 11px 30px rgba(0,0,0,.072); /* same reduced shadow as the hero — one shared elevation */
   }
+  .hero-below-panel .hero-btns{margin-top:6px;} /* CTA breathes inside the panel instead of floating at its own top edge */
 }
 @keyframes heroFadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
 /* Phone mockup (legacy, unused) */
@@ -1172,7 +1181,7 @@ body.lang-bn .lang-en{display:none!important;}
   .hero-inner{grid-template-columns:1.3fr 1fr;gap:16px;}
   .hero-phone{display:none;}
   .hero-photo{min-height:200px;}
-  .hero{min-height:360px;margin:16px 4% 0;border-radius:22px;}
+  .hero{min-height:360px;margin:16px 4% 0;border-radius:22px 22px 0 0;}
   .cat-grid{grid-template-columns:repeat(4,1fr);}
   .why-grid{grid-template-columns:1fr 1fr;}
   .footer-grid{grid-template-columns:1fr 1fr;}
@@ -1225,7 +1234,7 @@ body.lang-bn .lang-en{display:none!important;}
   .mobile-search-bar{display:none!important;}
 
   /* ── HERO ── */
-  .hero{padding:28px 5%;min-height:340px;margin:14px 4% 0;border-radius:22px;}
+  .hero{padding:28px 5%;min-height:340px;margin:14px 4% 0;border-radius:22px 22px 0 0;}
   .hero h1{font-size:1.85rem;line-height:1.25;}
   .hero-bn{font-size:.9rem;margin-bottom:10px;}
   .hero p{font-size:.85rem;line-height:1.65;margin-bottom:20px;}
@@ -1399,7 +1408,7 @@ body.lang-bn .lang-en{display:none!important;}
   .hamburger-btn{width:46px;height:46px;font-size:.85rem;}
 
   /* HERO */
-  .hero{padding:24px 5%;min-height:320px;margin:12px 3% 0;border-radius:20px;}
+  .hero{padding:24px 5%;min-height:320px;margin:12px 3% 0;border-radius:20px 20px 0 0;}
   .hero h1{font-size:1.6rem!important;line-height:1.28!important;}
   .hero p{font-size:.82rem!important;margin-bottom:16px;}
   .hero-search-big input{font-size:.95rem;padding:0 16px;}
