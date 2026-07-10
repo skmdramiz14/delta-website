@@ -238,8 +238,10 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
       linear-gradient(rgba(255,255,255,.009) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.009) 1px,transparent 1px),
       radial-gradient(70% 45% at 50% 18%,rgba(212,175,55,.09) 0%,transparent 65%), /* spotlight behind Shop Now */
       radial-gradient(90% 70% at 50% 35%,rgba(255,255,255,.065) 0%,transparent 60%),
-      linear-gradient(135deg,#0f2818 0%,#17351f 60%,#1a3a24 100%);
-    background-size:40px 40px,40px 40px,cover,cover,cover;
+      linear-gradient(rgba(15,40,24,.25),rgba(15,40,24,.25)), /* light tint so overlaid text/cards stay readable */
+      url('panel-bg.jpg');
+    background-size:40px 40px,40px 40px,cover,cover,cover,cover;
+    background-position:center,center,center,center,center,center;
     padding:26px 24px 28px;
   }
   .hero-below-panel .hero-btns{margin-top:6px;} /* CTA breathes inside the panel instead of floating at its own top edge */
