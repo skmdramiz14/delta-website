@@ -116,12 +116,14 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 .marquee-dot{width:5px;height:5px;background:rgba(255,255,255,.5);border-radius:50%;}
 
 /* ── HERO ── */
+.hero-unified-frame{
+  margin:24px 4% 0;border-radius:26px;border:1px solid rgba(201,162,39,.28);
+  overflow:hidden;box-shadow:0 20px 60px rgba(6,19,9,.18),0 2px 0 rgba(255,255,255,.04) inset;
+}
 .hero{
   background:linear-gradient(135deg,#061309 0%,#0f2818 40%,#17351f 70%,#1a3a24 100%);
   padding:36px 6%;position:relative;overflow:hidden;
-  margin:24px 4% 0;border-radius:26px;border:1px solid rgba(201,162,39,.28);
   min-height:400px;display:flex;align-items:center;
-  box-shadow:0 20px 60px rgba(6,19,9,.18),0 2px 0 rgba(255,255,255,.04) inset;
 }
 /* Photo layer — this specific image is already professionally graded with its own
    left-side darkening and gold diagonal line baked in, so no filter is applied here */
@@ -208,9 +210,9 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 @media(max-width:480px){
   .hero-inner{grid-template-columns:42% 58%;gap:0;}
   .hero-photo{display:none;}
-  .hero{padding:38px 32px 34px 34px;border-radius:22px 22px 0 0;min-height:320px;max-height:370px;
-    margin-bottom:0;border-bottom:none;
-    box-shadow:0 11px 30px rgba(0,0,0,.072);animation:heroFadeIn .5s ease both;} /* shadow reduced ~40% */
+  .hero-unified-frame{margin-bottom:18px;border-radius:22px;
+    box-shadow:0 11px 30px rgba(0,0,0,.072);animation:heroFadeIn .5s ease both;} /* shadow reduced ~40%, wrapper owns the whole shape now */
+  .hero{padding:38px 32px 34px 34px;min-height:320px;max-height:370px;}
   .hero-content{padding:0;transform:translateY(-24px);} /* text block shifted up */
   .hero-tag{font-size:.62rem;padding:5px 10px;margin-bottom:19px;letter-spacing:.5px;}
   .hero h1{font-size:2.3rem;margin-bottom:13px;font-weight:900;} /* ~9% larger, bolder — DELTA wordmark is the focal point */
@@ -228,7 +230,8 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 
   /* Fuses seamlessly with the hero above — same dark tone, faint grid + soft central glow
      (matching the hero's own texture) so it reads as one continuous surface, not a new
-     section. Rounded only at the bottom. One shared, much softer shadow for the whole card. */
+     section. Outer shape (radius/border/shadow/margin) now lives entirely on
+     .hero-unified-frame, so this div can't drift out of sync with it again. */
   .hero-below-panel{
     position:relative;
     background:
@@ -236,9 +239,7 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
       radial-gradient(90% 70% at 50% 35%,rgba(255,255,255,.065) 0%,transparent 60%),
       linear-gradient(135deg,#0f2818 0%,#17351f 60%,#1a3a24 100%);
     background-size:40px 40px,40px 40px,cover,cover;
-    margin:0 4% 18px;padding:16px 24px 24px;border-radius:0 0 22px 22px;
-    border:1px solid rgba(201,162,39,.28);border-top:none;
-    box-shadow:0 11px 30px rgba(0,0,0,.072); /* same reduced shadow as the hero — one shared elevation */
+    padding:16px 24px 24px;
   }
   .hero-below-panel .hero-btns{margin-top:6px;} /* CTA breathes inside the panel instead of floating at its own top edge */
 }
@@ -1186,7 +1187,7 @@ body.lang-bn .lang-en{display:none!important;}
   .hero-inner{grid-template-columns:42% 58%;gap:0;}
   .hero-phone{display:none;}
   .hero-photo{display:none;}
-  .hero{min-height:360px;margin:16px 4% 0;border-radius:22px 22px 0 0;}
+  .hero{min-height:360px;}
   .cat-grid{grid-template-columns:repeat(4,1fr);}
   .why-grid{grid-template-columns:1fr 1fr;}
   .footer-grid{grid-template-columns:1fr 1fr;}
@@ -1239,7 +1240,7 @@ body.lang-bn .lang-en{display:none!important;}
   .mobile-search-bar{display:none!important;}
 
   /* ── HERO ── */
-  .hero{padding:28px 5%;min-height:340px;margin:14px 4% 0;border-radius:22px 22px 0 0;}
+  .hero{padding:28px 5%;min-height:340px;}
   .hero h1{font-size:1.85rem;line-height:1.25;}
   .hero-bn{font-size:.9rem;margin-bottom:10px;}
   .hero p{font-size:.85rem;line-height:1.65;margin-bottom:20px;}
@@ -1413,7 +1414,7 @@ body.lang-bn .lang-en{display:none!important;}
   .hamburger-btn{width:46px;height:46px;font-size:.85rem;}
 
   /* HERO */
-  .hero{padding:24px 5%;min-height:320px;margin:12px 3% 0;border-radius:20px 20px 0 0;}
+  .hero{padding:24px 5%;min-height:320px;}
   .hero h1{font-size:1.6rem!important;line-height:1.28!important;}
   .hero p{font-size:.82rem!important;margin-bottom:16px;}
   .hero-search-big input{font-size:.95rem;padding:0 16px;}
@@ -2116,6 +2117,7 @@ img{max-width:100%;height:auto;}
 </section>
 
 <!-- HERO -->
+<div class="hero-unified-frame">
 <section class="hero">
   <!-- Cinematic background photo — its own layer so a contrast/saturation filter can be
        applied without affecting the dark overlay or text above it -->
@@ -2195,6 +2197,7 @@ img{max-width:100%;height:auto;}
       </div>
     </div>
   </div>
+</div>
 </div>
 
 <!-- CATEGORIES -->
