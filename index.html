@@ -129,8 +129,8 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 /* Dark scrim + soft vignette, sits above the photo so text stays legible without flattening the image itself */
 .hero-bg-overlay{position:absolute;inset:0;z-index:0;
   background:
-    linear-gradient(100deg,rgba(6,19,9,.62) 0%,rgba(6,19,9,.38) 42%,rgba(6,19,9,.15) 68%),
-    radial-gradient(120% 90% at 50% 100%,rgba(0,0,0,.32) 0%,transparent 60%);}
+    linear-gradient(100deg,rgba(6,19,9,.56) 0%,rgba(6,19,9,.3) 38%,rgba(6,19,9,.08) 62%),
+    radial-gradient(120% 90% at 50% 100%,rgba(0,0,0,.24) 0%,transparent 58%);}
 /* Subtle glass panel behind the text so it stays readable over any part of the photo */
 .hero-glass{background:rgba(0,0,0,.18);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-radius:18px;padding:22px 24px;}
 /* Thin gold geometric accent line, right side — echoes the reference's diagonal light line */
@@ -214,17 +214,19 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
   .hero-inner{grid-template-columns:42% 58%;gap:0;}
   .hero-photo{display:none;}
   .hero{padding:30px 28px;border-radius:28px;min-height:320px;max-height:360px;
-    box-shadow:0 18px 50px rgba(0,0,0,.12);}
+    box-shadow:0 18px 50px rgba(0,0,0,.12);animation:heroFadeIn .5s ease both;}
   .hero-glass{padding:18px 16px;}
-  .hero-tag{font-size:.62rem;padding:5px 10px;margin-bottom:14px;letter-spacing:.5px;}
-  .hero h1{font-size:2.3rem;margin-bottom:9px;} /* ~9% larger — DELTA wordmark is the focal point */
-  .hero-bn{font-size:1.14rem;margin-bottom:9px;} /* headline, slightly larger */
-  .hero p{font-size:.82rem;line-height:1.62;margin-bottom:20px;max-width:100%;} /* narrower column = naturally shorter lines */
-  .hero-about-btn{height:52px;padding:0 20px;border-width:2px;font-size:.8rem;white-space:nowrap;
-    transition:transform .15s ease,background .2s ease;}
+  .hero-tag{font-size:.62rem;padding:5px 10px;margin-bottom:16px;letter-spacing:.5px;}
+  .hero h1{font-size:2.3rem;margin-bottom:11px;} /* ~9% larger — DELTA wordmark is the focal point */
+  .hero-bn{font-size:1.14rem;margin-bottom:12px;} /* headline, slightly larger */
+  .hero p{font-size:.82rem;line-height:1.65;margin-bottom:22px;max-width:100%;} /* narrower column = naturally shorter lines, more room to breathe */
+  .hero-tagline-strong{color:var(--orange2);font-weight:700;} /* tagline now reads as its own accent, not just bold white */
+  .hero-about-btn{height:52px;padding:0 22px;border-width:2px;font-size:.8rem;white-space:nowrap;
+    transition:transform .18s ease,background .2s ease,box-shadow .2s ease;}
   .hero-about-btn:active{transform:scale(.96);background:rgba(201,162,39,.12);}
   .hero-gold-line{right:5%;opacity:.9;z-index:2;} /* clearly above the photo/overlay layers now */
 }
+@keyframes heroFadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
 /* Phone mockup (legacy, unused) */
 .hero-phone{display:flex;align-items:center;justify-content:center;}
 .phone-wrap{background:linear-gradient(145deg,#1e3a58,#0d2035);border-radius:36px;padding:18px;box-shadow:0 30px 80px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.08);width:220px;position:relative;}
@@ -532,7 +534,7 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 .hero-cta-sub{font-size:.75rem;font-weight:500;color:rgba(255,255,255,.45);text-align:center;margin-top:4px;}
 
 /* ── HERO STATS NEW ── */
-.hero-stats-box{background:var(--navy);border:1px solid rgba(201,162,39,.3);border-radius:18px;padding:24px 12px;margin-top:8px;}
+.hero-stats-box{background:var(--navy);border:1px solid rgba(201,162,39,.3);border-radius:22px;padding:24px 12px;margin-top:8px;}
 .hero-stats-new{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
 .hero-stat-new{text-align:center;padding:6px 4px;display:flex;flex-direction:column;align-items:center;}
 .hero-stat-new+.hero-stat-new{border-left:1px solid rgba(255,255,255,.1);}
@@ -611,7 +613,7 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 .hero-btns{display:flex;flex-direction:column;gap:10px;margin-bottom:20px;}
 .hero-btn-primary{
   background:linear-gradient(135deg,#c9a227,#d4af37);
-  color:#1a2010;border:none;padding:17px 32px;border-radius:14px;min-height:56px;
+  color:#1a2010;border:none;padding:17px 32px;border-radius:16px;min-height:56px;
   font-size:1.02rem;font-weight:800;cursor:pointer;transition:all .25s;
   box-shadow:0 10px 28px rgba(201,162,39,.28), 0 1px 0 rgba(255,255,255,.15) inset;
   letter-spacing:.3px;display:inline-flex;align-items:center;justify-content:center;gap:8px;
@@ -624,7 +626,7 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 }
 .hero-btn-outline{background:transparent;color:#fff;border:2px solid rgba(255,255,255,.35);padding:13px 28px;border-radius:9px;font-size:.95rem;cursor:pointer;transition:all .2s;}
 .hero-btn-outline:hover{border-color:#fff;background:rgba(255,255,255,.1);}
-.hero-about-btn{background:transparent;color:#ffd98a;border:1.5px solid rgba(201,162,39,.55);padding:12px 24px;border-radius:9px;font-size:.86rem;font-weight:700;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px;}
+.hero-about-btn{background:transparent;color:#ffd98a;border:2px solid rgba(201,162,39,.55);padding:12px 26px;border-radius:16px;font-size:.86rem;font-weight:700;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px;}
 .hero-about-btn:hover{background:rgba(201,162,39,.15);border-color:var(--orange);}
 .hero-btn-full{width:100%;text-align:center;justify-content:center;}
 .hero-pill-row{display:flex;gap:10px;}
@@ -641,7 +643,7 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 .hero-pill-icon{font-size:1.7rem;flex-shrink:0;}
 .hero-pill-text{flex:1;min-width:0;}
 .hero-pill-sub{display:block;font-size:.66rem;font-weight:500;color:rgba(255,255,255,.55);margin-top:2px;}
-.hero-pill-arrow{flex-shrink:0;color:var(--orange2);font-weight:800;}
+.hero-pill-arrow{flex-shrink:0;color:var(--orange2);font-weight:800;font-size:1.15rem;}
 .hero-pill:hover{
   border-color:rgba(201,162,39,.5);
   transform:translateY(-1px);
@@ -2094,7 +2096,7 @@ img{max-width:100%;height:auto;}
 <section class="hero">
   <!-- Cinematic background photo — its own layer so a contrast/saturation filter can be
        applied without affecting the dark overlay or text above it -->
-  <div class="hero-bg-img" style="background-image:url('https://images.unsplash.com/photo-1488459716781-31db52582fe9?q=80&w=1600&auto=format&fit=crop');"></div>
+  <div class="hero-bg-img" style="background-image:url('https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=1600&auto=format&fit=crop');"></div>
   <!-- Dark overlay + vignette, sits above the photo, below the content -->
   <div class="hero-bg-overlay"></div>
   <!-- Subtle grid pattern — opacity কমানো -->
@@ -2126,7 +2128,7 @@ img{max-width:100%;height:auto;}
       🛒 <span class="lang-bn">এখনই কিনুন</span><span class="lang-en">Shop Now</span>
     </button>
   </div>
-  <div class="hero-pill-row" style="margin-bottom:16px;">
+  <div class="hero-pill-row" style="margin-bottom:18px;">
     <button class="hero-pill" onclick="document.getElementById('shopsSection').scrollIntoView({behavior:'smooth'})">
       <span class="hero-pill-icon">🏪</span>
       <span class="hero-pill-text"><span class="lang-bn">কাছের দোকান</span><span class="lang-en">Nearby Shops</span>
