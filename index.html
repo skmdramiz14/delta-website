@@ -131,7 +131,9 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 /* Minimal extra scrim — just a touch of insurance for text legibility, since the
    photo itself already carries most of the darkening on the left side */
 .hero-bg-overlay{position:absolute;inset:0;z-index:0;
-  background:linear-gradient(90deg,rgba(6,19,9,.18) 0%,rgba(6,19,9,.07) 40%,transparent 65%);}
+  background:
+    linear-gradient(90deg,rgba(6,19,9,.18) 0%,rgba(6,19,9,.07) 40%,transparent 65%),
+    linear-gradient(180deg,transparent 0%,transparent 68%,rgba(15,40,24,.55) 88%,#0f2818 100%);}
 /* Subtle glass panel behind the text so it stays readable over any part of the photo */
 .hero-glass{background:rgba(0,0,0,.18);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-radius:18px;padding:22px 24px;}
 .hero-tagline-strong{color:#fff;font-weight:600;opacity:1;}
@@ -210,7 +212,7 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 @media(max-width:480px){
   .hero-inner{grid-template-columns:42% 58%;gap:0;}
   .hero-photo{display:none;}
-  .hero-unified-frame{margin-bottom:18px;border-radius:22px;
+  .hero-unified-frame{margin-bottom:22px;border-radius:28px;
     box-shadow:0 11px 30px rgba(0,0,0,.072);animation:heroFadeIn .5s ease both;} /* shadow reduced ~40%, wrapper owns the whole shape now */
   .hero{height:400px;min-height:400px;padding:34px 32px 30px 34px;align-items:flex-start;} /* fixed height matching the base min-height — the photo always fills it completely */
   .hero-content{padding:0;} /* no artificial upward shift — flex-start already puts it near the top */
@@ -224,10 +226,6 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
     transition:transform .18s ease,background .2s ease,box-shadow .2s ease;}
   .hero-about-btn:active{transform:scale(.96);background:rgba(201,162,39,.12);}
 
-  /* A faint glow line right at the seam — reads as a natural transition, not a cut-off */
-  .hero-below-panel::before{content:'';position:absolute;top:0;left:8%;right:8%;height:1px;
-    background:linear-gradient(90deg,transparent,rgba(212,175,55,.35),transparent);}
-
   /* Fuses seamlessly with the hero above — same dark tone, faint grid + soft central glow
      (matching the hero's own texture) so it reads as one continuous surface, not a new
      section. Outer shape (radius/border/shadow/margin) now lives entirely on
@@ -239,7 +237,7 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
       radial-gradient(90% 70% at 50% 35%,rgba(255,255,255,.065) 0%,transparent 60%),
       linear-gradient(135deg,#0f2818 0%,#17351f 60%,#1a3a24 100%);
     background-size:40px 40px,40px 40px,cover,cover;
-    padding:16px 24px 24px;
+    padding:26px 24px 28px;
   }
   .hero-below-panel .hero-btns{margin-top:6px;} /* CTA breathes inside the panel instead of floating at its own top edge */
 }
@@ -579,17 +577,17 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
   .hero-benefit-line{font-size:.72rem;}
 }
 @media(max-width:480px){
-  .hero-stats-box{padding:24px 18px;}
-  .hero-stats-new{grid-template-columns:repeat(2,1fr);gap:22px 16px;} /* 2x2 grid instead of 4-in-a-row */
-  .hero-stat-new{display:grid;grid-template-columns:auto 1fr;column-gap:12px;row-gap:2px;
+  .hero-stats-box{padding:28px 16px;}
+  .hero-stats-new{grid-template-columns:repeat(4,1fr);gap:14px 10px;} /* 4-in-a-row, matching the reference */
+  .hero-stat-new{display:grid;grid-template-columns:auto 1fr;column-gap:8px;row-gap:2px;
     text-align:left;align-items:center;padding:0;}
-  .hero-stat-new+.hero-stat-new{border-left:none;} /* no vertical dividers in a 2x2 layout */
-  .hsn-icon{font-size:1.3rem;margin-bottom:0;grid-column:1;grid-row:1/3;
-    width:38px;height:38px;background:rgba(255,255,255,.08);border-radius:11px;
+  .hero-stat-new+.hero-stat-new{border-left:none;} /* no vertical dividers */
+  .hsn-icon{font-size:1.1rem;margin-bottom:0;grid-column:1;grid-row:1/3;
+    width:34px;height:34px;background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.25);border-radius:10px;
     display:flex;align-items:center;justify-content:center;}
-  .hsn-num{font-size:1.3rem;grid-column:2;grid-row:1;margin-bottom:0;}
-  .hsn-label{font-size:.72rem;grid-column:2;grid-row:2;}
-  .hsn-sub{grid-column:1/3;grid-row:3;margin-top:8px;font-size:.66rem;}
+  .hsn-num{font-size:1.05rem;grid-column:2;grid-row:1;margin-bottom:0;}
+  .hsn-label{font-size:.6rem;grid-column:2;grid-row:2;}
+  .hsn-sub{grid-column:1/3;grid-row:3;margin-top:10px;font-size:.58rem;line-height:1.35;}
   .hts-sep{display:none;}
   .hero-trust-strip{flex-wrap:wrap;gap:6px;}
 }
@@ -674,15 +672,18 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 .hero-pill:active{transform:translateY(0);}
 @media(max-width:480px){
   .hero-pill-row{flex-direction:row;gap:10px;} /* side-by-side, matching the reference */
-  .hero-pill{font-size:.8rem;padding:14px 12px;gap:10px;border-radius:16px;align-items:center;
-    border:1px solid rgba(212,175,55,.10);box-shadow:0 4px 14px rgba(0,0,0,.08);} /* thinner border, soft shadow instead of glow */
+  .hero-pill{font-size:.8rem;padding:14px 12px;gap:10px;border-radius:22px;align-items:center;
+    background:linear-gradient(160deg,rgba(255,255,255,.05),rgba(255,255,255,.01));
+    border:1px solid rgba(212,175,55,.16);box-shadow:0 4px 14px rgba(0,0,0,.1);
+    transition:transform .2s ease,box-shadow .2s ease;} /* subtle glass tint + gradient, soft shadow */
+  .hero-pill:active{transform:scale(.97);box-shadow:0 2px 8px rgba(0,0,0,.08);}
   .hero-pill-icon{font-size:1.25rem;}
   .hero-pill-text{text-align:left;}
   .hero-pill-sub{font-size:.62rem;margin-top:4px;color:rgba(255,255,255,.72);line-height:1.35;} /* brighter, fits the narrower side-by-side card */
   .hero-pill-arrow{font-size:1.2rem;margin-left:4px;} /* pinned to the far right */
   .hero-btn-primary{display:flex;align-items:center;justify-content:center;gap:9px;
-    min-height:52px;font-weight:900;font-size:1rem;border-radius:16px;} /* slightly shorter, same radius family */
-  .hero-stats-box{box-shadow:none;border-radius:16px;padding:22px 18px;} /* more horizontal padding, unified radius */
+    min-height:52px;font-weight:900;font-size:1rem;border-radius:22px;padding:0 24px;} /* consistent radius family, 24px side padding */
+  .hero-stats-box{box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 8px 24px rgba(0,0,0,.1);border-radius:22px;padding:24px 18px;} /* unified radius, soft inner glow + ambient shadow instead of none */
   .hero-stats-new{align-items:center;} /* every stat vertically centered against its row */
   .hsn-icon{margin-bottom:13px;} /* a touch more space before the number */
   .hsn-label{margin-top:2px;} /* a touch more space after the number */
@@ -2153,12 +2154,12 @@ img{max-width:100%;height:auto;}
 
 <!-- HERO CTA + STATS — sits below the hero card on the cream background (matches reference layout) -->
 <div class="hero-search-outer hero-below-panel" style="padding-top:28px;padding-bottom:24px;">
-  <div class="hero-btns" style="margin-bottom:14px;">
+  <div class="hero-btns" style="margin-bottom:22px;">
     <button class="hero-btn-primary hero-btn-full" onclick="document.getElementById('productsSection').scrollIntoView({behavior:'smooth'})">
       🛒 <span class="lang-bn">এখনই কিনুন</span><span class="lang-en">Shop Now</span>
     </button>
   </div>
-  <div class="hero-pill-row" style="margin-bottom:14px;">
+  <div class="hero-pill-row" style="margin-bottom:22px;">
     <button class="hero-pill" onclick="document.getElementById('shopsSection').scrollIntoView({behavior:'smooth'})">
       <span class="hero-pill-icon">🏪</span>
       <span class="hero-pill-text"><span class="lang-bn">কাছের দোকান</span><span class="lang-en">Nearby Shops</span>
