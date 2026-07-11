@@ -4708,6 +4708,8 @@ function applyBrandSlideCustomization(cfg){
         e.stopPropagation();
         vid.muted = !vid.muted;
         muteBtn.textContent = vid.muted ? '🔇' : '🔊';
+        if(!vid.muted) _setExclusiveSound(vid, muteBtn);
+        else if(_activeSoundVideo === vid){ _activeSoundVideo = null; _activeSoundBtn = null; }
       };
       bgImgLayer.parentNode.insertBefore(muteBtn, vid.nextSibling);
     }
@@ -4879,6 +4881,20 @@ function _heroPremiumSlideHTML(ad){
     '</div>';
 }
 
+// Only ONE video on the page may have sound at a time — prevents two ads/slides
+// (e.g. Hero premium slide + the Basic carousel right below it) from playing sound together.
+var _activeSoundVideo = null;
+var _activeSoundBtn = null;
+
+function _setExclusiveSound(vid, btn){
+  if(_activeSoundVideo && _activeSoundVideo !== vid){
+    _activeSoundVideo.muted = true;
+    if(_activeSoundBtn) _activeSoundBtn.textContent = '🔇';
+  }
+  _activeSoundVideo = vid;
+  _activeSoundBtn = btn;
+}
+
 // Toggles mute on the video sitting next to this button — click is user interaction,
 // so the browser allows turning sound ON even though autoplay itself must stay muted.
 function _toggleSlideMute(btn){
@@ -4886,6 +4902,8 @@ function _toggleSlideMute(btn){
   if(!vid) return;
   vid.muted = !vid.muted;
   btn.textContent = vid.muted ? '🔇' : '🔊';
+  if(!vid.muted) _setExclusiveSound(vid, btn);
+  else if(_activeSoundVideo === vid){ _activeSoundVideo = null; _activeSoundBtn = null; }
 }
 function showHeroSlide(i){
   var brand = document.getElementById('heroSlideBrand');
