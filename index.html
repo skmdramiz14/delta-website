@@ -120,6 +120,26 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
   margin:24px 4% 0;border-radius:26px;border:1px solid rgba(201,162,39,.28);
   overflow:hidden;box-shadow:0 20px 60px rgba(6,19,9,.18),0 2px 0 rgba(255,255,255,.04) inset;
 }
+
+/* ── PREMIUM HERO CAROUSEL SLIDE (sponsored, overlays the brand hero) ── */
+.hero-premium-slide{min-height:400px;position:relative;overflow:hidden;cursor:pointer;
+  background:#0f2818;display:flex;align-items:stretch;}
+.hero-premium-slide img.hps-media{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;}
+.hero-premium-slide video.hps-media{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;background:#000;}
+.hps-sponsored-tag{position:absolute;top:16px;left:20px;background:rgba(15,40,24,.6);color:#fff;
+  font-size:.66rem;font-weight:700;padding:4px 12px;border-radius:20px;letter-spacing:.4px;
+  backdrop-filter:blur(3px);z-index:2;}
+.hps-play-btn{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,.92);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:3;
+  box-shadow:0 6px 20px rgba(0,0,0,.35);transition:transform .18s;}
+.hps-play-btn:hover{transform:translate(-50%,-50%) scale(1.08);}
+.hps-play-btn svg{width:26px;height:26px;margin-left:3px;}
+.hps-discount-badge{position:absolute;top:16px;right:16px;background:var(--green);color:#fff;
+  width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  flex-direction:column;font-size:.66rem;font-weight:800;line-height:1.1;text-align:center;
+  border:3px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,.25);z-index:2;}
+
 .hero{
   background:linear-gradient(135deg,var(--navy3) 0%,var(--navy) 40%,var(--navy2) 70%,var(--navy2) 100%);
   padding:36px 6%;position:relative;overflow:hidden;
@@ -2067,8 +2087,8 @@ img{max-width:100%;height:auto;}
 </div>
 
 <!-- HERO -->
-<div class="hero-unified-frame">
-<section class="hero">
+<div class="hero-unified-frame" style="position:relative;">
+<section class="hero" id="heroSlideBrand">
   <!-- Cinematic background photo — its own layer so a contrast/saturation filter can be
        applied without affecting the dark overlay or text above it -->
   <div class="hero-bg-img" style="background-image:url('hero-bg.jpg');"></div>
@@ -2095,6 +2115,11 @@ img{max-width:100%;height:auto;}
     <div class="hero-photo"></div>
   </div>
 </section>
+
+<!-- PREMIUM SPONSORED SLIDES — overlay on top of hero, cross-fades in during rotation -->
+<div id="heroPremiumWrap" style="position:absolute;inset:0;display:none;z-index:2;"></div>
+<!-- Hero carousel dots — brand slide + premium slides -->
+<div id="heroCarouselDots" style="position:absolute;left:24px;bottom:20px;display:none;align-items:center;gap:8px;z-index:3;"></div>
 
 <!-- HERO CTA + STATS — sits below the hero card on the cream background (matches reference layout) -->
 <div class="hero-search-outer hero-below-panel" style="padding-top:28px;padding-bottom:24px;">
@@ -4594,29 +4619,41 @@ var _adAutoplayTimer = null;
 var _adSWRRWeights = []; // smooth weighted round-robin running-weight state, one per ad
 
 function initSponsoredAd(){
-  var wrap = document.getElementById('sponsoredAdWrap');
-  if(!wrap || !db) return;
+  if(!db) return;
   var today = new Date().toISOString().slice(0,10);
   db.collection('cities').doc(CITY).collection('bannerAds')
     .where('status','==','active')
     .get().then(function(snap){
-      var ads = [];
+      var basicAds = [], premiumAds = [];
       snap.forEach(function(d){
         var b = Object.assign({id:d.id}, d.data());
         if(b.type!=='shop_ad') return;
         if(b.endDate && b.endDate < today) return;
         if(b.startDate && b.startDate > today) return;
-        ads.push(b);
+        if(b.adTier === 'premium') premiumAds.push(b); else basicAds.push(b);
       });
-      if(!ads.length){ wrap.innerHTML=''; return; }
       // "Always show first" ads go to the front; everything else ordered by priority (admin's manual control)
-      ads.sort(function(a,b){
-        var af = (b.alwaysFirst?1:0) - (a.alwaysFirst?1:0);
-        if(af !== 0) return af;
-        return (b.priority||0)-(a.priority||0);
-      });
-      renderSponsoredCarousel(ads);
-    }).catch(function(){ wrap.innerHTML=''; });
+      function sortAds(list){
+        list.sort(function(a,b){
+          var af = (b.alwaysFirst?1:0) - (a.alwaysFirst?1:0);
+          if(af !== 0) return af;
+          return (b.priority||0)-(a.priority||0);
+        });
+      }
+      sortAds(basicAds);
+      sortAds(premiumAds);
+
+      var wrap = document.getElementById('sponsoredAdWrap');
+      if(wrap){
+        if(basicAds.length) renderSponsoredCarousel(basicAds);
+        else wrap.innerHTML = '';
+      }
+      initHeroCarousel(premiumAds);
+    }).catch(function(){
+      var wrap = document.getElementById('sponsoredAdWrap');
+      if(wrap) wrap.innerHTML = '';
+      initHeroCarousel([]);
+    });
 }
 
 function renderSponsoredCarousel(ads){
@@ -4660,24 +4697,26 @@ function renderSponsoredCarousel(ads){
   scheduleNextAdSlide();
 }
 
-// Smooth weighted round-robin — picks which unique ad shows next.
+// Smooth weighted round-robin — picks which unique slide shows next (generalized, used by both
+// the lower Sponsored Shop carousel and the Hero premium carousel).
 // Higher priority = statistically shows more often, but never twice in a row when alternatives exist.
-function _pickNextAdIndex(){
-  var n = _adSlides.length;
+function _swrrPickNext(items, weights){
+  var n = items.length;
   if(n <= 1) return 0;
   var totalWeight = 0;
   for(var i=0;i<n;i++){
-    var w = (_adSlides[i].priority||1);
-    _adSWRRWeights[i] += w;
+    var w = (items[i].priority||1);
+    weights[i] += w;
     totalWeight += w;
   }
   var maxIdx = 0;
   for(var i=1;i<n;i++){
-    if(_adSWRRWeights[i] > _adSWRRWeights[maxIdx]) maxIdx = i;
+    if(weights[i] > weights[maxIdx]) maxIdx = i;
   }
-  _adSWRRWeights[maxIdx] -= totalWeight;
+  weights[maxIdx] -= totalWeight;
   return maxIdx;
 }
+function _pickNextAdIndex(){ return _swrrPickNext(_adSlides, _adSWRRWeights); }
 
 // Each ad controls its own on-screen duration (admin's "Display Duration" field, in seconds)
 function scheduleNextAdSlide(){
@@ -4701,6 +4740,109 @@ function goSponsoredSlide(i){
   var counter = document.getElementById('adSlideCounter');
   if(counter) counter.textContent = (i+1)+'/'+_adSlides.length;
   scheduleNextAdSlide(); // reset timer using the newly-shown slide's own duration
+}
+
+// ══ HERO CAROUSEL — Slide 1 is always the fixed brand hero; Slide 2+ are Premium-tier
+// sponsored ads that rotate in using the same weighted round-robin as the lower carousel. ══
+var _heroSlides = [];
+var _heroIdx = 0;
+var _heroAutoplayTimer = null;
+var _heroSWRRWeights = [];
+
+function initHeroCarousel(premiumAds){
+  var dotsWrap = document.getElementById('heroCarouselDots');
+  var premiumWrap = document.getElementById('heroPremiumWrap');
+  var brand = document.getElementById('heroSlideBrand');
+  if(!dotsWrap || !premiumWrap || !brand) return;
+  if(_heroAutoplayTimer){ clearTimeout(_heroAutoplayTimer); _heroAutoplayTimer=null; }
+
+  if(!premiumAds || !premiumAds.length){
+    // No premium sponsors — brand hero stays, no rotation, no dots
+    dotsWrap.style.display = 'none';
+    premiumWrap.style.display = 'none';
+    brand.style.display = 'flex';
+    _heroSlides = [];
+    return;
+  }
+
+  // Brand slide gets a moderate fixed weight so it keeps reappearing without dominating
+  var brandSlide = {isBrand:true, priority:3, displayDuration:6};
+  _heroSlides = [brandSlide].concat(premiumAds);
+  _heroIdx = 0;
+  _heroSWRRWeights = _heroSlides.map(function(){ return 0; });
+
+  dotsWrap.innerHTML = _heroSlides.map(function(s,i){
+    return '<span onclick="event.stopPropagation();goHeroSlide('+i+')" data-hero-dot="'+i+'" '+
+      'style="width:'+(i===0?'20px':'7px')+';height:7px;border-radius:5px;'+
+      'background:'+(i===0?'#fff':'rgba(255,255,255,.4)')+';transition:all .25s;cursor:pointer;"></span>';
+  }).join('');
+  dotsWrap.style.display = 'flex';
+
+  showHeroSlide(0);
+  scheduleNextHeroSlide();
+}
+
+function _heroPremiumSlideHTML(ad){
+  var img = ad.imageUrl || '';
+  var video = ad.videoUrl || '';
+  var link = ad.linkUrl || '#';
+  var discount = ad.discountText || '';
+  var mediaHtml = video ?
+    ('<img class="hps-media" src="'+img+'" loading="lazy">'+
+     '<div class="hps-play-btn" onclick="event.stopPropagation();_playHeroVideo(this,\''+video.replace(/'/g,"\\'")+'\')" title="Play video">'+
+       '<svg viewBox="0 0 24 24" fill="var(--navy)"><path d="M8 5v14l11-7z"/></svg>'+
+     '</div>')
+    : (img ? '<img class="hps-media" src="'+img+'" loading="lazy">' : '');
+  return '<div class="hero-premium-slide" onclick="window.location.href=\''+link+'\'">'+
+      mediaHtml+
+      '<span class="hps-sponsored-tag"><span class="lang-bn">স্পনসরড</span><span class="lang-en">SPONSORED</span></span>'+
+      (discount ? '<div class="hps-discount-badge">'+discount+'</div>' : '')+
+    '</div>';
+}
+
+// Video loads and plays only on explicit click (data-saving — no autoplay on page load)
+function _playHeroVideo(btn, videoUrl){
+  var slide = btn.closest('.hero-premium-slide');
+  if(!slide) return;
+  if(_heroAutoplayTimer){ clearTimeout(_heroAutoplayTimer); _heroAutoplayTimer=null; }
+  slide.setAttribute('onclick','');
+  slide.innerHTML = '<video class="hps-media" src="'+videoUrl+'" controls autoplay playsinline></video>';
+}
+
+function showHeroSlide(i){
+  var brand = document.getElementById('heroSlideBrand');
+  var premiumWrap = document.getElementById('heroPremiumWrap');
+  var slide = _heroSlides[i];
+  if(!slide || !brand || !premiumWrap) return;
+  if(slide.isBrand){
+    brand.style.display = 'flex';
+    premiumWrap.style.display = 'none';
+    premiumWrap.innerHTML = '';
+  } else {
+    brand.style.display = 'none';
+    premiumWrap.style.display = 'block';
+    premiumWrap.innerHTML = _heroPremiumSlideHTML(slide);
+  }
+  document.querySelectorAll('[data-hero-dot]').forEach(function(dot,j){
+    dot.style.width = j===i?'20px':'7px';
+    dot.style.background = j===i?'#fff':'rgba(255,255,255,.4)';
+  });
+}
+
+function goHeroSlide(i){
+  _heroIdx = i;
+  showHeroSlide(i);
+  scheduleNextHeroSlide();
+}
+
+function scheduleNextHeroSlide(){
+  if(_heroAutoplayTimer){ clearTimeout(_heroAutoplayTimer); _heroAutoplayTimer=null; }
+  if(_heroSlides.length <= 1) return;
+  var current = _heroSlides[_heroIdx];
+  var durationMs = (current.displayDuration||5) * 1000;
+  _heroAutoplayTimer = setTimeout(function(){
+    goHeroSlide(_swrrPickNext(_heroSlides, _heroSWRRWeights));
+  }, durationMs);
 }
 
 function _sponsoredSlideHTML(ad, idx){
