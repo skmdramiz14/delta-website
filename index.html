@@ -650,6 +650,13 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 
 /* ── WHATSAPP FLOAT ── */
 .wa-float{position:fixed;bottom:28px;right:22px;z-index:1500;}
+.music-float{position:fixed;bottom:96px;right:22px;z-index:1500;}
+.music-btn{width:48px;height:48px;background:var(--navy);border-radius:50%;display:flex;align-items:center;
+  justify-content:center;box-shadow:0 4px 16px rgba(15,40,24,.35);cursor:pointer;border:2px solid var(--gold-muted,#C7A15A);
+  transition:transform .2s;font-size:1.25rem;position:relative;z-index:2;color:#fff;}
+.music-btn:hover{transform:scale(1.08);}
+.music-btn.playing{animation:musicPulse 1.6s ease-in-out infinite;}
+@keyframes musicPulse{0%,100%{box-shadow:0 4px 16px rgba(15,40,24,.35);}50%{box-shadow:0 4px 22px rgba(201,162,39,.55);}}
 .wa-btn{width:56px;height:56px;background:#25D366;border-radius:50%;display:flex;align-items:center;
   justify-content:center;box-shadow:0 4px 20px rgba(37,211,102,.5);cursor:pointer;border:none;
   transition:transform .2s;font-size:1.5rem;position:relative;z-index:2;text-decoration:none;}
@@ -752,6 +759,7 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
   .bottom-nav{display:flex;}
   body{padding-bottom:74px;}
   .wa-float{bottom:94px;}
+  .music-float{bottom:162px;}
 }
 .nav-voice-btn{background:transparent;border:none;color:var(--muted);font-size:1rem;padding:0 10px;cursor:pointer;transition:color .2s;}
 .nav-voice-btn:hover{color:var(--navy);}
@@ -1412,6 +1420,7 @@ body.lang-bn .lang-en{display:none!important;}
 
   /* WA float button bottom nav এর উপরে */
   .wa-float{bottom:84px!important;right:16px;}
+  .music-float{bottom:150px!important;right:16px;}
 
   /* Cart drawer — full width */
   .cart-drawer{width:100vw;border-radius:20px 20px 0 0;top:auto;bottom:0;transform:translateY(100%);}
@@ -3418,6 +3427,11 @@ img{max-width:100%;height:auto;}
   <a class="wa-btn" href="https://wa.me/+91XXXXXXXXXX?text=DELTA%20তে%20সাহায্য%20দরকার" target="_blank" title="WhatsApp এ যোগাযোগ করুন">💬</a>
 </div>
 
+<!-- SHOPPING MUSIC FLOAT — hidden until admin sets a track; toggled via _toggleShoppingMusic() -->
+<div class="music-float" id="musicFloatWrap" style="display:none;">
+  <div class="music-btn" id="musicBtn" onclick="_toggleShoppingMusic()" title="Shopping Music">🎵</div>
+</div>
+
 <script>
 var fbcfg={apiKey:"AIzaSyA6TrrnCMwv1aa1WPqGvTVWlnieB2pVOEU",authDomain:"delta-platform-82fc0.firebaseapp.com",projectId:"delta-platform-82fc0",storageBucket:"delta-platform-82fc0.firebasestorage.app",messagingSenderId:"444904180433",appId:"1:444904180433:web:6706eba4d73a30cd67d3f0"};
 var auth,db,currentUser=null,cart=[],wishlist=[],allShops=[],allProducts=[],selectedPay='cod';
@@ -3699,6 +3713,7 @@ async function loadData(retryCount){
     updateCommunityStats(allShops);
     initEcoCounter(allShops, allProducts);
     initSponsoredAd();
+    initShoppingMusic();
     initFestivalBanner();
     loadMarqueeFromFirebase();
     loadCategoryConfigFromFirebase();
@@ -4893,6 +4908,7 @@ function _setExclusiveSound(vid, btn){
   }
   _activeSoundVideo = vid;
   _activeSoundBtn = btn;
+  _pauseShoppingMusicForVideoSound(); // don't let an ad's sound overlap with background music
 }
 
 // Toggles mute on the video sitting next to this button — click is user interaction,
@@ -4905,6 +4921,68 @@ function _toggleSlideMute(btn){
   if(!vid.muted) _setExclusiveSound(vid, btn);
   else if(_activeSoundVideo === vid){ _activeSoundVideo = null; _activeSoundBtn = null; }
 }
+
+// ══ SHOPPING MUSIC — ambient background track while browsing, admin-managed ══
+var _shoppingMusicAudio = null;
+var _shoppingMusicPlaying = false;
+
+function initShoppingMusic(){
+  if(!db) return;
+  db.collection('cities').doc(CITY).collection('settings').doc('shoppingMusic').get()
+    .then(function(doc){
+      var wrap = document.getElementById('musicFloatWrap');
+      if(!wrap) return;
+      var cfg = doc.exists ? doc.data() : {};
+      if(cfg.enabled && cfg.musicUrl){
+        wrap.style.display = 'block';
+        wrap.dataset.musicUrl = cfg.musicUrl;
+      } else {
+        wrap.style.display = 'none';
+      }
+    }).catch(function(){});
+}
+
+function _toggleShoppingMusic(){
+  var wrap = document.getElementById('musicFloatWrap');
+  var btn = document.getElementById('musicBtn');
+  if(!wrap || !btn) return;
+  var url = wrap.dataset.musicUrl;
+  if(!url) return;
+
+  if(!_shoppingMusicAudio){
+    _shoppingMusicAudio = new Audio(url);
+    _shoppingMusicAudio.loop = true;
+  }
+
+  if(_shoppingMusicPlaying){
+    _shoppingMusicAudio.pause();
+    _shoppingMusicPlaying = false;
+    btn.textContent = '🎵';
+    btn.classList.remove('playing');
+  } else {
+    // Starting music is also "user interaction" — but courteously mute any ad-video sound first
+    if(_activeSoundVideo){
+      _activeSoundVideo.muted = true;
+      if(_activeSoundBtn) _activeSoundBtn.textContent = '🔇';
+      _activeSoundVideo = null; _activeSoundBtn = null;
+    }
+    _shoppingMusicAudio.play().catch(function(){});
+    _shoppingMusicPlaying = true;
+    btn.textContent = '⏸️';
+    btn.classList.add('playing');
+  }
+}
+
+// Called when an ad video's sound is turned on — pause background music so they don't overlap
+function _pauseShoppingMusicForVideoSound(){
+  if(_shoppingMusicPlaying && _shoppingMusicAudio){
+    _shoppingMusicAudio.pause();
+    _shoppingMusicPlaying = false;
+    var btn = document.getElementById('musicBtn');
+    if(btn){ btn.textContent = '🎵'; btn.classList.remove('playing'); }
+  }
+}
+
 function showHeroSlide(i){
   var brand = document.getElementById('heroSlideBrand');
   var premiumWrap = document.getElementById('heroPremiumWrap');
