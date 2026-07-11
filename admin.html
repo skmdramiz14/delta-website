@@ -2759,26 +2759,36 @@ function saveFestivalBanner(){
 
 // ═══ HOMEPAGE QUICK CATEGORIES ═══
 var ALL_HOME_CATS = [
-  {key:'food', emoji:'🍛', label:'খাবার'},
   {key:'grocery', emoji:'🛒', label:'মুদিখানা'},
-  {key:'farm', emoji:'🌾', label:'কৃষি'},
-  {key:'farmtools', emoji:'🌿', label:'কৃষি সরঞ্জাম'},
-  {key:'livestock', emoji:'🐄', label:'পশুপালন'},
-  {key:'medicine', emoji:'💊', label:'ওষুধ'},
-  {key:'clothing', emoji:'👗', label:'পোশাক'},
+  {key:'foodbeverage', emoji:'🍽️', label:'খাদ্য ও পানীয়'},
+  {key:'pharmacy', emoji:'💊', label:'ওষুধ'},
+  {key:'fashion', emoji:'👗', label:'ফ্যাশন'},
   {key:'electronics', emoji:'📱', label:'ইলেকট্রনিক্স'},
-  {key:'home', emoji:'🏠', label:'বাড়ি / হোম'},
-  {key:'construction', emoji:'🏗️', label:'নির্মাণ'},
+  {key:'beauty', emoji:'💄', label:'বিউটি'},
+  {key:'homekitchen', emoji:'🏠', label:'হোম ও কিচেন'},
+  {key:'hardware', emoji:'🔧', label:'হার্ডওয়্যার'},
+  {key:'agriculture', emoji:'🌾', label:'কৃষি'},
+  {key:'booksstationery', emoji:'📚', label:'বই ও স্টেশনারি'},
+  {key:'pets', emoji:'🐾', label:'পোষা প্রাণী'},
+  {key:'flowersgifts', emoji:'🎁', label:'ফুল ও উপহার'},
   {key:'automotive', emoji:'🚗', label:'যানবাহন'},
-  {key:'arts', emoji:'🎨', label:'শিল্প'},
-  {key:'education', emoji:'📚', label:'শিক্ষা'},
-  {key:'services', emoji:'🔧', label:'সেবা'},
-  {key:'health', emoji:'🏥', label:'স্বাস্থ্য'},
+  {key:'healthcare', emoji:'🏥', label:'স্বাস্থ্যসেবা'},
+  {key:'education', emoji:'🎓', label:'শিক্ষা'},
+  {key:'financialservices', emoji:'💰', label:'আর্থিক সেবা'},
+  {key:'travel', emoji:'✈️', label:'ভ্রমণ'},
+  {key:'localservices', emoji:'🔌', label:'স্থানীয় সেবা'},
+  {key:'professionalservices', emoji:'💼', label:'পেশাদার সেবা'},
   {key:'events', emoji:'🎉', label:'ইভেন্ট'},
-  {key:'rental', emoji:'🔑', label:'ভাড়া'},
+  {key:'rentals', emoji:'🔑', label:'ভাড়া'},
+  {key:'realestate', emoji:'🏢', label:'রিয়েল এস্টেট'},
+  {key:'jobs', emoji:'📋', label:'চাকরি'},
+  {key:'govtutilities', emoji:'🏛️', label:'সরকারি সেবা'},
+  {key:'digitalproducts', emoji:'💻', label:'ডিজিটাল পণ্য'},
+  {key:'livestock', emoji:'🐄', label:'পশুপালন'},
+  {key:'arts', emoji:'🎨', label:'শিল্প'},
   {key:'remarket', emoji:'♻️', label:'রিমার্কেট'}
 ];
-var DEFAULT_QUICK_CATS = ['food','grocery','farm'];
+var DEFAULT_QUICK_CATS = ['foodbeverage','grocery','pharmacy'];
 var quickCatsSelected = [];
 
 function loadHomepageQuickCats(){
