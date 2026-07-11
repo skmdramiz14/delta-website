@@ -8,12 +8,12 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 :root{
-  --navy:#0a1f35;--navy2:#122840;--navy3:#061526;
-  --orange:#f07018;--orange2:#ff8c3a;--orange-dark:#d9610f;
+  --navy:#10392D;--navy2:#1a4a3a;--navy3:#0E1E18;
+  --orange:#C7A15A;--orange2:#d6bd8a;--orange-dark:#b8925a;
   --green:#2da86a;--green2:#1a7a4c;
-  --white:#fff;--sand:#eef2f7;--cream:#f7f9fc;
-  --border:#dde5ef;--muted:#6b7b8d;--gray:#6b7b8d;--charcoal:#1a2535;
-  --orange-light:#fff4ec;
+  --white:#fff;--sand:#F3EFE6;--cream:#F7F1E6;
+  --border:#F0ECE5;--muted:#8A8A8A;--gray:#8A8A8A;--charcoal:#1A1A1A;
+  --orange-light:#F3EFE6;
 }
 body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charcoal);}
 
@@ -115,7 +115,7 @@ function setLang(l){
 function showToast(msg,type){
   var t=document.getElementById('toast');
   t.textContent=msg;
-  t.style.background=type==='green'?'#1a8a4a':'#0a1f35';
+  t.style.background=type==='green'?'#1a8a4a':'#10392D';
   t.classList.add('show');
   setTimeout(function(){t.classList.remove('show');},2800);
 }
