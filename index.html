@@ -1,4 +1,4 @@
-<!DOCTYPE html>  
+<!DOCTYPE html> 
 <html lang="bn">
 <head>
 <meta charset="UTF-8">
@@ -2098,7 +2098,7 @@ img{max-width:100%;height:auto;}
 <section class="section" id="freshTodaySection" style="display:none;padding-top:26px;padding-bottom:24px;">
   <span id="freshTodayDate" style="display:none;"></span>
   <div class="fresh-cards-scroll">
-    <div class="fresh-promo-card" onclick="filterCat('farm',null);document.getElementById('productsSection').scrollIntoView({behavior:'smooth'})">
+    <div class="fresh-promo-card" onclick="filterCat('grocery',null);document.getElementById('productsSection').scrollIntoView({behavior:'smooth'})">
       <div class="fpc-decor"><svg viewBox="0 0 172 230" fill="none">
         <defs>
           <linearGradient id="leafG1" x1="0" y1="0" x2="1" y2="1">
@@ -2931,9 +2931,9 @@ img{max-width:100%;height:auto;}
     </div>
     <div class="footer-col">
       <h4>Categories</h4>
-      <a href="#" onclick="filterCat('food',null)">খাদ্য ও পানীয়</a>
-      <a href="#" onclick="filterCat('farm',null)">কৃষি পণ্য</a>
-      <a href="#" onclick="filterCat('services',null)">গৃহসেবা</a>
+      <a href="#" onclick="filterCat('foodbeverage',null)">খাদ্য ও পানীয়</a>
+      <a href="#" onclick="filterCat('agriculture',null)">কৃষি পণ্য</a>
+      <a href="#" onclick="filterCat('localservices',null)">গৃহসেবা</a>
       <a href="#" onclick="filterCat('arts',null)">শিল্প ও সংস্কৃতি</a>
     </div>
     <div class="footer-col footer-contact">
@@ -3223,23 +3223,33 @@ img{max-width:100%;height:auto;}
         <div class="smd-panel-title">সব ক্যাটাগরি</div>
         <div class="smd-cat-list">
           <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('all')"><span>🏪</span>সব দোকান</div>
-          <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('food')"><span>🍛</span>খাবার ও রেস্তোরাঁ</div>
           <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('grocery')"><span>🛒</span>মুদিখানা ও কিরানা</div>
-          <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('farm')"><span>🌾</span>কৃষি ও ফার্ম</div>
-          <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('farmtools')"><span>🌿</span>কৃষি সরঞ্জাম</div>
-          <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('livestock')"><span>🐄</span>পশুপালন</div>
-          <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('medicine')"><span>💊</span>ওষুধ ও স্বাস্থ্য</div>
-          <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('clothing')"><span>👗</span>পোশাক ও ফ্যাশন</div>
+          <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('foodbeverage')"><span>🍽️</span>খাদ্য ও পানীয়</div>
+          <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('pharmacy')"><span>💊</span>ওষুধ</div>
+          <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('fashion')"><span>👗</span>ফ্যাশন</div>
           <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('electronics')"><span>📱</span>ইলেকট্রনিক্স</div>
-          <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('home')"><span>🏠</span>গৃহস্থালি</div>
-          <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('construction')"><span>🏗️</span>নির্মাণ সামগ্রী</div>
+          <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('beauty')"><span>💄</span>বিউটি</div>
+          <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('homekitchen')"><span>🏠</span>হোম ও কিচেন</div>
+          <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('hardware')"><span>🔧</span>হার্ডওয়্যার</div>
+          <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('agriculture')"><span>🌾</span>কৃষি</div>
+          <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('booksstationery')"><span>📚</span>বই ও স্টেশনারি</div>
+          <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('pets')"><span>🐾</span>পোষা প্রাণী</div>
+          <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('flowersgifts')"><span>🎁</span>ফুল ও উপহার</div>
           <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('automotive')"><span>🚗</span>যানবাহন</div>
-          <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('arts')"><span>🎨</span>শিল্প ও হস্তশিল্প</div>
-          <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('education')"><span>📚</span>শিক্ষা</div>
-          <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('services')"><span>🔧</span>সেবা</div>
-          <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('health')"><span>🏥</span>স্বাস্থ্যসেবা</div>
+          <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('healthcare')"><span>🏥</span>স্বাস্থ্যসেবা</div>
+          <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('education')"><span>🎓</span>শিক্ষা</div>
+          <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('financialservices')"><span>💰</span>আর্থিক সেবা</div>
+          <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('travel')"><span>✈️</span>ভ্রমণ</div>
+          <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('localservices')"><span>🔌</span>স্থানীয় সেবা</div>
+          <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('professionalservices')"><span>💼</span>পেশাদার সেবা</div>
           <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('events')"><span>🎉</span>ইভেন্ট</div>
-          <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('rental')"><span>🔑</span>ভাড়া</div>
+          <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('rentals')"><span>🔑</span>ভাড়া</div>
+          <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('realestate')"><span>🏢</span>রিয়েল এস্টেট</div>
+          <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('jobs')"><span>📋</span>চাকরি</div>
+          <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('govtutilities')"><span>🏛️</span>সরকারি সেবা</div>
+          <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('digitalproducts')"><span>💻</span>ডিজিটাল পণ্য</div>
+          <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('livestock')"><span>🐄</span>পশুপালন</div>
+          <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('arts')"><span>🎨</span>শিল্প</div>
           <div class="smd-cat-row" onclick="closeSideMenu();filterCatByKey('remarket')"><span>♻️</span>রিমার্কেট</div>
         </div>
       </div>
