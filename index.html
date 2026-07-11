@@ -121,7 +121,7 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
   overflow:hidden;box-shadow:0 20px 60px rgba(6,19,9,.18),0 2px 0 rgba(255,255,255,.04) inset;
 }
 .hero{
-  background:linear-gradient(135deg,#061309 0%,#0f2818 40%,#17351f 70%,#1a3a24 100%);
+  background:linear-gradient(135deg,var(--navy3) 0%,var(--navy) 40%,var(--navy2) 70%,var(--navy2) 100%);
   padding:36px 6%;position:relative;overflow:hidden;
   min-height:400px;display:flex;align-items:center;
 }
@@ -133,9 +133,9 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 .hero-bg-overlay{position:absolute;inset:0;z-index:0;
   background:
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E"),
-    linear-gradient(90deg,rgba(6,19,9,.18) 0%,rgba(6,19,9,.07) 40%,transparent 65%),
+    linear-gradient(90deg,rgba(14,30,24,.18) 0%,rgba(14,30,24,.07) 40%,transparent 65%),
     radial-gradient(140% 90% at 50% 50%,transparent 55%,rgba(0,0,0,.22) 100%),
-    linear-gradient(180deg,transparent 0%,transparent 42%,rgba(15,40,24,.35) 62%,rgba(15,40,24,.8) 80%,#0f2818 96%);}
+    linear-gradient(180deg,transparent 0%,transparent 42%,rgba(16,57,45,.35) 62%,rgba(16,57,45,.8) 80%,var(--navy) 96%);}
 /* Subtle glass panel behind the text so it stays readable over any part of the photo */
 .hero-glass{background:rgba(0,0,0,.18);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-radius:18px;padding:22px 24px;}
 .hero-tagline-strong{color:#fff;font-weight:600;opacity:1;white-space:nowrap;}
@@ -187,11 +187,11 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 .hero-photo{
   position:relative;border-radius:20px;overflow:hidden;min-height:260px;height:100%;
   background:
-    radial-gradient(circle at 65% 30%,rgba(212,175,55,.35) 0%,transparent 45%),
-    radial-gradient(circle at 20% 85%,rgba(45,90,53,.5) 0%,transparent 55%),
-    linear-gradient(160deg,#0f2818 0%,#1e4028 45%,#2d5a35 75%,#3d7a45 100%);
+    radial-gradient(circle at 65% 30%,rgba(199,161,90,.35) 0%,transparent 45%),
+    radial-gradient(circle at 20% 85%,rgba(26,74,58,.5) 0%,transparent 55%),
+    linear-gradient(160deg,var(--navy3) 0%,var(--navy) 45%,var(--navy2) 75%,var(--navy2) 100%);
   background-size:cover;background-position:center;
-  border:1px solid rgba(212,175,55,.3);
+  border:1px solid rgba(199,161,90,.3);
   box-shadow:inset 0 0 60px rgba(0,0,0,.25);
 }
 .hero-photo::before{
@@ -504,7 +504,7 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 /* ── FRESH TODAY STRIP ── */
 .fresh-strip{background:#fff;border-bottom:1px solid var(--border);overflow:hidden;position:relative;}
 .fresh-strip-inner{display:flex;align-items:stretch;}
-.fresh-strip-label{flex-shrink:0;background:linear-gradient(135deg,#1B4D2E,#2E7D32);color:#fff;
+.fresh-strip-label{flex-shrink:0;background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff;
   padding:0 18px;display:flex;flex-direction:column;align-items:center;justify-content:center;
   min-width:90px;gap:3px;}
 .fresh-strip-label-icon{font-size:1.4rem;}
@@ -707,7 +707,7 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 }
 
 /* ── FREE DELIVERY STRIP (green like Appayan) ── */
-.free-delivery-strip{background:linear-gradient(90deg,#1a4d2e,#2d7a3a,#1a4d2e);padding:13px 5%;display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;}
+.free-delivery-strip{background:linear-gradient(90deg,var(--navy3),var(--navy),var(--navy3));padding:13px 5%;display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;}
 .fds-icon{font-size:1.3rem;}
 .fds-text{color:#fff;font-size:.9rem;font-weight:600;}
 .fds-badge{background:rgba(255,255,255,.15);color:rgba(255,255,255,.85);font-size:.72rem;padding:3px 12px;border-radius:20px;font-weight:600;white-space:nowrap;}
@@ -808,7 +808,7 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 .footer-badge{background:rgba(255,255,255,.08);color:rgba(255,255,255,.6);font-size:.72rem;padding:4px 12px;border-radius:20px;border:1px solid rgba(255,255,255,.12);}
 
 /* ── RESPONSIVE UPDATES ── */
-.fresh-cards-scroll{display:flex;gap:30px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none;}
+.fresh-cards-scroll{display:flex;gap:14px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none;}
 .fresh-dots{display:none;} /* mobile-only indicator — the @media(max-width:480px) block below turns it on */
 .fresh-cards-scroll::-webkit-scrollbar{display:none;}
 
@@ -2076,6 +2076,25 @@ img{max-width:100%;height:auto;}
   </div>
 </div>
 
+<!-- MARQUEE — urgency/offers ticker, admin-configurable via Firebase settings/marqueeMessages -->
+<div class="marquee-wrap">
+  <div class="marquee-inner" id="marqueeInner">
+    <!-- Firebase থেকে load হবে, fallback hardcoded -->
+    <div class="marquee-item">🎉 Durga Puja Special Offers</div>
+    <div class="marquee-item">🌾 Farm Fresh — সরাসরি কৃষক থেকে</div>
+    <div class="marquee-item">🚀 প্রথম অর্ডারে বিনামূল্যে ডেলিভারি!</div>
+    <div class="marquee-item">⭐ 500+ স্থানীয় দোকান — Manteswar ও আশপাশ</div>
+    <div class="marquee-item">🍬 বাংলার সেরা মিষ্টি — Order Now</div>
+    <div class="marquee-item">💊 ২ ঘণ্টায় ওষুধ ডেলিভারি</div>
+    <div class="marquee-item">🎉 Durga Puja Special Offers</div>
+    <div class="marquee-item">🌾 Farm Fresh — সরাসরি কৃষক থেকে</div>
+    <div class="marquee-item">🚀 প্রথম অর্ডারে বিনামূল্যে ডেলিভারি!</div>
+    <div class="marquee-item">⭐ 500+ স্থানীয় দোকান — Manteswar ও আশপাশ</div>
+    <div class="marquee-item">🍬 বাংলার সেরা মিষ্টি — Order Now</div>
+    <div class="marquee-item">💊 ২ ঘণ্টায় ওষুধ ডেলিভারি</div>
+  </div>
+</div>
+
 <!-- MOBILE SEARCH BAR (shown below nav on mobile) -->
 <div class="mobile-search-bar" id="mobileSearchBar">
   <div class="msb-inner">
@@ -2086,7 +2105,7 @@ img{max-width:100%;height:auto;}
 </div>
 
 <!-- FRESH TODAY FULL CARDS — relocated here to match reference layout -->
-<section class="section" id="freshTodaySection" style="display:none;padding-top:38px;padding-bottom:24px;">
+<section class="section" id="freshTodaySection" style="display:none;padding-top:26px;padding-bottom:24px;">
   <span id="freshTodayDate" style="display:none;"></span>
   <div class="fresh-cards-scroll">
     <div class="fresh-promo-card" onclick="filterCat('farm',null);document.getElementById('productsSection').scrollIntoView({behavior:'smooth'})">
@@ -2363,7 +2382,7 @@ img{max-width:100%;height:auto;}
 
 <!-- DELTA BAZAAR ENTRY CARD — after shops -->
 <section class="section">
-  <div onclick="window.location.href='bazaar.html'" style="background:linear-gradient(120deg,#0f2818 0%,#3d2a6b 55%,#5b3aa0 100%);border-radius:18px;padding:18px 20px;cursor:pointer;position:relative;overflow:hidden;display:flex;align-items:center;gap:14px;">
+  <div onclick="window.location.href='bazaar.html'" style="background:linear-gradient(120deg,var(--navy) 0%,#3d2a6b 55%,#5b3aa0 100%);border-radius:18px;padding:18px 20px;cursor:pointer;position:relative;overflow:hidden;display:flex;align-items:center;gap:14px;">
     <div style="position:absolute;right:-20px;top:50%;transform:translateY(-50%);font-size:5rem;opacity:.08;pointer-events:none;">🏮</div>
     <div style="flex:1;min-width:0;position:relative;z-index:1;">
       <div style="display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);color:#c4b0ff;padding:3px 10px;border-radius:20px;font-size:.62rem;font-weight:700;margin-bottom:7px;">
@@ -3228,7 +3247,7 @@ img{max-width:100%;height:auto;}
       <!-- SPECIAL panel -->
       <div class="smd-panel" id="smd-panel-special">
         <div class="smd-panel-title">বিশেষ বিভাগ</div>
-        <a class="smd-special-card" href="fresh.html" onclick="closeSideMenu()" style="background:linear-gradient(135deg,#1B4D2E,#2E7D32)">
+        <a class="smd-special-card" href="fresh.html" onclick="closeSideMenu()" style="background:linear-gradient(135deg,var(--navy),var(--navy2))">
           <div class="smd-sc-icon">🌿</div>
           <div><div class="smd-sc-name">DELTA Fresh</div><div class="smd-sc-sub">টাটকা সবজি ও ফল</div></div>
           <span class="smd-sc-arr">→</span>
@@ -3243,7 +3262,7 @@ img{max-width:100%;height:auto;}
           <div><div class="smd-sc-name">Hampers</div><div class="smd-sc-sub">উৎসবের গিফট বক্স</div></div>
           <span class="smd-sc-arr">→</span>
         </a>
-        <a class="smd-special-card" href="seller.html" onclick="closeSideMenu()" style="background:linear-gradient(135deg,#0f2818,#1a3a24)">
+        <a class="smd-special-card" href="seller.html" onclick="closeSideMenu()" style="background:linear-gradient(135deg,var(--navy3),var(--navy))">
           <div class="smd-sc-icon">🏬</div>
           <div><div class="smd-sc-name">DELTA তে যুক্ত হন</div><div class="smd-sc-sub">বিক্রেতা, কৃষক, সেবাদাতা — সবার জন্য</div></div>
           <span class="smd-sc-arr">→</span>
