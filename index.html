@@ -122,13 +122,17 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 }
 
 /* ── PREMIUM HERO CAROUSEL SLIDE (sponsored, overlays the brand hero) ── */
-.hero-premium-slide{width:100%;height:100%;min-height:280px;position:relative;overflow:hidden;cursor:pointer;
+.hero-premium-slide{height:100%;min-height:280px;position:relative;overflow:hidden;cursor:pointer;
   background:#0f2818;display:flex;align-items:stretch;}
 .hero-premium-slide img.hps-media{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;}
 .hero-premium-slide video.hps-media{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;background:#000;}
-.hps-sponsored-tag{position:absolute;bottom:12px;right:14px;background:rgba(0,0,0,.45);color:rgba(255,255,255,.85);
-  font-size:.6rem;font-weight:600;padding:3px 10px;border-radius:20px;letter-spacing:.3px;
+.hps-sponsored-tag{position:absolute;top:16px;left:20px;background:rgba(15,40,24,.6);color:#fff;
+  font-size:.66rem;font-weight:700;padding:4px 12px;border-radius:20px;letter-spacing:.4px;
   backdrop-filter:blur(3px);z-index:2;}
+.hps-discount-badge{position:absolute;top:16px;right:16px;background:var(--green);color:#fff;
+  width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  flex-direction:column;font-size:.66rem;font-weight:800;line-height:1.1;text-align:center;
+  border:3px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,.25);z-index:2;}
 
 .hero{
   background:linear-gradient(135deg,var(--navy3) 0%,var(--navy) 40%,var(--navy2) 70%,var(--navy2) 100%);
@@ -2108,7 +2112,7 @@ img{max-width:100%;height:auto;}
 </section>
 
 <!-- PREMIUM SPONSORED SLIDES — overlay strictly within this viewport only (never bleeds into CTA/stats below) -->
-<div id="heroPremiumWrap" style="position:absolute;inset:0;display:none;z-index:2;overflow:hidden;background:#0f2818;"></div>
+<div id="heroPremiumWrap" style="position:absolute;inset:0;display:none;z-index:2;overflow:hidden;"></div>
 <!-- Hero carousel dots — brand slide + premium slides -->
 <div id="heroCarouselDots" style="position:absolute;left:24px;bottom:20px;display:none;align-items:center;gap:8px;z-index:3;"></div>
 </div>
@@ -4785,14 +4789,14 @@ function _heroPremiumSlideHTML(ad){
   var img = ad.imageUrl || '';
   var video = ad.videoUrl || '';
   var link = ad.linkUrl || '#';
+  var discount = ad.discountText || '';
   var mediaHtml = video ?
     ('<video class="hps-media" src="'+video+'" autoplay muted loop playsinline poster="'+img+'"></video>')
     : (img ? '<img class="hps-media" src="'+img+'" loading="lazy">' : '');
-  // Premium slides are fully-designed banners (shop name, offer, rating — all baked into the
-  // image itself), so no code-generated badges/overlays here except a small disclosure tag.
   return '<div class="hero-premium-slide" onclick="window.location.href=\''+link+'\'">'+
       mediaHtml+
       '<span class="hps-sponsored-tag"><span class="lang-bn">স্পনসরড</span><span class="lang-en">SPONSORED</span></span>'+
+      (discount ? '<div class="hps-discount-badge">'+discount+'</div>' : '')+
     '</div>';
 }
 
