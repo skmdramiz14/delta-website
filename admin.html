@@ -44,40 +44,67 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 .auth-err{background:var(--red2);color:var(--red);padding:9px 13px;border-radius:8px;
   font-size:.8rem;margin-bottom:12px;display:none;}
 
-/* ── APP LAYOUT ── */
+/* ── APP LAYOUT — vertical dark sidebar ── */
 #appScreen{display:none;min-height:100vh;}
-.topbar{background:var(--navy);padding:0 24px;height:60px;display:flex;
-  align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;
-  box-shadow:0 2px 12px rgba(0,0,0,.15);}
-.tb-logo{display:flex;align-items:center;gap:10px;}
-.tb-logo-mark{width:34px;height:34px;background:var(--orange);border-radius:9px;
+.admin-layout{display:flex;min-height:100vh;}
+
+.sidebar{width:250px;flex-shrink:0;background:var(--navy);display:flex;flex-direction:column;
+  position:sticky;top:0;height:100vh;overflow-y:auto;z-index:50;}
+.sidebar::-webkit-scrollbar{width:5px;}
+.sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:4px;}
+
+.sb-logo{display:flex;align-items:center;gap:10px;padding:18px 20px;flex-shrink:0;
+  border-bottom:1px solid rgba(255,255,255,.08);}
+.sb-logo-mark{width:34px;height:34px;background:var(--orange);border-radius:9px;
   display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;
   font-weight:900;color:#fff;font-size:.9rem;flex-shrink:0;}
-.tb-logo-text{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:900;
+.sb-logo-text{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:900;
   color:#fff;letter-spacing:1px;}
-.tb-logo-text em{color:var(--orange);font-style:normal;}
-.tb-badge{background:rgba(240,112,24,.18);border:1px solid rgba(240,112,24,.35);
-  color:#ffb07a;font-size:.68rem;font-weight:700;padding:3px 10px;border-radius:20px;
-  margin-left:10px;}
-.tb-right{display:flex;align-items:center;gap:14px;}
-.tb-email{font-size:.78rem;color:rgba(255,255,255,.55);}
-.logout-btn{background:rgba(192,57,43,.18);border:none;color:#ff8a80;padding:7px 14px;
-  border-radius:8px;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .2s;}
+.sb-logo-text em{color:var(--orange);font-style:normal;}
+.sb-badge{background:rgba(240,112,24,.18);border:1px solid rgba(240,112,24,.35);
+  color:#ffb07a;font-size:.62rem;font-weight:700;padding:2px 8px;border-radius:20px;
+  margin-left:6px;display:block;width:fit-content;margin-top:2px;}
+
+.tabs{display:flex;flex-direction:column;gap:1px;padding:10px 10px;flex:1;overflow-y:auto;}
+.tab-btn{padding:11px 12px;border:none;background:transparent;cursor:pointer;
+  font-size:.82rem;font-weight:600;color:rgba(255,255,255,.6);border-radius:9px;
+  transition:all .18s;white-space:nowrap;display:flex;align-items:center;gap:10px;
+  text-align:left;width:100%;border-left:3px solid transparent;}
+.tab-btn:hover{color:#fff;background:rgba(255,255,255,.06);}
+.tab-btn.active{color:#fff;background:rgba(240,112,24,.16);border-left-color:var(--orange);}
+.tab-count{background:var(--orange);color:#fff;font-size:.62rem;font-weight:800;
+  padding:1px 7px;border-radius:10px;min-width:18px;text-align:center;margin-left:auto;flex-shrink:0;}
+.tab-count.zero{background:rgba(255,255,255,.12);color:rgba(255,255,255,.5);}
+
+.sb-footer{padding:12px 20px 16px;border-top:1px solid rgba(255,255,255,.08);flex-shrink:0;}
+.tb-email{font-size:.72rem;color:rgba(255,255,255,.5);display:block;margin-bottom:8px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.logout-btn{background:rgba(192,57,43,.18);border:none;color:#ff8a80;padding:8px 14px;
+  border-radius:8px;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .2s;width:100%;}
 .logout-btn:hover{background:rgba(192,57,43,.32);}
 
-.tabs{display:flex;gap:4px;padding:0 24px;background:#fff;border-bottom:1px solid var(--border);
-  overflow-x:auto;}
-.tab-btn{padding:14px 18px;border:none;background:transparent;cursor:pointer;
-  font-size:.85rem;font-weight:600;color:var(--muted);border-bottom:3px solid transparent;
-  transition:all .2s;white-space:nowrap;display:flex;align-items:center;gap:7px;}
-.tab-btn:hover{color:var(--navy);}
-.tab-btn.active{color:var(--orange);border-bottom-color:var(--orange);}
-.tab-count{background:var(--orange);color:#fff;font-size:.65rem;font-weight:800;
-  padding:1px 7px;border-radius:10px;min-width:18px;text-align:center;}
-.tab-count.zero{background:var(--border);color:var(--muted);}
+.main-area{flex:1;min-width:0;display:flex;flex-direction:column;}
+.main-topbar{background:#fff;height:56px;flex-shrink:0;display:flex;align-items:center;
+  justify-content:flex-end;padding:0 24px;border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:40;}
+.main-topbar .tb-email{color:var(--muted);margin:0 12px 0 0;display:inline;}
+.main-topbar .logout-btn{width:auto;}
 
-.content{padding:24px;max-width:1200px;margin:0 auto;}
+.content{padding:24px;max-width:1200px;margin:0 auto;width:100%;}
 .page{display:none;}
+
+@media(max-width:900px){
+  .sidebar{width:76px;}
+  .sb-logo-text,.sb-badge,.tab-btn span:not(.tab-count),.tb-email{display:none;}
+  .sb-logo{justify-content:center;padding:16px 10px;}
+  .tab-btn{justify-content:center;padding:12px 8px;border-left:none;border-radius:8px;}
+  .tab-btn.active{border-left:none;box-shadow:inset 0 0 0 2px var(--orange);}
+  .tab-count{margin-left:0;position:absolute;top:4px;right:4px;}
+  .tab-btn{position:relative;}
+  .sb-footer{padding:10px;}
+  .logout-btn{font-size:0;padding:8px;}
+  .logout-btn::before{content:'🚪';font-size:1rem;}
+}
 .page.active{display:block;}
 
 .sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;
@@ -287,73 +314,82 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 
 <!-- ═══════ APP ═══════ -->
 <div id="appScreen">
-  <header class="topbar">
-    <div class="tb-logo">
-      <div class="tb-logo-mark">D</div>
-      <div class="tb-logo-text">DELT<em>A</em></div>
-      <span class="tb-badge">ADMIN</span>
+<div class="admin-layout">
+  <aside class="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logo-mark">D</div>
+      <div>
+        <div class="sb-logo-text">DELT<em>A</em></div>
+        <span class="sb-badge">ADMIN</span>
+      </div>
     </div>
-    <div class="tb-right">
+
+    <nav class="tabs">
+    <button class="tab-btn active" id="tab-pending" onclick="goTab('pending',this)">
+      <span>⏳ অনুমোদনের অপেক্ষায়</span> <span class="tab-count zero" id="countPending">0</span>
+    </button>
+    <button class="tab-btn" id="tab-sellers" onclick="goTab('sellers',this)">
+      <span>🏪 সব বিক্রেতা</span> <span class="tab-count zero" id="countAll">0</span>
+    </button>
+    <button class="tab-btn" id="tab-requests" onclick="goTab('requests',this)">
+      <span>🏷️ Category Requests</span> <span class="tab-count zero" id="countReq">0</span>
+    </button>
+    <button class="tab-btn" id="tab-orders" onclick="goTab('orders',this)">
+      <span>🛍️ Order Management</span> <span class="tab-count zero" id="countOrders">0</span>
+    </button>
+    <button class="tab-btn" id="tab-zones" onclick="goTab('zones',this)">
+      <span>🗺️ Delivery Zones</span> <span class="tab-count zero" id="countZones">0</span>
+    </button>
+    <button class="tab-btn" id="tab-deliveryboys" onclick="goTab('deliveryboys',this)">
+      <span>🛵 Delivery Boys</span> <span class="tab-count zero" id="countDBoys">0</span>
+    </button>
+    <button class="tab-btn" id="tab-ordermanagers" onclick="goTab('ordermanagers',this)">
+      <span>🛍️ Order Managers</span> <span class="tab-count zero" id="countOMgrs">0</span>
+    </button>
+    <button class="tab-btn" id="tab-citymanagers" onclick="goTab('citymanagers',this)">
+      <span>👤 City Managers</span> <span class="tab-count zero" id="countCMgrs">0</span>
+    </button>
+    <button class="tab-btn" id="tab-bazaar" onclick="goTab('bazaar',this)">
+      <span>🛍️ Bazaar Requests</span> <span class="tab-count zero" id="countBazaar">0</span>
+    </button>
+    <button class="tab-btn" id="tab-recon" onclick="goTab('recon',this)">
+      <span>💰 COD Reconciliation</span> <span class="tab-count zero" id="countRecon">0</span>
+    </button>
+    <button class="tab-btn" id="tab-categories" onclick="goTab('categories',this)">
+      <span>🏷️ Category Management</span>
+    </button>
+    <button class="tab-btn" id="tab-flashsale" onclick="goTab('flashsale',this)">
+      <span>⚡ Flash Sale Management</span>
+    </button>
+    <button class="tab-btn" id="tab-products" onclick="goTab('products',this)">
+      <span>📦 Product Moderation</span>
+    </button>
+    <button class="tab-btn" id="tab-festivals" onclick="goTab('festivals',this)">
+      <span>🎊 Festival Management</span>
+    </button>
+    <button class="tab-btn" id="tab-sponsoredshops" onclick="goTab('sponsoredshops',this)">
+      <span>🏪 Sponsored Shops</span>
+    </button>
+    <button class="tab-btn" id="tab-hampers" onclick="goTab('hampers',this)">
+      <span>🎁 Hamper Management</span>
+    </button>
+    <button class="tab-btn" id="tab-hamperorders" onclick="goTab('hamperorders',this)">
+      <span>📦 Hamper Orders</span>
+    </button>
+    </nav>
+
+    <div class="sb-footer">
       <span class="tb-email" id="adminEmailLabel"></span>
       <button class="logout-btn" onclick="doLogout()">লগআউট</button>
     </div>
-  </header>
+  </aside>
 
-  <nav class="tabs">
-    <button class="tab-btn active" id="tab-pending" onclick="goTab('pending',this)">
-      ⏳ অনুমোদনের অপেক্ষায় <span class="tab-count zero" id="countPending">0</span>
-    </button>
-    <button class="tab-btn" id="tab-sellers" onclick="goTab('sellers',this)">
-      🏪 সব বিক্রেতা <span class="tab-count zero" id="countAll">0</span>
-    </button>
-    <button class="tab-btn" id="tab-requests" onclick="goTab('requests',this)">
-      🏷️ Category Requests <span class="tab-count zero" id="countReq">0</span>
-    </button>
-    <button class="tab-btn" id="tab-orders" onclick="goTab('orders',this)">
-      🛍️ Order Management <span class="tab-count zero" id="countOrders">0</span>
-    </button>
-    <button class="tab-btn" id="tab-zones" onclick="goTab('zones',this)">
-      🗺️ Delivery Zones <span class="tab-count zero" id="countZones">0</span>
-    </button>
-    <button class="tab-btn" id="tab-deliveryboys" onclick="goTab('deliveryboys',this)">
-      🛵 Delivery Boys <span class="tab-count zero" id="countDBoys">0</span>
-    </button>
-    <button class="tab-btn" id="tab-ordermanagers" onclick="goTab('ordermanagers',this)">
-      🛍️ Order Managers <span class="tab-count zero" id="countOMgrs">0</span>
-    </button>
-    <button class="tab-btn" id="tab-citymanagers" onclick="goTab('citymanagers',this)">
-      👤 City Managers <span class="tab-count zero" id="countCMgrs">0</span>
-    </button>
-    <button class="tab-btn" id="tab-bazaar" onclick="goTab('bazaar',this)">
-      🛍️ Bazaar Requests <span class="tab-count zero" id="countBazaar">0</span>
-    </button>
-    <button class="tab-btn" id="tab-recon" onclick="goTab('recon',this)">
-      💰 COD Reconciliation <span class="tab-count zero" id="countRecon">0</span>
-    </button>
-    <button class="tab-btn" id="tab-categories" onclick="goTab('categories',this)">
-      🏷️ Category Management
-    </button>
-    <button class="tab-btn" id="tab-flashsale" onclick="goTab('flashsale',this)">
-      ⚡ Flash Sale Management
-    </button>
-    <button class="tab-btn" id="tab-products" onclick="goTab('products',this)">
-      📦 Product Moderation
-    </button>
-    <button class="tab-btn" id="tab-festivals" onclick="goTab('festivals',this)">
-      🎊 Festival Management
-    </button>
-    <button class="tab-btn" id="tab-sponsoredshops" onclick="goTab('sponsoredshops',this)">
-      🏪 Sponsored Shops
-    </button>
-    <button class="tab-btn" id="tab-hampers" onclick="goTab('hampers',this)">
-      🎁 Hamper Management
-    </button>
-    <button class="tab-btn" id="tab-hamperorders" onclick="goTab('hamperorders',this)">
-      📦 Hamper Orders
-    </button>
-  </nav>
+  <div class="main-area">
+    <header class="main-topbar">
+      <span class="tb-email">— DELTA Admin —</span>
+    </header>
 
-  <div class="content">
+    <div class="content">
 
     <!-- ═══ PENDING APPROVAL PAGE ═══ -->
     <div class="page active" id="page-pending">
@@ -1284,22 +1320,16 @@ button,input,select{font-family:'DM Sans',sans-serif;}
             <option value="">-- ম্যানুয়াল এন্ট্রি (external / non-listed shop) --</option>
           </select>
         </div>
+        <div style="background:#fff4ec;border:1px solid var(--orange);border-radius:10px;padding:10px 12px;margin-bottom:12px;display:flex;align-items:center;gap:10px;">
+          <input type="checkbox" id="ssFullBanner" onchange="toggleFullBannerMode()" style="width:18px;height:18px;flex-shrink:0;">
+          <label for="ssFullBanner" style="font-size:.78rem;font-weight:700;color:var(--navy);cursor:pointer;margin:0;">
+            🎨 এটা একটা pre-made পূর্ণ ব্যানার (নাম/অফার/রেটিং সবই ছবিতে আঁকা আছে) — Card-টা পুরোপুরি ছবি হিসেবে দেখাবে, নিচের text field গুলো লাগবে না
+          </label>
+        </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
           <div class="form-group" style="margin-bottom:0">
-            <label>Shop Name *</label>
+            <label>Shop Name * <span style="font-weight:400;color:var(--muted);">(admin list-এ দেখার জন্য, full banner mode-এও লাগবে)</span></label>
             <input type="text" class="form-input" id="ssName" placeholder="যেমন: Appayan Sweets &amp; Bakery">
-          </div>
-          <div class="form-group" style="margin-bottom:0">
-            <label>Tagline / Description</label>
-            <input type="text" class="form-input" id="ssTagline" placeholder="যেমন: তাজা, খাঁটি, মনভরা মিষ্টি">
-          </div>
-          <div class="form-group" style="margin-bottom:0">
-            <label>Offer Text</label>
-            <input type="text" class="form-input" id="ssOffer" placeholder="যেমন: 20% OFF">
-          </div>
-          <div class="form-group" style="margin-bottom:0">
-            <label>Button Text</label>
-            <input type="text" class="form-input" id="ssBtnText" placeholder="যেমন: Shop Now → (খালি রাখলে ডিফল্ট দেখাবে)">
           </div>
           <div class="form-group" style="margin-bottom:0;grid-column:1/-1;">
             <label>Banner Image URL * <span style="font-weight:400;color:var(--muted);">(1200 x 420 px recommended)</span></label>
@@ -1310,20 +1340,12 @@ button,input,select{font-family:'DM Sans',sans-serif;}
             <input type="text" class="form-input" id="ssLink" placeholder="যেমন: https://yourshop.com">
           </div>
           <div class="form-group" style="margin-bottom:0">
-            <label>Priority (1-10, বড় = বেশিবার/আগে দেখাবে)</label>
+            <label>Priority (1-10) <span style="font-weight:400;color:var(--muted);">— বড় সংখ্যা = rotation-এ বেশিবার আসবে</span></label>
             <input type="number" class="form-input" id="ssPriority" value="5" min="1" max="10">
           </div>
           <div class="form-group" style="margin-bottom:0">
-            <label>Rating (Optional)</label>
-            <input type="text" class="form-input" id="ssRating" placeholder="যেমন: 4.8">
-          </div>
-          <div class="form-group" style="margin-bottom:0">
-            <label>Hours (Optional)</label>
-            <input type="text" class="form-input" id="ssHours" placeholder="যেমন: 08:00 AM - 10:00 PM">
-          </div>
-          <div class="form-group" style="margin-bottom:0;grid-column:1/-1;">
-            <label>Location / Area (Optional)</label>
-            <input type="text" class="form-input" id="ssLocation" placeholder="যেমন: Kusumgram">
+            <label>Display Duration (সেকেন্ড) <span style="font-weight:400;color:var(--muted);">— প্রতিবার কতক্ষণ দেখাবে</span></label>
+            <input type="number" class="form-input" id="ssDuration" value="5" min="2" max="20">
           </div>
           <div class="form-group" style="margin-bottom:0">
             <label>Start Date</label>
@@ -1333,7 +1355,42 @@ button,input,select{font-family:'DM Sans',sans-serif;}
             <label>End Date</label>
             <input type="date" class="form-input" id="ssEndDate">
           </div>
+          <div class="form-group" style="margin-bottom:0;grid-column:1/-1;display:flex;align-items:center;gap:8px;">
+            <input type="checkbox" id="ssAlwaysFirst" style="width:18px;height:18px;flex-shrink:0;">
+            <label for="ssAlwaysFirst" style="margin:0;cursor:pointer;">🔝 পেজ লোড হলে এই দোকানই সবার আগে দেখান (guaranteed first)</label>
+          </div>
         </div>
+
+        <div id="ssExtraFieldsGroup">
+          <div style="font-size:.72rem;font-weight:700;color:var(--muted);margin:4px 0 8px;">নিচেরগুলো শুধু normal (non-full-banner) card-এর জন্য —</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+            <div class="form-group" style="margin-bottom:0">
+              <label>Tagline / Description</label>
+              <input type="text" class="form-input" id="ssTagline" placeholder="যেমন: তাজা, খাঁটি, মনভরা মিষ্টি">
+            </div>
+            <div class="form-group" style="margin-bottom:0">
+              <label>Offer Text</label>
+              <input type="text" class="form-input" id="ssOffer" placeholder="যেমন: 20% OFF">
+            </div>
+            <div class="form-group" style="margin-bottom:0">
+              <label>Button Text</label>
+              <input type="text" class="form-input" id="ssBtnText" placeholder="যেমন: Shop Now → (খালি রাখলে ডিফল্ট দেখাবে)">
+            </div>
+            <div class="form-group" style="margin-bottom:0">
+              <label>Rating (Optional)</label>
+              <input type="text" class="form-input" id="ssRating" placeholder="যেমন: 4.8">
+            </div>
+            <div class="form-group" style="margin-bottom:0">
+              <label>Hours (Optional) <span style="font-weight:400;color:var(--muted);">— দোকান খোলার সময়</span></label>
+              <input type="text" class="form-input" id="ssHours" placeholder="যেমন: 08:00 AM - 10:00 PM">
+            </div>
+            <div class="form-group" style="margin-bottom:0">
+              <label>Location / Area (Optional)</label>
+              <input type="text" class="form-input" id="ssLocation" placeholder="যেমন: Kusumgram">
+            </div>
+          </div>
+        </div>
+
         <div style="display:flex;gap:10px;align-items:center;">
           <button class="btn-sm btn-orange" onclick="saveSponsoredShop()" id="sponsoredShopSaveBtn">🏪 Save করুন</button>
           <button class="btn-sm btn-outline" onclick="cancelSponsoredShopEdit()" id="sponsoredShopCancelBtn" style="display:none;">✕ বাতিল</button>
@@ -1681,6 +1738,8 @@ button,input,select{font-family:'DM Sans',sans-serif;}
       </div>
     </div>
 
+  </div>
+    </div>
   </div>
 </div>
 <script>
@@ -6199,9 +6258,12 @@ function renderSponsoredShopsList(){
     return '<div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:8px;display:flex;gap:12px;align-items:center;">'+
       thumb+
       '<div style="flex:1;min-width:0;">'+
-        '<div style="font-size:.82rem;font-weight:700;color:var(--navy);">'+(s.shopName||'—')+'</div>'+
+        '<div style="font-size:.82rem;font-weight:700;color:var(--navy);">'+(s.shopName||'—')+
+          (s.fullBanner ? ' <span style="font-size:.6rem;font-weight:700;background:var(--sand);color:var(--orange);padding:2px 7px;border-radius:10px;">🎨 Full Banner</span>' : '')+
+        '</div>'+
         '<div style="font-size:.72rem;color:var(--muted);">'+
-          (s.discountText?s.discountText+' · ':'')+'Priority: '+(s.priority||1)+
+          (s.discountText?s.discountText+' · ':'')+'Priority: '+(s.priority||1)+' · '+(s.displayDuration||5)+'s'+
+          (s.alwaysFirst?' · 🔝 Always First':'')+
           (s.startDate?' · '+s.startDate+' → '+(s.endDate||'—'):'')+
         '</div>'+
       '</div>'+
@@ -6218,8 +6280,17 @@ function renderSponsoredShopsList(){
   }).join('');
 }
 
+function toggleFullBannerMode(){
+  var isFull = document.getElementById('ssFullBanner').checked;
+  var extraGroup = document.getElementById('ssExtraFieldsGroup');
+  if(extraGroup) extraGroup.style.display = isFull ? 'none' : 'block';
+}
+
 function saveSponsoredShop(){
   var editId = document.getElementById('sponsoredShopEditId').value;
+  var fullBanner = document.getElementById('ssFullBanner').checked;
+  var alwaysFirst = document.getElementById('ssAlwaysFirst').checked;
+  var duration = parseInt(document.getElementById('ssDuration').value)||5;
   var shopName = document.getElementById('ssName').value.trim();
   var tagline = document.getElementById('ssTagline').value.trim();
   var discountText = document.getElementById('ssOffer').value.trim();
@@ -6238,6 +6309,9 @@ function saveSponsoredShop(){
 
   var data = {
     type: 'shop_ad',
+    fullBanner: fullBanner,
+    alwaysFirst: alwaysFirst,
+    displayDuration: duration,
     shopName: shopName,
     title: shopName,
     tagline: tagline,
@@ -6270,6 +6344,10 @@ function editSponsoredShop(id){
   var s = allSponsoredShops.find(function(x){ return x.id===id; });
   if(!s) return;
   document.getElementById('sponsoredShopEditId').value = id;
+  document.getElementById('ssFullBanner').checked = !!s.fullBanner;
+  document.getElementById('ssAlwaysFirst').checked = !!s.alwaysFirst;
+  document.getElementById('ssDuration').value = s.displayDuration||5;
+  toggleFullBannerMode();
   document.getElementById('ssName').value = s.shopName||'';
   document.getElementById('ssTagline').value = s.tagline||'';
   document.getElementById('ssOffer').value = s.discountText||'';
@@ -6292,6 +6370,10 @@ function editSponsoredShop(id){
 function cancelSponsoredShopEdit(){
   document.getElementById('sponsoredShopEditId').value='';
   document.getElementById('ssExistingShop').value='';
+  document.getElementById('ssFullBanner').checked=false;
+  document.getElementById('ssAlwaysFirst').checked=false;
+  document.getElementById('ssDuration').value=5;
+  toggleFullBannerMode();
   ['ssName','ssTagline','ssOffer','ssBtnText','ssImage','ssLink','ssRating','ssHours','ssLocation','ssStartDate','ssEndDate'].forEach(function(id){
     document.getElementById(id).value='';
   });
