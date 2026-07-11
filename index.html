@@ -129,6 +129,10 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 .hps-sponsored-tag{position:absolute;bottom:12px;right:14px;background:rgba(0,0,0,.45);color:rgba(255,255,255,.85);
   font-size:.6rem;font-weight:600;padding:3px 10px;border-radius:20px;letter-spacing:.3px;
   backdrop-filter:blur(3px);z-index:2;}
+.hps-mute-btn{position:absolute;bottom:12px;left:14px;width:26px;height:26px;border-radius:50%;
+  background:rgba(0,0,0,.45);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;
+  cursor:pointer;z-index:2;transition:background .15s;font-size:.72rem;line-height:1;}
+.hps-mute-btn:hover{background:rgba(0,0,0,.65);}
 
 .hero{
   background:linear-gradient(135deg,var(--navy3) 0%,var(--navy) 40%,var(--navy2) 70%,var(--navy2) 100%);
@@ -4694,6 +4698,18 @@ function applyBrandSlideCustomization(cfg){
       vid.autoplay = true; vid.muted = true; vid.loop = true; vid.playsInline = true;
       vid.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;';
       bgImgLayer.parentNode.insertBefore(vid, bgImgLayer.nextSibling);
+
+      var muteBtn = document.createElement('span');
+      muteBtn.className = 'hps-mute-btn';
+      muteBtn.title = 'Sound on/off';
+      muteBtn.textContent = '🔇';
+      muteBtn.style.zIndex = '3';
+      muteBtn.onclick = function(e){
+        e.stopPropagation();
+        vid.muted = !vid.muted;
+        muteBtn.textContent = vid.muted ? '🔇' : '🔊';
+      };
+      bgImgLayer.parentNode.insertBefore(muteBtn, vid.nextSibling);
     }
   }
 
@@ -4852,14 +4868,25 @@ function _heroPremiumSlideHTML(ad){
   var mediaHtml = video ?
     ('<video class="hps-media" src="'+video+'" autoplay muted loop playsinline poster="'+img+'"></video>')
     : (img ? '<img class="hps-media" src="'+img+'" loading="lazy">' : '');
+  var muteBtnHtml = video ?
+    '<span class="hps-mute-btn" onclick="event.stopPropagation();_toggleSlideMute(this)" title="Sound on/off">🔇</span>' : '';
   // Premium slides are fully-designed banners (shop name, offer, rating — all baked into the
-  // image itself), so no code-generated badges/overlays here except a small disclosure tag.
+  // image itself), so no code-generated badges/overlays here except small disclosure/mute controls.
   return '<div class="hero-premium-slide" onclick="window.location.href=\''+link+'\'">'+
       mediaHtml+
+      muteBtnHtml+
       (isShopAd ? '<span class="hps-sponsored-tag"><span class="lang-bn">স্পনসরড</span><span class="lang-en">SPONSORED</span></span>' : '')+
     '</div>';
 }
 
+// Toggles mute on the video sitting next to this button — click is user interaction,
+// so the browser allows turning sound ON even though autoplay itself must stay muted.
+function _toggleSlideMute(btn){
+  var vid = btn.parentElement ? btn.parentElement.querySelector('video') : null;
+  if(!vid) return;
+  vid.muted = !vid.muted;
+  btn.textContent = vid.muted ? '🔇' : '🔊';
+}
 function showHeroSlide(i){
   var brand = document.getElementById('heroSlideBrand');
   var premiumWrap = document.getElementById('heroPremiumWrap');
