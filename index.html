@@ -4587,10 +4587,11 @@ function toggleOpenNow(){
   }
 }
 
-// ══ FEATURE 7.5: SPONSORED SHOPS (rotating carousel, multiple shops) ══
+// ══ FEATURE 7.5: SPONSORED SHOPS (rotating carousel, multiple shops, manually-weighted rotation) ══
 var _adSlides = [];
 var _adIdx = 0;
 var _adAutoplayTimer = null;
+var _adSWRRWeights = []; // smooth weighted round-robin running-weight state, one per ad
 
 function initSponsoredAd(){
   var wrap = document.getElementById('sponsoredAdWrap');
@@ -4608,7 +4609,12 @@ function initSponsoredAd(){
         ads.push(b);
       });
       if(!ads.length){ wrap.innerHTML=''; return; }
-      ads.sort(function(a,b){ return (b.priority||0)-(a.priority||0); });
+      // "Always show first" ads go to the front; everything else ordered by priority (admin's manual control)
+      ads.sort(function(a,b){
+        var af = (b.alwaysFirst?1:0) - (a.alwaysFirst?1:0);
+        if(af !== 0) return af;
+        return (b.priority||0)-(a.priority||0);
+      });
       renderSponsoredCarousel(ads);
     }).catch(function(){ wrap.innerHTML=''; });
 }
@@ -4616,9 +4622,10 @@ function initSponsoredAd(){
 function renderSponsoredCarousel(ads){
   var wrap = document.getElementById('sponsoredAdWrap');
   if(!wrap) return;
-  if(_adAutoplayTimer){ clearInterval(_adAutoplayTimer); _adAutoplayTimer=null; }
+  if(_adAutoplayTimer){ clearTimeout(_adAutoplayTimer); _adAutoplayTimer=null; }
   _adSlides = ads;
   _adIdx = 0;
+  _adSWRRWeights = ads.map(function(){ return 0; });
 
   var slidesHTML = ads.map(function(ad,i){ return _sponsoredSlideHTML(ad,i); }).join('');
   var dotsHTML = ads.length > 1 ? (
@@ -4650,9 +4657,37 @@ function renderSponsoredCarousel(ads){
       dotsHTML+
     '</div></section>';
 
-  if(ads.length > 1){
-    _adAutoplayTimer = setInterval(function(){ goSponsoredSlide((_adIdx+1)%_adSlides.length); }, 4500);
+  scheduleNextAdSlide();
+}
+
+// Smooth weighted round-robin — picks which unique ad shows next.
+// Higher priority = statistically shows more often, but never twice in a row when alternatives exist.
+function _pickNextAdIndex(){
+  var n = _adSlides.length;
+  if(n <= 1) return 0;
+  var totalWeight = 0;
+  for(var i=0;i<n;i++){
+    var w = (_adSlides[i].priority||1);
+    _adSWRRWeights[i] += w;
+    totalWeight += w;
   }
+  var maxIdx = 0;
+  for(var i=1;i<n;i++){
+    if(_adSWRRWeights[i] > _adSWRRWeights[maxIdx]) maxIdx = i;
+  }
+  _adSWRRWeights[maxIdx] -= totalWeight;
+  return maxIdx;
+}
+
+// Each ad controls its own on-screen duration (admin's "Display Duration" field, in seconds)
+function scheduleNextAdSlide(){
+  if(_adAutoplayTimer){ clearTimeout(_adAutoplayTimer); _adAutoplayTimer=null; }
+  if(_adSlides.length <= 1) return;
+  var currentAd = _adSlides[_adIdx];
+  var durationMs = (currentAd.displayDuration||5) * 1000;
+  _adAutoplayTimer = setTimeout(function(){
+    goSponsoredSlide(_pickNextAdIndex());
+  }, durationMs);
 }
 
 function goSponsoredSlide(i){
@@ -4665,16 +4700,29 @@ function goSponsoredSlide(i){
   });
   var counter = document.getElementById('adSlideCounter');
   if(counter) counter.textContent = (i+1)+'/'+_adSlides.length;
+  scheduleNextAdSlide(); // reset timer using the newly-shown slide's own duration
 }
 
 function _sponsoredSlideHTML(ad, idx){
   var img = ad.imageUrl || '';
+  var link = ad.linkUrl || '#';
+
+  // FULL BANNER MODE — pre-made graphic with everything baked in; just show the image, full-bleed, clickable
+  if(ad.fullBanner){
+    return '<div style="flex-shrink:0;width:'+(100/_adSlides.length)+'%;position:relative;overflow:hidden;cursor:pointer;background:#f2e9d3;" '+
+        'onclick="window.location.href=\''+link+'\'">'+
+        (img ? '<img src="'+img+'" alt="'+(ad.shopName||ad.title||'')+'" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy">' : '')+
+        '<span style="position:absolute;top:10px;left:10px;background:rgba(15,40,24,.55);color:#fff;font-size:.6rem;font-weight:700;'+
+          'padding:3px 9px;border-radius:20px;letter-spacing:.3px;backdrop-filter:blur(2px);">'+
+          '<span class="lang-bn">স্পনসরড</span><span class="lang-en">SPONSORED</span></span>'+
+      '</div>';
+  }
+
   var discount = ad.discountText || '';
   var rating = ad.rating || '';
   var hours = ad.hours || '';
   var loc = ad.location || '';
   var tagline = ad.tagline || ad.title || '';
-  var link = ad.linkUrl || '#';
   var btnText = ad.buttonText || '';
 
   var infoBits = [];
