@@ -669,6 +669,19 @@ button,input,select{font-family:'DM Sans',sans-serif;}
         <div class="stat-box"><strong id="statBazaarQuoted">0</strong><span>দাম দেওয়া হয়েছে</span></div>
         <div class="stat-box"><strong id="statBazaarDelivered">0</strong><span>ডেলিভার হয়েছে</span></div>
       </div>
+
+      <!-- Bazaar Financial Summary (margin-based, separate from seller commission Recon) -->
+      <div class="stats-row" style="grid-template-columns:repeat(3,1fr);margin-top:10px">
+        <div class="stat-box"><strong id="statBazaarCash">₹0</strong><span>মোট Cash Collected</span></div>
+        <div class="stat-box"><strong id="statBazaarProfit">₹0</strong><span>মোট Admin Profit</span></div>
+        <div class="stat-box"><strong id="statBazaarUnsettled">0</strong><span>Unsettled (Financial)</span></div>
+      </div>
+      <div style="display:flex;gap:10px;margin:10px 0 4px;flex-wrap:wrap;align-items:center">
+        <button class="btn-sm btn-orange" onclick="markAllBazaarSettled()">✅ সব Delivered → Settled করুন</button>
+        <button class="btn-sm btn-blue" onclick="exportBazaarFinance()">📊 Bazaar Financial CSV Export</button>
+        <span style="font-size:.72rem;color:var(--muted)">💡 প্রতিটা delivered request-এর কার্ডে নিচে দিকে Financial Breakdown box পাবেন — Supplier Cost ও Delivery Charge দিন, তারপর সেভ করুন</span>
+      </div>
+
       <div class="sec-head">
         <div class="sec-title">🛍️ DELTA Bazaar — পণ্যের অনুরোধ <small>গ্রাহকের পাঠানো custom request, দাম যাচাই করে status update করুন</small></div>
       </div>
@@ -2917,7 +2930,7 @@ function loadSaleEditRequests(){
             '</div>'+
           '</div>'+
           '<div style="display:flex;gap:8px;">'+
-            '<button class="btn-sm btn-green" style="font-size:.72rem;" onclick="approveSaleEdit(\''+p.id+'\')">✅ Approve</button>'+
+            '<button class="btn-sm btn-green" style="font-size:.72rem;" onclick="approveSaleEdit(\''+p.id+'\',\''+p.shopId+'\')">✅ Approve</button>'+
             '<button class="btn-sm btn-red" style="font-size:.72rem;" onclick="rejectSaleEdit(\''+p.id+'\',\''+p.shopId+'\')">❌ Reject</button>'+
           '</div>'+
         '</div>';
@@ -2925,12 +2938,14 @@ function loadSaleEditRequests(){
     }).catch(function(e){ wrap.innerHTML='<div style="color:var(--red);">Error: '+e.message+'</div>'; });
 }
 
-function approveSaleEdit(id){
+function approveSaleEdit(id, shopId){
+  var editSnapshot = null;
   db.collection('cities').doc(CITY).collection('saleProducts').doc(id).get()
     .then(function(doc){
       if(!doc.exists) return;
       var data = doc.data();
       var e = data.pendingEdit;
+      editSnapshot = e;
       var updateData = {
         originalPrice: e.originalPrice,
         discount: e.discount,
@@ -2961,7 +2976,18 @@ function approveSaleEdit(id){
         });
     }).then(function(){
       // Seller notification
-      showToast('✅ Edit approved + Flash Sale updated','green');
+      if(shopId){
+        return db.collection('cities').doc(CITY).collection('sellers').doc(shopId)
+          .collection('notifications').add({
+            type: 'sale_edit_approved',
+            title: '✅ Sale Product Edit Approved',
+            message: 'আপনার sale product এর edit request approve হয়েছে।'+(editSnapshot?' নতুন price: ₹'+editSnapshot.salePrice+' ('+editSnapshot.discount+'% off)':''),
+            read: false,
+            createdAt: new Date().toISOString()
+          });
+      }
+    }).then(function(){
+      showToast('✅ Edit approved + Flash Sale updated + Seller notify হয়েছে','green');
       loadSaleEditRequests();
     }).catch(function(e){showToast('সমস্যা: '+e.message,'red');});
 }
@@ -4110,7 +4136,113 @@ function updateBazaarStats(){
   document.getElementById('statBazaarReceived').textContent = allBazaarRequests.filter(function(r){return r.status==='received';}).length;
   document.getElementById('statBazaarQuoted').textContent = allBazaarRequests.filter(function(r){return r.status==='quoted';}).length;
   document.getElementById('statBazaarDelivered').textContent = allBazaarRequests.filter(function(r){return r.status==='delivered';}).length;
+  updateBazaarFinanceStats();
 }
+
+function updateBazaarFinanceStats(){
+  var delivered = allBazaarRequests.filter(function(r){ return r.status==='delivered'; });
+  var totalCash = delivered.reduce(function(s,r){ return s+(r.cashCollected||0); },0);
+  var totalProfit = delivered.reduce(function(s,r){ return s+(r.adminProfit||0); },0);
+  var unsettled = delivered.filter(function(r){ return typeof r.cashCollected==='number' && !r.bazaarSettled; }).length;
+  var elCash = document.getElementById('statBazaarCash');
+  var elProfit = document.getElementById('statBazaarProfit');
+  var elUnsettled = document.getElementById('statBazaarUnsettled');
+  if(elCash) elCash.textContent = '₹'+totalCash.toLocaleString('en-IN');
+  if(elProfit) elProfit.textContent = '₹'+totalProfit.toLocaleString('en-IN');
+  if(elUnsettled) elUnsettled.textContent = unsettled;
+}
+
+function saveBazaarFinance(id){
+  var dc = parseFloat(document.getElementById('bdc-'+id).value)||0;
+  var sc = parseFloat(document.getElementById('bsc-'+id).value)||0;
+  var rp = parseFloat(document.getElementById('brp-'+id).value)||0;
+  var r = allBazaarRequests.find(function(x){return x.id===id;});
+  var quoted = r ? (r.quotedPrice||0) : 0;
+  var cashCollected = quoted + dc;
+  var adminProfit = (quoted - sc) + (dc - rp);
+  db.collection('cities').doc(CITY).collection('bazaarRequests').doc(id).update({
+    deliveryCharge: dc,
+    supplierCost: sc,
+    riderPayout: rp,
+    cashCollected: cashCollected,
+    adminProfit: adminProfit,
+    updatedAt: new Date().toISOString()
+  }).then(function(){
+    if(r){
+      r.deliveryCharge = dc; r.supplierCost = sc; r.riderPayout = rp;
+      r.cashCollected = cashCollected; r.adminProfit = adminProfit;
+    }
+    renderBazaarRequests();
+    updateBazaarFinanceStats();
+    showToast('হিসাব সেভ হয়েছে ✅','green');
+  }).catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
+}
+
+function settleBazaarOrder(id){
+  db.collection('cities').doc(CITY).collection('bazaarRequests').doc(id).update({
+    bazaarSettled: true,
+    bazaarSettledAt: new Date().toISOString(),
+    bazaarSettledBy: 'admin'
+  }).then(function(){
+    var r = allBazaarRequests.find(function(x){return x.id===id;});
+    if(r){ r.bazaarSettled = true; r.bazaarSettledAt = new Date().toISOString(); }
+    renderBazaarRequests();
+    updateBazaarFinanceStats();
+    showToast('Bazaar order Settled হয়েছে ✅','green');
+  }).catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
+}
+
+function markAllBazaarSettled(){
+  var unsettled = allBazaarRequests.filter(function(r){
+    return r.status==='delivered' && typeof r.cashCollected==='number' && !r.bazaarSettled;
+  });
+  if(!unsettled.length){ showToast('কোনো unsettled bazaar order নেই (আগে হিসাব সেভ করুন)','red'); return; }
+  if(!confirm(unsettled.length+' টি bazaar order settled করবেন?')) return;
+  var now = new Date().toISOString();
+  var proms = unsettled.map(function(r){
+    return db.collection('cities').doc(CITY).collection('bazaarRequests').doc(r.id).update({
+      bazaarSettled:true, bazaarSettledAt:now, bazaarSettledBy:'admin'
+    }).then(function(){ r.bazaarSettled=true; r.bazaarSettledAt=now; }).catch(function(){});
+  });
+  Promise.all(proms).then(function(){
+    renderBazaarRequests();
+    updateBazaarFinanceStats();
+    showToast(unsettled.length+' টি bazaar order settled হয়েছে ✅','green');
+  });
+}
+
+function exportBazaarFinance(){
+  var rows = [['Request ID','Item','Customer','Quoted Price','Delivery Charge','Supplier Cost','Rider Payout','Cash Collected','Admin Profit','Status','Settled','Date']];
+  allBazaarRequests.forEach(function(r){
+    if(r.status!=='delivered') return;
+    rows.push([
+      '#'+r.id.slice(-6).toUpperCase(),
+      r.itemName||'',
+      r.customerName||'',
+      r.quotedPrice||0,
+      r.deliveryCharge||0,
+      r.supplierCost||0,
+      r.riderPayout||0,
+      typeof r.cashCollected==='number'?r.cashCollected:'',
+      typeof r.adminProfit==='number'?r.adminProfit:'',
+      r.status,
+      r.bazaarSettled?'Yes':'No',
+      r.createdAt?new Date(r.createdAt).toLocaleDateString('en-IN'):''
+    ]);
+  });
+  if(rows.length===1){ showToast('এখনো কোনো delivered bazaar order নেই','red'); return; }
+  var csv = rows.map(function(row){return row.join(',');}).join('\n');
+  var blob = new Blob([csv],{type:'text/csv'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'DELTA-Bazaar-Financials-'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();
+  showToast('CSV export হয়েছে ✅','green');
+}
+window.saveBazaarFinance = saveBazaarFinance;
+window.settleBazaarOrder = settleBazaarOrder;
+window.markAllBazaarSettled = markAllBazaarSettled;
+window.exportBazaarFinance = exportBazaarFinance;
 
 function setBazaarFilter(f, btn){
   bazaarFilter = f;
@@ -4185,6 +4317,31 @@ function bazaarCardHTML(r){
       '</div>'+
       (r.adminNotification ? '<div style="font-size:.72rem;color:var(--bazaar);margin-top:6px">✅ বর্তমান message: "'+r.adminNotification+'"</div>' : '')+
     '</div>'+
+    // Bazaar Financial Breakdown (margin-based, separate from seller commission model)
+    (status!=='received' && status!=='quoted' && status!=='cancelled' ?
+      '<div style="background:#eef9f0;border:1px solid var(--green);border-radius:10px;padding:12px 14px;margin-top:8px">'+
+        '<div style="font-size:.72rem;font-weight:700;color:var(--green2);margin-bottom:8px">💰 Bazaar Financial Breakdown</div>'+
+        '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px">'+
+          '<div><label style="font-size:.65rem;color:var(--muted)">Delivery Charge (₹)</label>'+
+          '<input type="number" id="bdc-'+r.id+'" class="form-input" value="'+(r.deliveryCharge||0)+'" style="padding:6px 8px;font-size:.78rem"></div>'+
+          '<div><label style="font-size:.65rem;color:var(--muted)">Supplier Cost (₹)</label>'+
+          '<input type="number" id="bsc-'+r.id+'" class="form-input" value="'+(r.supplierCost||0)+'" style="padding:6px 8px;font-size:.78rem"></div>'+
+          '<div><label style="font-size:.65rem;color:var(--muted)">Rider Payout (₹)</label>'+
+          '<input type="number" id="brp-'+r.id+'" class="form-input" value="'+(r.riderPayout||0)+'" style="padding:6px 8px;font-size:.78rem"></div>'+
+        '</div>'+
+        '<button class="btn-sm btn-green" style="width:100%;justify-content:center;margin-bottom:8px" onclick="saveBazaarFinance(\''+r.id+'\')">💾 হিসাব সেভ ও ক্যালকুলেট করুন</button>'+
+        (typeof r.cashCollected === 'number' ?
+          '<div style="font-size:.74rem;background:#fff;border-radius:8px;padding:8px 10px;line-height:1.7">'+
+            '💵 Cash Collected (quoted+delivery): <strong>₹'+r.cashCollected.toLocaleString('en-IN')+'</strong><br>'+
+            '📈 Admin Profit: <strong style="color:var(--green2)">₹'+r.adminProfit.toLocaleString('en-IN')+'</strong>'+
+          '</div>' : '')+
+        (status==='delivered' ?
+          '<div style="margin-top:8px">'+
+            (r.bazaarSettled ?
+              '<span class="status-badge-pill bp-delivered">✅ Settled'+(r.bazaarSettledAt?' ('+new Date(r.bazaarSettledAt).toLocaleDateString('bn-IN',{day:'numeric',month:'short'})+')':'')+'</span>' :
+              '<button class="btn-sm btn-orange" style="width:100%;justify-content:center" onclick="settleBazaarOrder(\''+r.id+'\')">✅ Settled মার্ক করুন</button>')+
+          '</div>' : '')+
+      '</div>' : '')+
     '<div class="sc-actions">'+
       '<select class="order-status-sel" onchange="changeBazaarStatus(\''+r.id+'\',this.value)">'+statusOptions+'</select>'+
     '</div>'+
