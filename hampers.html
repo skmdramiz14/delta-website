@@ -10,12 +10,12 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 :root{
-  --navy:#0a1f35;--navy2:#122840;--navy3:#061526;
-  --orange:#f07018;--orange2:#ff8c3a;
+  --navy:#10392D;--navy2:#1a4a3a;--navy3:#0E1E18;
+  --orange:#C7A15A;--orange2:#d6bd8a;
   --green:#1a8a4a;--green2:#e8f7ef;
-  --white:#fff;--sand:#eef2f7;--cream:#f7f9fc;
-  --border:#dde5ef;--muted:#6b7b8d;--charcoal:#1a2535;
-  --orange-light:#fff4ec;
+  --white:#fff;--sand:#F3EFE6;--cream:#F7F1E6;
+  --border:#F0ECE5;--muted:#8A8A8A;--charcoal:#1A1A1A;
+  --orange-light:#F3EFE6;
 }
 body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charcoal);}
 
@@ -59,7 +59,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 .hap-banner{padding:18px;position:relative;min-height:130px;display:flex;flex-direction:column;justify-content:space-between;}
 .hap-tags{display:flex;gap:6px;flex-wrap:wrap;}
 .hap-tag{font-size:.65rem;font-weight:700;padding:3px 8px;border-radius:20px;}
-.hap-tag.festival{background:rgba(240,112,24,.9);color:#fff;}
+.hap-tag.festival{background:rgba(201,162,39,.9);color:#fff;}
 .hap-tag.gift{background:rgba(26,138,74,.9);color:#fff;}
 .hap-tag.eid{background:rgba(21,101,192,.9);color:#fff;}
 .hap-tag.limited{background:rgba(245,158,11,.9);color:#fff;}
@@ -83,7 +83,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 .hap-prices{display:flex;align-items:center;gap:7px;}
 .hap-price{font-size:1.15rem;font-weight:800;color:var(--charcoal);}
 .hap-orig{font-size:.8rem;color:var(--muted);text-decoration:line-through;}
-.hap-off{background:rgba(240,112,24,.12);color:var(--orange);font-size:.72rem;font-weight:700;padding:2px 7px;border-radius:8px;}
+.hap-off{background:rgba(201,162,39,.12);color:var(--orange);font-size:.72rem;font-weight:700;padding:2px 7px;border-radius:8px;}
 .hap-sold{font-size:.72rem;color:var(--muted);display:flex;align-items:center;gap:3px;}
 
 /* Stock */
@@ -158,7 +158,7 @@ body.lang-bn .lang-en{display:none!important;}
 /* Colorful topbar buttons */
 #dpWishlistBtn{background:#fff0f0;color:#e0433d;}
 #dpWishlistBtn.active{background:#e0433d;color:#fff;}
-.dp-topbar-actions button:nth-child(2){background:#fff4ec;color:var(--orange);}
+.dp-topbar-actions button:nth-child(2){background:#F3EFE6;color:var(--orange);}
 .dp-topbar-actions button:nth-child(3){background:#e8f7ee;color:#1a8a4a;}
 .dp-topbar-actions button:nth-child(4){background:#fff8e1;color:#f59e0b;}
 
@@ -236,7 +236,7 @@ body.lang-bn .lang-en{display:none!important;}
 .cart-drawer-item .ci-price{font-size:.8rem;font-weight:800;color:var(--orange);}
 .cart-drawer-item .ci-remove{background:none;border:none;color:var(--muted);font-size:1rem;cursor:pointer;}
 .cart-drawer-foot{padding:16px;border-top:1px solid var(--border);}
-.cart-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(10,31,53,.6);z-index:9999;}
+.cart-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(15,40,24,.6);z-index:9999;}
 .cart-overlay.open{display:block;}
 </style>
 </head>
@@ -375,7 +375,7 @@ body.lang-bn .lang-en{display:none!important;}
     </div>
     <div id="dpDiscountValidity" style="display:none;font-size:.72rem;color:var(--orange);margin-bottom:8px;"></div>
     <div class="dp-price-note">💵 Cash on Delivery • মূল্যে সব কর অন্তর্ভুক্ত</div>
-    <div id="dpSocialProof" style="display:none;background:#fff4ec;border:1px solid rgba(240,112,24,.25);border-radius:10px;padding:9px 12px;margin-bottom:16px;font-size:.78rem;color:var(--orange);font-weight:700;"></div>
+    <div id="dpSocialProof" style="display:none;background:#F3EFE6;border:1px solid rgba(201,162,39,.25);border-radius:10px;padding:9px 12px;margin-bottom:16px;font-size:.78rem;color:var(--orange);font-weight:700;"></div>
 
     <!-- Add-ons — উপরে নিয়ে আসা -->
     <div class="dp-section" id="dpAddOnsSection" style="display:none;">
@@ -458,7 +458,7 @@ body.lang-bn .lang-en{display:none!important;}
 
 <!-- ORDER MODAL -->
 <div id="orderModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;
-  background:rgba(10,31,53,.85);z-index:9999;align-items:center;justify-content:center;
+  background:rgba(15,40,24,.85);z-index:9999;align-items:center;justify-content:center;
   padding:20px;box-sizing:border-box;">
   <div style="background:#fff;border-radius:20px;padding:24px;max-width:420px;width:100%;
     max-height:90vh;overflow-y:auto;">
@@ -692,7 +692,7 @@ function buildHamperCard(h){
     else if(c.type==='percent')
       hamperBadges += '<div style="background:#e8f7ee;color:var(--green);font-size:.65rem;font-weight:700;padding:3px 8px;border-radius:6px;margin-bottom:4px;display:inline-block;">🎟️ কোড '+c.code+' দিয়ে '+c.value+'% ছাড়</div><br>';
     else if(c.type==='flat')
-      hamperBadges += '<div style="background:#fff4ec;color:var(--orange);font-size:.65rem;font-weight:700;padding:3px 8px;border-radius:6px;margin-bottom:4px;display:inline-block;">🎟️ কোড '+c.code+' দিয়ে ₹'+c.value+' ছাড়</div><br>';
+      hamperBadges += '<div style="background:#F3EFE6;color:var(--orange);font-size:.65rem;font-weight:700;padding:3px 8px;border-radius:6px;margin-bottom:4px;display:inline-block;">🎟️ কোড '+c.code+' দিয়ে ₹'+c.value+' ছাড়</div><br>';
   }
   // Contest badge
   if(h.contest && h.contest.active && h.contest.title){
@@ -1012,7 +1012,7 @@ function placeHamperOrder(){
 function showOrderSuccess(orderId, total){
   var shortId = '#'+orderId.slice(-6).toUpperCase();
   var div = document.createElement('div');
-  div.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(10,31,53,.9);'+
+  div.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(15,40,24,.9);'+
     'z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;';
   div.innerHTML =
     '<div style="background:#fff;border-radius:20px;padding:32px 24px;max-width:380px;width:100%;text-align:center;">'+
@@ -1073,7 +1073,7 @@ function showDefaultHampers(){
 function showToast(msg,type){
   var t=document.getElementById('toast');
   t.textContent=msg;
-  t.style.background=type==='green'?'#1a8a4a':'#0a1f35';
+  t.style.background=type==='green'?'#1a8a4a':'#10392D';
   t.classList.add('show');
   setTimeout(function(){t.classList.remove('show');},2800);
 }
@@ -1615,12 +1615,12 @@ function renderCartDrawer(){
 
       // Available add-ons to add
       (availableAddOns.length?
-        '<div style="margin-top:8px;padding:10px 12px;background:#fff4ec;border-radius:10px;border:1px dashed var(--orange);">'+
+        '<div style="margin-top:8px;padding:10px 12px;background:#F3EFE6;border-radius:10px;border:1px dashed var(--orange);">'+
           '<div style="font-size:.72rem;font-weight:700;color:var(--orange);margin-bottom:8px;">✨ Add-on যোগ করবেন?</div>'+
           availableAddOns.map(function(a){
             var p = addOnCache[a.productId];
             var name = p.nameBn||p.name||'পণ্য';
-            return '<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(240,112,24,.15);">'+
+            return '<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(201,162,39,.15);">'+
               '<span style="font-size:.78rem;color:var(--navy);">'+name+'</span>'+
               '<div style="display:flex;align-items:center;gap:8px;">'+
                 '<span style="font-size:.78rem;font-weight:700;color:var(--orange);">+₹'+p.price+'</span>'+
