@@ -1526,6 +1526,35 @@ button,input,select{font-family:'DM Sans',sans-serif;}
       </div>
 
       <div id="houseSlidesListWrap"><div style="color:var(--muted);font-size:.82rem;">লোড হচ্ছে...</div></div>
+
+      <!-- SHOPPING MUSIC -->
+      <div class="add-zone-card" style="margin-top:20px;">
+        <div style="font-size:.9rem;font-weight:700;color:var(--navy);margin-bottom:4px;">🎵 Shopping Music</div>
+        <div style="font-size:.72rem;color:var(--muted);margin-bottom:14px;">
+          Homepage-এ একটা ছোট floating 🎵 বাটন দেখাবে (WhatsApp বাটনের ঠিক উপরে) — গ্রাহক চাইলে ক্লিক করে shopping-এর সময় হালকা background music চালাতে পারবেন। কখনো নিজে থেকে autoplay হবে না, শুধু গ্রাহক ক্লিক করলেই বাজবে।
+        </div>
+
+        <div style="background:#fff4ec;border:1px solid var(--orange);border-radius:10px;padding:10px 12px;margin-bottom:12px;display:flex;align-items:center;gap:10px;">
+          <input type="checkbox" id="musicEnabled" style="width:18px;height:18px;flex-shrink:0;">
+          <label for="musicEnabled" style="font-size:.78rem;font-weight:700;color:var(--navy);cursor:pointer;margin:0;">
+            🎵 Shopping Music বাটন চালু রাখুন
+          </label>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+          <div class="form-group" style="margin-bottom:0;grid-column:1/-1;">
+            <label>Music File URL * <span style="font-weight:400;color:var(--muted);">(Cloudinary audio URL — mp3)</span></label>
+            <input type="text" class="form-input" id="musicUrl" placeholder="Cloudinary URL (mp3)">
+          </div>
+          <div class="form-group" style="margin-bottom:0;grid-column:1/-1;">
+            <label>Track নাম (ঐচ্ছিক, শুধু নিজের রেফারেন্সের জন্য)</label>
+            <input type="text" class="form-input" id="musicTrackName" placeholder="যেমন: Peaceful Sitar Loop">
+          </div>
+        </div>
+
+        <button class="btn-sm btn-orange" onclick="saveShoppingMusic()">🎵 সেভ করুন</button>
+        <span style="font-size:.72rem;color:var(--muted)" id="musicSaveStatus"></span>
+      </div>
     </div>
 
     <!-- ═══ HAMPER MANAGEMENT PAGE ═══ -->
@@ -2002,7 +2031,7 @@ function goTab(tab, btn){
   if(tab==='hampers') loadHamperManagement();
   if(tab==='hamperorders') loadHamperOrders();
   if(tab==='sponsoredshops') loadSponsoredShops();
-  if(tab==='heroslides'){ loadBrandSlide(); loadHouseSlides(); }
+  if(tab==='heroslides'){ loadBrandSlide(); loadHouseSlides(); loadShoppingMusic(); }
 }
 
 // ═══ DATA LOADING ═══
@@ -6680,6 +6709,39 @@ function deleteHouseSlide(id){
   db.collection('cities').doc(CITY).collection('heroSlides').doc(id).delete()
     .then(function(){ loadHouseSlides(); showToast('মুছে ফেলা হয়েছে','green'); })
     .catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
+}
+
+// ═══════════════════ SHOPPING MUSIC ═══════════════════
+function loadShoppingMusic(){
+  db.collection('cities').doc(CITY).collection('settings').doc('shoppingMusic').get()
+    .then(function(doc){
+      var d = doc.exists ? doc.data() : {};
+      document.getElementById('musicEnabled').checked = !!d.enabled;
+      document.getElementById('musicUrl').value = d.musicUrl||'';
+      document.getElementById('musicTrackName').value = d.trackName||'';
+    }).catch(function(){});
+}
+
+function saveShoppingMusic(){
+  var statusEl = document.getElementById('musicSaveStatus');
+  var enabled = document.getElementById('musicEnabled').checked;
+  var musicUrl = document.getElementById('musicUrl').value.trim();
+  if(enabled && !musicUrl){ showToast('Music URL দিন, অথবা "চালু রাখুন" আনচেক করুন','red'); return; }
+  var data = {
+    enabled: enabled,
+    musicUrl: musicUrl,
+    trackName: document.getElementById('musicTrackName').value.trim(),
+    updatedAt: new Date().toISOString()
+  };
+  if(statusEl) statusEl.textContent = 'সেভ হচ্ছে...';
+  db.collection('cities').doc(CITY).collection('settings').doc('shoppingMusic').set(data)
+    .then(function(){
+      if(statusEl){ statusEl.textContent='✅ সেভ হয়েছে'; setTimeout(function(){statusEl.textContent='';},3000); }
+      showToast('Shopping Music সেভ হয়েছে ✅','green');
+    }).catch(function(e){
+      if(statusEl) statusEl.textContent='❌ সমস্যা';
+      showToast('সমস্যা: '+e.message,'red');
+    });
 }
 
 function toggleSponsoredShopStatus(id, status){
