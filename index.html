@@ -1188,7 +1188,8 @@ footer{background:var(--navy3);color:rgba(255,255,255,.55);padding:44px 5% 28px;
 .suggestion-item{padding:10px 14px;cursor:pointer;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--sand);transition:background .15s;}
 .suggestion-item:last-child{border-bottom:none;}
 .suggestion-item:hover,.suggestion-item.active{background:var(--orange-light);}
-.sug-icon{font-size:1rem;width:24px;text-align:center;flex-shrink:0;}
+.sug-icon{font-size:1rem;width:24px;text-align:center;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;}
+.sug-icon svg{width:18px;height:18px;}
 .sug-main{font-size:.86rem;font-weight:600;color:var(--charcoal);flex:1;}
 .sug-sub{font-size:.73rem;color:var(--muted);}
 .sug-tag{font-size:.68rem;background:var(--sand);color:var(--muted);padding:2px 7px;border-radius:10px;flex-shrink:0;}
@@ -2042,9 +2043,9 @@ img{max-width:100%;height:auto;}
       <div class="nav-cat-icon"><span class="nav-cat-grid"><i></i><i></i><i></i><i></i></span></div>
       <div class="nav-cat-label">সব / All</div>
     </div>
-    <div class="nav-cat" onclick="filterCat('food',this)"><div class="nav-cat-icon"><svg viewBox="0 0 24 24"><path class="ic-stroke" d="M4 12a8 8 0 0 0 16 0"/><path class="ic-stroke" d="M4 12h16"/><circle class="ic-gold" cx="12" cy="8.4" r="1.3"/></svg></div><div class="nav-cat-label">খাবার</div></div>
+    <div class="nav-cat" onclick="filterCat('foodbeverage',this)"><div class="nav-cat-icon"><svg viewBox="0 0 24 24"><path class="ic-stroke" d="M4 12a8 8 0 0 0 16 0"/><path class="ic-stroke" d="M4 12h16"/><circle class="ic-gold" cx="12" cy="8.4" r="1.3"/></svg></div><div class="nav-cat-label">খাদ্য ও পানীয়</div></div>
     <div class="nav-cat" onclick="filterCat('grocery',this)"><div class="nav-cat-icon"><svg viewBox="0 0 24 24"><path class="ic-stroke" d="M7.3 8h9.4l-1.1 11.2a1 1 0 0 1-1 .9H9.4a1 1 0 0 1-1-.9L7.3 8Z"/><path class="ic-stroke" d="M9.4 8V6.6a2.6 2.6 0 0 1 5.2 0V8"/><circle class="ic-gold" cx="12" cy="13" r="1.3"/></svg></div><div class="nav-cat-label">মুদিখানা</div></div>
-    <div class="nav-cat" onclick="filterCat('farm',this)"><div class="nav-cat-icon"><svg viewBox="0 0 24 24"><line class="ic-stroke" x1="12" y1="21" x2="12" y2="4.5"/><path class="ic-gold-line" d="M12 7.5l-3.6-2.3M12 7.5l3.6-2.3M12 12l-3.6-2.3M12 12l3.6-2.3M12 16.5l-3.6-2.3M12 16.5l3.6-2.3"/></svg></div><div class="nav-cat-label">কৃষি</div></div>
+    <div class="nav-cat" onclick="filterCat('pharmacy',this)"><div class="nav-cat-icon"><svg viewBox="0 0 24 24"><rect class="ic-stroke" x="4" y="9" width="16" height="7" rx="3.5"/><line class="ic-stroke" x1="12" y1="9" x2="12" y2="16"/><circle class="ic-gold" cx="16" cy="12.5" r="1.3"/></svg></div><div class="nav-cat-label">ওষুধ</div></div>
     <div class="nav-cat" onclick="scrollToAllCategories()"><div class="nav-cat-icon"><svg viewBox="0 0 24 24"><circle class="ic-gold" cx="6" cy="12" r="1.7"/><circle class="ic-gold" cx="12" cy="12" r="1.7"/><circle class="ic-gold" cx="18" cy="12" r="1.7"/></svg></div><div class="nav-cat-label">আরো</div></div>
   </div>
 </nav>
@@ -2246,25 +2247,35 @@ img{max-width:100%;height:auto;}
   <div class="cat-grid" id="catGrid">
     <!-- সবসময় দেখাবে — প্রথম ৮টা -->
     <div class="cat-card active" id="cat-all" onclick="filterCat('all',this)"><div class="cat-emoji"><svg viewBox="0 0 24 24"><rect class="ic-gold" x="4" y="4" width="7" height="7" rx="1.5"/><rect class="ic-gold" x="13" y="4" width="7" height="7" rx="1.5"/><rect class="ic-gold" x="4" y="13" width="7" height="7" rx="1.5"/><rect class="ic-gold" x="13" y="13" width="7" height="7" rx="1.5"/></svg></div><div class="cat-name"><span class="lang-bn">সব</span><span class="lang-en">All</span></div></div>
-    <div class="cat-card" id="cat-food" onclick="filterCat('food',this)"><div class="cat-emoji"><svg viewBox="0 0 24 24"><path class="ic-stroke" d="M4 12a8 8 0 0 0 16 0"/><path class="ic-stroke" d="M4 12h16"/><circle class="ic-gold" cx="12" cy="8.4" r="1.3"/></svg></div><div class="cat-name"><span class="lang-bn">খাবার</span><span class="lang-en">Food</span></div></div>
     <div class="cat-card" id="cat-grocery" onclick="filterCat('grocery',this)"><div class="cat-emoji"><svg viewBox="0 0 24 24"><path class="ic-stroke" d="M7.3 8h9.4l-1.1 11.2a1 1 0 0 1-1 .9H9.4a1 1 0 0 1-1-.9L7.3 8Z"/><path class="ic-stroke" d="M9.4 8V6.6a2.6 2.6 0 0 1 5.2 0V8"/><circle class="ic-gold" cx="12" cy="13" r="1.3"/></svg></div><div class="cat-name"><span class="lang-bn">মুদিখানা</span><span class="lang-en">Grocery</span></div></div>
-    <div class="cat-card" id="cat-farm" onclick="filterCat('farm',this)"><div class="cat-emoji"><svg viewBox="0 0 24 24"><line class="ic-stroke" x1="12" y1="21" x2="12" y2="4.5"/><path class="ic-gold-line" d="M12 7.5l-3.6-2.3M12 7.5l3.6-2.3M12 12l-3.6-2.3M12 12l3.6-2.3M12 16.5l-3.6-2.3M12 16.5l3.6-2.3"/></svg></div><div class="cat-name"><span class="lang-bn">কৃষি</span><span class="lang-en">Farm</span></div></div>
-    <div class="cat-card" id="cat-farmtools" onclick="filterCat('farmtools',this)"><div class="cat-emoji"><svg viewBox="0 0 24 24"><path class="ic-stroke" d="M3 15h4l2-4h6l3 4h3"/><path class="ic-stroke" d="M9 11V7h3"/><circle class="ic-stroke" cx="8" cy="17" r="2.3"/><circle class="ic-stroke" cx="17" cy="17" r="1.6"/><circle class="ic-gold" cx="8" cy="17" r="1"/></svg></div><div class="cat-name"><span class="lang-bn">কৃষি সরঞ্জাম</span><span class="lang-en">Farm Tools</span></div></div>
-    <div class="cat-card" id="cat-livestock" onclick="filterCat('livestock',this)"><div class="cat-emoji"><svg viewBox="0 0 24 24"><path class="ic-stroke" d="M6 10a6 5 0 0 1 12 0v3a5 5 0 0 1-5 5h-2a5 5 0 0 1-5-5v-3Z"/><path class="ic-stroke" d="M7 9 5 6.5M17 9l2-2.5"/><circle class="ic-gold" cx="12" cy="15" r="1.3"/></svg></div><div class="cat-name"><span class="lang-bn">পশুপালন</span><span class="lang-en">Livestock</span></div></div>
-    <div class="cat-card" id="cat-medicine" onclick="filterCat('medicine',this)"><div class="cat-emoji"><svg viewBox="0 0 24 24"><rect class="ic-stroke" x="4" y="9" width="16" height="7" rx="3.5"/><line class="ic-stroke" x1="12" y1="9" x2="12" y2="16"/><circle class="ic-gold" cx="16" cy="12.5" r="1.3"/></svg></div><div class="cat-name"><span class="lang-bn">ওষুধ</span><span class="lang-en">Medicine</span></div></div>
-    <div class="cat-card" id="cat-clothing" onclick="filterCat('clothing',this)"><div class="cat-emoji"><svg viewBox="0 0 24 24"><path class="ic-stroke" d="M8 4 4 7l2 3 2-1.5V20h8V8.5L18 10l2-3-4-3-2 1.5h-4L8 4Z"/><path class="ic-gold-line" d="M9.5 4.5a2.5 2.5 0 0 0 5 0"/></svg></div><div class="cat-name"><span class="lang-bn">পোশাক</span><span class="lang-en">Clothing</span></div></div>
+    <div class="cat-card" id="cat-foodbeverage" onclick="filterCat('foodbeverage',this)"><div class="cat-emoji"><svg viewBox="0 0 24 24"><path class="ic-stroke" d="M4 12a8 8 0 0 0 16 0"/><path class="ic-stroke" d="M4 12h16"/><circle class="ic-gold" cx="12" cy="8.4" r="1.3"/></svg></div><div class="cat-name"><span class="lang-bn">খাদ্য ও পানীয়</span><span class="lang-en">Food and Beverage</span></div></div>
+    <div class="cat-card" id="cat-pharmacy" onclick="filterCat('pharmacy',this)"><div class="cat-emoji"><svg viewBox="0 0 24 24"><rect class="ic-stroke" x="4" y="9" width="16" height="7" rx="3.5"/><line class="ic-stroke" x1="12" y1="9" x2="12" y2="16"/><circle class="ic-gold" cx="16" cy="12.5" r="1.3"/></svg></div><div class="cat-name"><span class="lang-bn">ওষুধ</span><span class="lang-en">Pharmacy</span></div></div>
+    <div class="cat-card" id="cat-fashion" onclick="filterCat('fashion',this)"><div class="cat-emoji"><svg viewBox="0 0 24 24"><path class="ic-stroke" d="M8 4 4 7l2 3 2-1.5V20h8V8.5L18 10l2-3-4-3-2 1.5h-4L8 4Z"/><path class="ic-gold-line" d="M9.5 4.5a2.5 2.5 0 0 0 5 0"/></svg></div><div class="cat-name"><span class="lang-bn">ফ্যাশন</span><span class="lang-en">Fashion</span></div></div>
+    <div class="cat-card" id="cat-electronics" onclick="filterCat('electronics',this)"><div class="cat-emoji"><svg viewBox="0 0 24 24"><rect class="ic-stroke" x="7" y="3" width="10" height="18" rx="2"/><circle class="ic-gold" cx="12" cy="17.5" r="1.3"/></svg></div><div class="cat-name"><span class="lang-bn">ইলেকট্রনিক্স</span><span class="lang-en">Electronics</span></div></div>
+    <div class="cat-card" id="cat-beauty" onclick="filterCat('beauty',this)"><div class="cat-emoji"><svg viewBox="0 0 24 24"><circle class="ic-stroke" cx="12" cy="9" r="6"/><line class="ic-stroke" x1="12" y1="15" x2="12" y2="21"/><line class="ic-stroke" x1="9" y1="21" x2="15" y2="21"/><circle class="ic-gold" cx="12" cy="9" r="2"/></svg></div><div class="cat-name"><span class="lang-bn">বিউটি</span><span class="lang-en">Beauty</span></div></div>
+    <div class="cat-card" id="cat-homekitchen" onclick="filterCat('homekitchen',this)"><div class="cat-emoji"><svg viewBox="0 0 24 24"><path class="ic-stroke" d="M4 11 12 4l8 7"/><path class="ic-stroke" d="M6 10v10h12V10"/><rect class="ic-stroke" x="10" y="14" width="4" height="6" rx="1"/><circle class="ic-gold" cx="13" cy="17" r="1.3"/></svg></div><div class="cat-name"><span class="lang-bn">হোম ও কিচেন</span><span class="lang-en">Home & Kitchen</span></div></div>
 
-    <!-- বাকি ১১টা — mobile এ লুকানো -->
-    <div class="cat-card cat-extra" id="cat-electronics" onclick="filterCat('electronics',this)"><div class="cat-emoji"><svg viewBox="0 0 24 24"><rect class="ic-stroke" x="7" y="3" width="10" height="18" rx="2"/><circle class="ic-gold" cx="12" cy="17.5" r="1.3"/></svg></div><div class="cat-name"><span class="lang-bn">ইলেকট্রনিক্স</span><span class="lang-en">Electronics</span></div></div>
-    <div class="cat-card cat-extra" id="cat-home" onclick="filterCat('home',this)"><div class="cat-emoji"><svg viewBox="0 0 24 24"><path class="ic-stroke" d="M4 11 12 4l8 7"/><path class="ic-stroke" d="M6 10v10h12V10"/><rect class="ic-stroke" x="10" y="14" width="4" height="6" rx="1"/><circle class="ic-gold" cx="13" cy="17" r="1.3"/></svg></div><div class="cat-name"><span class="lang-bn">বাড়ি / হোম</span><span class="lang-en">Home</span></div></div>
-    <div class="cat-card cat-extra" id="cat-construction" onclick="filterCat('construction',this)"><div class="cat-emoji"><svg viewBox="0 0 24 24"><path class="ic-stroke" d="M4 15a8 8 0 0 1 16 0Z"/><rect class="ic-stroke" x="3" y="15" width="18" height="2.4" rx="1.2"/><circle class="ic-gold" cx="12" cy="7.5" r="1.3"/></svg></div><div class="cat-name"><span class="lang-bn">নির্মাণ</span><span class="lang-en">Construction</span></div></div>
+    <!-- বাকি ১৮টা — mobile এ লুকানো -->
+    <div class="cat-card cat-extra" id="cat-hardware" onclick="filterCat('hardware',this)"><div class="cat-emoji"><svg viewBox="0 0 24 24"><path class="ic-stroke" d="M14.7 6.3a3.5 3.5 0 0 0-4.6 4.6L4 17l3 3 6.1-6.1a3.5 3.5 0 0 0 4.6-4.6l-2.3 2.3-2-2 2.3-2.3Z"/><circle class="ic-gold" cx="6.5" cy="18.5" r="1.3"/></svg></div><div class="cat-name"><span class="lang-bn">হার্ডওয়্যার</span><span class="lang-en">Hardware</span></div></div>
+    <div class="cat-card cat-extra" id="cat-agriculture" onclick="filterCat('agriculture',this)"><div class="cat-emoji"><svg viewBox="0 0 24 24"><line class="ic-stroke" x1="12" y1="21" x2="12" y2="4.5"/><path class="ic-gold-line" d="M12 7.5l-3.6-2.3M12 7.5l3.6-2.3M12 12l-3.6-2.3M12 12l3.6-2.3M12 16.5l-3.6-2.3M12 16.5l3.6-2.3"/></svg></div><div class="cat-name"><span class="lang-bn">কৃষি</span><span class="lang-en">Agriculture</span></div></div>
+    <div class="cat-card cat-extra" id="cat-booksstationery" onclick="filterCat('booksstationery',this)"><div class="cat-emoji"><svg viewBox="0 0 24 24"><path class="ic-stroke" d="M4 5.5c2.3-1 4.8-1 8 0v13c-3.2-1-5.7-1-8 0v-13Z"/><path class="ic-stroke" d="M20 5.5c-2.3-1-4.8-1-8 0v13c3.2-1 5.7-1 8 0v-13Z"/><circle class="ic-gold" cx="12" cy="12" r="1"/></svg></div><div class="cat-name"><span class="lang-bn">বই ও স্টেশনারি</span><span class="lang-en">Books & Stationery</span></div></div>
+    <div class="cat-card cat-extra" id="cat-pets" onclick="filterCat('pets',this)"><div class="cat-emoji"><svg viewBox="0 0 24 24"><circle class="ic-gold" cx="8" cy="8.5" r="1.6"/><circle class="ic-gold" cx="12.5" cy="6.5" r="1.6"/><circle class="ic-gold" cx="17" cy="8.5" r="1.6"/><path class="ic-stroke" d="M12.5 11c-3.3 0-5.5 2.3-5.5 4.8s2.2 4.2 5.5 4.2 5.5-1.7 5.5-4.2-2.2-4.8-5.5-4.8Z"/></svg></div><div class="cat-name"><span class="lang-bn">পোষা প্রাণী</span><span class="lang-en">Pets</span></div></div>
+    <div class="cat-card cat-extra" id="cat-flowersgifts" onclick="filterCat('flowersgifts',this)"><div class="cat-emoji"><svg viewBox="0 0 24 24"><rect class="ic-stroke" x="4" y="10" width="16" height="10" rx="1.2"/><line class="ic-stroke" x1="4" y1="10" x2="20" y2="10"/><line class="ic-stroke" x1="12" y1="10" x2="12" y2="20"/><path class="ic-gold-line" d="M12 10c-1.5-4-6-4.5-6-1.5S9.5 10 12 10ZM12 10c1.5-4 6-4.5 6-1.5S14.5 10 12 10Z"/></svg></div><div class="cat-name"><span class="lang-bn">ফুল ও উপহার</span><span class="lang-en">Flowers & Gifts</span></div></div>
     <div class="cat-card cat-extra" id="cat-automotive" onclick="filterCat('automotive',this)"><div class="cat-emoji"><svg viewBox="0 0 24 24"><path class="ic-stroke" d="M4 15 5.3 10.8A2 2 0 0 1 7.2 9.3h9.6a2 2 0 0 1 1.9 1.5L20 15Z"/><rect class="ic-stroke" x="3" y="15" width="18" height="3" rx="1.5"/><circle class="ic-stroke" cx="7.5" cy="19" r="1.4"/><circle class="ic-stroke" cx="16.5" cy="19" r="1.4"/><circle class="ic-gold" cx="12" cy="12.3" r="1.3"/></svg></div><div class="cat-name"><span class="lang-bn">যানবাহন</span><span class="lang-en">Automotive</span></div></div>
-    <div class="cat-card cat-extra" id="cat-arts" onclick="filterCat('arts',this)"><div class="cat-emoji"><svg viewBox="0 0 24 24"><path class="ic-stroke" d="M12 4a8 7 0 1 0 0 14h1.5a1.8 1.8 0 0 0 1-3.3 1.8 1.8 0 0 1 1-3.3H17a3 3 0 0 0 0-6c-1.5-1-3.2-1.4-5-1.4Z"/><circle class="ic-gold" cx="9" cy="11" r="1.3"/></svg></div><div class="cat-name"><span class="lang-bn">শিল্প</span><span class="lang-en">Arts</span></div></div>
+    <div class="cat-card cat-extra" id="cat-healthcare" onclick="filterCat('healthcare',this)"><div class="cat-emoji"><svg viewBox="0 0 24 24"><rect class="ic-stroke" x="4" y="4" width="16" height="16" rx="4"/><path class="ic-gold-line" d="M12 9.5v5M9.5 12h5"/></svg></div><div class="cat-name"><span class="lang-bn">স্বাস্থ্যসেবা</span><span class="lang-en">Healthcare</span></div></div>
     <div class="cat-card cat-extra" id="cat-education" onclick="filterCat('education',this)"><div class="cat-emoji"><svg viewBox="0 0 24 24"><path class="ic-stroke" d="M12 6.5c-1.8-1.3-4-2-6.5-2v12c2.5 0 4.7.7 6.5 2 1.8-1.3 4-2 6.5-2v-12c-2.5 0-4.7.7-6.5 2Z"/><path class="ic-gold-line" d="M12 6.5v12"/></svg></div><div class="cat-name"><span class="lang-bn">শিক্ষা</span><span class="lang-en">Education</span></div></div>
-    <div class="cat-card cat-extra" id="cat-services" onclick="filterCat('services',this)"><div class="cat-emoji"><svg viewBox="0 0 24 24"><path class="ic-stroke" d="M14.7 6.3a3.5 3.5 0 0 0-4.6 4.6L4 17l3 3 6.1-6.1a3.5 3.5 0 0 0 4.6-4.6l-2.3 2.3-2-2 2.3-2.3Z"/><circle class="ic-gold" cx="6.5" cy="18.5" r="1.3"/></svg></div><div class="cat-name"><span class="lang-bn">সেবা</span><span class="lang-en">Services</span></div></div>
-    <div class="cat-card cat-extra" id="cat-health" onclick="filterCat('health',this)"><div class="cat-emoji"><svg viewBox="0 0 24 24"><rect class="ic-stroke" x="4" y="4" width="16" height="16" rx="4"/><path class="ic-gold-line" d="M12 9.5v5M9.5 12h5"/></svg></div><div class="cat-name"><span class="lang-bn">স্বাস্থ্য</span><span class="lang-en">Health</span></div></div>
+    <div class="cat-card cat-extra" id="cat-financialservices" onclick="filterCat('financialservices',this)"><div class="cat-emoji"><svg viewBox="0 0 24 24"><circle class="ic-stroke" cx="12" cy="12" r="8"/><circle class="ic-gold" cx="12" cy="12" r="3"/></svg></div><div class="cat-name"><span class="lang-bn">আর্থিক সেবা</span><span class="lang-en">Financial Services</span></div></div>
+    <div class="cat-card cat-extra" id="cat-travel" onclick="filterCat('travel',this)"><div class="cat-emoji"><svg viewBox="0 0 24 24"><path class="ic-stroke" d="M3 11.5 21 4l-7.5 18-2.2-8.3L3 11.5Z"/><circle class="ic-gold" cx="11.5" cy="13.5" r="1"/></svg></div><div class="cat-name"><span class="lang-bn">ভ্রমণ</span><span class="lang-en">Travel</span></div></div>
+    <div class="cat-card cat-extra" id="cat-localservices" onclick="filterCat('localservices',this)"><div class="cat-emoji"><svg viewBox="0 0 24 24"><path class="ic-stroke" d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z"/></svg></div><div class="cat-name"><span class="lang-bn">স্থানীয় সেবা</span><span class="lang-en">Local Services</span></div></div>
+    <div class="cat-card cat-extra" id="cat-professionalservices" onclick="filterCat('professionalservices',this)"><div class="cat-emoji"><svg viewBox="0 0 24 24"><rect class="ic-stroke" x="3" y="8" width="18" height="12" rx="2"/><path class="ic-stroke" d="M8 8V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><circle class="ic-gold" cx="12" cy="14" r="1.3"/></svg></div><div class="cat-name"><span class="lang-bn">পেশাদার সেবা</span><span class="lang-en">Professional Services</span></div></div>
     <div class="cat-card cat-extra" id="cat-events" onclick="filterCat('events',this)"><div class="cat-emoji"><svg viewBox="0 0 24 24"><path class="ic-stroke" d="M5 19 15 9"/><path class="ic-stroke" d="M13 6l1.5-2M17 9l2-1.5"/><circle class="ic-gold" cx="8" cy="16" r="1.3"/><circle class="ic-gold" cx="11" cy="13" r="1.3"/></svg></div><div class="cat-name"><span class="lang-bn">ইভেন্ট</span><span class="lang-en">Events</span></div></div>
-    <div class="cat-card cat-extra" id="cat-rental" onclick="filterCat('rental',this)"><div class="cat-emoji"><svg viewBox="0 0 24 24"><circle class="ic-stroke" cx="8" cy="9" r="4"/><path class="ic-stroke" d="M11 12l7 7"/><path class="ic-stroke" d="M15 16l2-2M17 18l2-2"/><circle class="ic-gold" cx="8" cy="9" r="1.3"/></svg></div><div class="cat-name"><span class="lang-bn">ভাড়া</span><span class="lang-en">Rental</span></div></div>
+    <div class="cat-card cat-extra" id="cat-rentals" onclick="filterCat('rentals',this)"><div class="cat-emoji"><svg viewBox="0 0 24 24"><circle class="ic-stroke" cx="8" cy="9" r="4"/><path class="ic-stroke" d="M11 12l7 7"/><path class="ic-stroke" d="M15 16l2-2M17 18l2-2"/><circle class="ic-gold" cx="8" cy="9" r="1.3"/></svg></div><div class="cat-name"><span class="lang-bn">ভাড়া</span><span class="lang-en">Rentals</span></div></div>
+    <div class="cat-card cat-extra" id="cat-realestate" onclick="filterCat('realestate',this)"><div class="cat-emoji"><svg viewBox="0 0 24 24"><rect class="ic-stroke" x="5" y="3" width="14" height="18" rx="1"/><path class="ic-gold-line" d="M8 7h2M14 7h2M8 11h2M14 11h2M8 15h2M14 15h2"/><rect class="ic-stroke" x="10" y="17" width="4" height="4"/></svg></div><div class="cat-name"><span class="lang-bn">রিয়েল এস্টেট</span><span class="lang-en">Real Estate</span></div></div>
+    <div class="cat-card cat-extra" id="cat-jobs" onclick="filterCat('jobs',this)"><div class="cat-emoji"><svg viewBox="0 0 24 24"><rect class="ic-stroke" x="6" y="3" width="12" height="18" rx="1.5"/><path class="ic-gold-line" d="M9 8h6M9 12h6M9 16h3"/></svg></div><div class="cat-name"><span class="lang-bn">চাকরি</span><span class="lang-en">Jobs</span></div></div>
+    <div class="cat-card cat-extra" id="cat-govtutilities" onclick="filterCat('govtutilities',this)"><div class="cat-emoji"><svg viewBox="0 0 24 24"><path class="ic-stroke" d="M6 3h12v18l-2-1.3-2 1.3-2-1.3-2 1.3-2-1.3-2 1.3V3Z"/><path class="ic-gold-line" d="M9 8h6M9 12h6M9 16h4"/></svg></div><div class="cat-name"><span class="lang-bn">সরকারি সেবা</span><span class="lang-en">Govt & Utilities</span></div></div>
+    <div class="cat-card cat-extra" id="cat-digitalproducts" onclick="filterCat('digitalproducts',this)"><div class="cat-emoji"><svg viewBox="0 0 24 24"><path class="ic-stroke" d="M7.5 17a4 4 0 0 1-1-7.9 5.5 5.5 0 0 1 10.5-1.6A4 4 0 0 1 16.5 17h-9Z"/><path class="ic-gold-line" d="M12 11v6M9.7 14.7 12 17l2.3-2.3"/></svg></div><div class="cat-name"><span class="lang-bn">ডিজিটাল পণ্য</span><span class="lang-en">Digital Products</span></div></div>
+    <div class="cat-card cat-extra" id="cat-livestock" onclick="filterCat('livestock',this)"><div class="cat-emoji"><svg viewBox="0 0 24 24"><path class="ic-stroke" d="M6 10a6 5 0 0 1 12 0v3a5 5 0 0 1-5 5h-2a5 5 0 0 1-5-5v-3Z"/><path class="ic-stroke" d="M7 9 5 6.5M17 9l2-2.5"/><circle class="ic-gold" cx="12" cy="15" r="1.3"/></svg></div><div class="cat-name"><span class="lang-bn">পশুপালন</span><span class="lang-en">Livestock</span></div></div>
+    <div class="cat-card cat-extra" id="cat-arts" onclick="filterCat('arts',this)"><div class="cat-emoji"><svg viewBox="0 0 24 24"><path class="ic-stroke" d="M12 4a8 7 0 1 0 0 14h1.5a1.8 1.8 0 0 0 1-3.3 1.8 1.8 0 0 1 1-3.3H17a3 3 0 0 0 0-6c-1.5-1-3.2-1.4-5-1.4Z"/><circle class="ic-gold" cx="9" cy="11" r="1.3"/></svg></div><div class="cat-name"><span class="lang-bn">শিল্প</span><span class="lang-en">Arts</span></div></div>
     <div class="cat-card cat-extra" id="cat-remarket" onclick="filterCat('remarket',this)"><div class="cat-emoji"><svg viewBox="0 0 24 24"><path class="ic-stroke" d="M5 12a7 7 0 0 1 12-5"/><path class="ic-stroke" d="M19 12a7 7 0 0 1-12 5"/><circle class="ic-gold" cx="17" cy="6" r="1.3"/><circle class="ic-gold" cx="7" cy="18" r="1.3"/></svg></div><div class="cat-name"><span class="lang-bn">রিমার্কেট</span><span class="lang-en">ReMarket</span></div></div>
   </div>
 
@@ -3885,27 +3896,44 @@ function buildSuggestions(q){
   // Category suggestions
   if(catSugs.length && !prodMatches.length && !shopMatches.length){
     var catLabels={
-      food:{bn:'খাবার',en:'Food'},grocery:{bn:'মুদিখানা',en:'Grocery'},
-      farm:{bn:'কৃষি',en:'Agriculture'},medicine:{bn:'ওষুধ',en:'Medicine'},
-      clothing:{bn:'পোশাক',en:'Clothing'},electronics:{bn:'ইলেকট্রনিক্স',en:'Electronics'},
-      services:{bn:'সেবা',en:'Services'},arts:{bn:'শিল্প',en:'Arts'},
-      health:{bn:'স্বাস্থ্য',en:'Healthcare'},events:{bn:'ইভেন্ট',en:'Events'},
-      home:{bn:'বাড়ি',en:'Home'},construction:{bn:'নির্মাণ',en:'Construction'},
-      rental:{bn:'ভাড়া',en:'Rental'},remarket:{bn:'রিমার্কেট',en:'ReMarket'},
-      farmtools:{bn:'কৃষি সরঞ্জাম',en:'Farm Tools'},livestock:{bn:'পশুপালন',en:'Livestock'},
-      automotive:{bn:'যানবাহন',en:'Automotive'},education:{bn:'শিক্ষা',en:'Education'}
+      grocery:{bn:'মুদিখানা',en:'Grocery'},
+      foodbeverage:{bn:'খাদ্য ও পানীয়',en:'Food and Beverage'},
+      pharmacy:{bn:'ওষুধ',en:'Pharmacy'},
+      fashion:{bn:'ফ্যাশন',en:'Fashion'},
+      electronics:{bn:'ইলেকট্রনিক্স',en:'Electronics'},
+      beauty:{bn:'বিউটি',en:'Beauty'},
+      homekitchen:{bn:'হোম ও কিচেন',en:'Home & Kitchen'},
+      hardware:{bn:'হার্ডওয়্যার',en:'Hardware'},
+      agriculture:{bn:'কৃষি',en:'Agriculture'},
+      booksstationery:{bn:'বই ও স্টেশনারি',en:'Books & Stationery'},
+      pets:{bn:'পোষা প্রাণী',en:'Pets'},
+      flowersgifts:{bn:'ফুল ও উপহার',en:'Flowers & Gifts'},
+      automotive:{bn:'যানবাহন',en:'Automotive'},
+      healthcare:{bn:'স্বাস্থ্যসেবা',en:'Healthcare'},
+      education:{bn:'শিক্ষা',en:'Education'},
+      financialservices:{bn:'আর্থিক সেবা',en:'Financial Services'},
+      travel:{bn:'ভ্রমণ',en:'Travel'},
+      localservices:{bn:'স্থানীয় সেবা',en:'Local Services'},
+      professionalservices:{bn:'পেশাদার সেবা',en:'Professional Services'},
+      events:{bn:'ইভেন্ট',en:'Events'},
+      rentals:{bn:'ভাড়া',en:'Rentals'},
+      realestate:{bn:'রিয়েল এস্টেট',en:'Real Estate'},
+      jobs:{bn:'চাকরি',en:'Jobs'},
+      govtutilities:{bn:'সরকারি সেবা',en:'Govt & Utilities'},
+      digitalproducts:{bn:'ডিজিটাল পণ্য',en:'Digital Products'},
+      livestock:{bn:'পশুপালন',en:'Livestock'},
+      arts:{bn:'শিল্প',en:'Arts'},
+      remarket:{bn:'রিমার্কেট',en:'ReMarket'}
     };
     html += '<div class="suggestion-header">'+
       (isEn?'Categories':'ক্যাটাগরি')+'</div>';
     catSugs.slice(0,4).forEach(function(cat){
       var lbl = catLabels[cat];
       if(!lbl) return;
-      var icons={food:'🍛',grocery:'🛒',farm:'🌾',medicine:'💊',clothing:'👗',
-        electronics:'📱',services:'🔧',arts:'🎨',health:'🏥',events:'🎉',
-        home:'🏠',construction:'🏗️',rental:'🔑',remarket:'♻️',
-        farmtools:'🌿',livestock:'🐄',automotive:'🚗',education:'📚'};
+      var iconInfo = QUICK_CAT_ICONS[cat];
+      var iconHtml = iconInfo ? iconInfo.svg : QUICK_CAT_ICONS.all.svg;
       html += '<div class="suggestion-item" onclick="filterCat(\''+cat+'\',null);closeSuggestions();">'+
-        '<span class="sug-icon">'+(icons[cat]||'📦')+'</span>'+
+        '<span class="sug-icon">'+iconHtml+'</span>'+
         '<span class="sug-main">'+(isEn?lbl.en:lbl.bn)+'</span>'+
         '<span class="sug-tag">'+(isEn?'Category':'ক্যাটাগরি')+'</span>'+
         '</div>';
@@ -5052,23 +5080,33 @@ function renderCategoryGrid(cats){
 // ── HOMEPAGE QUICK CATEGORIES (top strip: সব + 3 admin-selected + আরো) — Firebase থেকে load ──
 var QUICK_CAT_ICONS = {
   all: {label:'সব', svg:'<svg viewBox="0 0 24 24"><rect class="ic-gold" x="4" y="4" width="7" height="7" rx="1.5"/><rect class="ic-gold" x="13" y="4" width="7" height="7" rx="1.5"/><rect class="ic-gold" x="4" y="13" width="7" height="7" rx="1.5"/><rect class="ic-gold" x="13" y="13" width="7" height="7" rx="1.5"/></svg>'},
-  food: {label:'খাবার', svg:'<svg viewBox="0 0 24 24"><path class="ic-stroke" d="M4 12a8 8 0 0 0 16 0"/><path class="ic-stroke" d="M4 12h16"/><circle class="ic-gold" cx="12" cy="8.4" r="1.3"/></svg>'},
   grocery: {label:'মুদিখানা', svg:'<svg viewBox="0 0 24 24"><path class="ic-stroke" d="M7.3 8h9.4l-1.1 11.2a1 1 0 0 1-1 .9H9.4a1 1 0 0 1-1-.9L7.3 8Z"/><path class="ic-stroke" d="M9.4 8V6.6a2.6 2.6 0 0 1 5.2 0V8"/><circle class="ic-gold" cx="12" cy="13" r="1.3"/></svg>'},
-  farm: {label:'কৃষি', svg:'<svg viewBox="0 0 24 24"><line class="ic-stroke" x1="12" y1="21" x2="12" y2="4.5"/><path class="ic-gold-line" d="M12 7.5l-3.6-2.3M12 7.5l3.6-2.3M12 12l-3.6-2.3M12 12l3.6-2.3M12 16.5l-3.6-2.3M12 16.5l3.6-2.3"/></svg>'},
-  farmtools: {label:'কৃষি সরঞ্জাম', svg:'<svg viewBox="0 0 24 24"><path class="ic-stroke" d="M3 15h4l2-4h6l3 4h3"/><path class="ic-stroke" d="M9 11V7h3"/><circle class="ic-stroke" cx="8" cy="17" r="2.3"/><circle class="ic-stroke" cx="17" cy="17" r="1.6"/><circle class="ic-gold" cx="8" cy="17" r="1"/></svg>'},
-  livestock: {label:'পশুপালন', svg:'<svg viewBox="0 0 24 24"><path class="ic-stroke" d="M6 10a6 5 0 0 1 12 0v3a5 5 0 0 1-5 5h-2a5 5 0 0 1-5-5v-3Z"/><path class="ic-stroke" d="M7 9 5 6.5M17 9l2-2.5"/><circle class="ic-gold" cx="12" cy="15" r="1.3"/></svg>'},
-  medicine: {label:'ওষুধ', svg:'<svg viewBox="0 0 24 24"><rect class="ic-stroke" x="4" y="9" width="16" height="7" rx="3.5"/><line class="ic-stroke" x1="12" y1="9" x2="12" y2="16"/><circle class="ic-gold" cx="16" cy="12.5" r="1.3"/></svg>'},
-  clothing: {label:'ফ্যাশন', svg:'<svg viewBox="0 0 24 24"><path class="ic-stroke" d="M8 4 4 7l2 3 2-1.5V20h8V8.5L18 10l2-3-4-3-2 1.5h-4L8 4Z"/><path class="ic-gold-line" d="M9.5 4.5a2.5 2.5 0 0 0 5 0"/></svg>'},
+  foodbeverage: {label:'খাদ্য ও পানীয়', svg:'<svg viewBox="0 0 24 24"><path class="ic-stroke" d="M4 12a8 8 0 0 0 16 0"/><path class="ic-stroke" d="M4 12h16"/><circle class="ic-gold" cx="12" cy="8.4" r="1.3"/></svg>'},
+  pharmacy: {label:'ওষুধ', svg:'<svg viewBox="0 0 24 24"><rect class="ic-stroke" x="4" y="9" width="16" height="7" rx="3.5"/><line class="ic-stroke" x1="12" y1="9" x2="12" y2="16"/><circle class="ic-gold" cx="16" cy="12.5" r="1.3"/></svg>'},
+  fashion: {label:'ফ্যাশন', svg:'<svg viewBox="0 0 24 24"><path class="ic-stroke" d="M8 4 4 7l2 3 2-1.5V20h8V8.5L18 10l2-3-4-3-2 1.5h-4L8 4Z"/><path class="ic-gold-line" d="M9.5 4.5a2.5 2.5 0 0 0 5 0"/></svg>'},
   electronics: {label:'ইলেকট্রনিক্স', svg:'<svg viewBox="0 0 24 24"><rect class="ic-stroke" x="7" y="3" width="10" height="18" rx="2"/><circle class="ic-gold" cx="12" cy="17.5" r="1.3"/></svg>'},
-  home: {label:'বাড়ি', svg:'<svg viewBox="0 0 24 24"><path class="ic-stroke" d="M4 11 12 4l8 7"/><path class="ic-stroke" d="M6 10v10h12V10"/><rect class="ic-stroke" x="10" y="14" width="4" height="6" rx="1"/><circle class="ic-gold" cx="13" cy="17" r="1.3"/></svg>'},
-  construction: {label:'নির্মাণ', svg:'<svg viewBox="0 0 24 24"><path class="ic-stroke" d="M4 15a8 8 0 0 1 16 0Z"/><rect class="ic-stroke" x="3" y="15" width="18" height="2.4" rx="1.2"/><circle class="ic-gold" cx="12" cy="7.5" r="1.3"/></svg>'},
+  beauty: {label:'বিউটি', svg:'<svg viewBox="0 0 24 24"><circle class="ic-stroke" cx="12" cy="9" r="6"/><line class="ic-stroke" x1="12" y1="15" x2="12" y2="21"/><line class="ic-stroke" x1="9" y1="21" x2="15" y2="21"/><circle class="ic-gold" cx="12" cy="9" r="2"/></svg>'},
+  homekitchen: {label:'হোম ও কিচেন', svg:'<svg viewBox="0 0 24 24"><path class="ic-stroke" d="M4 11 12 4l8 7"/><path class="ic-stroke" d="M6 10v10h12V10"/><rect class="ic-stroke" x="10" y="14" width="4" height="6" rx="1"/><circle class="ic-gold" cx="13" cy="17" r="1.3"/></svg>'},
+  hardware: {label:'হার্ডওয়্যার', svg:'<svg viewBox="0 0 24 24"><path class="ic-stroke" d="M14.7 6.3a3.5 3.5 0 0 0-4.6 4.6L4 17l3 3 6.1-6.1a3.5 3.5 0 0 0 4.6-4.6l-2.3 2.3-2-2 2.3-2.3Z"/><circle class="ic-gold" cx="6.5" cy="18.5" r="1.3"/></svg>'},
+  agriculture: {label:'কৃষি', svg:'<svg viewBox="0 0 24 24"><line class="ic-stroke" x1="12" y1="21" x2="12" y2="4.5"/><path class="ic-gold-line" d="M12 7.5l-3.6-2.3M12 7.5l3.6-2.3M12 12l-3.6-2.3M12 12l3.6-2.3M12 16.5l-3.6-2.3M12 16.5l3.6-2.3"/></svg>'},
+  booksstationery: {label:'বই ও স্টেশনারি', svg:'<svg viewBox="0 0 24 24"><path class="ic-stroke" d="M4 5.5c2.3-1 4.8-1 8 0v13c-3.2-1-5.7-1-8 0v-13Z"/><path class="ic-stroke" d="M20 5.5c-2.3-1-4.8-1-8 0v13c3.2-1 5.7-1 8 0v-13Z"/><circle class="ic-gold" cx="12" cy="12" r="1"/></svg>'},
+  pets: {label:'পোষা প্রাণী', svg:'<svg viewBox="0 0 24 24"><circle class="ic-gold" cx="8" cy="8.5" r="1.6"/><circle class="ic-gold" cx="12.5" cy="6.5" r="1.6"/><circle class="ic-gold" cx="17" cy="8.5" r="1.6"/><path class="ic-stroke" d="M12.5 11c-3.3 0-5.5 2.3-5.5 4.8s2.2 4.2 5.5 4.2 5.5-1.7 5.5-4.2-2.2-4.8-5.5-4.8Z"/></svg>'},
+  flowersgifts: {label:'ফুল ও উপহার', svg:'<svg viewBox="0 0 24 24"><rect class="ic-stroke" x="4" y="10" width="16" height="10" rx="1.2"/><line class="ic-stroke" x1="4" y1="10" x2="20" y2="10"/><line class="ic-stroke" x1="12" y1="10" x2="12" y2="20"/><path class="ic-gold-line" d="M12 10c-1.5-4-6-4.5-6-1.5S9.5 10 12 10ZM12 10c1.5-4 6-4.5 6-1.5S14.5 10 12 10Z"/></svg>'},
   automotive: {label:'যানবাহন', svg:'<svg viewBox="0 0 24 24"><path class="ic-stroke" d="M4 15 5.3 10.8A2 2 0 0 1 7.2 9.3h9.6a2 2 0 0 1 1.9 1.5L20 15Z"/><rect class="ic-stroke" x="3" y="15" width="18" height="3" rx="1.5"/><circle class="ic-stroke" cx="7.5" cy="19" r="1.4"/><circle class="ic-stroke" cx="16.5" cy="19" r="1.4"/><circle class="ic-gold" cx="12" cy="12.3" r="1.3"/></svg>'},
-  arts: {label:'শিল্প', svg:'<svg viewBox="0 0 24 24"><path class="ic-stroke" d="M12 4a8 7 0 1 0 0 14h1.5a1.8 1.8 0 0 0 1-3.3 1.8 1.8 0 0 1 1-3.3H17a3 3 0 0 0 0-6c-1.5-1-3.2-1.4-5-1.4Z"/><circle class="ic-gold" cx="9" cy="11" r="1.3"/></svg>'},
+  healthcare: {label:'স্বাস্থ্যসেবা', svg:'<svg viewBox="0 0 24 24"><rect class="ic-stroke" x="4" y="4" width="16" height="16" rx="4"/><path class="ic-gold-line" d="M12 9.5v5M9.5 12h5"/></svg>'},
   education: {label:'শিক্ষা', svg:'<svg viewBox="0 0 24 24"><path class="ic-stroke" d="M12 6.5c-1.8-1.3-4-2-6.5-2v12c2.5 0 4.7.7 6.5 2 1.8-1.3 4-2 6.5-2v-12c-2.5 0-4.7.7-6.5 2Z"/><path class="ic-gold-line" d="M12 6.5v12"/></svg>'},
-  services: {label:'সেবা', svg:'<svg viewBox="0 0 24 24"><path class="ic-stroke" d="M14.7 6.3a3.5 3.5 0 0 0-4.6 4.6L4 17l3 3 6.1-6.1a3.5 3.5 0 0 0 4.6-4.6l-2.3 2.3-2-2 2.3-2.3Z"/><circle class="ic-gold" cx="6.5" cy="18.5" r="1.3"/></svg>'},
-  health: {label:'স্বাস্থ্য', svg:'<svg viewBox="0 0 24 24"><rect class="ic-stroke" x="4" y="4" width="16" height="16" rx="4"/><path class="ic-gold-line" d="M12 9.5v5M9.5 12h5"/></svg>'},
+  financialservices: {label:'আর্থিক সেবা', svg:'<svg viewBox="0 0 24 24"><circle class="ic-stroke" cx="12" cy="12" r="8"/><circle class="ic-gold" cx="12" cy="12" r="3"/></svg>'},
+  travel: {label:'ভ্রমণ', svg:'<svg viewBox="0 0 24 24"><path class="ic-stroke" d="M3 11.5 21 4l-7.5 18-2.2-8.3L3 11.5Z"/><circle class="ic-gold" cx="11.5" cy="13.5" r="1"/></svg>'},
+  localservices: {label:'স্থানীয় সেবা', svg:'<svg viewBox="0 0 24 24"><path class="ic-stroke" d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z"/></svg>'},
+  professionalservices: {label:'পেশাদার সেবা', svg:'<svg viewBox="0 0 24 24"><rect class="ic-stroke" x="3" y="8" width="18" height="12" rx="2"/><path class="ic-stroke" d="M8 8V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><circle class="ic-gold" cx="12" cy="14" r="1.3"/></svg>'},
   events: {label:'ইভেন্ট', svg:'<svg viewBox="0 0 24 24"><path class="ic-stroke" d="M5 19 15 9"/><path class="ic-stroke" d="M13 6l1.5-2M17 9l2-1.5"/><circle class="ic-gold" cx="8" cy="16" r="1.3"/><circle class="ic-gold" cx="11" cy="13" r="1.3"/></svg>'},
-  rental: {label:'ভাড়া', svg:'<svg viewBox="0 0 24 24"><circle class="ic-stroke" cx="8" cy="9" r="4"/><path class="ic-stroke" d="M11 12l7 7"/><path class="ic-stroke" d="M15 16l2-2M17 18l2-2"/><circle class="ic-gold" cx="8" cy="9" r="1.3"/></svg>'},
+  rentals: {label:'ভাড়া', svg:'<svg viewBox="0 0 24 24"><circle class="ic-stroke" cx="8" cy="9" r="4"/><path class="ic-stroke" d="M11 12l7 7"/><path class="ic-stroke" d="M15 16l2-2M17 18l2-2"/><circle class="ic-gold" cx="8" cy="9" r="1.3"/></svg>'},
+  realestate: {label:'রিয়েল এস্টেট', svg:'<svg viewBox="0 0 24 24"><rect class="ic-stroke" x="5" y="3" width="14" height="18" rx="1"/><path class="ic-gold-line" d="M8 7h2M14 7h2M8 11h2M14 11h2M8 15h2M14 15h2"/><rect class="ic-stroke" x="10" y="17" width="4" height="4"/></svg>'},
+  jobs: {label:'চাকরি', svg:'<svg viewBox="0 0 24 24"><rect class="ic-stroke" x="6" y="3" width="12" height="18" rx="1.5"/><path class="ic-gold-line" d="M9 8h6M9 12h6M9 16h3"/></svg>'},
+  govtutilities: {label:'সরকারি সেবা', svg:'<svg viewBox="0 0 24 24"><path class="ic-stroke" d="M6 3h12v18l-2-1.3-2 1.3-2-1.3-2 1.3-2-1.3-2 1.3V3Z"/><path class="ic-gold-line" d="M9 8h6M9 12h6M9 16h4"/></svg>'},
+  digitalproducts: {label:'ডিজিটাল পণ্য', svg:'<svg viewBox="0 0 24 24"><path class="ic-stroke" d="M7.5 17a4 4 0 0 1-1-7.9 5.5 5.5 0 0 1 10.5-1.6A4 4 0 0 1 16.5 17h-9Z"/><path class="ic-gold-line" d="M12 11v6M9.7 14.7 12 17l2.3-2.3"/></svg>'},
+  livestock: {label:'পশুপালন', svg:'<svg viewBox="0 0 24 24"><path class="ic-stroke" d="M6 10a6 5 0 0 1 12 0v3a5 5 0 0 1-5 5h-2a5 5 0 0 1-5-5v-3Z"/><path class="ic-stroke" d="M7 9 5 6.5M17 9l2-2.5"/><circle class="ic-gold" cx="12" cy="15" r="1.3"/></svg>'},
+  arts: {label:'শিল্প', svg:'<svg viewBox="0 0 24 24"><path class="ic-stroke" d="M12 4a8 7 0 1 0 0 14h1.5a1.8 1.8 0 0 0 1-3.3 1.8 1.8 0 0 1 1-3.3H17a3 3 0 0 0 0-6c-1.5-1-3.2-1.4-5-1.4Z"/><circle class="ic-gold" cx="9" cy="11" r="1.3"/></svg>'},
   remarket: {label:'রিমার্কেট', svg:'<svg viewBox="0 0 24 24"><path class="ic-stroke" d="M5 12a7 7 0 0 1 12-5"/><path class="ic-stroke" d="M19 12a7 7 0 0 1-12 5"/><circle class="ic-gold" cx="17" cy="6" r="1.3"/><circle class="ic-gold" cx="7" cy="18" r="1.3"/></svg>'}
 };
 
@@ -5893,24 +5931,34 @@ function doSearchWith(q,shouldScroll){
 }
 
 var catMap={
-  food:['খাদ্য','food','মিষ্টি','রান্না','sweet','restaurant','বেকারি','bakery','snack','স্ন্যাক্স','পানীয়','beverage','khabar'],
-  grocery:['মুদি','grocery','kirana','চাল','ডাল','মশলা','spice','তেল','oil','ঘি','ghee','mudikhana'],
-  farm:['কৃষি','farm','agriculture','সবজি','vegetable','মাছ','fish','ফিশ','ফল','fruit','দুধ','dairy','জৈব','organic','ফুল','flower','krishi','চাল','rice','রাইস','ভেজিটেবল'],
-  farmtools:['কৃষি সরঞ্জাম','farm tool','বীজ','seed','সার','fertilizer','সেচ','irrigation','farmtools'],
-  livestock:['পশু','livestock','গরু','cattle','মুরগি','poultry','ছাগল','goat','পশুখাদ্য','animal feed','poshupalan'],
-  medicine:['ওষুধ','pharma','medicine','আয়ুর্বেদিক','ayurvedic','চিকিৎসা','medical','swastho'],
-  clothing:['পোশাক','cloth','fashion','শাড়ি','saree','কাপড়','fabric','poshak'],
-  electronics:['ইলেকট্রনিক্স','electron','মোবাইল','mobile','কম্পিউটার','computer','বৈদ্যুতিক','electric'],
-  home:['বাড়ি','home','আসবাব','furniture','রান্নাঘর','kitchen','গৃহসজ্জা','decor','hardware','bari'],
-  construction:['নির্মাণ','construction','ইট','brick','সিমেন্ট','cement','রঙ','paint','পাইপ','pipe','কাঠ','wood','nirman'],
-  automotive:['যানবাহন','automotive','গাড়ি','car','বাইক','bike','টায়ার','tyre','ব্যাটারি','battery'],
-  arts:['শিল্প','art','handicraft','হস্তশিল্প','পটচিত্র','patachitra','handloom','হাতে বোনা','sculpture','মূর্তি','cultural'],
-  education:['শিক্ষা','education','tutor','কোচিং','coaching','স্টেশনারি','stationery','বই','book'],
-  services:['সেবা','service','মেরামত','repair','ইলেকট্রিশিয়ান','electrician','প্লাম্বার','plumber','সৌন্দর্য','beauty'],
-  health:['স্বাস্থ্য','healthcare','hospital','ক্লিনিক','clinic','ডাক্তার','doctor'],
-  events:['ইভেন্ট','event','wedding','বিয়ে','পূজা','puja','ক্যাটারিং','catering','ফটোগ্রাফি','photography'],
-  rental:['ভাড়া','rental','rent','ট্র্যাক্টর','tractor','সম্পত্তি','property','যানবাহন ভাড়া','bhara'],
-  remarket:['রিমার্কেট','remarket','পুরনো','used','second hand','পুনর্ব্যবহার']
+  grocery:['মুদি','grocery','kirana','চাল','ডাল','মশলা','spice','তেল','oil','ঘি','ghee','সবজি','vegetable','ফল','fruit','দুধ','dairy','মাংস','meat','মাছ','fish','rice','নিত্যপ্রয়োজনীয়','essential','daily','পরিষ্কার','cleaning'],
+  foodbeverage:['খাদ্য','food','beverage','পানীয়','restaurant','রেস্তোরাঁ','cafe','café','ক্যাফে','bakery','বেকারি','delivery','sweet','মিষ্টি','snack'],
+  pharmacy:['ওষুধ','pharmacy','medicine','ayurvedic','আয়ুর্বেদিক','wellness','চিকিৎসা','medical'],
+  fashion:['ফ্যাশন','fashion','clothing','পোশাক','shoes','জুতা','accessories','fabric','saree','শাড়ি','বস্ত্র','textile','সেলাই','stitch'],
+  electronics:['ইলেকট্রনিক্স','electronics','phone','মোবাইল','laptop','ল্যাপটপ','appliance','কম্পিউটার','computer','camera','ক্যামেরা'],
+  beauty:['beauty','বিউটি','সৌন্দর্য','cosmetics','প্রসাধনী','salon','সেলুন','spa','স্পা'],
+  homekitchen:['home','বাড়ি','kitchen','রান্নাঘর','furniture','আসবাব','decor','সাজসজ্জা','utensil','বাসনপত্র','কাঠ','wood','গৃহস্থালি','household'],
+  hardware:['hardware','হার্ডওয়্যার','electrical','বৈদ্যুতিক','ইলেকট্রিক','plumbing','প্লাম্বিং','paint','রঙ','নির্মাণ','construction','ইট','brick','সিমেন্ট','cement','নির্মাণ সামগ্রী'],
+  agriculture:['agriculture','কৃষি','seed','বীজ','fertilizer','সার','farm tool','কৃষি সরঞ্জাম','জৈব','organic','হাতিয়ার','tools','সেচ','irrigation'],
+  booksstationery:['book','বই','stationery','স্টেশনারি','school supply','স্কুল সামগ্রী'],
+  pets:['pet','পোষা','pet food','veterinary','পশু চিকিৎসক','animal'],
+  flowersgifts:['flower','ফুল','gift','গিফট','উপহার','bouquet','cake','কেক','personalized','custom'],
+  automotive:['automotive','যানবাহন','spare part','যন্ত্রাংশ','repair','মেরামত','wash','পরিবহন','transport','টায়ার','tyre','ব্যাটারি','battery'],
+  healthcare:['healthcare','স্বাস্থ্য','doctor','ডাক্তার','diagnostic','ডায়াগনস্টিক','ambulance','অ্যাম্বুলেন্স'],
+  education:['education','শিক্ষা','tutor','কোচিং','coaching','course','কোর্স','training','প্রশিক্ষণ'],
+  financialservices:['finance','আর্থিক','insurance','বীমা','loan','ঋণ','payment','পেমেন্ট'],
+  travel:['travel','ভ্রমণ','hotel','হোটেল','bus','বাস','taxi','ট্যাক্সি'],
+  localservices:['local service','স্থানীয় সেবা','electrician','ইলেকট্রিশিয়ান','plumber','প্লাম্বার','cleaner','পরিচ্ছন্নতা','সেবা','service'],
+  professionalservices:['professional','পেশাদার','lawyer','আইনজীবী','accountant','হিসাবরক্ষক','consultant','পরামর্শদাতা','ব্যবসায়িক','business','printing','প্রিন্টিং','packaging','প্যাকেজিং','হিসাব','accounting'],
+  events:['event','ইভেন্ট','wedding','বিয়ে','photographer','ফটোগ্রাফার','planner','ফটোগ্রাফি','photography','তাঁবু','tent','শামিয়ানা','ক্যাটারিং','catering'],
+  rentals:['rental','ভাড়া','rent','car rental','bike rental','equipment rental'],
+  realestate:['real estate','রিয়েল এস্টেট','property','সম্পত্তি','buy','sell','rent house','বাড়ি ভাড়া'],
+  jobs:['job','চাকরি','hiring','নিয়োগ','freelance','ফ্রিল্যান্স'],
+  govtutilities:['govt','সরকারি','utility','ইউটিলিটি','bill payment','বিল','certificate','সার্টিফিকেট'],
+  digitalproducts:['digital','ডিজিটাল','software','সফটওয়্যার','subscription','সাবস্ক্রিপশন'],
+  livestock:['পশু','livestock','গরু','cattle','মুরগি','poultry','ছাগল','goat','পশুখাদ্য','animal feed'],
+  arts:['শিল্প','art','handicraft','হস্তশিল্প','পটচিত্র','patachitra','handloom','হাতে বোনা','sculpture','মূর্তি','মাটির','clay','মৃৎশিল্প','সংগীত','music'],
+  remarket:['রিমার্কেট','remarket','পুরনো','used','second hand','পুনর্ব্যবহার','প্রাচীন','antique']
 };
 
 function scrollToAllCategories(){
@@ -5933,14 +5981,11 @@ function filterCat(cat,navEl){
     document.querySelectorAll('.nav-cat').forEach(function(c){
       var txt=c.textContent.toLowerCase();
       if(cat==='all'&&txt.includes('সব'))c.classList.add('active');
-      else if(cat==='food'&&txt.includes('খাবার'))c.classList.add('active');
+      else if(cat==='foodbeverage'&&txt.includes('খাদ্য'))c.classList.add('active');
       else if(cat==='grocery'&&txt.includes('মুদিখানা'))c.classList.add('active');
-      else if(cat==='farm'&&txt.includes('কৃষি'))c.classList.add('active');
-      else if(cat==='medicine'&&txt.includes('ওষুধ'))c.classList.add('active');
-      else if(cat==='clothing'&&txt.includes('পোশাক'))c.classList.add('active');
+      else if(cat==='pharmacy'&&txt.includes('ওষুধ'))c.classList.add('active');
+      else if(cat==='fashion'&&txt.includes('ফ্যাশন'))c.classList.add('active');
       else if(cat==='electronics'&&txt.includes('ইলেকট্রনিক্স'))c.classList.add('active');
-      else if(cat==='services'&&txt.includes('সেবা'))c.classList.add('active');
-      else if(cat==='arts'&&txt.includes('শিল্প'))c.classList.add('active');
     });
   }
   // Update cat grid cards
@@ -5957,12 +6002,34 @@ function filterCat(cat,navEl){
   var fp=allProducts.filter(function(p){return kws.some(function(k){return(p.category||'').toLowerCase().includes(k)||(p.shopCat||'').toLowerCase().includes(k);});});
   renderShops(fs);renderProducts(fp);
   var catLabels={
-    food:'খাবার',grocery:'মুদিখানা',farm:'কৃষি',
-    farmtools:'কৃষি সরঞ্জাম',livestock:'পশুপালন',
-    medicine:'ওষুধ',clothing:'পোশাক',electronics:'ইলেকট্রনিক্স',
-    home:'বাড়ি / হোম',construction:'নির্মাণ',automotive:'যানবাহন',
-    arts:'শিল্প',education:'শিক্ষা',services:'সেবা',
-    health:'স্বাস্থ্য',events:'ইভেন্ট',rental:'ভাড়া',remarket:'রিমার্কেট'
+    grocery:'মুদিখানা',
+    foodbeverage:'খাদ্য ও পানীয়',
+    pharmacy:'ওষুধ',
+    fashion:'ফ্যাশন',
+    electronics:'ইলেকট্রনিক্স',
+    beauty:'বিউটি',
+    homekitchen:'হোম ও কিচেন',
+    hardware:'হার্ডওয়্যার',
+    agriculture:'কৃষি',
+    booksstationery:'বই ও স্টেশনারি',
+    pets:'পোষা প্রাণী',
+    flowersgifts:'ফুল ও উপহার',
+    automotive:'যানবাহন',
+    healthcare:'স্বাস্থ্যসেবা',
+    education:'শিক্ষা',
+    financialservices:'আর্থিক সেবা',
+    travel:'ভ্রমণ',
+    localservices:'স্থানীয় সেবা',
+    professionalservices:'পেশাদার সেবা',
+    events:'ইভেন্ট',
+    rentals:'ভাড়া',
+    realestate:'রিয়েল এস্টেট',
+    jobs:'চাকরি',
+    govtutilities:'সরকারি সেবা',
+    digitalproducts:'ডিজিটাল পণ্য',
+    livestock:'পশুপালন',
+    arts:'শিল্প',
+    remarket:'রিমার্কেট'
   };
   var lbl=catLabels[cat]||cat;
   var st2=document.getElementById('shopsTitle');
