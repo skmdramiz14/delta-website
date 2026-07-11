@@ -1,4 +1,4 @@
-<!DOCTYPE html>  
+<!DOCTYPE html> 
 <html lang="bn">
 <head>
 <meta charset="UTF-8">
@@ -2066,88 +2066,6 @@ img{max-width:100%;height:auto;}
   </div>
 </div>
 
-<!-- MARQUEE — urgency/offers ticker, admin-configurable via Firebase settings/marqueeMessages -->
-<div class="marquee-wrap">
-  <div class="marquee-inner" id="marqueeInner">
-    <!-- Firebase থেকে load হবে, fallback hardcoded -->
-    <div class="marquee-item">🎉 Durga Puja Special Offers</div>
-    <div class="marquee-item">🌾 Farm Fresh — সরাসরি কৃষক থেকে</div>
-    <div class="marquee-item">🚀 প্রথম অর্ডারে বিনামূল্যে ডেলিভারি!</div>
-    <div class="marquee-item">⭐ 500+ স্থানীয় দোকান — Manteswar ও আশপাশ</div>
-    <div class="marquee-item">🍬 বাংলার সেরা মিষ্টি — Order Now</div>
-    <div class="marquee-item">💊 ২ ঘণ্টায় ওষুধ ডেলিভারি</div>
-    <div class="marquee-item">🎉 Durga Puja Special Offers</div>
-    <div class="marquee-item">🌾 Farm Fresh — সরাসরি কৃষক থেকে</div>
-    <div class="marquee-item">🚀 প্রথম অর্ডারে বিনামূল্যে ডেলিভারি!</div>
-    <div class="marquee-item">⭐ 500+ স্থানীয় দোকান — Manteswar ও আশপাশ</div>
-    <div class="marquee-item">🍬 বাংলার সেরা মিষ্টি — Order Now</div>
-    <div class="marquee-item">💊 ২ ঘণ্টায় ওষুধ ডেলিভারি</div>
-  </div>
-</div>
-
-<!-- MOBILE SEARCH BAR (shown below nav on mobile) -->
-<div class="mobile-search-bar" id="mobileSearchBar">
-  <div class="msb-inner">
-    <input type="text" id="mobileSearch" placeholder="দোকান বা পণ্য খুঁজুন..." oninput="handleSearch(this.value)" onkeydown="if(event.key==='Enter')doSearch();" autocomplete="off">
-    <button onclick="startVoiceSearch()" id="mobileVoiceBtn" style="background:transparent;border:none;color:rgba(255,255,255,.7);padding:0 12px;font-size:1.1rem;cursor:pointer;flex-shrink:0;" title="Voice Search">🎙️</button>
-    <button onclick="doSearch()" style="background:var(--orange);border:none;color:#fff;padding:10px 16px;font-size:1rem;cursor:pointer;flex-shrink:0;">🔍</button>
-  </div>
-</div>
-
-<!-- FRESH TODAY FULL CARDS — relocated here to match reference layout -->
-<section class="section" id="freshTodaySection" style="display:none;padding-top:26px;padding-bottom:24px;">
-  <span id="freshTodayDate" style="display:none;"></span>
-  <div class="fresh-cards-scroll">
-    <div class="fresh-promo-card" onclick="filterCat('grocery',null);document.getElementById('productsSection').scrollIntoView({behavior:'smooth'})">
-      <div class="fpc-decor"><svg viewBox="0 0 172 230" fill="none">
-        <defs>
-          <linearGradient id="leafG1" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stop-color="#cdd9b8" stop-opacity=".5"/>
-            <stop offset="100%" stop-color="#cdd9b8" stop-opacity=".04"/>
-          </linearGradient>
-          <linearGradient id="leafG2" x1="0" y1="1" x2="1" y2="0">
-            <stop offset="0%" stop-color="#f4f7ec" stop-opacity=".8"/>
-            <stop offset="60%" stop-color="#a9c497" stop-opacity=".35"/>
-            <stop offset="100%" stop-color="#3f5c42" stop-opacity=".14"/>
-          </linearGradient>
-          <radialGradient id="dropG2" cx="35%" cy="30%" r="70%">
-            <stop offset="0%" stop-color="#fff" stop-opacity=".85"/>
-            <stop offset="55%" stop-color="#e8f0e0" stop-opacity=".18"/>
-            <stop offset="100%" stop-color="#fff" stop-opacity="0"/>
-          </radialGradient>
-          <filter id="leafBlur" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="2.2"/>
-          </filter>
-        </defs>
-        <!-- back layer: soft blurred shadow leaves for depth -->
-        <g opacity=".5" filter="url(#leafBlur)">
-          <path d="M150 6C118 46 110 96 132 140" stroke="url(#leafG1)" stroke-width="3" stroke-linecap="round"/>
-          <g transform="translate(140,26) rotate(-38)"><path d="M0 0C14 -20 36 -20 48 0C36 20 14 20 0 0Z" fill="url(#leafG1)"/></g>
-          <g transform="translate(122,64) rotate(-6)"><path d="M0 0C15 -21 39 -21 52 0C39 21 15 21 0 0Z" fill="url(#leafG1)"/></g>
-        </g>
-        <!-- main leaf branch, layered for a hand-illustrated botanical feel -->
-        <path d="M148 2C114 44 105 98 130 146" stroke="url(#leafG2)" stroke-width="2.4" stroke-linecap="round"/>
-        <g transform="translate(140,18) rotate(-42)"><path d="M0 0C13 -18 33 -18 45 0C33 18 13 18 0 0Z" fill="url(#leafG2)"/></g>
-        <g transform="translate(121,48) rotate(-12)"><path d="M0 0C14 -19 36 -19 48 0C36 19 14 19 0 0Z" fill="url(#leafG2)"/></g>
-        <g transform="translate(126,82) rotate(24)"><path d="M0 0C13 -18 33 -18 44 0C33 18 13 18 0 0Z" fill="url(#leafG2)"/></g>
-        <g transform="translate(140,112) rotate(52)"><path d="M0 0C10 -14 27 -14 36 0C27 14 10 14 0 0Z" fill="url(#leafG2)"/></g>
-        <g transform="translate(132,140) rotate(78)"><path d="M0 0C8 -11 21 -11 28 0C21 11 8 11 0 0Z" fill="url(#leafG2)" opacity=".8"/></g>
-        <!-- a stray small sprig lower-left, breaks the symmetry -->
-        <g transform="translate(30,196) rotate(20)" opacity=".55"><path d="M0 0C9 -12 24 -12 32 0C24 12 9 12 0 0Z" fill="url(#leafG2)"/></g>
-        <circle cx="112" cy="60" r="4.5" fill="url(#dropG2)"/>
-        <circle cx="128" cy="96" r="3.2" fill="url(#dropG2)"/>
-        <circle cx="118" cy="128" r="2.4" fill="url(#dropG2)"/>
-      </svg></div>
-      <div class="fpc-eyebrow"><span class="lang-bn">🌿 আজকের নির্বাচন</span><span class="lang-en">🌿 Today's Selection</span></div>
-      <div class="fpc-title"><span class="lang-bn">FRESH<br>TODAY</span><span class="lang-en">FRESH<br>TODAY</span></div>
-      <div class="fpc-sub"><span class="lang-bn">তাজা পণ্য,<br>বিশ্বাসের সাথে</span><span class="lang-en">Today's goods,<br>with trust</span></div>
-      <button class="fpc-btn"><span class="lang-bn">সব দেখুন</span><span class="lang-en">View All</span><span class="fpc-arrow">→</span></button>
-    </div>
-    <div id="freshCardsGrid" style="display:contents;"></div>
-  </div>
-  <div class="fresh-dots" id="freshDots"></div>
-</section>
-
 <!-- HERO -->
 <div class="hero-unified-frame">
 <section class="hero">
@@ -2232,6 +2150,92 @@ img{max-width:100%;height:auto;}
 </div>
 </div>
 
+
+<!-- MARQUEE — urgency/offers ticker, admin-configurable via Firebase settings/marqueeMessages -->
+<div class="marquee-wrap">
+  <div class="marquee-inner" id="marqueeInner">
+    <!-- Firebase থেকে load হবে, fallback hardcoded -->
+    <div class="marquee-item">🎉 Durga Puja Special Offers</div>
+    <div class="marquee-item">🌾 Farm Fresh — সরাসরি কৃষক থেকে</div>
+    <div class="marquee-item">🚀 প্রথম অর্ডারে বিনামূল্যে ডেলিভারি!</div>
+    <div class="marquee-item">⭐ 500+ স্থানীয় দোকান — Manteswar ও আশপাশ</div>
+    <div class="marquee-item">🍬 বাংলার সেরা মিষ্টি — Order Now</div>
+    <div class="marquee-item">💊 ২ ঘণ্টায় ওষুধ ডেলিভারি</div>
+    <div class="marquee-item">🎉 Durga Puja Special Offers</div>
+    <div class="marquee-item">🌾 Farm Fresh — সরাসরি কৃষক থেকে</div>
+    <div class="marquee-item">🚀 প্রথম অর্ডারে বিনামূল্যে ডেলিভারি!</div>
+    <div class="marquee-item">⭐ 500+ স্থানীয় দোকান — Manteswar ও আশপাশ</div>
+    <div class="marquee-item">🍬 বাংলার সেরা মিষ্টি — Order Now</div>
+    <div class="marquee-item">💊 ২ ঘণ্টায় ওষুধ ডেলিভারি</div>
+  </div>
+</div>
+
+<!-- MOBILE SEARCH BAR (shown below nav on mobile) -->
+<div class="mobile-search-bar" id="mobileSearchBar">
+  <div class="msb-inner">
+    <input type="text" id="mobileSearch" placeholder="দোকান বা পণ্য খুঁজুন..." oninput="handleSearch(this.value)" onkeydown="if(event.key==='Enter')doSearch();" autocomplete="off">
+    <button onclick="startVoiceSearch()" id="mobileVoiceBtn" style="background:transparent;border:none;color:rgba(255,255,255,.7);padding:0 12px;font-size:1.1rem;cursor:pointer;flex-shrink:0;" title="Voice Search">🎙️</button>
+    <button onclick="doSearch()" style="background:var(--orange);border:none;color:#fff;padding:10px 16px;font-size:1rem;cursor:pointer;flex-shrink:0;">🔍</button>
+  </div>
+</div>
+
+<!-- SPONSORED SHOP AD (Dynamic) — moved higher (revenue placement, wants max visibility before the long category grid) -->
+<div id="sponsoredAdWrap"></div>
+
+<!-- FRESH TODAY FULL CARDS — relocated here to match reference layout -->
+<section class="section" id="freshTodaySection" style="display:none;padding-top:26px;padding-bottom:24px;">
+  <span id="freshTodayDate" style="display:none;"></span>
+  <div class="fresh-cards-scroll">
+    <div class="fresh-promo-card" onclick="filterCat('grocery',null);document.getElementById('productsSection').scrollIntoView({behavior:'smooth'})">
+      <div class="fpc-decor"><svg viewBox="0 0 172 230" fill="none">
+        <defs>
+          <linearGradient id="leafG1" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#cdd9b8" stop-opacity=".5"/>
+            <stop offset="100%" stop-color="#cdd9b8" stop-opacity=".04"/>
+          </linearGradient>
+          <linearGradient id="leafG2" x1="0" y1="1" x2="1" y2="0">
+            <stop offset="0%" stop-color="#f4f7ec" stop-opacity=".8"/>
+            <stop offset="60%" stop-color="#a9c497" stop-opacity=".35"/>
+            <stop offset="100%" stop-color="#3f5c42" stop-opacity=".14"/>
+          </linearGradient>
+          <radialGradient id="dropG2" cx="35%" cy="30%" r="70%">
+            <stop offset="0%" stop-color="#fff" stop-opacity=".85"/>
+            <stop offset="55%" stop-color="#e8f0e0" stop-opacity=".18"/>
+            <stop offset="100%" stop-color="#fff" stop-opacity="0"/>
+          </radialGradient>
+          <filter id="leafBlur" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="2.2"/>
+          </filter>
+        </defs>
+        <!-- back layer: soft blurred shadow leaves for depth -->
+        <g opacity=".5" filter="url(#leafBlur)">
+          <path d="M150 6C118 46 110 96 132 140" stroke="url(#leafG1)" stroke-width="3" stroke-linecap="round"/>
+          <g transform="translate(140,26) rotate(-38)"><path d="M0 0C14 -20 36 -20 48 0C36 20 14 20 0 0Z" fill="url(#leafG1)"/></g>
+          <g transform="translate(122,64) rotate(-6)"><path d="M0 0C15 -21 39 -21 52 0C39 21 15 21 0 0Z" fill="url(#leafG1)"/></g>
+        </g>
+        <!-- main leaf branch, layered for a hand-illustrated botanical feel -->
+        <path d="M148 2C114 44 105 98 130 146" stroke="url(#leafG2)" stroke-width="2.4" stroke-linecap="round"/>
+        <g transform="translate(140,18) rotate(-42)"><path d="M0 0C13 -18 33 -18 45 0C33 18 13 18 0 0Z" fill="url(#leafG2)"/></g>
+        <g transform="translate(121,48) rotate(-12)"><path d="M0 0C14 -19 36 -19 48 0C36 19 14 19 0 0Z" fill="url(#leafG2)"/></g>
+        <g transform="translate(126,82) rotate(24)"><path d="M0 0C13 -18 33 -18 44 0C33 18 13 18 0 0Z" fill="url(#leafG2)"/></g>
+        <g transform="translate(140,112) rotate(52)"><path d="M0 0C10 -14 27 -14 36 0C27 14 10 14 0 0Z" fill="url(#leafG2)"/></g>
+        <g transform="translate(132,140) rotate(78)"><path d="M0 0C8 -11 21 -11 28 0C21 11 8 11 0 0Z" fill="url(#leafG2)" opacity=".8"/></g>
+        <!-- a stray small sprig lower-left, breaks the symmetry -->
+        <g transform="translate(30,196) rotate(20)" opacity=".55"><path d="M0 0C9 -12 24 -12 32 0C24 12 9 12 0 0Z" fill="url(#leafG2)"/></g>
+        <circle cx="112" cy="60" r="4.5" fill="url(#dropG2)"/>
+        <circle cx="128" cy="96" r="3.2" fill="url(#dropG2)"/>
+        <circle cx="118" cy="128" r="2.4" fill="url(#dropG2)"/>
+      </svg></div>
+      <div class="fpc-eyebrow"><span class="lang-bn">🌿 আজকের নির্বাচন</span><span class="lang-en">🌿 Today's Selection</span></div>
+      <div class="fpc-title"><span class="lang-bn">FRESH<br>TODAY</span><span class="lang-en">FRESH<br>TODAY</span></div>
+      <div class="fpc-sub"><span class="lang-bn">তাজা পণ্য,<br>বিশ্বাসের সাথে</span><span class="lang-en">Today's goods,<br>with trust</span></div>
+      <button class="fpc-btn"><span class="lang-bn">সব দেখুন</span><span class="lang-en">View All</span><span class="fpc-arrow">→</span></button>
+    </div>
+    <div id="freshCardsGrid" style="display:contents;"></div>
+  </div>
+  <div class="fresh-dots" id="freshDots"></div>
+</section>
+
 <!-- CATEGORIES -->
 <section class="section" id="allCategoriesSection">
   <div class="section-head">
@@ -2282,9 +2286,6 @@ img{max-width:100%;height:auto;}
   <!-- নিচের button সরানো — header এ "সব দেখুন" আছে -->
   <div class="cat-more-wrap" id="catMoreWrap" style="display:none;"></div>
 </section>
-
-<!-- SPONSORED SHOP AD (Dynamic) -->
-<div id="sponsoredAdWrap"></div>
 
 <!-- FESTIVAL BANNER (Dynamic) — Durga Puja Special -->
 <div id="festivalBannerWrap"></div>
