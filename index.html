@@ -2119,6 +2119,10 @@ img{max-width:100%;height:auto;}
       <span class="hero-pill-arrow">→</span>
     </button>
   </div>
+
+  <!-- SPONSORED SHOP AD (Dynamic) — placed right in the hero flow, between quick-action pills and trust stats, for maximum revenue visibility -->
+  <div id="sponsoredAdWrap" style="margin-bottom:10px;"></div>
+
   <div class="hero-stats-box">
     <div class="hero-stats-new">
       <div class="hero-stat-new">
@@ -2178,9 +2182,6 @@ img{max-width:100%;height:auto;}
     <button onclick="doSearch()" style="background:var(--orange);border:none;color:#fff;padding:10px 16px;font-size:1rem;cursor:pointer;flex-shrink:0;">🔍</button>
   </div>
 </div>
-
-<!-- SPONSORED SHOP AD (Dynamic) — moved higher (revenue placement, wants max visibility before the long category grid) -->
-<div id="sponsoredAdWrap"></div>
 
 <!-- FRESH TODAY FULL CARDS — relocated here to match reference layout -->
 <section class="section" id="freshTodaySection" style="display:none;padding-top:26px;padding-bottom:24px;">
@@ -4633,14 +4634,14 @@ function renderSponsoredCarousel(ads){
     '</div>'
   ) : '';
 
-  var header = '<div class="section-head" style="padding:0 4% 8px;">'+
-      '<div><div class="section-label">⭐ <span class="lang-bn">স্পনসরড</span><span class="lang-en">Sponsored</span></div>'+
-      '<div class="section-title"><span class="lang-bn">স্পনসরড শপ</span><span class="lang-en">Sponsored Shops</span></div></div>'+
-      '<a class="view-all" href="sponsored-shops.html" style="text-decoration:none">'+
+  var header = '<div class="section-head" style="padding:0 0 8px;">'+
+      '<div><div class="section-label" style="color:var(--gold-muted,#d9b65a);">⭐ <span class="lang-bn">স্পনসরড</span><span class="lang-en">Sponsored</span></div>'+
+      '<div class="section-title" style="color:#fff;"><span class="lang-bn">স্পনসরড শপ</span><span class="lang-en">Sponsored Shops</span></div></div>'+
+      '<a class="view-all" href="sponsored-shops.html" style="text-decoration:none;color:#fff;">'+
         '<span class="lang-bn">সব দেখুন →</span><span class="lang-en">View All →</span></a>'+
     '</div>';
 
-  wrap.innerHTML = '<section class="section" style="padding-top:4px;padding-bottom:4px;">'+
+  wrap.innerHTML = '<section class="section" style="padding:4px 0;">'+
     header+
     '<div style="border-radius:16px;overflow:hidden;position:relative;box-shadow:0 4px 18px rgba(15,40,24,.08);border:1px solid var(--border);">'+
       '<div id="adTrack" style="display:flex;width:'+(ads.length*100)+'%;transition:transform .5s ease;">'+
