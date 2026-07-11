@@ -1326,6 +1326,13 @@ button,input,select{font-family:'DM Sans',sans-serif;}
             🎨 এটা একটা pre-made পূর্ণ ব্যানার (নাম/অফার/রেটিং সবই ছবিতে আঁকা আছে) — Card-টা পুরোপুরি ছবি হিসেবে দেখাবে, নিচের text field গুলো লাগবে না
           </label>
         </div>
+        <div style="background:#eef9f0;border:1px solid var(--green);border-radius:10px;padding:12px;margin-bottom:12px;">
+          <label style="font-size:.78rem;font-weight:700;color:var(--navy);">💎 Ad Tier — এটা কোথায় দেখাবে</label>
+          <select class="form-input" id="ssAdTier" style="margin-top:6px;">
+            <option value="basic">🏷️ Basic — নিচের ছোট Sponsored Shop carousel-এ (Hero-র নিচে)</option>
+            <option value="premium">💎 Premium — Hero section-এর নিজের carousel-এ (সবচেয়ে বেশি visibility, বেশি দাম)</option>
+          </select>
+        </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
           <div class="form-group" style="margin-bottom:0">
             <label>Shop Name * <span style="font-weight:400;color:var(--muted);">(admin list-এ দেখার জন্য, full banner mode-এও লাগবে)</span></label>
@@ -1334,6 +1341,10 @@ button,input,select{font-family:'DM Sans',sans-serif;}
           <div class="form-group" style="margin-bottom:0;grid-column:1/-1;">
             <label>Banner Image URL * <span style="font-weight:400;color:var(--muted);">(1200 x 420 px recommended)</span></label>
             <input type="text" class="form-input" id="ssImage" placeholder="Cloudinary URL">
+          </div>
+          <div class="form-group" style="margin-bottom:0;grid-column:1/-1;">
+            <label>Video URL (Optional) <span style="font-weight:400;color:var(--muted);">— দিলে ব্যানারে একটা ▶ Play বাটন দেখাবে, click করলে video চলবে (autoplay না, data বাঁচানোর জন্য)</span></label>
+            <input type="text" class="form-input" id="ssVideo" placeholder="Cloudinary video URL (mp4)">
           </div>
           <div class="form-group" style="margin-bottom:0">
             <label>Link URL</label>
@@ -6259,7 +6270,9 @@ function renderSponsoredShopsList(){
       thumb+
       '<div style="flex:1;min-width:0;">'+
         '<div style="font-size:.82rem;font-weight:700;color:var(--navy);">'+(s.shopName||'—')+
+          (s.adTier==='premium' ? ' <span style="font-size:.6rem;font-weight:700;background:#fff4ec;color:var(--orange);padding:2px 7px;border-radius:10px;">💎 Premium</span>' : ' <span style="font-size:.6rem;font-weight:700;background:var(--sand);color:var(--muted);padding:2px 7px;border-radius:10px;">🏷️ Basic</span>')+
           (s.fullBanner ? ' <span style="font-size:.6rem;font-weight:700;background:var(--sand);color:var(--orange);padding:2px 7px;border-radius:10px;">🎨 Full Banner</span>' : '')+
+          (s.videoUrl ? ' <span style="font-size:.6rem;font-weight:700;background:var(--sand);color:var(--navy);padding:2px 7px;border-radius:10px;">🎬 Video</span>' : '')+
         '</div>'+
         '<div style="font-size:.72rem;color:var(--muted);">'+
           (s.discountText?s.discountText+' · ':'')+'Priority: '+(s.priority||1)+' · '+(s.displayDuration||5)+'s'+
@@ -6291,6 +6304,8 @@ function saveSponsoredShop(){
   var fullBanner = document.getElementById('ssFullBanner').checked;
   var alwaysFirst = document.getElementById('ssAlwaysFirst').checked;
   var duration = parseInt(document.getElementById('ssDuration').value)||5;
+  var adTier = document.getElementById('ssAdTier').value||'basic';
+  var videoUrl = document.getElementById('ssVideo').value.trim();
   var shopName = document.getElementById('ssName').value.trim();
   var tagline = document.getElementById('ssTagline').value.trim();
   var discountText = document.getElementById('ssOffer').value.trim();
@@ -6309,6 +6324,8 @@ function saveSponsoredShop(){
 
   var data = {
     type: 'shop_ad',
+    adTier: adTier,
+    videoUrl: videoUrl,
     fullBanner: fullBanner,
     alwaysFirst: alwaysFirst,
     displayDuration: duration,
@@ -6347,6 +6364,8 @@ function editSponsoredShop(id){
   document.getElementById('ssFullBanner').checked = !!s.fullBanner;
   document.getElementById('ssAlwaysFirst').checked = !!s.alwaysFirst;
   document.getElementById('ssDuration').value = s.displayDuration||5;
+  document.getElementById('ssAdTier').value = s.adTier||'basic';
+  document.getElementById('ssVideo').value = s.videoUrl||'';
   toggleFullBannerMode();
   document.getElementById('ssName').value = s.shopName||'';
   document.getElementById('ssTagline').value = s.tagline||'';
@@ -6373,6 +6392,8 @@ function cancelSponsoredShopEdit(){
   document.getElementById('ssFullBanner').checked=false;
   document.getElementById('ssAlwaysFirst').checked=false;
   document.getElementById('ssDuration').value=5;
+  document.getElementById('ssAdTier').value='basic';
+  document.getElementById('ssVideo').value='';
   toggleFullBannerMode();
   ['ssName','ssTagline','ssOffer','ssBtnText','ssImage','ssLink','ssRating','ssHours','ssLocation','ssStartDate','ssEndDate'].forEach(function(id){
     document.getElementById(id).value='';
