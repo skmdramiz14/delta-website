@@ -1,4 +1,4 @@
-<!DOCTYPE html>  
+<!DOCTYPE html> 
 <html lang="bn">
 <head>
 <meta charset="UTF-8">
@@ -2082,7 +2082,7 @@ img{max-width:100%;height:auto;}
 
 <!-- HERO -->
 <div class="hero-unified-frame">
-<div id="heroSlideViewport" style="position:relative;min-height:400px;">
+<div id="heroSlideViewport" style="position:relative;">
 <section class="hero" id="heroSlideBrand">
   <!-- Cinematic background photo — its own layer so a contrast/saturation filter can be
        applied without affecting the dark overlay or text above it -->
@@ -4763,7 +4763,7 @@ function initHeroCarousel(premiumAds){
     // No premium sponsors — brand hero stays, no rotation, no dots
     dotsWrap.style.display = 'none';
     premiumWrap.style.display = 'none';
-    brand.style.display = 'flex';
+    brand.style.visibility = 'visible';
     _heroSlides = [];
     return;
   }
@@ -4806,11 +4806,13 @@ function showHeroSlide(i){
   var slide = _heroSlides[i];
   if(!slide || !brand || !premiumWrap) return;
   if(slide.isBrand){
-    brand.style.display = 'flex';
+    brand.style.visibility = 'visible';
     premiumWrap.style.display = 'none';
     premiumWrap.innerHTML = '';
   } else {
-    brand.style.display = 'none';
+    // visibility:hidden (not display:none) — brand hero keeps its real natural height reserved,
+    // so this container never collapses/mismatches regardless of exact content height
+    brand.style.visibility = 'hidden';
     premiumWrap.style.display = 'block';
     premiumWrap.innerHTML = _heroPremiumSlideHTML(slide);
   }
