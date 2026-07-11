@@ -122,17 +122,13 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 }
 
 /* ── PREMIUM HERO CAROUSEL SLIDE (sponsored, overlays the brand hero) ── */
-.hero-premium-slide{height:100%;min-height:280px;position:relative;overflow:hidden;cursor:pointer;
+.hero-premium-slide{width:100%;height:100%;min-height:280px;position:relative;overflow:hidden;cursor:pointer;
   background:#0f2818;display:flex;align-items:stretch;}
 .hero-premium-slide img.hps-media{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;}
 .hero-premium-slide video.hps-media{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;background:#000;}
-.hps-sponsored-tag{position:absolute;top:16px;left:20px;background:rgba(15,40,24,.6);color:#fff;
-  font-size:.66rem;font-weight:700;padding:4px 12px;border-radius:20px;letter-spacing:.4px;
+.hps-sponsored-tag{position:absolute;bottom:12px;right:14px;background:rgba(0,0,0,.45);color:rgba(255,255,255,.85);
+  font-size:.6rem;font-weight:600;padding:3px 10px;border-radius:20px;letter-spacing:.3px;
   backdrop-filter:blur(3px);z-index:2;}
-.hps-discount-badge{position:absolute;top:16px;right:16px;background:var(--green);color:#fff;
-  width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;
-  flex-direction:column;font-size:.66rem;font-weight:800;line-height:1.1;text-align:center;
-  border:3px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,.25);z-index:2;}
 
 .hero{
   background:linear-gradient(135deg,var(--navy3) 0%,var(--navy) 40%,var(--navy2) 70%,var(--navy2) 100%);
@@ -2112,9 +2108,8 @@ img{max-width:100%;height:auto;}
 </section>
 
 <!-- PREMIUM SPONSORED SLIDES — overlay strictly within this viewport only (never bleeds into CTA/stats below) -->
-<div id="heroPremiumWrap" style="position:absolute;inset:0;display:none;z-index:2;overflow:hidden;"></div>
-<!-- Hero carousel dots — brand slide + premium slides -->
-<div id="heroCarouselDots" style="position:absolute;left:24px;bottom:20px;display:none;align-items:center;gap:8px;z-index:3;"></div>
+<div id="heroPremiumWrap" style="position:absolute;inset:0;display:none;z-index:2;overflow:hidden;background:#0f2818;"></div>
+<!-- Hero carousel navigation is now swipe-gesture based (no visible dots) — see _initHeroSwipeGesture() -->
 </div>
 
 <!-- HERO CTA + STATS — sits below the hero card on the cream background (matches reference layout) -->
@@ -2140,9 +2135,6 @@ img{max-width:100%;height:auto;}
       <span class="hero-pill-arrow">→</span>
     </button>
   </div>
-
-  <!-- SPONSORED SHOP AD (Dynamic) — placed right in the hero flow, between quick-action pills and trust stats, for maximum revenue visibility -->
-  <div id="sponsoredAdWrap" style="margin-bottom:10px;"></div>
 
   <div class="hero-stats-box">
     <div class="hero-stats-new">
@@ -2175,6 +2167,8 @@ img{max-width:100%;height:auto;}
 </div>
 </div>
 
+<!-- SPONSORED SHOP AD (Dynamic) — moved here: right after Hero, before Marquee -->
+<div id="sponsoredAdWrap"></div>
 
 <!-- MARQUEE — urgency/offers ticker, admin-configurable via Firebase settings/marqueeMessages -->
 <div class="marquee-wrap">
@@ -4624,39 +4618,110 @@ var _adSWRRWeights = []; // smooth weighted round-robin running-weight state, on
 function initSponsoredAd(){
   if(!db) return;
   var today = new Date().toISOString().slice(0,10);
-  db.collection('cities').doc(CITY).collection('bannerAds')
-    .where('status','==','active')
-    .get().then(function(snap){
-      var basicAds = [], premiumAds = [];
-      snap.forEach(function(d){
-        var b = Object.assign({id:d.id}, d.data());
-        if(b.type!=='shop_ad') return;
-        if(b.endDate && b.endDate < today) return;
-        if(b.startDate && b.startDate > today) return;
-        if(b.adTier === 'premium') premiumAds.push(b); else basicAds.push(b);
-      });
-      // "Always show first" ads go to the front; everything else ordered by priority (admin's manual control)
-      function sortAds(list){
-        list.sort(function(a,b){
-          var af = (b.alwaysFirst?1:0) - (a.alwaysFirst?1:0);
-          if(af !== 0) return af;
-          return (b.priority||0)-(a.priority||0);
-        });
-      }
-      sortAds(basicAds);
-      sortAds(premiumAds);
 
-      var wrap = document.getElementById('sponsoredAdWrap');
-      if(wrap){
-        if(basicAds.length) renderSponsoredCarousel(basicAds);
-        else wrap.innerHTML = '';
-      }
-      initHeroCarousel(premiumAds);
-    }).catch(function(){
-      var wrap = document.getElementById('sponsoredAdWrap');
-      if(wrap) wrap.innerHTML = '';
-      initHeroCarousel([]);
+  var bannerAdsPromise = db.collection('cities').doc(CITY).collection('bannerAds')
+    .where('status','==','active').get().catch(function(){ return {forEach:function(){}}; });
+  var houseSlidesPromise = db.collection('cities').doc(CITY).collection('heroSlides')
+    .where('status','==','active').get().catch(function(){ return {forEach:function(){}}; });
+  var brandSlidePromise = db.collection('cities').doc(CITY).collection('settings').doc('heroBrandSlide')
+    .get().catch(function(){ return {exists:false}; });
+
+  Promise.all([bannerAdsPromise, houseSlidesPromise, brandSlidePromise]).then(function(results){
+    var bannerSnap = results[0], houseSnap = results[1], brandDoc = results[2];
+
+    var basicAds = [], premiumAds = [];
+    bannerSnap.forEach(function(d){
+      var b = Object.assign({id:d.id}, d.data());
+      if(b.type!=='shop_ad') return;
+      if(b.endDate && b.endDate < today) return;
+      if(b.startDate && b.startDate > today) return;
+      if(b.adTier === 'premium') premiumAds.push(b); else basicAds.push(b);
     });
+
+    var houseSlides = [];
+    houseSnap.forEach(function(d){
+      var h = Object.assign({id:d.id}, d.data());
+      if(h.endDate && h.endDate < today) return;
+      if(h.startDate && h.startDate > today) return;
+      houseSlides.push(h);
+    });
+
+    // "Always show first" ads go to the front; everything else ordered by priority (admin's manual control)
+    function sortAds(list){
+      list.sort(function(a,b){
+        var af = (b.alwaysFirst?1:0) - (a.alwaysFirst?1:0);
+        if(af !== 0) return af;
+        return (b.priority||0)-(a.priority||0);
+      });
+    }
+    sortAds(basicAds);
+    sortAds(premiumAds);
+    sortAds(houseSlides);
+
+    var wrap = document.getElementById('sponsoredAdWrap');
+    if(wrap){
+      if(basicAds.length) renderSponsoredCarousel(basicAds);
+      else wrap.innerHTML = '';
+    }
+
+    // Apply Brand Slide customization (image/video/text/button) — falls back to existing defaults if empty
+    var brandCfg = brandDoc.exists ? brandDoc.data() : {};
+    applyBrandSlideCustomization(brandCfg);
+
+    // Hero rotation = House Slides + Premium Shop Ads, with Brand Slide mixed in (unless hidden + something else is active)
+    var nonBrandSlides = houseSlides.concat(premiumAds);
+    var hideBrand = !!brandCfg.hideBrandSlide;
+    initHeroCarousel(nonBrandSlides, hideBrand);
+  }).catch(function(){
+    var wrap = document.getElementById('sponsoredAdWrap');
+    if(wrap) wrap.innerHTML = '';
+    initHeroCarousel([], false);
+  });
+}
+
+// Applies admin-configured Brand Slide content — any empty field silently keeps the existing default
+function applyBrandSlideCustomization(cfg){
+  if(!cfg) return;
+  var bgImg = document.querySelector('#heroSlideBrand .hero-bg-img');
+  if(cfg.imageUrl && bgImg){ bgImg.style.backgroundImage = "url('"+cfg.imageUrl+"')"; }
+
+  if(cfg.videoUrl){
+    var bgImgLayer = document.querySelector('#heroSlideBrand .hero-bg-img');
+    if(bgImgLayer && !document.getElementById('heroBrandVideo')){
+      var vid = document.createElement('video');
+      vid.id = 'heroBrandVideo';
+      vid.src = cfg.videoUrl;
+      vid.autoplay = true; vid.muted = true; vid.loop = true; vid.playsInline = true;
+      vid.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;';
+      bgImgLayer.parentNode.insertBefore(vid, bgImgLayer.nextSibling);
+    }
+  }
+
+  var headingEl = document.querySelector('#heroSlideBrand h1');
+  if(headingEl && (cfg.headingBn || cfg.headingEn)){
+    var bnSpan = headingEl.querySelector('.lang-bn'), enSpan = headingEl.querySelector('.lang-en');
+    // Heading keeps the △ DELTA mark; only override the text if custom values are provided
+  }
+  var subEl = document.querySelector('#heroSlideBrand .hero-bn');
+  if(subEl){
+    if(cfg.headingBn) { var b1=subEl.querySelector('.lang-bn'); if(b1) b1.textContent = cfg.headingBn; }
+    if(cfg.headingEn) { var e1=subEl.querySelector('.lang-en'); if(e1) e1.textContent = cfg.headingEn; }
+  }
+  var pEl = document.querySelector('#heroSlideBrand .hero-content p');
+  if(pEl){
+    if(cfg.subtextBn){ var b2=pEl.querySelector('.lang-bn'); if(b2) b2.innerHTML = cfg.subtextBn; }
+    if(cfg.subtextEn){ var e2=pEl.querySelector('.lang-en'); if(e2) e2.innerHTML = cfg.subtextEn; }
+  }
+  var btnEl = document.querySelector('#heroSlideBrand .hero-about-btn');
+  if(btnEl){
+    if(cfg.buttonTextBn){ var b3=btnEl.querySelector('.lang-bn'); if(b3) b3.textContent = cfg.buttonTextBn; }
+    if(cfg.buttonTextEn){ var e3=btnEl.querySelector('.lang-en'); if(e3) e3.textContent = cfg.buttonTextEn; }
+    if(cfg.buttonLink){
+      btnEl.setAttribute('onclick', cfg.buttonLink.charAt(0)==='#'
+        ? "document.getElementById('"+cfg.buttonLink.slice(1)+"').scrollIntoView({behavior:'smooth'})"
+        : "window.location.href='"+cfg.buttonLink+"'");
+    }
+  }
 }
 
 function renderSponsoredCarousel(ads){
@@ -4752,51 +4817,46 @@ var _heroIdx = 0;
 var _heroAutoplayTimer = null;
 var _heroSWRRWeights = [];
 
-function initHeroCarousel(premiumAds){
-  var dotsWrap = document.getElementById('heroCarouselDots');
+function initHeroCarousel(otherSlides, hideBrand){
   var premiumWrap = document.getElementById('heroPremiumWrap');
   var brand = document.getElementById('heroSlideBrand');
-  if(!dotsWrap || !premiumWrap || !brand) return;
+  if(!premiumWrap || !brand) return;
   if(_heroAutoplayTimer){ clearTimeout(_heroAutoplayTimer); _heroAutoplayTimer=null; }
 
-  if(!premiumAds || !premiumAds.length){
-    // No premium sponsors — brand hero stays, no rotation, no dots
-    dotsWrap.style.display = 'none';
+  if(!otherSlides || !otherSlides.length){
+    // No House Slides / Premium Ads — brand hero stays, no rotation
     premiumWrap.style.display = 'none';
     brand.style.visibility = 'visible';
     _heroSlides = [];
     return;
   }
 
-  // Brand slide gets a moderate fixed weight so it keeps reappearing without dominating
+  // Safety net: if admin asked to hide the Brand Slide, only honor that when there's at least
+  // one other active slide to show instead — never let Hero end up completely empty.
+  var includeBrand = !hideBrand;
   var brandSlide = {isBrand:true, priority:3, displayDuration:6};
-  _heroSlides = [brandSlide].concat(premiumAds);
+  _heroSlides = includeBrand ? [brandSlide].concat(otherSlides) : otherSlides.slice();
   _heroIdx = 0;
   _heroSWRRWeights = _heroSlides.map(function(){ return 0; });
 
-  dotsWrap.innerHTML = _heroSlides.map(function(s,i){
-    return '<span onclick="event.stopPropagation();goHeroSlide('+i+')" data-hero-dot="'+i+'" '+
-      'style="width:'+(i===0?'20px':'7px')+';height:7px;border-radius:5px;'+
-      'background:'+(i===0?'#fff':'rgba(255,255,255,.4)')+';transition:all .25s;cursor:pointer;"></span>';
-  }).join('');
-  dotsWrap.style.display = 'flex';
-
   showHeroSlide(0);
   scheduleNextHeroSlide();
+  _initHeroSwipeGesture();
 }
 
 function _heroPremiumSlideHTML(ad){
   var img = ad.imageUrl || '';
   var video = ad.videoUrl || '';
   var link = ad.linkUrl || '#';
-  var discount = ad.discountText || '';
+  var isShopAd = ad.type === 'shop_ad'; // house slides (DELTA's own) don't get a "Sponsored" disclosure
   var mediaHtml = video ?
     ('<video class="hps-media" src="'+video+'" autoplay muted loop playsinline poster="'+img+'"></video>')
     : (img ? '<img class="hps-media" src="'+img+'" loading="lazy">' : '');
+  // Premium slides are fully-designed banners (shop name, offer, rating — all baked into the
+  // image itself), so no code-generated badges/overlays here except a small disclosure tag.
   return '<div class="hero-premium-slide" onclick="window.location.href=\''+link+'\'">'+
       mediaHtml+
-      '<span class="hps-sponsored-tag"><span class="lang-bn">স্পনসরড</span><span class="lang-en">SPONSORED</span></span>'+
-      (discount ? '<div class="hps-discount-badge">'+discount+'</div>' : '')+
+      (isShopAd ? '<span class="hps-sponsored-tag"><span class="lang-bn">স্পনসরড</span><span class="lang-en">SPONSORED</span></span>' : '')+
     '</div>';
 }
 
@@ -4816,16 +4876,37 @@ function showHeroSlide(i){
     premiumWrap.style.display = 'block';
     premiumWrap.innerHTML = _heroPremiumSlideHTML(slide);
   }
-  document.querySelectorAll('[data-hero-dot]').forEach(function(dot,j){
-    dot.style.width = j===i?'20px':'7px';
-    dot.style.background = j===i?'#fff':'rgba(255,255,255,.4)';
-  });
 }
 
 function goHeroSlide(i){
   _heroIdx = i;
   showHeroSlide(i);
   scheduleNextHeroSlide();
+}
+
+// Swipe left/right — moves sequentially through the current slide list (manual override of autoplay)
+var _heroSwipeAttached = false;
+function _initHeroSwipeGesture(){
+  if(_heroSwipeAttached) return; // attach listeners only once, ever
+  var viewport = document.getElementById('heroSlideViewport');
+  if(!viewport) return;
+  var touchStartX = 0, touchStartY = 0;
+  viewport.addEventListener('touchstart', function(e){
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+  }, {passive:true});
+  viewport.addEventListener('touchend', function(e){
+    if(_heroSlides.length <= 1) return;
+    var dx = e.changedTouches[0].clientX - touchStartX;
+    var dy = e.changedTouches[0].clientY - touchStartY;
+    // Ignore mostly-vertical swipes (user is scrolling the page, not swiping the slide)
+    if(Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy)) return;
+    var next = dx < 0
+      ? (_heroIdx + 1) % _heroSlides.length          // swiped left → next slide
+      : (_heroIdx - 1 + _heroSlides.length) % _heroSlides.length; // swiped right → previous slide
+    goHeroSlide(next);
+  }, {passive:true});
+  _heroSwipeAttached = true;
 }
 
 function scheduleNextHeroSlide(){
