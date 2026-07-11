@@ -679,7 +679,35 @@ button,input,select{font-family:'DM Sans',sans-serif;}
       <div style="display:flex;gap:10px;margin:10px 0 4px;flex-wrap:wrap;align-items:center">
         <button class="btn-sm btn-orange" onclick="markAllBazaarSettled()">✅ সব Delivered → Settled করুন</button>
         <button class="btn-sm btn-blue" onclick="exportBazaarFinance()">📊 Bazaar Financial CSV Export</button>
+        <button class="btn-sm" style="background:var(--navy);color:#fff" onclick="downloadAllBazaarPDF()">📄 All Items PDF (Save as one file)</button>
         <span style="font-size:.72rem;color:var(--muted)">💡 প্রতিটা delivered request-এর কার্ডে নিচে দিকে Financial Breakdown box পাবেন — Supplier Cost ও Delivery Charge দিন, তারপর সেভ করুন</span>
+      </div>
+
+      <!-- Per-product Bazaar Financial Details table -->
+      <div style="margin:14px 0 22px">
+        <div style="font-size:.8rem;font-weight:700;color:var(--navy);margin-bottom:8px">🧾 Per-Product Financial Details (Delivered)</div>
+        <div style="overflow-x:auto;border:1px solid var(--border);border-radius:12px">
+          <table style="width:100%;border-collapse:collapse;font-size:.76rem;white-space:nowrap">
+            <thead>
+              <tr style="background:var(--sand);text-align:left">
+                <th style="padding:8px 10px">পণ্য</th>
+                <th style="padding:8px 10px">গ্রাহক</th>
+                <th style="padding:8px 10px">Quoted</th>
+                <th style="padding:8px 10px">Delivery</th>
+                <th style="padding:8px 10px">Supplier Cost</th>
+                <th style="padding:8px 10px">Rider Payout</th>
+                <th style="padding:8px 10px">Cash Collected</th>
+                <th style="padding:8px 10px">Admin Profit</th>
+                <th style="padding:8px 10px">Settled</th>
+                <th style="padding:8px 10px">তারিখ</th>
+                <th style="padding:8px 10px">Receipt</th>
+              </tr>
+            </thead>
+            <tbody id="bazaarFinanceTableBody">
+              <tr><td colspan="10" style="padding:14px;text-align:center;color:var(--muted)">কোনো delivered + calculated request এখনো নেই</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <div class="sec-head">
@@ -4150,7 +4178,131 @@ function updateBazaarFinanceStats(){
   if(elCash) elCash.textContent = '₹'+totalCash.toLocaleString('en-IN');
   if(elProfit) elProfit.textContent = '₹'+totalProfit.toLocaleString('en-IN');
   if(elUnsettled) elUnsettled.textContent = unsettled;
+  renderBazaarFinanceTable();
 }
+
+function renderBazaarFinanceTable(){
+  var tbody = document.getElementById('bazaarFinanceTableBody');
+  if(!tbody) return;
+  var rows = allBazaarRequests.filter(function(r){
+    return r.status==='delivered' && typeof r.cashCollected==='number';
+  }).sort(function(a,b){ return new Date(b.updatedAt||b.createdAt||0) - new Date(a.updatedAt||a.createdAt||0); });
+
+  if(!rows.length){
+    tbody.innerHTML = '<tr><td colspan="11" style="padding:14px;text-align:center;color:var(--muted)">কোনো delivered + calculated request এখনো নেই</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = rows.map(function(r){
+    var dateStr = r.createdAt ? new Date(r.createdAt).toLocaleDateString('bn-IN',{day:'numeric',month:'short'}) : '—';
+    var settledBadge = r.bazaarSettled
+      ? '<span style="color:var(--green2);font-weight:700">✅ Settled</span>'
+      : '<span style="color:var(--orange);font-weight:700">⏳ Unsettled</span>';
+    return '<tr style="border-top:1px solid var(--border)">'+
+      '<td style="padding:8px 10px;font-weight:600">'+(r.itemName||'—')+'</td>'+
+      '<td style="padding:8px 10px">'+(r.customerName||'—')+'</td>'+
+      '<td style="padding:8px 10px">₹'+(r.quotedPrice||0).toLocaleString('en-IN')+'</td>'+
+      '<td style="padding:8px 10px">₹'+(r.deliveryCharge||0).toLocaleString('en-IN')+'</td>'+
+      '<td style="padding:8px 10px">₹'+(r.supplierCost||0).toLocaleString('en-IN')+'</td>'+
+      '<td style="padding:8px 10px">₹'+(r.riderPayout||0).toLocaleString('en-IN')+'</td>'+
+      '<td style="padding:8px 10px;font-weight:700">₹'+r.cashCollected.toLocaleString('en-IN')+'</td>'+
+      '<td style="padding:8px 10px;font-weight:700;color:var(--green2)">₹'+r.adminProfit.toLocaleString('en-IN')+'</td>'+
+      '<td style="padding:8px 10px">'+settledBadge+'</td>'+
+      '<td style="padding:8px 10px;color:var(--muted)">'+dateStr+'</td>'+
+      '<td style="padding:8px 10px">'+
+        '<button onclick="downloadBazaarPDF(\''+r.id+'\')" style="background:var(--navy);color:#fff;border:none;'+
+        'padding:5px 10px;border-radius:6px;font-size:.7rem;cursor:pointer;white-space:nowrap">📄 PDF</button>'+
+      '</td>'+
+    '</tr>';
+  }).join('');
+}
+window.renderBazaarFinanceTable = renderBazaarFinanceTable;
+
+function downloadBazaarPDF(id){
+  var r = allBazaarRequests.find(function(x){ return x.id===id; });
+  if(!r){ showToast('Request পাওয়া যায়নি','red'); return; }
+  var win = window.open('', '_blank');
+  var blob = new Blob([bazaarReceiptHTML([r], false)], {type:'text/html;charset=utf-8'});
+  win.location.href = URL.createObjectURL(blob);
+}
+
+function downloadAllBazaarPDF(){
+  var rows = allBazaarRequests.filter(function(r){
+    return r.status==='delivered' && typeof r.cashCollected==='number';
+  }).sort(function(a,b){ return new Date(b.createdAt||0) - new Date(a.createdAt||0); });
+  if(!rows.length){ showToast('কোনো delivered + calculated bazaar request নেই','red'); return; }
+  var win = window.open('', '_blank');
+  var blob = new Blob([bazaarReceiptHTML(rows, true)], {type:'text/html;charset=utf-8'});
+  win.location.href = URL.createObjectURL(blob);
+}
+
+function bazaarReceiptHTML(rows, isSummary){
+  var totalCash = rows.reduce(function(s,r){ return s+(r.cashCollected||0); },0);
+  var totalProfit = rows.reduce(function(s,r){ return s+(r.adminProfit||0); },0);
+
+  var itemBlocks = rows.map(function(r){
+    var dateStr = r.createdAt ? new Date(r.createdAt).toLocaleString('en-IN',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—';
+    return '<div class="section">'+
+      '<div class="row"><span style="font-size:1rem;font-weight:700">#'+r.id.slice(-6).toUpperCase()+' — '+(r.itemName||'পণ্য')+'</span>'+
+        '<span class="badge '+(r.bazaarSettled?'settled':'unsettled')+'">'+(r.bazaarSettled?'✅ Settled':'⏳ Unsettled')+'</span></div>'+
+      '<div class="row"><span>গ্রাহক</span><span>'+(r.customerName||'—')+'</span></div>'+
+      '<div class="row"><span>তারিখ</span><span>'+dateStr+'</span></div>'+
+      '<div class="fin-row" style="background:#f8f9fa"><span>Quoted Price</span><strong>₹'+(r.quotedPrice||0).toLocaleString('en-IN')+'</strong></div>'+
+      '<div class="fin-row" style="background:#f8f9fa"><span>Delivery Charge</span><strong>+ ₹'+(r.deliveryCharge||0).toLocaleString('en-IN')+'</strong></div>'+
+      '<div class="fin-row fin-total"><span>💵 Cash Collected</span><strong>₹'+r.cashCollected.toLocaleString('en-IN')+'</strong></div>'+
+      '<div class="fin-row fin-comm"><span>Supplier Cost</span><strong>- ₹'+(r.supplierCost||0).toLocaleString('en-IN')+'</strong></div>'+
+      '<div class="fin-row fin-rider"><span>🛵 Rider Payout</span><strong>- ₹'+(r.riderPayout||0).toLocaleString('en-IN')+'</strong></div>'+
+      '<div class="result-grid" style="grid-template-columns:1fr">'+
+        '<div class="result-box delta-box"><div class="label">📈 Admin Profit</div><div class="value">₹'+r.adminProfit.toLocaleString('en-IN')+'</div></div>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+
+  var grandTotalBlock = isSummary ? (
+    '<div class="section" style="background:#0a1f35">'+
+      '<div class="section-title" style="color:#fff">📊 Grand Total ('+rows.length+' items)</div>'+
+      '<div class="result-grid">'+
+        '<div class="result-box seller-box"><div class="label">💵 মোট Cash Collected</div><div class="value">₹'+totalCash.toLocaleString('en-IN')+'</div></div>'+
+        '<div class="result-box delta-box"><div class="label">📈 মোট Admin Profit</div><div class="value">₹'+totalProfit.toLocaleString('en-IN')+'</div></div>'+
+      '</div>'+
+    '</div>'
+  ) : '';
+
+  return '<!DOCTYPE html><html><head><meta charset="UTF-8">'+
+    '<title>DELTA Bazaar Receipt'+(isSummary?' - All Items':' - #'+rows[0].id.slice(-6).toUpperCase())+'</title>'+
+    '<style>'+
+      'body{font-family:Arial,sans-serif;max-width:480px;margin:0 auto;padding:24px;color:#333;font-size:14px;}'+
+      'h1{color:#f07018;margin:0;font-size:1.5rem;}'+
+      '.header{border-bottom:3px solid #f07018;padding-bottom:14px;margin-bottom:18px;}'+
+      '.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:700;}'+
+      '.settled{background:#eef9f0;color:#1a8a4a;}.unsettled{background:#fff4ec;color:#f07018;}'+
+      '.row{display:flex;justify-content:space-between;margin-bottom:8px;font-size:.88rem;}'+
+      '.section{background:#f8f9fa;border-radius:10px;padding:14px;margin:14px 0;}'+
+      '.section-title{font-size:.72rem;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;}'+
+      '.fin-row{display:flex;justify-content:space-between;padding:8px 10px;border-radius:6px;margin-bottom:5px;}'+
+      '.fin-total{background:#0a1f35;color:#fff;font-weight:700;}'+
+      '.fin-comm{background:#fff4ec;color:#f07018;}'+
+      '.fin-rider{background:#e8f0fe;color:#3f51b5;}'+
+      '.result-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;}'+
+      '.result-box{border-radius:10px;padding:12px;text-align:center;}'+
+      '.result-box .label{font-size:.68rem;font-weight:700;margin-bottom:4px;}'+
+      '.result-box .value{font-size:1.1rem;font-weight:900;}'+
+      '.seller-box{background:#eef9f0;}.seller-box .label,.seller-box .value{color:#1a8a4a;}'+
+      '.delta-box{background:#fff4ec;}.delta-box .label,.delta-box .value{color:#f07018;}'+
+      'button{width:100%;padding:12px;background:#f07018;color:#fff;border:none;border-radius:8px;font-size:1rem;cursor:pointer;margin-top:16px;}'+
+      '@media print{button{display:none!important;}}'+
+    '<\/style><\/head><body>'+
+    '<div class="header"><h1>∆ DELTA</h1>'+
+      '<div style="font-size:.72rem;color:#999;margin-top:2px;">deltaapp.in · Bazaar Financial Receipt'+(isSummary?' (All Delivered Items)':'')+'</div>'+
+    '</div>'+
+    itemBlocks+
+    grandTotalBlock+
+    '<div style="text-align:center;font-size:.72rem;color:#999;margin-top:16px;">DELTA Platform · Local Roots. Global Wings.</div>'+
+    '<button onclick="window.print()">🖨️ Print / Save as PDF</button>'+
+    '<\/body><\/html>';
+}
+window.downloadBazaarPDF = downloadBazaarPDF;
+window.downloadAllBazaarPDF = downloadAllBazaarPDF;
 
 function saveBazaarFinance(id){
   var dc = parseFloat(document.getElementById('bdc-'+id).value)||0;
