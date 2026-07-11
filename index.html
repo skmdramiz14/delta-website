@@ -1,5 +1,5 @@
 <!DOCTYPE html> 
-<html lang="bn"> 
+<html lang="bn">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -129,12 +129,6 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 .hps-sponsored-tag{position:absolute;top:16px;left:20px;background:rgba(15,40,24,.6);color:#fff;
   font-size:.66rem;font-weight:700;padding:4px 12px;border-radius:20px;letter-spacing:.4px;
   backdrop-filter:blur(3px);z-index:2;}
-.hps-play-btn{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-  width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,.92);
-  display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:3;
-  box-shadow:0 6px 20px rgba(0,0,0,.35);transition:transform .18s;}
-.hps-play-btn:hover{transform:translate(-50%,-50%) scale(1.08);}
-.hps-play-btn svg{width:26px;height:26px;margin-left:3px;}
 .hps-discount-badge{position:absolute;top:16px;right:16px;background:var(--green);color:#fff;
   width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;
   flex-direction:column;font-size:.66rem;font-weight:800;line-height:1.1;text-align:center;
@@ -2087,7 +2081,8 @@ img{max-width:100%;height:auto;}
 </div>
 
 <!-- HERO -->
-<div class="hero-unified-frame" style="position:relative;">
+<div class="hero-unified-frame">
+<div id="heroSlideViewport" style="position:relative;min-height:400px;">
 <section class="hero" id="heroSlideBrand">
   <!-- Cinematic background photo — its own layer so a contrast/saturation filter can be
        applied without affecting the dark overlay or text above it -->
@@ -2116,10 +2111,11 @@ img{max-width:100%;height:auto;}
   </div>
 </section>
 
-<!-- PREMIUM SPONSORED SLIDES — overlay on top of hero, cross-fades in during rotation -->
+<!-- PREMIUM SPONSORED SLIDES — overlay strictly within this viewport only (never bleeds into CTA/stats below) -->
 <div id="heroPremiumWrap" style="position:absolute;inset:0;display:none;z-index:2;"></div>
 <!-- Hero carousel dots — brand slide + premium slides -->
 <div id="heroCarouselDots" style="position:absolute;left:24px;bottom:20px;display:none;align-items:center;gap:8px;z-index:3;"></div>
+</div>
 
 <!-- HERO CTA + STATS — sits below the hero card on the cream background (matches reference layout) -->
 <div class="hero-search-outer hero-below-panel" style="padding-top:28px;padding-bottom:24px;">
@@ -3715,7 +3711,14 @@ async function loadData(retryCount){
     if(!_shopModalAutoOpened){
       _shopModalAutoOpened = true;
       var shopParam = new URLSearchParams(window.location.search).get('shop');
-      if(shopParam) openShopModal(shopParam);
+      if(shopParam){
+        openShopModal(shopParam);
+        // URL থেকে ?shop= সরিয়ে দাও (history.replaceState) — নাহলে Back/Refresh করলে
+        // বারবার এই একই modal আবার auto-open হতে থাকবে
+        if(window.history && window.history.replaceState){
+          window.history.replaceState(null, '', window.location.pathname);
+        }
+      }
     }
   }catch(e){
     console.error('DELTA loadData error (attempt '+(retryCount+1)+'):', e);
@@ -4788,25 +4791,13 @@ function _heroPremiumSlideHTML(ad){
   var link = ad.linkUrl || '#';
   var discount = ad.discountText || '';
   var mediaHtml = video ?
-    ('<img class="hps-media" src="'+img+'" loading="lazy">'+
-     '<div class="hps-play-btn" onclick="event.stopPropagation();_playHeroVideo(this,\''+video.replace(/'/g,"\\'")+'\')" title="Play video">'+
-       '<svg viewBox="0 0 24 24" fill="var(--navy)"><path d="M8 5v14l11-7z"/></svg>'+
-     '</div>')
+    ('<video class="hps-media" src="'+video+'" autoplay muted loop playsinline poster="'+img+'"></video>')
     : (img ? '<img class="hps-media" src="'+img+'" loading="lazy">' : '');
   return '<div class="hero-premium-slide" onclick="window.location.href=\''+link+'\'">'+
       mediaHtml+
       '<span class="hps-sponsored-tag"><span class="lang-bn">স্পনসরড</span><span class="lang-en">SPONSORED</span></span>'+
       (discount ? '<div class="hps-discount-badge">'+discount+'</div>' : '')+
     '</div>';
-}
-
-// Video loads and plays only on explicit click (data-saving — no autoplay on page load)
-function _playHeroVideo(btn, videoUrl){
-  var slide = btn.closest('.hero-premium-slide');
-  if(!slide) return;
-  if(_heroAutoplayTimer){ clearTimeout(_heroAutoplayTimer); _heroAutoplayTimer=null; }
-  slide.setAttribute('onclick','');
-  slide.innerHTML = '<video class="hps-media" src="'+videoUrl+'" controls autoplay playsinline></video>';
 }
 
 function showHeroSlide(i){
