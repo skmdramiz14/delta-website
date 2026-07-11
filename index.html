@@ -651,9 +651,9 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 /* ── WHATSAPP FLOAT ── */
 .wa-float{position:fixed;bottom:28px;right:22px;z-index:1500;}
 .music-float{position:fixed;bottom:96px;right:22px;z-index:1500;}
-.music-btn{width:48px;height:48px;background:var(--navy);border-radius:50%;display:flex;align-items:center;
-  justify-content:center;box-shadow:0 4px 16px rgba(15,40,24,.35);cursor:pointer;border:2px solid var(--gold-muted,#C7A15A);
-  transition:transform .2s;font-size:1.25rem;position:relative;z-index:2;color:#fff;}
+.music-btn{width:44px;height:44px;background:var(--navy);border-radius:50%;display:flex;align-items:center;
+  justify-content:center;box-shadow:0 4px 16px rgba(15,40,24,.35);cursor:pointer;border:1.5px solid var(--gold-muted,#C7A15A);
+  transition:transform .2s;position:relative;z-index:2;color:var(--gold-muted,#C7A15A);}
 .music-btn:hover{transform:scale(1.08);}
 .music-btn.playing{animation:musicPulse 1.6s ease-in-out infinite;}
 @keyframes musicPulse{0%,100%{box-shadow:0 4px 16px rgba(15,40,24,.35);}50%{box-shadow:0 4px 22px rgba(201,162,39,.55);}}
@@ -3429,7 +3429,9 @@ img{max-width:100%;height:auto;}
 
 <!-- SHOPPING MUSIC FLOAT — hidden until admin sets a track; toggled via _toggleShoppingMusic() -->
 <div class="music-float" id="musicFloatWrap" style="display:none;">
-  <div class="music-btn" id="musicBtn" onclick="_toggleShoppingMusic()" title="Shopping Music">🎵</div>
+  <div class="music-btn" id="musicBtn" onclick="_toggleShoppingMusic()" title="Shopping Music">
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+  </div>
 </div>
 
 <script>
@@ -4780,9 +4782,9 @@ function renderSponsoredCarousel(ads){
   ) : '';
 
   var header = '<div class="section-head" style="padding:0 0 8px;">'+
-      '<div><div class="section-label" style="color:var(--gold-muted,#d9b65a);">⭐ <span class="lang-bn">স্পনসরড</span><span class="lang-en">Sponsored</span></div>'+
-      '<div class="section-title" style="color:#fff;"><span class="lang-bn">স্পনসরড শপ</span><span class="lang-en">Sponsored Shops</span></div></div>'+
-      '<a class="view-all" href="sponsored-shops.html" style="text-decoration:none;color:#fff;">'+
+      '<div><div class="section-label">⭐ <span class="lang-bn">স্পনসরড</span><span class="lang-en">Sponsored</span></div>'+
+      '<div class="section-title"><span class="lang-bn">স্পনসরড শপ</span><span class="lang-en">Sponsored Shops</span></div></div>'+
+      '<a class="view-all" href="sponsored-shops.html" style="text-decoration:none;">'+
         '<span class="lang-bn">সব দেখুন →</span><span class="lang-en">View All →</span></a>'+
     '</div>';
 
@@ -4942,6 +4944,9 @@ function initShoppingMusic(){
     }).catch(function(){});
 }
 
+var _ICON_MUSIC_NOTE = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>';
+var _ICON_PAUSE_BARS = '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>';
+
 function _toggleShoppingMusic(){
   var wrap = document.getElementById('musicFloatWrap');
   var btn = document.getElementById('musicBtn');
@@ -4957,7 +4962,7 @@ function _toggleShoppingMusic(){
   if(_shoppingMusicPlaying){
     _shoppingMusicAudio.pause();
     _shoppingMusicPlaying = false;
-    btn.textContent = '🎵';
+    btn.innerHTML = _ICON_MUSIC_NOTE;
     btn.classList.remove('playing');
   } else {
     // Starting music is also "user interaction" — but courteously mute any ad-video sound first
@@ -4968,7 +4973,7 @@ function _toggleShoppingMusic(){
     }
     _shoppingMusicAudio.play().catch(function(){});
     _shoppingMusicPlaying = true;
-    btn.textContent = '⏸️';
+    btn.innerHTML = _ICON_PAUSE_BARS;
     btn.classList.add('playing');
   }
 }
@@ -4979,7 +4984,7 @@ function _pauseShoppingMusicForVideoSound(){
     _shoppingMusicAudio.pause();
     _shoppingMusicPlaying = false;
     var btn = document.getElementById('musicBtn');
-    if(btn){ btn.textContent = '🎵'; btn.classList.remove('playing'); }
+    if(btn){ btn.innerHTML = _ICON_MUSIC_NOTE; btn.classList.remove('playing'); }
   }
 }
 
