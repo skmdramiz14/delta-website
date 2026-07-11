@@ -370,6 +370,9 @@ button,input,select{font-family:'DM Sans',sans-serif;}
     <button class="tab-btn" id="tab-sponsoredshops" onclick="goTab('sponsoredshops',this)">
       <span>🏪 Sponsored Shops</span>
     </button>
+    <button class="tab-btn" id="tab-heroslides" onclick="goTab('heroslides',this)">
+      <span>🏠 Hero Slides</span>
+    </button>
     <button class="tab-btn" id="tab-hampers" onclick="goTab('hampers',this)">
       <span>🎁 Hamper Management</span>
     </button>
@@ -1411,6 +1414,120 @@ button,input,select{font-family:'DM Sans',sans-serif;}
       <div id="sponsoredShopsListWrap"><div style="color:var(--muted);font-size:.82rem;">লোড হচ্ছে...</div></div>
     </div>
 
+    <!-- ═══ HERO SLIDES MANAGEMENT PAGE ═══ -->
+    <div class="page" id="page-heroslides">
+      <div class="sec-head">
+        <div class="sec-title">🏠 Hero Slides Management <small>Homepage-এর সবচেয়ে উপরের Hero section নিয়ন্ত্রণ করুন — Brand slide + আপনার নিজস্ব House Slides</small></div>
+      </div>
+
+      <!-- BRAND SLIDE CUSTOMIZATION -->
+      <div class="add-zone-card" style="margin-bottom:20px;border-color:var(--gold-muted,#C7A15A);">
+        <div style="font-size:.9rem;font-weight:700;color:var(--navy);margin-bottom:4px;">⭐ Default Brand Slide</div>
+        <div style="font-size:.72rem;color:var(--muted);margin-bottom:14px;">এটা সবসময় থাকে (delete করা যায় না) — সবকিছু খালি রাখলে এখনকার default (সূর্যাস্তের ছবি, "DELTA — পরিবর্তনের ব-দ্বীপ") দেখাবে।</div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+          <div class="form-group" style="margin-bottom:0;grid-column:1/-1;">
+            <label>Background Image URL <span style="font-weight:400;color:var(--muted);">(খালি রাখলে default ছবি থাকবে)</span></label>
+            <input type="text" class="form-input" id="bsImage" placeholder="Cloudinary URL">
+          </div>
+          <div class="form-group" style="margin-bottom:0;grid-column:1/-1;">
+            <label>Video URL <span style="font-weight:400;color:var(--muted);">(দিলে ছবির বদলে video চলবে, autoplay+muted+loop)</span></label>
+            <input type="text" class="form-input" id="bsVideo" placeholder="Cloudinary video URL (mp4)">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>ট্যাগলাইন (বাংলা) <span style="font-weight:400;color:var(--muted);">— "△ DELTA" লোগোর ঠিক নিচের লাইন</span></label>
+            <input type="text" class="form-input" id="bsHeadingBn" placeholder="DELTA — পরিবর্তনের ব-দ্বীপ">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>Tagline (English) <span style="font-weight:400;color:var(--muted);">— line right under the "△ DELTA" logo</span></label>
+            <input type="text" class="form-input" id="bsHeadingEn" placeholder="DELTA — The Delta of Change">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>সাব-টেক্সট (বাংলা)</label>
+            <input type="text" class="form-input" id="bsSubtextBn" placeholder="আপনার শহরের প্রতিটি দোকান...">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>Subtext (English)</label>
+            <input type="text" class="form-input" id="bsSubtextEn" placeholder="Every shop, farmer...">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>বাটন টেক্সট (বাংলা)</label>
+            <input type="text" class="form-input" id="bsBtnTextBn" placeholder="আমাদের সম্পর্কে জানুন →">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>Button Text (English)</label>
+            <input type="text" class="form-input" id="bsBtnTextEn" placeholder="Learn About Us →">
+          </div>
+          <div class="form-group" style="margin-bottom:0;grid-column:1/-1;">
+            <label>Button Link <span style="font-weight:400;color:var(--muted);">(খালি রাখলে "Why DELTA" সেকশনে scroll করবে, যেমন এখন হয়)</span></label>
+            <input type="text" class="form-input" id="bsBtnLink" placeholder="যেমন: festival.html, বা #whyDeltaSection">
+          </div>
+        </div>
+
+        <div style="background:#fff4ec;border:1px solid var(--orange);border-radius:10px;padding:10px 12px;margin-bottom:12px;display:flex;align-items:center;gap:10px;">
+          <input type="checkbox" id="bsHideBrand" style="width:18px;height:18px;flex-shrink:0;">
+          <label for="bsHideBrand" style="font-size:.78rem;font-weight:700;color:var(--navy);cursor:pointer;margin:0;">
+            🎯 এই মুহূর্তে Brand story সাময়িক বন্ধ রাখুন — শুধু নিচের House Slides/Sponsored Ads দেখাবে
+            <span style="display:block;font-weight:400;color:var(--muted);margin-top:2px;">নিরাপত্তা: যদি কোনো House Slide বা Premium Ad active না থাকে, Brand Slide automatically আবার দেখানো হবে — Hero কখনো ফাঁকা যাবে না।</span>
+          </label>
+        </div>
+
+        <button class="btn-sm btn-orange" onclick="saveBrandSlide()">⭐ Brand Slide সেভ করুন</button>
+        <button class="btn-sm" style="background:var(--sand);color:var(--navy)" onclick="resetBrandSlideDefaults()">↺ সব Default-এ ফিরিয়ে দিন</button>
+        <span style="font-size:.72rem;color:var(--muted)" id="brandSlideSaveStatus"></span>
+      </div>
+
+      <!-- HOUSE SLIDES -->
+      <div class="add-zone-card" style="margin-bottom:20px;">
+        <div id="houseSlideFormTitle" style="font-size:.85rem;font-weight:700;color:var(--navy);margin-bottom:4px;">➕ নতুন House Slide যোগ করুন</div>
+        <div style="font-size:.72rem;color:var(--muted);margin-bottom:14px;">DELTA-র নিজস্ব প্রচার/ঘোষণা — নতুন feature, উৎসবের অফার, notification ইত্যাদি। Hero-তে Brand Slide ও Premium Shop Ad-এর সাথে একই rotation-এ দেখাবে।</div>
+        <input type="hidden" id="houseSlideEditId" value="">
+
+        <div style="background:#eef9f0;border:1px solid var(--green);border-radius:10px;padding:12px;margin-bottom:12px;">
+          <input type="checkbox" id="hsFullBanner" style="width:18px;height:18px;vertical-align:middle;margin-right:8px;">
+          <label for="hsFullBanner" style="font-size:.78rem;font-weight:700;color:var(--navy);">🎨 এটা একটা pre-made পূর্ণ ব্যানার (সব তথ্য ছবিতেই আছে)</label>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+          <div class="form-group" style="margin-bottom:0;grid-column:1/-1;">
+            <label>Banner Image URL *</label>
+            <input type="text" class="form-input" id="hsImage" placeholder="Cloudinary URL">
+          </div>
+          <div class="form-group" style="margin-bottom:0;grid-column:1/-1;">
+            <label>Video URL (Optional) <span style="font-weight:400;color:var(--muted);">— দিলে autoplay (মিউট) হবে</span></label>
+            <input type="text" class="form-input" id="hsVideo" placeholder="Cloudinary video URL (mp4)">
+          </div>
+          <div class="form-group" style="margin-bottom:0;grid-column:1/-1;">
+            <label>Link URL <span style="font-weight:400;color:var(--muted);">— ক্লিক করলে কোথায় যাবে (যেমন bazaar.html, festival.html)</span></label>
+            <input type="text" class="form-input" id="hsLink" placeholder="যেমন: bazaar.html">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>Priority (1-10)</label>
+            <input type="number" class="form-input" id="hsPriority" value="5" min="1" max="10">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>Display Duration (সেকেন্ড)</label>
+            <input type="number" class="form-input" id="hsDuration" value="5" min="2" max="20">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>Start Date</label>
+            <input type="date" class="form-input" id="hsStartDate">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>End Date</label>
+            <input type="date" class="form-input" id="hsEndDate">
+          </div>
+        </div>
+
+        <div style="display:flex;gap:10px;align-items:center;">
+          <button class="btn-sm btn-orange" onclick="saveHouseSlide()" id="houseSlideSaveBtn">➕ Save করুন</button>
+          <button class="btn-sm btn-outline" onclick="cancelHouseSlideEdit()" id="houseSlideCancelBtn" style="display:none;">✕ বাতিল</button>
+        </div>
+      </div>
+
+      <div id="houseSlidesListWrap"><div style="color:var(--muted);font-size:.82rem;">লোড হচ্ছে...</div></div>
+    </div>
+
     <!-- ═══ HAMPER MANAGEMENT PAGE ═══ -->
     <div class="page" id="page-hampers">
       <div class="sec-head">
@@ -1885,6 +2002,7 @@ function goTab(tab, btn){
   if(tab==='hampers') loadHamperManagement();
   if(tab==='hamperorders') loadHamperOrders();
   if(tab==='sponsoredshops') loadSponsoredShops();
+  if(tab==='heroslides'){ loadBrandSlide(); loadHouseSlides(); }
 }
 
 // ═══ DATA LOADING ═══
@@ -6401,6 +6519,167 @@ function cancelSponsoredShopEdit(){
   document.getElementById('ssPriority').value=5;
   document.getElementById('sponsoredShopFormTitle').textContent = '➕ নতুন Sponsored Shop যোগ করুন';
   document.getElementById('sponsoredShopCancelBtn').style.display='none';
+}
+
+// ═══════════════════ BRAND SLIDE (Default Hero) ═══════════════════
+function loadBrandSlide(){
+  db.collection('cities').doc(CITY).collection('settings').doc('heroBrandSlide').get()
+    .then(function(doc){
+      var d = doc.exists ? doc.data() : {};
+      document.getElementById('bsImage').value = d.imageUrl||'';
+      document.getElementById('bsVideo').value = d.videoUrl||'';
+      document.getElementById('bsHeadingBn').value = d.headingBn||'';
+      document.getElementById('bsHeadingEn').value = d.headingEn||'';
+      document.getElementById('bsSubtextBn').value = d.subtextBn||'';
+      document.getElementById('bsSubtextEn').value = d.subtextEn||'';
+      document.getElementById('bsBtnTextBn').value = d.buttonTextBn||'';
+      document.getElementById('bsBtnTextEn').value = d.buttonTextEn||'';
+      document.getElementById('bsBtnLink').value = d.buttonLink||'';
+      document.getElementById('bsHideBrand').checked = !!d.hideBrandSlide;
+    }).catch(function(){});
+}
+
+function saveBrandSlide(){
+  var statusEl = document.getElementById('brandSlideSaveStatus');
+  var data = {
+    imageUrl: document.getElementById('bsImage').value.trim(),
+    videoUrl: document.getElementById('bsVideo').value.trim(),
+    headingBn: document.getElementById('bsHeadingBn').value.trim(),
+    headingEn: document.getElementById('bsHeadingEn').value.trim(),
+    subtextBn: document.getElementById('bsSubtextBn').value.trim(),
+    subtextEn: document.getElementById('bsSubtextEn').value.trim(),
+    buttonTextBn: document.getElementById('bsBtnTextBn').value.trim(),
+    buttonTextEn: document.getElementById('bsBtnTextEn').value.trim(),
+    buttonLink: document.getElementById('bsBtnLink').value.trim(),
+    hideBrandSlide: document.getElementById('bsHideBrand').checked,
+    updatedAt: new Date().toISOString()
+  };
+  if(statusEl) statusEl.textContent = 'সেভ হচ্ছে...';
+  db.collection('cities').doc(CITY).collection('settings').doc('heroBrandSlide').set(data)
+    .then(function(){
+      if(statusEl){ statusEl.textContent='✅ সেভ হয়েছে'; setTimeout(function(){statusEl.textContent='';},3000); }
+      showToast('Brand Slide সেভ হয়েছে ✅','green');
+    }).catch(function(e){
+      if(statusEl) statusEl.textContent='❌ সমস্যা';
+      showToast('সমস্যা: '+e.message,'red');
+    });
+}
+
+function resetBrandSlideDefaults(){
+  if(!confirm('Brand Slide সব field default (খালি) করে দেবেন?')) return;
+  ['bsImage','bsVideo','bsHeadingBn','bsHeadingEn','bsSubtextBn','bsSubtextEn','bsBtnTextBn','bsBtnTextEn','bsBtnLink'].forEach(function(id){
+    document.getElementById(id).value='';
+  });
+  document.getElementById('bsHideBrand').checked=false;
+  saveBrandSlide();
+}
+
+// ═══════════════════ HOUSE SLIDES ═══════════════════
+var allHouseSlides = [];
+
+function loadHouseSlides(){
+  db.collection('cities').doc(CITY).collection('heroSlides').get().then(function(snap){
+    allHouseSlides = [];
+    snap.forEach(function(d){ allHouseSlides.push(Object.assign({id:d.id}, d.data())); });
+    allHouseSlides.sort(function(a,b){ return (b.priority||0)-(a.priority||0); });
+    renderHouseSlidesList();
+  }).catch(function(){
+    var wrap = document.getElementById('houseSlidesListWrap');
+    if(wrap) wrap.innerHTML = '<div style="color:var(--muted);font-size:.82rem;">কোনো House Slide নেই</div>';
+  });
+}
+
+function renderHouseSlidesList(){
+  var wrap = document.getElementById('houseSlidesListWrap');
+  if(!wrap) return;
+  if(!allHouseSlides.length){
+    wrap.innerHTML = '<div style="color:var(--muted);font-size:.82rem;padding:14px;">এখনো কোনো House Slide যোগ করা হয়নি।</div>';
+    return;
+  }
+  wrap.innerHTML = allHouseSlides.map(function(s){
+    var thumb = s.imageUrl ? '<img src="'+s.imageUrl+'" style="width:64px;height:48px;object-fit:cover;border-radius:8px;">' : '';
+    var isActive = s.status !== 'inactive';
+    return '<div style="display:flex;gap:12px;align-items:center;padding:12px;border:1px solid var(--border);border-radius:10px;margin-bottom:8px;background:#fff;">'+
+      thumb+
+      '<div style="flex:1;min-width:0;">'+
+        '<div style="font-size:.82rem;font-weight:700;color:var(--navy);">'+(s.linkUrl||'—')+
+          (s.fullBanner?' <span style="font-size:.6rem;font-weight:700;background:var(--sand);color:var(--orange);padding:2px 7px;border-radius:10px;">🎨 Full Banner</span>':'')+
+          (s.videoUrl?' <span style="font-size:.6rem;font-weight:700;background:var(--sand);color:var(--navy);padding:2px 7px;border-radius:10px;">🎬 Video</span>':'')+
+        '</div>'+
+        '<div style="font-size:.72rem;color:var(--muted);">Priority: '+(s.priority||1)+' · '+(s.displayDuration||5)+'s'+
+          (s.startDate?' · '+s.startDate+' → '+(s.endDate||'—'):'')+
+        '</div>'+
+      '</div>'+
+      '<button class="btn-sm '+(isActive?'btn-green':'')+'" style="font-size:.68rem;" onclick="toggleHouseSlideStatus(\''+s.id+'\','+(isActive?'false':'true')+')">'+(isActive?'⏸':'▶️')+'</button>'+
+      '<button class="btn-sm" style="background:var(--sand);color:var(--navy)" onclick="editHouseSlide(\''+s.id+'\')">✏️</button>'+
+      '<button class="btn-sm" style="background:#fdeeec;color:#c0392b" onclick="deleteHouseSlide(\''+s.id+'\')">🗑️</button>'+
+    '</div>';
+  }).join('');
+}
+
+function saveHouseSlide(){
+  var editId = document.getElementById('houseSlideEditId').value;
+  var imageUrl = document.getElementById('hsImage').value.trim();
+  if(!imageUrl){ showToast('Banner Image URL দিন','red'); return; }
+  var data = {
+    sourceType: 'house',
+    fullBanner: document.getElementById('hsFullBanner').checked,
+    imageUrl: imageUrl,
+    videoUrl: document.getElementById('hsVideo').value.trim(),
+    linkUrl: document.getElementById('hsLink').value.trim(),
+    priority: parseInt(document.getElementById('hsPriority').value)||1,
+    displayDuration: parseInt(document.getElementById('hsDuration').value)||5,
+    startDate: document.getElementById('hsStartDate').value,
+    endDate: document.getElementById('hsEndDate').value,
+    updatedAt: new Date().toISOString()
+  };
+  var ref = db.collection('cities').doc(CITY).collection('heroSlides');
+  var promise = editId ? ref.doc(editId).update(data) : ref.add(Object.assign({status:'active', createdAt:new Date().toISOString()}, data));
+  promise.then(function(){
+    showToast(editId?'✅ Updated!':'✅ House Slide যোগ হয়েছে!','green');
+    cancelHouseSlideEdit();
+    loadHouseSlides();
+  }).catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
+}
+
+function editHouseSlide(id){
+  var s = allHouseSlides.find(function(x){ return x.id===id; });
+  if(!s) return;
+  document.getElementById('houseSlideEditId').value = id;
+  document.getElementById('hsFullBanner').checked = !!s.fullBanner;
+  document.getElementById('hsImage').value = s.imageUrl||'';
+  document.getElementById('hsVideo').value = s.videoUrl||'';
+  document.getElementById('hsLink').value = s.linkUrl||'';
+  document.getElementById('hsPriority').value = s.priority||5;
+  document.getElementById('hsDuration').value = s.displayDuration||5;
+  document.getElementById('hsStartDate').value = s.startDate||'';
+  document.getElementById('hsEndDate').value = s.endDate||'';
+  document.getElementById('houseSlideFormTitle').textContent = '✏️ House Slide এডিট করুন';
+  document.getElementById('houseSlideCancelBtn').style.display = 'inline-flex';
+}
+
+function cancelHouseSlideEdit(){
+  document.getElementById('houseSlideEditId').value = '';
+  document.getElementById('hsFullBanner').checked = false;
+  ['hsImage','hsVideo','hsLink','hsStartDate','hsEndDate'].forEach(function(id){ document.getElementById(id).value=''; });
+  document.getElementById('hsPriority').value = 5;
+  document.getElementById('hsDuration').value = 5;
+  document.getElementById('houseSlideFormTitle').textContent = '➕ নতুন House Slide যোগ করুন';
+  document.getElementById('houseSlideCancelBtn').style.display = 'none';
+}
+
+function toggleHouseSlideStatus(id, isChecked){
+  db.collection('cities').doc(CITY).collection('heroSlides').doc(id)
+    .update({status: isChecked?'active':'inactive'})
+    .then(function(){ loadHouseSlides(); showToast('স্ট্যাটাস আপডেট হয়েছে','green'); })
+    .catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
+}
+
+function deleteHouseSlide(id){
+  if(!confirm('এই House Slide মুছে ফেলবেন?')) return;
+  db.collection('cities').doc(CITY).collection('heroSlides').doc(id).delete()
+    .then(function(){ loadHouseSlides(); showToast('মুছে ফেলা হয়েছে','green'); })
+    .catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
 }
 
 function toggleSponsoredShopStatus(id, status){
