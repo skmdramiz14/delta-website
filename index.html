@@ -170,7 +170,6 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 .hero::before{content:'';position:absolute;top:-120px;right:-80px;width:520px;height:520px;background:radial-gradient(circle,rgba(201,162,39,.14) 0%,transparent 68%);border-radius:50%;}
 .hero::after{content:'△';position:absolute;right:6%;bottom:-20px;font-size:220px;font-weight:900;color:rgba(255,255,255,.06);line-height:1;pointer-events:none;z-index:0;}
 .hero-inner{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center;max-width:1200px;width:100%;margin:0 auto;position:relative;z-index:2;}
-.hero-tag{display:inline-flex;align-items:center;gap:7px;background:rgba(201,162,39,.18);border:1px solid rgba(201,162,39,.35);color:#ffb07a;padding:6px 14px;border-radius:20px;font-size:.75rem;font-weight:600;letter-spacing:.8px;text-transform:uppercase;margin-bottom:18px;}
 .hero h1{font-family:'Playfair Display',serif;font-size:clamp(2rem,4.5vw,3.2rem);font-weight:900;color:#fff;line-height:1.22;margin-bottom:12px;text-shadow:0 2px 20px rgba(0,0,0,.3);}
 .hero h1 em{color:var(--orange);font-style:normal;filter:drop-shadow(0 0 24px rgba(201,162,39,.95)) drop-shadow(0 0 48px rgba(201,162,39,.55)) drop-shadow(0 0 70px rgba(201,162,39,.25));}
 .hero-bn{font-family:'Tiro Bangla',serif;font-size:1.1rem;color:var(--orange2);margin-bottom:10px;text-shadow:0 2px 12px rgba(0,0,0,.4);}
@@ -597,7 +596,8 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 .hts-sep{width:1px;height:14px;background:rgba(255,255,255,.2);flex-shrink:0;}
 
 /* ── HERO TAG improvement ── */
-.hero-tag{display:inline-flex;align-items:center;gap:7px;background:rgba(201,162,39,.15);border:1px solid rgba(201,162,39,.25);color:#ffb07a;padding:7px 18px;border-radius:20px;font-size:.75rem;font-weight:600;letter-spacing:.8px;text-transform:uppercase;margin-bottom:18px;box-shadow:0 2px 12px rgba(201,162,39,.1);}
+.hero-tag{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,rgba(231,197,133,.22),rgba(199,161,90,.08));border:1px solid rgba(231,197,133,.5);color:#f3dfb3;padding:7px 20px 7px 14px;border-radius:24px;font-size:.75rem;font-weight:700;letter-spacing:1.1px;text-transform:uppercase;margin-bottom:18px;box-shadow:0 3px 16px rgba(199,161,90,.18),inset 0 1px 0 rgba(255,255,255,.12);}
+.hero-tag svg{flex-shrink:0;filter:drop-shadow(0 0 4px rgba(231,197,133,.6));}
 
 @media(max-width:768px){
   .hero-stats-box{padding:14px 6px;}
@@ -2107,7 +2107,7 @@ img{max-width:100%;height:auto;}
   <!-- Thin gold geometric line is already baked into the photo itself — no CSS duplicate needed -->
   <div class="hero-inner" style="position:relative;z-index:1;">
     <div class="hero-content">
-      <div class="hero-tag">🌟 <span class="lang-bn">ভারতের প্রথম লোকাল সুপার অ্যাপ</span><span class="lang-en">India's First Local Super App</span></div>
+      <div class="hero-tag"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 2L14.12 9.88L22 12L14.12 14.12L12 22L9.88 14.12L2 12L9.88 9.88L12 2Z" fill="url(#heroTagStarGrad)"/><defs><linearGradient id="heroTagStarGrad" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse"><stop stop-color="#F8E7C3"/><stop offset="1" stop-color="#C7A15A"/></linearGradient></defs></svg> <span class="lang-bn">ভারতের প্রথম লোকাল সুপার অ্যাপ</span><span class="lang-en">India's First Local Super App</span></div>
       <h1>△ DELT<em>A</em></h1>
       <div class="hero-bn"><span class="lang-bn">পরিবর্তনের ব-দ্বীপ</span><span class="lang-en">The Delta of Change</span></div>
       <p><span class="lang-bn">আপনার শহরের প্রতিটি দোকান, কৃষক, এবং Service Provider — এক প্ল্যাটফর্মে। <span class="hero-tagline-strong">Local Roots, Global Wings.</span></span><span class="lang-en">Every shop, farmer, and service provider in your town — one platform. <span class="hero-tagline-strong">Local Roots, Global Wings.</span></span></p>
