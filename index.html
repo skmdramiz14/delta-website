@@ -810,22 +810,27 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 .badge-flash{background:linear-gradient(135deg,#c0392b,#e74c3c);color:#fff;font-size:.62rem;font-weight:700;padding:3px 8px;border-radius:4px;animation:flashPulse 2s infinite;}
 @keyframes flashPulse{0%,100%{opacity:1;}50%{opacity:.75;}}
 
-/* ── BOTTOM NAV — Fixed Premium Footer ── */
-.bottom-nav{display:none;position:fixed;left:0;right:0;bottom:0;min-height:78px;
-  border-radius:20px 20px 0 0;
-  background:linear-gradient(180deg,#123A31 0%,#0B2E26 100%);
-  border-top:1px solid rgba(255,255,255,.08);
-  box-shadow:0 -6px 20px rgba(0,0,0,.12);
+/* ── BOTTOM NAV — Fixed Premium Footer (Quiet Luxury) ── */
+.bottom-nav{display:none;position:fixed;left:0;right:0;bottom:0;min-height:79px;
+  border-radius:0;
+  background-image:
+    radial-gradient(circle at center,transparent 55%,rgba(0,0,0,.12) 100%),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='matrix' values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.018 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>"),
+    linear-gradient(180deg,#081B18 0%,#051311 100%);
+  background-repeat:no-repeat,repeat,no-repeat;
+  background-size:cover,140px 140px,cover;
+  border-top:1px solid rgba(212,175,55,.18);
+  box-shadow:0 -6px 18px rgba(0,0,0,.12);
   z-index:900;padding:0;padding-bottom:env(safe-area-inset-bottom,0px);}
-.bn-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
-  font-size:.75rem;font-weight:500;color:rgba(255,255,255,.55);cursor:pointer;position:relative;
-  height:78px;transition:color .2s ease-in-out;}
+.bn-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+  font-size:.75rem;font-weight:500;letter-spacing:.2px;color:#B8B8B8;cursor:pointer;position:relative;
+  height:79px;transition:color .2s ease-in-out;}
 .bn-icon-pill{width:44px;height:28px;display:flex;align-items:center;justify-content:center;}
-.bn-item .bn-icon{width:21px;height:21px;color:rgba(255,255,255,.55);flex-shrink:0;display:block;
+.bn-item .bn-icon{width:21px;height:21px;color:#A8A8A8;flex-shrink:0;display:block;
   transition:color .2s ease-in-out,transform .2s ease-in-out;}
 .bn-item.active{color:#D4AF37;}
 .bn-item.active .bn-icon{color:#D4AF37;transform:scale(1.05);}
-.bn-active-dot{position:absolute;bottom:8px;width:16px;height:2.5px;border-radius:2px;background:#D4AF37;
+.bn-active-dot{position:absolute;bottom:8px;width:22px;height:2.5px;border-radius:2px;background:#D4AF37;
   opacity:0;transition:opacity .2s ease-in-out;}
 .bn-item.active .bn-active-dot{opacity:1;}
 .bn-item:active{transform:scale(.96);}
@@ -834,7 +839,7 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 .bn-icon-wrap{width:64px;height:64px;border-radius:50%;overflow:hidden;position:relative;
   background:linear-gradient(135deg,#E9C87B 0%,#F7E6B5 50%,#D9AE58 100%);
   border:2px solid #14453B;display:flex;align-items:center;justify-content:center;
-  box-shadow:0 6px 16px rgba(217,174,88,.25),inset 0 2px 4px rgba(255,255,255,.5),inset 0 -3px 6px rgba(0,0,0,.14);
+  box-shadow:0 5px 13px rgba(217,174,88,.16),inset 0 2px 4px rgba(255,255,255,.45),inset 0 -3px 6px rgba(0,0,0,.16);
   transition:transform .2s ease-in-out;}
 .bn-cart-btn-outer:active .bn-icon-wrap{transform:scale(.97);}
 .bn-item.bn-center .bn-icon{width:26px;height:26px;color:#0F3B31;}
@@ -843,12 +848,12 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 @keyframes bnRippleAnim{to{transform:scale(1);opacity:0;}}
 .bn-cart-badge{position:absolute;top:-2px;right:-2px;background:#1E8449;color:#fff;font-size:.62rem;
   font-weight:800;width:19px;height:19px;border-radius:50%;display:none;align-items:center;justify-content:center;
-  border:2px solid #0B2E26;z-index:3;}
+  border:2px solid #051311;z-index:3;}
 .bn-cart-badge.bn-badge-pulse{animation:bnBadgePulse .5s ease-out;}
 @keyframes bnBadgePulse{0%{transform:scale(1);}50%{transform:scale(1.25);}100%{transform:scale(1);}}
 @media(max-width:768px){
   .bottom-nav{display:flex;}
-  body{padding-bottom:88px;}
+  body{padding-bottom:89px;}
   .wa-float{bottom:96px;}
   .music-float{bottom:164px;}
 }
