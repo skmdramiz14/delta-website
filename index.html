@@ -4868,16 +4868,23 @@ var _heroSWRRWeights = [];
 function initHeroCarousel(otherSlides, hideBrand){
   var premiumWrap = document.getElementById('heroPremiumWrap');
   var brand = document.getElementById('heroSlideBrand');
-  if(!premiumWrap || !brand) return;
+  var viewport = document.getElementById('heroSlideViewport');
+  if(!premiumWrap || !brand || !viewport) return;
   if(_heroAutoplayTimer){ clearTimeout(_heroAutoplayTimer); _heroAutoplayTimer=null; }
 
   if(!otherSlides || !otherSlides.length){
     // No House Slides / Premium Ads — brand hero stays, no rotation
     premiumWrap.style.display = 'none';
     brand.style.visibility = 'visible';
+    viewport.style.height = ''; // let it size naturally to the (visible) brand hero again
     _heroSlides = [];
     return;
   }
+
+  // Lock the viewport to the Brand Hero's EXACT measured pixel height (not just CSS auto-sizing).
+  // This removes any ambiguity that could leave a 1-3px sliver of the dark fallback background
+  // showing at the edge when the Premium slide overlay swaps in.
+  viewport.style.height = brand.offsetHeight + 'px';
 
   // Safety net: if admin asked to hide the Brand Slide, only honor that when there's at least
   // one other active slide to show instead — never let Hero end up completely empty.
@@ -5102,6 +5109,24 @@ function scheduleNextHeroSlide(){
     goHeroSlide(_swrrPickNext(_heroSlides, _heroSWRRWeights));
   }, durationMs);
 }
+
+// Re-measure the Brand Hero's height on resize/rotation so the locked viewport height
+// (see initHeroCarousel) never drifts out of sync with the real content.
+var _heroResizeTimer = null;
+window.addEventListener('resize', function(){
+  if(_heroResizeTimer) clearTimeout(_heroResizeTimer);
+  _heroResizeTimer = setTimeout(function(){
+    if(!_heroSlides.length) return; // no rotation active — nothing to keep in sync
+    var brand = document.getElementById('heroSlideBrand');
+    var viewport = document.getElementById('heroSlideViewport');
+    if(!brand || !viewport) return;
+    var wasHidden = brand.style.visibility === 'hidden';
+    if(wasHidden) brand.style.visibility = 'visible'; // briefly reveal to measure true height
+    var h = brand.offsetHeight;
+    if(wasHidden) brand.style.visibility = 'hidden';
+    viewport.style.height = h + 'px';
+  }, 200);
+});
 
 function _sponsoredSlideHTML(ad, idx){
   if(ad.type === 'product_ad') return _featuredProductCardHTML(ad, false);
