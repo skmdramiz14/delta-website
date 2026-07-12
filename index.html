@@ -649,6 +649,31 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
   .mobile-search-bar{display:flex;}
 }
 
+/* ── DELTA HUB — branches bottom sheet ── */
+.delta-hub-overlay{position:fixed;inset:0;background:rgba(15,40,24,.55);z-index:3000;display:none;
+  align-items:flex-end;justify-content:center;}
+.delta-hub-overlay.open{display:flex;animation:fmFadeIn .2s ease;}
+.delta-hub-sheet{background:#FAF8F3;width:100%;max-width:520px;border-radius:26px 26px 0 0;
+  padding:10px 20px calc(24px + env(safe-area-inset-bottom,0px));animation:fmSlideUp .25s ease;
+  max-height:78vh;overflow-y:auto;}
+.delta-hub-handle{width:40px;height:4px;background:rgba(15,59,49,.2);border-radius:3px;margin:6px auto 14px;}
+.delta-hub-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.delta-hub-title{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:800;color:#0F3B31;}
+.delta-hub-title em{color:#D4AF37;font-style:normal;}
+.delta-hub-close{width:30px;height:30px;border-radius:50%;border:none;background:rgba(15,59,49,.08);
+  color:#0F3B31;font-size:.9rem;cursor:pointer;flex-shrink:0;}
+.delta-hub-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px 10px;}
+.delta-hub-item{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;
+  cursor:pointer;padding:4px 0;text-decoration:none;transition:transform .15s ease;}
+.delta-hub-item:active{transform:scale(.95);}
+.delta-hub-icon-wrap{width:54px;height:54px;border-radius:17px;display:flex;align-items:center;
+  justify-content:center;font-size:1.55rem;box-shadow:0 4px 14px rgba(0,0,0,.08);}
+.delta-hub-label{font-size:.7rem;font-weight:600;color:#2a2f2b;line-height:1.3;}
+.delta-hub-item.soon{opacity:.5;cursor:default;}
+.delta-hub-item.soon:active{transform:none;}
+.delta-hub-soon-badge{font-size:.55rem;font-weight:700;color:#D4AF37;background:rgba(212,175,55,.14);
+  padding:2px 7px;border-radius:8px;}
+
 /* ── WHATSAPP FLOAT ── */
 .wa-float{position:fixed;bottom:28px;right:18px;z-index:1500;}
 .music-float{position:fixed;bottom:96px;right:18px;z-index:1500;}
@@ -3482,12 +3507,11 @@ img{max-width:100%;height:auto;}
     <span class="bn">দোকান</span>
     <span class="bn-active-dot"></span>
   </div>
-  <div class="bn-item bn-center" id="bn-cart" onclick="bottomNavClick('cart',this);triggerCartRipple(event);openCart()">
+  <div class="bn-item bn-center" id="bn-delta" onclick="bottomNavClick('delta',this);triggerDeltaRipple(event);openDeltaHub()">
     <span class="bn-cart-btn-outer">
-      <span class="bn-icon-wrap"><svg class="bn-icon" viewBox="0 0 24 24" fill="none" stroke="#0F3B31" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 3H4.8L5.7 6M5.7 6L7.4 14.2C7.55 14.95 8.2 15.5 8.97 15.5H17.6C18.35 15.5 19 14.97 19.16 14.24L20.6 7.5C20.75 6.8 20.22 6.13 19.5 6.13H5.7Z"/><circle cx="9.5" cy="19.5" r="1.4"/><circle cx="17" cy="19.5" r="1.4"/></svg></span>
-      <span class="bn-cart-badge" id="bnCartBadge">0</span>
+      <span class="bn-icon-wrap"><svg class="bn-icon" viewBox="0 0 24 24" width="24" height="24" fill="#0F3B31" stroke="none"><path d="M12 3L21.5 20H2.5L12 3Z"/></svg></span>
     </span>
-    <span class="bn">কার্ট</span>
+    <span class="bn">DELTA</span>
   </div>
   <div class="bn-item" id="bn-menu" onclick="bottomNavClick('menu',this);openSideMenu()">
     <span class="bn-icon-pill"><svg class="bn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6H20M4 12H20M4 18H20"/></svg></span>
@@ -3498,6 +3522,18 @@ img{max-width:100%;height:auto;}
     <span class="bn-icon-pill"><svg class="bn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20C5.5 16 8.4 14 12 14C15.6 14 18.5 16 19.5 20"/></svg></span>
     <span class="bn">আমার</span>
     <span class="bn-active-dot"></span>
+  </div>
+</div>
+
+<!-- DELTA HUB — shows all DELTA branches (Bazaar, Hampers, Festival, Fresh, Flash Sale, and future ones) -->
+<div class="delta-hub-overlay" id="deltaHubOverlay" onclick="if(event.target===this) closeDeltaHub()">
+  <div class="delta-hub-sheet">
+    <div class="delta-hub-handle"></div>
+    <div class="delta-hub-header">
+      <div class="delta-hub-title">△ DELT<em>A</em> <span class="lang-bn">ইকোসিস্টেম</span><span class="lang-en">Ecosystem</span></div>
+      <button class="delta-hub-close" onclick="closeDeltaHub()">✕</button>
+    </div>
+    <div class="delta-hub-grid" id="deltaHubGrid"></div>
   </div>
 </div>
 
@@ -7022,8 +7058,42 @@ function updateBnCartBadge(){
     b.classList.add('bn-badge-pulse');
   }else b.style.display='none';
 }
-function triggerCartRipple(e){
-  var wrap = document.querySelector('#bn-cart .bn-icon-wrap');
+// ── DELTA HUB — all DELTA branches. Add new ones here as they launch (status:'live') or are announced (status:'soon') ──
+var DELTA_HUB_ITEMS = [
+  {name_bn:'বাজার',       name_en:'Bazaar',     icon:'🏮', color:'#3d2a6b', url:'bazaar.html',     status:'live'},
+  {name_bn:'হ্যাম্পার',    name_en:'Hampers',    icon:'🎁', color:'#7B1FA2', url:'hampers.html',    status:'live'},
+  {name_bn:'উৎসব',       name_en:'Festival',   icon:'🎊', color:'#c0392b', url:'festival.html',   status:'live'},
+  {name_bn:'ফ্রেশ',       name_en:'Fresh',      icon:'🌿', color:'#3d6b28', url:'fresh.html',      status:'live'},
+  {name_bn:'ফ্ল্যাশ সেল',   name_en:'Flash Sale', icon:'⚡', color:'#d35400', url:'flash-sale.html', status:'live'},
+  {name_bn:'রিমার্কেট',    name_en:'ReMarket',   icon:'♻️', color:'#16697a', url:null,              status:'soon'},
+  {name_bn:'রেন্টাল ক্লাব', name_en:'Rental Club',icon:'🔧', color:'#5d4037', url:null,              status:'soon'}
+  // Future branches — just add a new object here, e.g.:
+  // {name_bn:'ভ্রমণ', name_en:'Travel', icon:'✈️', color:'#0d6b8c', url:'travel.html', status:'live'},
+];
+function renderDeltaHub(){
+  var grid = document.getElementById('deltaHubGrid');
+  if(!grid) return;
+  grid.innerHTML = DELTA_HUB_ITEMS.map(function(item){
+    var isLive = item.status === 'live';
+    var cls = 'delta-hub-item' + (isLive ? '' : ' soon');
+    var click = isLive ? "closeDeltaHub();window.location.href='" + item.url + "'" : '';
+    return '<div class="' + cls + '" onclick="' + click + '">' +
+      '<div class="delta-hub-icon-wrap" style="background:' + item.color + '22;">' + item.icon + '</div>' +
+      '<span class="delta-hub-label"><span class="lang-bn">' + item.name_bn + '</span><span class="lang-en">' + item.name_en + '</span></span>' +
+      (isLive ? '' : '<span class="delta-hub-soon-badge"><span class="lang-bn">শীঘ্রই</span><span class="lang-en">Soon</span></span>') +
+    '</div>';
+  }).join('');
+}
+function openDeltaHub(){
+  renderDeltaHub();
+  document.getElementById('deltaHubOverlay').classList.add('open');
+}
+function closeDeltaHub(){
+  document.getElementById('deltaHubOverlay').classList.remove('open');
+}
+
+function triggerDeltaRipple(e){
+  var wrap = document.querySelector('#bn-delta .bn-icon-wrap');
   if(!wrap) return;
   var rect = wrap.getBoundingClientRect();
   var size = Math.max(rect.width, rect.height) * 1.4;
