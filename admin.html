@@ -1352,6 +1352,7 @@ button,input,select{font-family:'DM Sans',sans-serif;}
               <button type="button" class="btn-sm" style="background:var(--sand);color:var(--navy);white-space:nowrap;" onclick="_previewVideo('ssVideo','ssVideoPreview')">🔍 Preview</button>
             </div>
             <input type="hidden" id="ssVideoPosition" value="center center">
+            <input type="hidden" id="ssVideoZoom" value="1">
             <div id="ssVideoPreview"></div>
           </div>
           <div class="form-group" style="margin-bottom:0">
@@ -1500,6 +1501,7 @@ button,input,select{font-family:'DM Sans',sans-serif;}
               <button type="button" class="btn-sm" style="background:var(--sand);color:var(--navy);white-space:nowrap;" onclick="_previewVideo('bsVideo','bsVideoPreview')">🔍 Preview</button>
             </div>
             <input type="hidden" id="bsVideoPosition" value="center center">
+            <input type="hidden" id="bsVideoZoom" value="1">
             <div id="bsVideoPreview"></div>
           </div>
           <div class="form-group" style="margin-bottom:0">
@@ -1568,6 +1570,7 @@ button,input,select{font-family:'DM Sans',sans-serif;}
               <button type="button" class="btn-sm" style="background:var(--sand);color:var(--navy);white-space:nowrap;" onclick="_previewVideo('hsVideo','hsVideoPreview')">🔍 Preview</button>
             </div>
             <input type="hidden" id="hsVideoPosition" value="center center">
+            <input type="hidden" id="hsVideoZoom" value="1">
             <div id="hsVideoPreview"></div>
           </div>
           <div class="form-group" style="margin-bottom:0;grid-column:1/-1;">
@@ -6522,9 +6525,10 @@ function _previewVideo(inputId, previewContainerId){
   if(!box) return;
   if(!url){ showToast('আগে একটা Video URL দিন','red'); return; }
 
-  var posInputId = inputId + 'Position';
-  var posInput = document.getElementById(posInputId);
+  var posInput = document.getElementById(inputId + 'Position');
+  var zoomInput = document.getElementById(inputId + 'Zoom');
   var currentPos = posInput ? posInput.value : 'center center';
+  var currentZoom = zoomInput ? parseFloat(zoomInput.value)||1 : 1;
   var videoElId = inputId + '_previewVid';
 
   var positions = [
@@ -6548,12 +6552,18 @@ function _previewVideo(inputId, previewContainerId){
       '<div style="font-size:.68rem;color:var(--muted);margin-bottom:6px;">👁️ এভাবেই Hero/Sponsored card-এ দেখাবে (আসল aspect-ratio):</div>'+
       '<div style="position:relative;width:100%;aspect-ratio:1000/850;border-radius:14px;overflow:hidden;background:#0f2818;border:2px solid var(--gold-muted,#C7A15A);">'+
         '<video id="'+videoElId+'" src="'+url+'" autoplay muted loop playsinline '+
-          'style="width:100%;height:100%;object-fit:cover;object-position:'+currentPos+';position:absolute;inset:0;display:block;background:#0f2818;" '+
+          'style="width:100%;height:100%;object-fit:cover;object-position:'+currentPos+';position:absolute;inset:0;display:block;background:#0f2818;transform:scale('+currentZoom+');" '+
           'onerror="this.parentElement.innerHTML=\'<div style=&quot;padding:20px;color:#ff8a80;font-size:.75rem;text-align:center;&quot;>⚠️ Video load করা যায়নি — URL চেক করুন</div>\'">'+
         '</video>'+
       '</div>'+
       '<div style="font-size:.68rem;color:var(--muted);margin-top:8px;">✂️ কোন অংশটা সবচেয়ে গুরুত্বপূর্ণ (crop এড়াতে), সেই অনুযায়ী নিচের গ্রিড থেকে বেছে নিন:</div>'+
       gridHtml+
+      '<div style="font-size:.68rem;color:var(--muted);margin-top:12px;">🔍 Zoom — উপরে/নিচে/পাশে কোনো ফাঁকা থেকে গেলে বাড়িয়ে দিন, ততক্ষণ পর্যন্ত টানুন যতক্ষণ না পুরো box ভরে যায়:</div>'+
+      '<div style="display:flex;align-items:center;gap:8px;margin-top:4px;">'+
+        '<input type="range" min="1" max="2.5" step="0.05" value="'+currentZoom+'" '+
+          'oninput="_setVideoZoom(\''+inputId+'\',this.value)" style="flex:1;">'+
+        '<span id="'+inputId+'ZoomLabel" style="font-size:.7rem;color:var(--navy);font-weight:700;min-width:40px;">'+Math.round(currentZoom*100)+'%</span>'+
+      '</div>'+
     '</div>';
 }
 
@@ -6566,6 +6576,15 @@ function _setCropPosition(inputId, position){
   var previewId = inputId + 'Preview';
   var box = document.getElementById(previewId);
   if(box) _previewVideo(inputId, previewId);
+}
+
+function _setVideoZoom(inputId, zoomValue){
+  var zoomInput = document.getElementById(inputId + 'Zoom');
+  if(zoomInput) zoomInput.value = zoomValue;
+  var vid = document.getElementById(inputId + '_previewVid');
+  if(vid) vid.style.transform = 'scale('+zoomValue+')';
+  var label = document.getElementById(inputId + 'ZoomLabel');
+  if(label) label.textContent = Math.round(zoomValue*100)+'%';
 }
 
 function toggleFullBannerMode(){
@@ -6582,6 +6601,7 @@ function saveSponsoredShop(){
   var adTier = document.getElementById('ssAdTier').value||'basic';
   var videoUrl = document.getElementById('ssVideo').value.trim();
   var videoPosition = document.getElementById('ssVideoPosition').value||'center center';
+  var videoZoom = parseFloat(document.getElementById('ssVideoZoom').value)||1;
   var shopName = document.getElementById('ssName').value.trim();
   var tagline = document.getElementById('ssTagline').value.trim();
   var discountText = document.getElementById('ssOffer').value.trim();
@@ -6603,6 +6623,7 @@ function saveSponsoredShop(){
     adTier: adTier,
     videoUrl: videoUrl,
     videoPosition: videoPosition,
+    videoZoom: videoZoom,
     fullBanner: fullBanner,
     alwaysFirst: alwaysFirst,
     displayDuration: duration,
@@ -6644,6 +6665,7 @@ function editSponsoredShop(id){
   document.getElementById('ssAdTier').value = s.adTier||'basic';
   document.getElementById('ssVideo').value = s.videoUrl||'';
   document.getElementById('ssVideoPosition').value = s.videoPosition||'center center';
+  document.getElementById('ssVideoZoom').value = s.videoZoom||1;
   toggleFullBannerMode();
   document.getElementById('ssName').value = s.shopName||'';
   document.getElementById('ssTagline').value = s.tagline||'';
@@ -6673,6 +6695,7 @@ function cancelSponsoredShopEdit(){
   document.getElementById('ssAdTier').value='basic';
   document.getElementById('ssVideo').value='';
   document.getElementById('ssVideoPosition').value='center center';
+  document.getElementById('ssVideoZoom').value='1';
   document.getElementById('ssVideoPreview').innerHTML='';
   toggleFullBannerMode();
   ['ssName','ssTagline','ssOffer','ssBtnText','ssImage','ssLink','ssRating','ssHours','ssLocation','ssStartDate','ssEndDate'].forEach(function(id){
@@ -6851,6 +6874,7 @@ function loadBrandSlide(){
       document.getElementById('bsImage').value = d.imageUrl||'';
       document.getElementById('bsVideo').value = d.videoUrl||'';
       document.getElementById('bsVideoPosition').value = d.videoPosition||'center center';
+      document.getElementById('bsVideoZoom').value = d.videoZoom||1;
       document.getElementById('bsHeadingBn').value = d.headingBn||'';
       document.getElementById('bsHeadingEn').value = d.headingEn||'';
       document.getElementById('bsSubtextBn').value = d.subtextBn||'';
@@ -6868,6 +6892,7 @@ function saveBrandSlide(){
     imageUrl: document.getElementById('bsImage').value.trim(),
     videoUrl: document.getElementById('bsVideo').value.trim(),
     videoPosition: document.getElementById('bsVideoPosition').value||'center center',
+    videoZoom: parseFloat(document.getElementById('bsVideoZoom').value)||1,
     headingBn: document.getElementById('bsHeadingBn').value.trim(),
     headingEn: document.getElementById('bsHeadingEn').value.trim(),
     subtextBn: document.getElementById('bsSubtextBn').value.trim(),
@@ -6895,6 +6920,7 @@ function resetBrandSlideDefaults(){
     document.getElementById(id).value='';
   });
   document.getElementById('bsVideoPosition').value='center center';
+  document.getElementById('bsVideoZoom').value='1';
   document.getElementById('bsVideoPreview').innerHTML='';
   document.getElementById('bsHideBrand').checked=false;
   saveBrandSlide();
@@ -6953,6 +6979,7 @@ function saveHouseSlide(){
     imageUrl: imageUrl,
     videoUrl: document.getElementById('hsVideo').value.trim(),
     videoPosition: document.getElementById('hsVideoPosition').value||'center center',
+    videoZoom: parseFloat(document.getElementById('hsVideoZoom').value)||1,
     linkUrl: document.getElementById('hsLink').value.trim(),
     priority: parseInt(document.getElementById('hsPriority').value)||1,
     displayDuration: parseInt(document.getElementById('hsDuration').value)||5,
@@ -6977,6 +7004,7 @@ function editHouseSlide(id){
   document.getElementById('hsImage').value = s.imageUrl||'';
   document.getElementById('hsVideo').value = s.videoUrl||'';
   document.getElementById('hsVideoPosition').value = s.videoPosition||'center center';
+  document.getElementById('hsVideoZoom').value = s.videoZoom||1;
   document.getElementById('hsLink').value = s.linkUrl||'';
   document.getElementById('hsPriority').value = s.priority||5;
   document.getElementById('hsDuration').value = s.displayDuration||5;
@@ -6991,6 +7019,7 @@ function cancelHouseSlideEdit(){
   document.getElementById('hsFullBanner').checked = false;
   ['hsImage','hsVideo','hsLink','hsStartDate','hsEndDate'].forEach(function(id){ document.getElementById(id).value=''; });
   document.getElementById('hsVideoPosition').value = 'center center';
+  document.getElementById('hsVideoZoom').value = '1';
   document.getElementById('hsVideoPreview').innerHTML = '';
   document.getElementById('hsPriority').value = 5;
   document.getElementById('hsDuration').value = 5;
