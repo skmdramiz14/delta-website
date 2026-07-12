@@ -124,8 +124,8 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 /* ── PREMIUM HERO CAROUSEL SLIDE (sponsored, overlays the brand hero) ── */
 .hero-premium-slide{width:100%;height:100%;min-height:280px;position:relative;overflow:hidden;cursor:pointer;
   background:#0f2818;display:flex;align-items:stretch;}
-.hero-premium-slide img.hps-media{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;}
-.hero-premium-slide video.hps-media{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;background:#000;}
+.hero-premium-slide img.hps-media{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;transform:scale(1.02);}
+.hero-premium-slide video.hps-media{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;background:#000;transform:scale(1.02);}
 .hps-sponsored-tag{position:absolute;bottom:12px;right:14px;background:rgba(0,0,0,.45);color:rgba(255,255,255,.85);
   font-size:.6rem;font-weight:600;padding:3px 10px;border-radius:20px;letter-spacing:.3px;
   backdrop-filter:blur(3px);z-index:2;}
@@ -4653,10 +4653,21 @@ function initSponsoredAd(){
     var basicAds = [], premiumAds = [];
     bannerSnap.forEach(function(d){
       var b = Object.assign({id:d.id}, d.data());
-      if(b.type!=='shop_ad') return;
       if(b.endDate && b.endDate < today) return;
       if(b.startDate && b.startDate > today) return;
-      if(b.adTier === 'premium') premiumAds.push(b); else basicAds.push(b);
+
+      if(b.type === 'shop_ad'){
+        if(b.adTier === 'premium') premiumAds.push(b); else basicAds.push(b);
+        return;
+      }
+
+      if(b.type === 'product_ad'){
+        var prod = allProducts.find(function(p){ return p.id===b.productId && p.shopId===b.sellerId; });
+        if(!prod) return; // product deleted/not found — silently skip this ad
+        if(typeof prod.stock === 'number' && prod.stock <= 0) return; // out of stock — skip from rotation
+        b.resolvedProduct = prod; // attach live product data for the renderer
+        if(b.adTier === 'premium') premiumAds.push(b); else basicAds.push(b);
+      }
     });
 
     var houseSlides = [];
@@ -4880,6 +4891,8 @@ function initHeroCarousel(otherSlides, hideBrand){
 }
 
 function _heroPremiumSlideHTML(ad){
+  if(ad.type === 'product_ad') return _featuredProductCardHTML(ad, true);
+
   var img = ad.imageUrl || '';
   var video = ad.videoUrl || '';
   var link = ad.linkUrl || '#';
@@ -4896,6 +4909,47 @@ function _heroPremiumSlideHTML(ad){
       muteBtnHtml+
       (isShopAd ? '<span class="hps-sponsored-tag"><span class="lang-bn">স্পনসরড</span><span class="lang-en">SPONSORED</span></span>' : '')+
     '</div>';
+}
+
+// ── Featured Product card — used by BOTH Hero (Premium) and the Basic lower carousel ──
+// Shows LIVE product data (name/image/price/stock), pulled fresh at render time.
+function _featuredProductCardHTML(ad, isHeroContext){
+  var p = ad.resolvedProduct;
+  if(!p) return '<div class="hero-premium-slide" style="display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.5);font-size:.8rem;">প্রোডাক্ট পাওয়া যায়নি</div>';
+
+  var img = p.imageUrl || (p.images && p.images[0]) || '';
+  var name = p.nameBn || p.nameEn || p.name || 'পণ্য';
+  var price = p.price || p.sellPrice || 0;
+  var disc = p.discount || 0;
+  var isFlash = !!p._flashEnd || !!p.isFlashSale;
+  var salePrice = (isFlash && p.salePrice) ? p.salePrice : (disc ? Math.round(price*(1-disc/100)) : price);
+  var showSale = salePrice < price;
+  var stockLow = p.stock > 0 && p.stock <= 5;
+  var openModalCall = "event.stopPropagation();openProductModal('"+p.id+"','"+p.shopId+"')";
+
+  var priceHtml = showSale
+    ? '<span style="font-size:1.05rem;font-weight:900;">₹'+salePrice+'</span> <span style="font-size:.78rem;text-decoration:line-through;opacity:.65;">₹'+price+'</span>'
+    : '<span style="font-size:1.05rem;font-weight:900;">₹'+price+'</span>';
+
+  var innerCard =
+    '<div style="position:relative;width:100%;aspect-ratio:1/1;background:#f2e9d3;overflow:hidden;">'+
+      (img ? '<img src="'+img+'" style="width:100%;height:100%;object-fit:cover;" loading="lazy">' : '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:3rem;">'+prodEmoji(p.category)+'</div>')+
+      '<span style="position:absolute;top:10px;left:10px;background:rgba(45,168,106,.9);color:#fff;font-size:.6rem;font-weight:700;padding:3px 10px;border-radius:20px;">'+
+        '🌟 <span class="lang-bn">ফিচার্ড</span><span class="lang-en">FEATURED</span></span>'+
+      (isFlash ? '<span style="position:absolute;top:10px;right:10px;background:var(--orange);color:#fff;font-size:.6rem;font-weight:700;padding:3px 10px;border-radius:20px;">⚡ Flash</span>' : '')+
+    '</div>'+
+    '<div style="padding:12px 14px;background:#fff;">'+
+      '<div style="font-size:.68rem;color:var(--muted);margin-bottom:2px;">🏪 '+(p.shopName||'')+'</div>'+
+      '<div style="font-size:.86rem;font-weight:700;color:var(--navy);margin-bottom:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+name+'</div>'+
+      '<div style="display:flex;align-items:center;justify-content:space-between;">'+
+        '<div style="color:var(--navy);">'+priceHtml+'</div>'+
+        (stockLow ? '<span style="font-size:.6rem;color:var(--orange);font-weight:700;">মাত্র '+p.stock+'টি বাকি</span>' : '')+
+      '</div>'+
+    '</div>';
+
+  return isHeroContext
+    ? '<div class="hero-premium-slide" style="background:#fff;flex-direction:column;" onclick="'+openModalCall+'">'+innerCard+'</div>'
+    : '<div style="flex-shrink:0;width:'+(100/_adSlides.length)+'%;background:#fff;cursor:pointer;overflow:hidden;" onclick="'+openModalCall+'">'+innerCard+'</div>';
 }
 
 // Only ONE video on the page may have sound at a time — prevents two ads/slides
@@ -5048,6 +5102,8 @@ function scheduleNextHeroSlide(){
 }
 
 function _sponsoredSlideHTML(ad, idx){
+  if(ad.type === 'product_ad') return _featuredProductCardHTML(ad, false);
+
   var img = ad.imageUrl || '';
   var video = ad.videoUrl || '';
   var link = ad.linkUrl || '#';
@@ -5666,7 +5722,7 @@ function productCardHTML(p,isFlash){
   var salePrice = isFlash ? (p.salePrice || Math.round(price*(1-disc/100))) : Math.round(price*(1-disc/100));
   var timerId='ftimer_'+p.id;
   var barId='ftbar_'+p.id;
-  return '<div class="product-card" id="pcard_'+p.id+'">'+
+  return '<div class="product-card" id="pcard_'+p.id+'" onclick="openProductModal(\''+p.id+'\',\''+p.shopId+'\')" style="cursor:pointer;">'+
     '<div class="product-img">'+(img?'<img src="'+img+'" alt="'+name+'" loading="lazy">':prodEmoji(p.category))+
     '<div class="product-badges">'+
     (isFlash?'<span class="badge badge-flash">⚡ Flash</span>':'')+
@@ -5689,7 +5745,7 @@ function productCardHTML(p,isFlash){
         : '<span class="price-now">₹'+price+'</span>'+(p.mrp&&p.mrp!==price?'<span class="price-old">₹'+p.mrp+'</span>':''))+
     '</div>'+
     (qty>0
-      ?'<div class="prod-qty-ctrl" id="pqc-'+p.id+'"><button class="pqc-btn minus" onclick="prodQtyChange(\''+p.id+'\',\''+p.shopId+'\',-1)">−</button><span class="pqc-num">'+qty+'</span><button class="pqc-btn plus" onclick="prodQtyChange(\''+p.id+'\',\''+p.shopId+'\',1)">+</button></div>'
+      ?'<div class="prod-qty-ctrl" id="pqc-'+p.id+'"><button class="pqc-btn minus" onclick="event.stopPropagation();prodQtyChange(\''+p.id+'\',\''+p.shopId+'\',-1)">−</button><span class="pqc-num">'+qty+'</span><button class="pqc-btn plus" onclick="event.stopPropagation();prodQtyChange(\''+p.id+'\',\''+p.shopId+'\',1)">+</button></div>'
       :'<button class="add-to-cart-btn" onclick="addToCartCard(event,\''+p.id+'\',\''+p.shopId+'\',this)">+ '+(currentLang==='en'?'Add to Cart':'কার্টে যোগ করুন')+'</button>')+
     '</div></div>';
   // Start timer after render
@@ -6275,6 +6331,121 @@ function openShopModal(shopId){
 
 function addToCartDirect(pid,sid){addToCartById(pid,sid);showToast('কার্টে যোগ হয়েছে ✅','green');}
 
+// ══ PRODUCT DETAIL MODAL — opened from product cards, Featured Product ads, etc. ══
+function openProductModal(pid, sid){
+  var p = allProducts.find(function(x){ return x.id===pid && x.shopId===sid; });
+  if(!p){ showToast('প্রোডাক্ট পাওয়া যায়নি','red'); return; }
+
+  var images = (p.images && p.images.length) ? p.images : (p.imageUrl ? [p.imageUrl] : []);
+  var name = p.nameBn || p.nameEn || p.name || 'পণ্য';
+  var price = p.price || p.sellPrice || 0;
+  var disc = p.discount || 0;
+  var isFlash = !!p._flashEnd || !!p.isFlashSale;
+  var salePrice = (isFlash && p.salePrice) ? p.salePrice : (disc ? Math.round(price*(1-disc/100)) : price);
+  var showSale = salePrice < price;
+  var inCart = cart.find(function(c){ return c.id===p.id && c.shopId===p.shopId; });
+  var qty = inCart ? inCart.qty : 0;
+  var isWished = wishlist.indexOf(p.id) >= 0;
+  var stockLow = p.stock > 0 && p.stock <= 5;
+  var outOfStock = typeof p.stock === 'number' && p.stock <= 0;
+
+  var ov = document.createElement('div');
+  ov.style.cssText = 'position:fixed;inset:0;background:var(--cream);z-index:1600;overflow-y:auto;';
+
+  var galleryHtml = images.length ? (
+    '<div style="position:relative;width:100%;aspect-ratio:1/1;background:#f2e9d3;overflow:hidden;" id="pdmGallery">'+
+      images.map(function(img,i){
+        return '<img src="'+img+'" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;'+
+          'opacity:'+(i===0?'1':'0')+';transition:opacity .3s;" data-pdm-slide="'+i+'">';
+      }).join('')+
+      (images.length>1 ? (
+        '<div style="position:absolute;bottom:12px;left:0;right:0;display:flex;justify-content:center;gap:6px;">'+
+          images.map(function(img,i){
+            return '<span data-pdm-dot="'+i+'" style="width:'+(i===0?'16px':'6px')+';height:6px;border-radius:4px;'+
+              'background:'+(i===0?'var(--navy)':'rgba(15,40,24,.3)')+';transition:all .25s;"></span>';
+          }).join('')+
+        '</div>'
+      ) : '')+
+    '</div>'
+  ) : ('<div style="width:100%;aspect-ratio:1/1;background:#f2e9d3;display:flex;align-items:center;justify-content:center;font-size:4rem;">'+prodEmoji(p.category)+'</div>');
+
+  var html =
+    '<div style="background:linear-gradient(135deg,var(--navy3),var(--navy));padding:18px 5%;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:2;">'+
+      '<button onclick="this.closest(\'[style*=fixed]\').remove()" style="background:rgba(255,255,255,.1);border:none;color:#fff;width:38px;height:38px;border-radius:10px;cursor:pointer;font-size:1.1rem;flex-shrink:0;">←</button>'+
+      '<div style="min-width:0;flex:1;">'+
+        '<div style="font-family:Playfair Display,serif;font-size:1.05rem;font-weight:800;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+name+'</div>'+
+        '<div style="font-size:.76rem;color:rgba(255,255,255,.6);cursor:pointer;" onclick="this.closest(\'[style*=fixed]\').remove();openShopModal(\''+sid+'\')">🏪 '+(p.shopName||'')+(p.shopArea?', '+p.shopArea:'')+' →</div>'+
+      '</div>'+
+      '<button onclick="toggleWishlist(event,\''+p.id+'\');this.textContent=wishlist.indexOf(\''+p.id+'\')>=0?\'❤️\':\'🤍\'" style="background:rgba(255,255,255,.1);border:none;width:38px;height:38px;border-radius:10px;cursor:pointer;font-size:1.1rem;flex-shrink:0;">'+(isWished?'❤️':'🤍')+'</button>'+
+    '</div>'+
+    galleryHtml+
+    '<div style="padding:20px 5% 100px;">'+
+      (isFlash ? '<span class="badge badge-flash" style="display:inline-block;margin-bottom:8px;">⚡ Flash Sale</span>' : '')+
+      (stockLow ? '<span class="badge badge-hot" style="display:inline-block;margin-bottom:8px;margin-left:6px;">কম স্টক — মাত্র '+p.stock+'টি বাকি</span>' : '')+
+      '<div style="font-family:Playfair Display,serif;font-size:1.3rem;font-weight:800;color:var(--navy);margin-bottom:4px;">'+name+'</div>'+
+      (p.unit ? '<div style="font-size:.82rem;color:var(--muted);margin-bottom:10px;">'+p.unit+'</div>' : '')+
+      '<div style="font-size:.82rem;color:var(--muted);margin-bottom:14px;">⭐ 4.8 <span style="color:var(--muted)">(24 রিভিউ)</span></div>'+
+      '<div style="display:flex;align-items:baseline;gap:10px;margin-bottom:18px;">'+
+        '<span style="font-size:1.5rem;font-weight:900;color:var(--navy);">₹'+(showSale?salePrice:price)+'</span>'+
+        (showSale ? '<span style="font-size:1rem;color:var(--muted);text-decoration:line-through;">₹'+price+'</span><span class="badge badge-disc">'+disc+'% OFF</span>' : '')+
+      '</div>'+
+      (p.description ? '<div style="font-size:.85rem;color:var(--charcoal);line-height:1.6;margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border);">'+p.description+'</div>' : '')+
+      (outOfStock
+        ? '<div style="background:#fdeeec;color:#c0392b;padding:14px;border-radius:12px;text-align:center;font-weight:700;">এই মুহূর্তে স্টকে নেই</div>'
+        : (qty>0
+          ? '<div class="prod-qty-ctrl" id="pdmqc-'+p.id+'" style="width:100%;justify-content:center;padding:14px;">'+
+              '<button class="pqc-btn minus" onclick="_pdmQtyChange(\''+p.id+'\',\''+sid+'\',-1)">−</button>'+
+              '<span class="pqc-num" style="font-size:1.1rem;">'+qty+'</span>'+
+              '<button class="pqc-btn plus" onclick="_pdmQtyChange(\''+p.id+'\',\''+sid+'\',1)">+</button>'+
+            '</div>'
+          : '<button class="add-to-cart-btn" style="width:100%;padding:14px;font-size:.95rem;" onclick="_pdmAddToCart(\''+p.id+'\',\''+sid+'\',this)">🛒 '+(currentLang==='en'?'Add to Cart':'কার্টে যোগ করুন')+'</button>'))+
+    '</div>';
+
+  ov.innerHTML = html;
+  document.body.appendChild(ov);
+
+  // Simple gallery swipe/tap (if multiple images)
+  if(images.length > 1){
+    var galEl = ov.querySelector('#pdmGallery');
+    var curIdx = 0;
+    galEl.addEventListener('click', function(){
+      curIdx = (curIdx+1) % images.length;
+      galEl.querySelectorAll('[data-pdm-slide]').forEach(function(img,i){ img.style.opacity = i===curIdx?'1':'0'; });
+      galEl.querySelectorAll('[data-pdm-dot]').forEach(function(dot,i){
+        dot.style.width = i===curIdx?'16px':'6px';
+        dot.style.background = i===curIdx?'var(--navy)':'rgba(15,40,24,.3)';
+      });
+    });
+  }
+}
+
+// Modal-specific add/qty functions (own DOM id prefix — avoids clashing with the same product's
+// card if it's also showing in the regular grid behind this modal)
+function _pdmAddToCart(pid, sid, btn){
+  addToCartById(pid, sid);
+  showToast('কার্টে যোগ হয়েছে ✅','green');
+  var wrapper = btn.parentElement;
+  wrapper.innerHTML = '<div class="prod-qty-ctrl" id="pdmqc-'+pid+'" style="width:100%;justify-content:center;padding:14px;">'+
+    '<button class="pqc-btn minus" onclick="_pdmQtyChange(\''+pid+'\',\''+sid+'\',-1)">−</button>'+
+    '<span class="pqc-num" style="font-size:1.1rem;">1</span>'+
+    '<button class="pqc-btn plus" onclick="_pdmQtyChange(\''+pid+'\',\''+sid+'\',1)">+</button>'+
+  '</div>';
+}
+
+function _pdmQtyChange(pid, sid, d){
+  var idx = cart.findIndex(function(c){ return c.id===pid && c.shopId===sid; });
+  if(idx<0) return;
+  cart[idx].qty += d;
+  var ctrl = document.getElementById('pdmqc-'+pid);
+  if(cart[idx].qty <= 0){
+    cart.splice(idx,1);
+    if(ctrl) ctrl.parentElement.innerHTML = '<button class="add-to-cart-btn" style="width:100%;padding:14px;font-size:.95rem;" onclick="_pdmAddToCart(\''+pid+'\',\''+sid+'\',this)">🛒 '+(currentLang==='en'?'Add to Cart':'কার্টে যোগ করুন')+'</button>';
+  } else if(ctrl){
+    ctrl.querySelector('.pqc-num').textContent = cart[idx].qty;
+  }
+  updateCartBadge();
+}
+
 function openImageViewer(imgUrl){
   var ov=document.createElement('div');
   ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:3000;display:flex;align-items:center;justify-content:center;padding:20px;';
@@ -6469,9 +6640,9 @@ function addToCartCard(e,pid,sid,btn){
   // Replace button with qty control
   var wrapper=btn.parentElement;
   wrapper.innerHTML='<div class="prod-qty-ctrl" id="pqc-'+pid+'">'+
-    '<button class="pqc-btn minus" onclick="prodQtyChange(\''+pid+'\',\''+sid+'\',-1)">−</button>'+
+    '<button class="pqc-btn minus" onclick="event.stopPropagation();prodQtyChange(\''+pid+'\',\''+sid+'\',-1)">−</button>'+
     '<span class="pqc-num">1</span>'+
-    '<button class="pqc-btn plus" onclick="prodQtyChange(\''+pid+'\',\''+sid+'\',1)">+</button>'+
+    '<button class="pqc-btn plus" onclick="event.stopPropagation();prodQtyChange(\''+pid+'\',\''+sid+'\',1)">+</button>'+
     '</div>';
 }
 
