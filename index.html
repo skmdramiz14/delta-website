@@ -658,7 +658,7 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 .music-btn:hover{transform:scale(1.08);}
 .music-btn.playing{animation:musicPulse 1.6s ease-in-out infinite;}
 @keyframes musicPulse{0%,100%{box-shadow:0 4px 16px rgba(15,40,24,.35);}50%{box-shadow:0 4px 22px rgba(201,162,39,.55);}}
-.wa-btn{width:58px;height:58px;background:#0F3B31;border-radius:50%;display:flex;align-items:center;
+.wa-btn{width:44px;height:44px;background:#0F3B31;border-radius:50%;display:flex;align-items:center;
   justify-content:center;box-shadow:0 10px 28px rgba(0,0,0,.22),0 0 12px rgba(212,175,55,.22);cursor:pointer;
   border:1.5px solid #D4AF37;overflow:hidden;
   transition:transform .2s ease;position:relative;z-index:2;text-decoration:none;}
@@ -673,7 +673,7 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 .wa-ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,.4);
   transform:scale(0);animation:waRippleAnim .6s ease-out forwards;pointer-events:none;z-index:3;}
 @keyframes waRippleAnim{to{transform:scale(1);opacity:0;}}
-.wa-hint{position:absolute;right:68px;top:50%;transform:translateY(-50%);
+.wa-hint{position:absolute;right:54px;top:50%;transform:translateY(-50%);
   background:#0F3B31;color:#fff;padding:8px 14px;border-radius:10px;
   font-size:.78rem;font-weight:600;white-space:nowrap;
   border:1px solid rgba(212,175,55,.4);box-shadow:0 6px 18px rgba(0,0,0,.25);
@@ -2157,7 +2157,7 @@ img{max-width:100%;height:auto;}
 <div class="hero-search-outer hero-below-panel" style="padding-top:28px;padding-bottom:24px;">
   <div class="hero-btns" style="margin-bottom:10px;">
     <button class="hero-btn-primary hero-btn-full" onclick="document.getElementById('productsSection').scrollIntoView({behavior:'smooth'})">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;display:block;"><path d="M6 8H18L17.2 20.2C17.14 21.2 16.3 22 15.3 22H8.7C7.7 22 6.86 21.2 6.8 20.2L6 8Z" stroke="#2a2410" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 8V6C9 4.34 10.34 3 12 3C13.66 3 15 4.34 15 6V8" stroke="#2a2410" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg> <span class="lang-bn">এখনই কিনুন</span><span class="lang-en">Shop Now</span>
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;display:block;"><path d="M2.5 3H4.8L5.7 6M5.7 6L7.4 14.2C7.55 14.95 8.2 15.5 8.97 15.5H17.6C18.35 15.5 19 14.97 19.16 14.24L20.6 7.5C20.75 6.8 20.22 6.13 19.5 6.13H5.7Z" stroke="#2a2410" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9.5" cy="19.5" r="1.4" stroke="#2a2410" stroke-width="1.7"/><circle cx="17" cy="19.5" r="1.4" stroke="#2a2410" stroke-width="1.7"/></svg> <span class="lang-bn">এখনই কিনুন</span><span class="lang-en">Shop Now</span>
     </button>
   </div>
   <div class="hero-pill-row" style="margin-bottom:10px;">
@@ -3453,7 +3453,7 @@ img{max-width:100%;height:auto;}
 <div class="wa-float">
   <div class="wa-hint" id="waHint"><span class="lang-bn">💬 সাহায্য লাগবে?</span><span class="lang-en">💬 Need help?</span></div>
   <a class="wa-btn" id="waBtn" href="https://wa.me/+91XXXXXXXXXX?text=DELTA%20তে%20সাহায্য%20দরকার" target="_blank" title="WhatsApp এ যোগাযোগ করুন" onclick="triggerWaRipple(event)">
-    <svg width="28" height="28" viewBox="0 0 24 24" fill="#fff"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.82 12.04 21.82H12.05C17.5 21.82 21.95 17.37 21.95 11.91C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2ZM12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.71 20.28 11.91C20.28 16.46 16.59 20.15 12.04 20.15C10.56 20.15 9.12 19.76 7.85 19.01L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 14.98 3.8 13.46 3.8 11.91C3.8 7.36 7.5 3.67 12.05 3.67ZM8.53 6.99C8.37 6.99 8.1 7.05 7.87 7.3C7.64 7.55 7 8.15 7 9.36C7 10.57 7.89 11.74 8.01 11.9C8.14 12.06 9.76 14.65 12.32 15.68C14.44 16.53 14.87 16.36 15.33 16.32C15.79 16.28 16.8 15.72 17.01 15.14C17.22 14.56 17.22 14.06 17.16 13.96C17.1 13.86 16.94 13.8 16.7 13.68C16.46 13.56 15.28 12.98 15.06 12.9C14.84 12.82 14.68 12.78 14.52 13.02C14.36 13.26 13.9 13.8 13.76 13.96C13.62 14.12 13.48 14.14 13.24 14.02C13 13.9 12.23 13.65 11.31 12.83C10.6 12.2 10.12 11.42 9.98 11.18C9.84 10.94 9.96 10.81 10.08 10.69C10.19 10.58 10.32 10.4 10.44 10.26C10.56 10.12 10.6 10.02 10.68 9.86C10.76 9.7 10.72 9.56 10.66 9.44C10.6 9.32 10.12 8.13 9.9 7.65C9.71 7.22 9.51 7.23 9.34 7.22C9.2 7.21 9.04 7.21 8.88 7.21L8.53 6.99Z"/></svg>
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="#fff"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.82 12.04 21.82H12.05C17.5 21.82 21.95 17.37 21.95 11.91C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2ZM12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.71 20.28 11.91C20.28 16.46 16.59 20.15 12.04 20.15C10.56 20.15 9.12 19.76 7.85 19.01L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 14.98 3.8 13.46 3.8 11.91C3.8 7.36 7.5 3.67 12.05 3.67ZM8.53 6.99C8.37 6.99 8.1 7.05 7.87 7.3C7.64 7.55 7 8.15 7 9.36C7 10.57 7.89 11.74 8.01 11.9C8.14 12.06 9.76 14.65 12.32 15.68C14.44 16.53 14.87 16.36 15.33 16.32C15.79 16.28 16.8 15.72 17.01 15.14C17.22 14.56 17.22 14.06 17.16 13.96C17.1 13.86 16.94 13.8 16.7 13.68C16.46 13.56 15.28 12.98 15.06 12.9C14.84 12.82 14.68 12.78 14.52 13.02C14.36 13.26 13.9 13.8 13.76 13.96C13.62 14.12 13.48 14.14 13.24 14.02C13 13.9 12.23 13.65 11.31 12.83C10.6 12.2 10.12 11.42 9.98 11.18C9.84 10.94 9.96 10.81 10.08 10.69C10.19 10.58 10.32 10.4 10.44 10.26C10.56 10.12 10.6 10.02 10.68 9.86C10.76 9.7 10.72 9.56 10.66 9.44C10.6 9.32 10.12 8.13 9.9 7.65C9.71 7.22 9.51 7.23 9.34 7.22C9.2 7.21 9.04 7.21 8.88 7.21L8.53 6.99Z"/></svg>
   </a>
 </div>
 
