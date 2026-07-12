@@ -1347,7 +1347,11 @@ button,input,select{font-family:'DM Sans',sans-serif;}
           </div>
           <div class="form-group" style="margin-bottom:0;grid-column:1/-1;">
             <label>Video URL (Optional) <span style="font-weight:400;color:var(--muted);">— দিলে এই স্লাইডে ছবির বদলে video autoplay (মিউট) হবে</span></label>
-            <input type="text" class="form-input" id="ssVideo" placeholder="Cloudinary video URL (mp4)">
+            <div style="display:flex;gap:8px;">
+              <input type="text" class="form-input" id="ssVideo" placeholder="Cloudinary video URL (mp4)" style="flex:1;">
+              <button type="button" class="btn-sm" style="background:var(--sand);color:var(--navy);white-space:nowrap;" onclick="_previewVideo('ssVideo','ssVideoPreview')">🔍 Preview</button>
+            </div>
+            <div id="ssVideoPreview"></div>
           </div>
           <div class="form-group" style="margin-bottom:0">
             <label>Link URL</label>
@@ -1490,7 +1494,11 @@ button,input,select{font-family:'DM Sans',sans-serif;}
           </div>
           <div class="form-group" style="margin-bottom:0;grid-column:1/-1;">
             <label>Video URL <span style="font-weight:400;color:var(--muted);">(দিলে ছবির বদলে video চলবে, autoplay+muted+loop)</span></label>
-            <input type="text" class="form-input" id="bsVideo" placeholder="Cloudinary video URL (mp4)">
+            <div style="display:flex;gap:8px;">
+              <input type="text" class="form-input" id="bsVideo" placeholder="Cloudinary video URL (mp4)" style="flex:1;">
+              <button type="button" class="btn-sm" style="background:var(--sand);color:var(--navy);white-space:nowrap;" onclick="_previewVideo('bsVideo','bsVideoPreview')">🔍 Preview</button>
+            </div>
+            <div id="bsVideoPreview"></div>
           </div>
           <div class="form-group" style="margin-bottom:0">
             <label>ট্যাগলাইন (বাংলা) <span style="font-weight:400;color:var(--muted);">— "△ DELTA" লোগোর ঠিক নিচের লাইন</span></label>
@@ -1553,7 +1561,11 @@ button,input,select{font-family:'DM Sans',sans-serif;}
           </div>
           <div class="form-group" style="margin-bottom:0;grid-column:1/-1;">
             <label>Video URL (Optional) <span style="font-weight:400;color:var(--muted);">— দিলে autoplay (মিউট) হবে</span></label>
-            <input type="text" class="form-input" id="hsVideo" placeholder="Cloudinary video URL (mp4)">
+            <div style="display:flex;gap:8px;">
+              <input type="text" class="form-input" id="hsVideo" placeholder="Cloudinary video URL (mp4)" style="flex:1;">
+              <button type="button" class="btn-sm" style="background:var(--sand);color:var(--navy);white-space:nowrap;" onclick="_previewVideo('hsVideo','hsVideoPreview')">🔍 Preview</button>
+            </div>
+            <div id="hsVideoPreview"></div>
           </div>
           <div class="form-group" style="margin-bottom:0;grid-column:1/-1;">
             <label>Link URL <span style="font-weight:400;color:var(--muted);">— ক্লিক করলে কোথায় যাবে (যেমন bazaar.html, festival.html)</span></label>
@@ -6496,6 +6508,26 @@ function renderSponsoredShopsList(){
       '</div>'+
     '</div>';
   }).join('');
+}
+
+// Shows a live preview of the entered Video URL, styled EXACTLY like the real Hero/Sponsored
+// slide (same aspect-ratio, same object-fit:cover treatment) — so admin can check the fit
+// (cropping, gaps) before saving, instead of finding out after it's already live.
+function _previewVideo(inputId, previewContainerId){
+  var url = document.getElementById(inputId).value.trim();
+  var box = document.getElementById(previewContainerId);
+  if(!box) return;
+  if(!url){ showToast('আগে একটা Video URL দিন','red'); return; }
+  box.innerHTML =
+    '<div style="margin-top:10px;max-width:280px;">'+
+      '<div style="font-size:.68rem;color:var(--muted);margin-bottom:6px;">👁️ এভাবেই Hero/Sponsored card-এ দেখাবে (আসল aspect-ratio):</div>'+
+      '<div style="position:relative;width:100%;aspect-ratio:1000/850;border-radius:14px;overflow:hidden;background:#0f2818;border:2px solid var(--gold-muted,#C7A15A);">'+
+        '<video src="'+url+'" autoplay muted loop playsinline '+
+          'style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;display:block;background:#0f2818;" '+
+          'onerror="this.parentElement.innerHTML=\'<div style=&quot;padding:20px;color:#ff8a80;font-size:.75rem;text-align:center;&quot;>⚠️ Video load করা যায়নি — URL চেক করুন</div>\'">'+
+        '</video>'+
+      '</div>'+
+    '</div>';
 }
 
 function toggleFullBannerMode(){
