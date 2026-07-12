@@ -4725,7 +4725,7 @@ function applyBrandSlideCustomization(cfg){
       vid.id = 'heroBrandVideo';
       vid.src = cfg.videoUrl;
       vid.autoplay = true; vid.muted = true; vid.loop = true; vid.playsInline = true;
-      vid.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:'+(cfg.videoPosition||'center center')+';display:block;z-index:0;';
+      vid.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:'+(cfg.videoPosition||'center center')+';transform:scale('+(cfg.videoZoom||1)+');display:block;z-index:0;';
       bgImgLayer.parentNode.insertBefore(vid, bgImgLayer.nextSibling);
 
       var muteBtn = document.createElement('span');
@@ -4904,10 +4904,11 @@ function _heroPremiumSlideHTML(ad){
   var img = ad.imageUrl || '';
   var video = ad.videoUrl || '';
   var videoPos = ad.videoPosition || 'center center';
+  var videoZoom = ad.videoZoom || 1;
   var link = ad.linkUrl || '#';
   var isShopAd = ad.type === 'shop_ad'; // house slides (DELTA's own) don't get a "Sponsored" disclosure
   var mediaHtml = video ?
-    ('<video class="hps-media" style="object-position:'+videoPos+';" src="'+video+'" autoplay muted loop playsinline poster="'+img+'"></video>')
+    ('<video class="hps-media" style="object-position:'+videoPos+';transform:scale('+videoZoom+');" src="'+video+'" autoplay muted loop playsinline poster="'+img+'"></video>')
     : (img ? '<img class="hps-media" src="'+img+'" loading="lazy">' : '');
   var muteBtnHtml = video ?
     '<span class="hps-mute-btn" onclick="event.stopPropagation();_toggleSlideMute(this)" title="Sound on/off">🔇</span>' : '';
@@ -5134,6 +5135,7 @@ function _sponsoredSlideHTML(ad, idx){
   var img = ad.imageUrl || '';
   var video = ad.videoUrl || '';
   var videoPos = ad.videoPosition || 'center center';
+  var videoZoom = ad.videoZoom || 1;
   var link = ad.linkUrl || '#';
   var muteBtnHtml = video ?
     '<span class="hps-mute-btn" onclick="event.stopPropagation();_toggleSlideMute(this)" title="Sound on/off">🔇</span>' : '';
@@ -5141,7 +5143,7 @@ function _sponsoredSlideHTML(ad, idx){
   // FULL BANNER MODE — pre-made graphic with everything baked in; just show the image/video, full-bleed, clickable
   if(ad.fullBanner){
     var fbMedia = video
-      ? '<video src="'+video+'" autoplay muted loop playsinline poster="'+img+'" style="width:100%;height:100%;object-fit:cover;object-position:'+videoPos+';display:block;"></video>'
+      ? '<video src="'+video+'" autoplay muted loop playsinline poster="'+img+'" style="width:100%;height:100%;object-fit:cover;object-position:'+videoPos+';transform:scale('+videoZoom+');display:block;"></video>'
       : (img ? '<img src="'+img+'" alt="'+(ad.shopName||ad.title||'')+'" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy">' : '');
     return '<div style="flex-shrink:0;width:'+(100/_adSlides.length)+'%;position:relative;overflow:hidden;cursor:pointer;background:#f2e9d3;" '+
         'onclick="window.location.href=\''+link+'\'">'+
@@ -5170,7 +5172,7 @@ function _sponsoredSlideHTML(ad, idx){
   ) : '';
 
   var sideMedia = video
-    ? '<video src="'+video+'" autoplay muted loop playsinline poster="'+img+'" style="width:100%;height:100%;object-fit:cover;object-position:'+videoPos+';"></video>'
+    ? '<video src="'+video+'" autoplay muted loop playsinline poster="'+img+'" style="width:100%;height:100%;object-fit:cover;object-position:'+videoPos+';transform:scale('+videoZoom+');"></video>'
     : (img ? '<img src="'+img+'" style="width:100%;height:100%;object-fit:cover;" loading="lazy">' : '');
 
   return '<div style="flex-shrink:0;width:'+(100/_adSlides.length)+'%;background:linear-gradient(135deg,#faf5e8,#f2e9d3);position:relative;overflow:hidden;cursor:pointer;" '+
