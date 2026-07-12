@@ -3532,6 +3532,10 @@ function detectCity(){
   }
   function fallbackToPincodeGate(){
     // GPS failed/denied/out-of-range → ask via pincode gate instead
+    // Guard: if GPS/city detection already resolved (fired), never show the gate —
+    // otherwise this 5s safety-net can pop the gate on top of a modal the user
+    // already opened themselves (e.g. the header location button).
+    if(fired) return;
     if(!localStorage.getItem('delta_verified_pincode')){
       document.getElementById('gateOverlay').style.display='flex';
     }
