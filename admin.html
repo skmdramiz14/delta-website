@@ -1351,6 +1351,7 @@ button,input,select{font-family:'DM Sans',sans-serif;}
               <input type="text" class="form-input" id="ssVideo" placeholder="Cloudinary video URL (mp4)" style="flex:1;">
               <button type="button" class="btn-sm" style="background:var(--sand);color:var(--navy);white-space:nowrap;" onclick="_previewVideo('ssVideo','ssVideoPreview')">🔍 Preview</button>
             </div>
+            <input type="hidden" id="ssVideoPosition" value="center center">
             <div id="ssVideoPreview"></div>
           </div>
           <div class="form-group" style="margin-bottom:0">
@@ -1498,6 +1499,7 @@ button,input,select{font-family:'DM Sans',sans-serif;}
               <input type="text" class="form-input" id="bsVideo" placeholder="Cloudinary video URL (mp4)" style="flex:1;">
               <button type="button" class="btn-sm" style="background:var(--sand);color:var(--navy);white-space:nowrap;" onclick="_previewVideo('bsVideo','bsVideoPreview')">🔍 Preview</button>
             </div>
+            <input type="hidden" id="bsVideoPosition" value="center center">
             <div id="bsVideoPreview"></div>
           </div>
           <div class="form-group" style="margin-bottom:0">
@@ -1565,6 +1567,7 @@ button,input,select{font-family:'DM Sans',sans-serif;}
               <input type="text" class="form-input" id="hsVideo" placeholder="Cloudinary video URL (mp4)" style="flex:1;">
               <button type="button" class="btn-sm" style="background:var(--sand);color:var(--navy);white-space:nowrap;" onclick="_previewVideo('hsVideo','hsVideoPreview')">🔍 Preview</button>
             </div>
+            <input type="hidden" id="hsVideoPosition" value="center center">
             <div id="hsVideoPreview"></div>
           </div>
           <div class="form-group" style="margin-bottom:0;grid-column:1/-1;">
@@ -6518,16 +6521,51 @@ function _previewVideo(inputId, previewContainerId){
   var box = document.getElementById(previewContainerId);
   if(!box) return;
   if(!url){ showToast('আগে একটা Video URL দিন','red'); return; }
+
+  var posInputId = inputId + 'Position';
+  var posInput = document.getElementById(posInputId);
+  var currentPos = posInput ? posInput.value : 'center center';
+  var videoElId = inputId + '_previewVid';
+
+  var positions = [
+    ['left top','center top','right top'],
+    ['left center','center center','right center'],
+    ['left bottom','center bottom','right bottom']
+  ];
+  var gridHtml = '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;width:90px;margin-top:8px;">'+
+    positions.map(function(row){
+      return row.map(function(pos){
+        var isActive = pos === currentPos;
+        return '<div onclick="_setCropPosition(\''+inputId+'\',\''+pos+'\')" title="'+pos+'" '+
+          'style="width:26px;height:26px;border-radius:5px;cursor:pointer;border:2px solid '+(isActive?'var(--orange)':'var(--border)')+';'+
+          'background:'+(isActive?'#fff4ec':'#fff')+';display:flex;align-items:center;justify-content:center;font-size:.6rem;">'+(isActive?'●':'')+'</div>';
+      }).join('');
+    }).join('') +
+  '</div>';
+
   box.innerHTML =
     '<div style="margin-top:10px;max-width:280px;">'+
       '<div style="font-size:.68rem;color:var(--muted);margin-bottom:6px;">👁️ এভাবেই Hero/Sponsored card-এ দেখাবে (আসল aspect-ratio):</div>'+
       '<div style="position:relative;width:100%;aspect-ratio:1000/850;border-radius:14px;overflow:hidden;background:#0f2818;border:2px solid var(--gold-muted,#C7A15A);">'+
-        '<video src="'+url+'" autoplay muted loop playsinline '+
-          'style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;display:block;background:#0f2818;" '+
+        '<video id="'+videoElId+'" src="'+url+'" autoplay muted loop playsinline '+
+          'style="width:100%;height:100%;object-fit:cover;object-position:'+currentPos+';position:absolute;inset:0;display:block;background:#0f2818;" '+
           'onerror="this.parentElement.innerHTML=\'<div style=&quot;padding:20px;color:#ff8a80;font-size:.75rem;text-align:center;&quot;>⚠️ Video load করা যায়নি — URL চেক করুন</div>\'">'+
         '</video>'+
       '</div>'+
+      '<div style="font-size:.68rem;color:var(--muted);margin-top:8px;">✂️ কোন অংশটা সবচেয়ে গুরুত্বপূর্ণ (crop এড়াতে), সেই অনুযায়ী নিচের গ্রিড থেকে বেছে নিন:</div>'+
+      gridHtml+
     '</div>';
+}
+
+function _setCropPosition(inputId, position){
+  var posInput = document.getElementById(inputId + 'Position');
+  if(posInput) posInput.value = position;
+  var vid = document.getElementById(inputId + '_previewVid');
+  if(vid) vid.style.objectPosition = position;
+  // Re-render the grid so the selected dot updates
+  var previewId = inputId + 'Preview';
+  var box = document.getElementById(previewId);
+  if(box) _previewVideo(inputId, previewId);
 }
 
 function toggleFullBannerMode(){
@@ -6543,6 +6581,7 @@ function saveSponsoredShop(){
   var duration = parseInt(document.getElementById('ssDuration').value)||5;
   var adTier = document.getElementById('ssAdTier').value||'basic';
   var videoUrl = document.getElementById('ssVideo').value.trim();
+  var videoPosition = document.getElementById('ssVideoPosition').value||'center center';
   var shopName = document.getElementById('ssName').value.trim();
   var tagline = document.getElementById('ssTagline').value.trim();
   var discountText = document.getElementById('ssOffer').value.trim();
@@ -6563,6 +6602,7 @@ function saveSponsoredShop(){
     type: 'shop_ad',
     adTier: adTier,
     videoUrl: videoUrl,
+    videoPosition: videoPosition,
     fullBanner: fullBanner,
     alwaysFirst: alwaysFirst,
     displayDuration: duration,
@@ -6603,6 +6643,7 @@ function editSponsoredShop(id){
   document.getElementById('ssDuration').value = s.displayDuration||5;
   document.getElementById('ssAdTier').value = s.adTier||'basic';
   document.getElementById('ssVideo').value = s.videoUrl||'';
+  document.getElementById('ssVideoPosition').value = s.videoPosition||'center center';
   toggleFullBannerMode();
   document.getElementById('ssName').value = s.shopName||'';
   document.getElementById('ssTagline').value = s.tagline||'';
@@ -6631,6 +6672,8 @@ function cancelSponsoredShopEdit(){
   document.getElementById('ssDuration').value=5;
   document.getElementById('ssAdTier').value='basic';
   document.getElementById('ssVideo').value='';
+  document.getElementById('ssVideoPosition').value='center center';
+  document.getElementById('ssVideoPreview').innerHTML='';
   toggleFullBannerMode();
   ['ssName','ssTagline','ssOffer','ssBtnText','ssImage','ssLink','ssRating','ssHours','ssLocation','ssStartDate','ssEndDate'].forEach(function(id){
     document.getElementById(id).value='';
@@ -6807,6 +6850,7 @@ function loadBrandSlide(){
       var d = doc.exists ? doc.data() : {};
       document.getElementById('bsImage').value = d.imageUrl||'';
       document.getElementById('bsVideo').value = d.videoUrl||'';
+      document.getElementById('bsVideoPosition').value = d.videoPosition||'center center';
       document.getElementById('bsHeadingBn').value = d.headingBn||'';
       document.getElementById('bsHeadingEn').value = d.headingEn||'';
       document.getElementById('bsSubtextBn').value = d.subtextBn||'';
@@ -6823,6 +6867,7 @@ function saveBrandSlide(){
   var data = {
     imageUrl: document.getElementById('bsImage').value.trim(),
     videoUrl: document.getElementById('bsVideo').value.trim(),
+    videoPosition: document.getElementById('bsVideoPosition').value||'center center',
     headingBn: document.getElementById('bsHeadingBn').value.trim(),
     headingEn: document.getElementById('bsHeadingEn').value.trim(),
     subtextBn: document.getElementById('bsSubtextBn').value.trim(),
@@ -6849,6 +6894,8 @@ function resetBrandSlideDefaults(){
   ['bsImage','bsVideo','bsHeadingBn','bsHeadingEn','bsSubtextBn','bsSubtextEn','bsBtnTextBn','bsBtnTextEn','bsBtnLink'].forEach(function(id){
     document.getElementById(id).value='';
   });
+  document.getElementById('bsVideoPosition').value='center center';
+  document.getElementById('bsVideoPreview').innerHTML='';
   document.getElementById('bsHideBrand').checked=false;
   saveBrandSlide();
 }
@@ -6905,6 +6952,7 @@ function saveHouseSlide(){
     fullBanner: document.getElementById('hsFullBanner').checked,
     imageUrl: imageUrl,
     videoUrl: document.getElementById('hsVideo').value.trim(),
+    videoPosition: document.getElementById('hsVideoPosition').value||'center center',
     linkUrl: document.getElementById('hsLink').value.trim(),
     priority: parseInt(document.getElementById('hsPriority').value)||1,
     displayDuration: parseInt(document.getElementById('hsDuration').value)||5,
@@ -6928,6 +6976,7 @@ function editHouseSlide(id){
   document.getElementById('hsFullBanner').checked = !!s.fullBanner;
   document.getElementById('hsImage').value = s.imageUrl||'';
   document.getElementById('hsVideo').value = s.videoUrl||'';
+  document.getElementById('hsVideoPosition').value = s.videoPosition||'center center';
   document.getElementById('hsLink').value = s.linkUrl||'';
   document.getElementById('hsPriority').value = s.priority||5;
   document.getElementById('hsDuration').value = s.displayDuration||5;
@@ -6941,6 +6990,8 @@ function cancelHouseSlideEdit(){
   document.getElementById('houseSlideEditId').value = '';
   document.getElementById('hsFullBanner').checked = false;
   ['hsImage','hsVideo','hsLink','hsStartDate','hsEndDate'].forEach(function(id){ document.getElementById(id).value=''; });
+  document.getElementById('hsVideoPosition').value = 'center center';
+  document.getElementById('hsVideoPreview').innerHTML = '';
   document.getElementById('hsPriority').value = 5;
   document.getElementById('hsDuration').value = 5;
   document.getElementById('houseSlideFormTitle').textContent = '➕ নতুন House Slide যোগ করুন';
