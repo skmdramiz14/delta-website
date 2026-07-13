@@ -3802,26 +3802,6 @@ function initWhatsAppConfig(){
     }).catch(function(){});
 }
 
-// Fetch admin-configured floating tagline text/duration/on-off for both Music and WhatsApp
-function initTaglineSettings(){
-  if(!db) return;
-  db.collection('cities').doc(CITY).collection('settings').doc('taglineConfig').get()
-    .then(function(doc){
-      if(!doc.exists) return;
-      var d = doc.data();
-      if(d.musicTaglineBn || d.musicTaglineEn){
-        var mtag = document.getElementById('musicTagline');
-        if(mtag) mtag.innerHTML = '<span class="lang-bn">'+(d.musicTaglineBn||'')+'</span><span class="lang-en">'+(d.musicTaglineEn||'')+'</span>';
-      }
-      if(d.musicTaglineDuration) _musicTaglineDuration = d.musicTaglineDuration * 1000;
-      if(d.waTaglineBn || d.waTaglineEn){
-        var wtag = document.getElementById('waTagline');
-        if(wtag) wtag.innerHTML = '<span class="lang-bn">'+(d.waTaglineBn||'')+'</span><span class="lang-en">'+(d.waTaglineEn||'')+'</span>';
-      }
-      _waTaglineEnabled = d.waTaglineEnabled !== false;
-    }).catch(function(){});
-}
-
 
 function openPinModal(){
   document.getElementById('pinModalOverlay').style.display='flex';
@@ -3960,7 +3940,6 @@ async function loadData(retryCount){
     initShoppingMusic();
     initWhatsAppConfig();
     initTaglineConfig();
-    initTaglineSettings();
     initFestivalBanner();
     loadMarqueeFromFirebase();
     loadCategoryConfigFromFirebase();
@@ -5304,7 +5283,9 @@ function _toggleShoppingMusic(){
 // Called when an ad video's sound is turned on — pause background music so they don't overlap
 var _musicTaglineTimer = null;
 var _musicTaglineDuration = 6000; // default 6s; overridden by admin's taglineConfig once fetched
+var _musicTaglineEnabled = true;
 function _showMusicTagline(){
+  if(!_musicTaglineEnabled) return;
   var tag = document.getElementById('musicTagline');
   if(!tag) return;
   clearTimeout(_musicTaglineTimer);
@@ -5312,7 +5293,7 @@ function _showMusicTagline(){
   _musicTaglineTimer = setTimeout(function(){ tag.classList.remove('show'); }, _musicTaglineDuration);
 }
 
-// Fetches admin-configured tagline text/duration (music) and text/enabled (WhatsApp)
+// Fetches admin-configured tagline text/duration/on-off (music) and text/enabled (WhatsApp)
 var _waTaglineEnabled = true;
 function initTaglineConfig(){
   if(!db) return;
@@ -5321,6 +5302,7 @@ function initTaglineConfig(){
       if(!doc.exists) return;
       var d = doc.data();
       if(d.musicTaglineDuration) _musicTaglineDuration = d.musicTaglineDuration * 1000;
+      _musicTaglineEnabled = d.musicTaglineEnabled !== false;
       var musicTag = document.getElementById('musicTagline');
       if(musicTag && (d.musicTaglineBn || d.musicTaglineEn)){
         var b1 = musicTag.querySelector('.lang-bn'), e1 = musicTag.querySelector('.lang-en');
