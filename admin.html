@@ -1358,6 +1358,13 @@ button,input,select{font-family:'DM Sans',sans-serif;}
             <input type="hidden" id="ssVideoZoom" value="1">
             <div id="ssVideoPreview"></div>
           </div>
+          <div class="form-group" style="margin-bottom:0;grid-column:1/-1;">
+            <label>Video Volume <span style="font-weight:400;color:var(--muted);">— গ্রাহক unmute করলে সর্বোচ্চ কত জোরে বাজবে (ফোনের volume যতই থাকুক)</span></label>
+            <div style="display:flex;align-items:center;gap:8px;max-width:280px;">
+              <input type="range" id="ssVideoVolume" min="10" max="100" step="5" value="70" style="flex:1;" oninput="document.getElementById('ssVideoVolumeLabel').textContent=this.value+'%'">
+              <span id="ssVideoVolumeLabel" style="font-size:.8rem;font-weight:700;color:var(--navy);min-width:38px;">70%</span>
+            </div>
+          </div>
           <div class="form-group" style="margin-bottom:0">
             <label>Link URL</label>
             <input type="text" class="form-input" id="ssLink" placeholder="যেমন: https://yourshop.com">
@@ -1507,6 +1514,13 @@ button,input,select{font-family:'DM Sans',sans-serif;}
             <input type="hidden" id="bsVideoZoom" value="1">
             <div id="bsVideoPreview"></div>
           </div>
+          <div class="form-group" style="margin-bottom:0;grid-column:1/-1;">
+            <label>Video Volume <span style="font-weight:400;color:var(--muted);">— গ্রাহক unmute করলে সর্বোচ্চ কত জোরে বাজবে (ফোনের volume যতই থাকুক)</span></label>
+            <div style="display:flex;align-items:center;gap:8px;max-width:280px;">
+              <input type="range" id="bsVideoVolume" min="10" max="100" step="5" value="70" style="flex:1;" oninput="document.getElementById('bsVideoVolumeLabel').textContent=this.value+'%'">
+              <span id="bsVideoVolumeLabel" style="font-size:.8rem;font-weight:700;color:var(--navy);min-width:38px;">70%</span>
+            </div>
+          </div>
           <div class="form-group" style="margin-bottom:0">
             <label>ট্যাগলাইন (বাংলা) <span style="font-weight:400;color:var(--muted);">— "△ DELTA" লোগোর ঠিক নিচের লাইন</span></label>
             <input type="text" class="form-input" id="bsHeadingBn" placeholder="DELTA — পরিবর্তনের ব-দ্বীপ">
@@ -1575,6 +1589,13 @@ button,input,select{font-family:'DM Sans',sans-serif;}
             <input type="hidden" id="hsVideoPosition" value="center center">
             <input type="hidden" id="hsVideoZoom" value="1">
             <div id="hsVideoPreview"></div>
+          </div>
+          <div class="form-group" style="margin-bottom:0;grid-column:1/-1;">
+            <label>Video Volume <span style="font-weight:400;color:var(--muted);">— গ্রাহক unmute করলে সর্বোচ্চ কত জোরে বাজবে (ফোনের volume যতই থাকুক)</span></label>
+            <div style="display:flex;align-items:center;gap:8px;max-width:280px;">
+              <input type="range" id="hsVideoVolume" min="10" max="100" step="5" value="70" style="flex:1;" oninput="document.getElementById('hsVideoVolumeLabel').textContent=this.value+'%'">
+              <span id="hsVideoVolumeLabel" style="font-size:.8rem;font-weight:700;color:var(--navy);min-width:38px;">70%</span>
+            </div>
           </div>
           <div class="form-group" style="margin-bottom:0;grid-column:1/-1;">
             <label>Link URL <span style="font-weight:400;color:var(--muted);">— ক্লিক করলে কোথায় যাবে (যেমন bazaar.html, festival.html)</span></label>
@@ -6746,6 +6767,7 @@ function saveSponsoredShop(){
   var videoUrl = document.getElementById('ssVideo').value.trim();
   var videoPosition = document.getElementById('ssVideoPosition').value||'center center';
   var videoZoom = parseFloat(document.getElementById('ssVideoZoom').value)||1;
+  var videoVolume = parseInt(document.getElementById('ssVideoVolume').value)||70;
   var shopName = document.getElementById('ssName').value.trim();
   var tagline = document.getElementById('ssTagline').value.trim();
   var discountText = document.getElementById('ssOffer').value.trim();
@@ -6768,6 +6790,7 @@ function saveSponsoredShop(){
     videoUrl: videoUrl,
     videoPosition: videoPosition,
     videoZoom: videoZoom,
+    videoVolume: videoVolume,
     fullBanner: fullBanner,
     alwaysFirst: alwaysFirst,
     displayDuration: duration,
@@ -6810,6 +6833,8 @@ function editSponsoredShop(id){
   document.getElementById('ssVideo').value = s.videoUrl||'';
   document.getElementById('ssVideoPosition').value = s.videoPosition||'center center';
   document.getElementById('ssVideoZoom').value = s.videoZoom||1;
+  document.getElementById('ssVideoVolume').value = s.videoVolume||70;
+  document.getElementById('ssVideoVolumeLabel').textContent = (s.videoVolume||70)+'%';
   toggleFullBannerMode();
   document.getElementById('ssName').value = s.shopName||'';
   document.getElementById('ssTagline').value = s.tagline||'';
@@ -6840,6 +6865,8 @@ function cancelSponsoredShopEdit(){
   document.getElementById('ssVideo').value='';
   document.getElementById('ssVideoPosition').value='center center';
   document.getElementById('ssVideoZoom').value='1';
+  document.getElementById('ssVideoVolume').value='70';
+  document.getElementById('ssVideoVolumeLabel').textContent='70%';
   document.getElementById('ssVideoPreview').innerHTML='';
   toggleFullBannerMode();
   ['ssName','ssTagline','ssOffer','ssBtnText','ssImage','ssLink','ssRating','ssHours','ssLocation','ssStartDate','ssEndDate'].forEach(function(id){
@@ -7019,6 +7046,8 @@ function loadBrandSlide(){
       document.getElementById('bsVideo').value = d.videoUrl||'';
       document.getElementById('bsVideoPosition').value = d.videoPosition||'center center';
       document.getElementById('bsVideoZoom').value = d.videoZoom||1;
+      document.getElementById('bsVideoVolume').value = d.videoVolume||70;
+      document.getElementById('bsVideoVolumeLabel').textContent = (d.videoVolume||70)+'%';
       document.getElementById('bsHeadingBn').value = d.headingBn||'';
       document.getElementById('bsHeadingEn').value = d.headingEn||'';
       document.getElementById('bsSubtextBn').value = d.subtextBn||'';
@@ -7037,6 +7066,7 @@ function saveBrandSlide(){
     videoUrl: document.getElementById('bsVideo').value.trim(),
     videoPosition: document.getElementById('bsVideoPosition').value||'center center',
     videoZoom: parseFloat(document.getElementById('bsVideoZoom').value)||1,
+    videoVolume: parseInt(document.getElementById('bsVideoVolume').value)||70,
     headingBn: document.getElementById('bsHeadingBn').value.trim(),
     headingEn: document.getElementById('bsHeadingEn').value.trim(),
     subtextBn: document.getElementById('bsSubtextBn').value.trim(),
@@ -7065,6 +7095,8 @@ function resetBrandSlideDefaults(){
   });
   document.getElementById('bsVideoPosition').value='center center';
   document.getElementById('bsVideoZoom').value='1';
+  document.getElementById('bsVideoVolume').value='70';
+  document.getElementById('bsVideoVolumeLabel').textContent='70%';
   document.getElementById('bsVideoPreview').innerHTML='';
   document.getElementById('bsHideBrand').checked=false;
   saveBrandSlide();
@@ -7124,6 +7156,7 @@ function saveHouseSlide(){
     videoUrl: document.getElementById('hsVideo').value.trim(),
     videoPosition: document.getElementById('hsVideoPosition').value||'center center',
     videoZoom: parseFloat(document.getElementById('hsVideoZoom').value)||1,
+    videoVolume: parseInt(document.getElementById('hsVideoVolume').value)||70,
     linkUrl: document.getElementById('hsLink').value.trim(),
     priority: parseInt(document.getElementById('hsPriority').value)||1,
     displayDuration: parseInt(document.getElementById('hsDuration').value)||5,
@@ -7149,6 +7182,8 @@ function editHouseSlide(id){
   document.getElementById('hsVideo').value = s.videoUrl||'';
   document.getElementById('hsVideoPosition').value = s.videoPosition||'center center';
   document.getElementById('hsVideoZoom').value = s.videoZoom||1;
+  document.getElementById('hsVideoVolume').value = s.videoVolume||70;
+  document.getElementById('hsVideoVolumeLabel').textContent = (s.videoVolume||70)+'%';
   document.getElementById('hsLink').value = s.linkUrl||'';
   document.getElementById('hsPriority').value = s.priority||5;
   document.getElementById('hsDuration').value = s.displayDuration||5;
@@ -7164,6 +7199,8 @@ function cancelHouseSlideEdit(){
   ['hsImage','hsVideo','hsLink','hsStartDate','hsEndDate'].forEach(function(id){ document.getElementById(id).value=''; });
   document.getElementById('hsVideoPosition').value = 'center center';
   document.getElementById('hsVideoZoom').value = '1';
+  document.getElementById('hsVideoVolume').value = '70';
+  document.getElementById('hsVideoVolumeLabel').textContent = '70%';
   document.getElementById('hsVideoPreview').innerHTML = '';
   document.getElementById('hsPriority').value = 5;
   document.getElementById('hsDuration').value = 5;
