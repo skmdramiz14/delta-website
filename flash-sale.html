@@ -701,17 +701,17 @@ function showEmpty(msg){
         .then(function(doc){
           if(!doc.exists) return;
           var d = doc.data();
-          if(d.musicTaglineBn || d.musicTaglineEn){
+          if(d.musicOtherBn || d.musicOtherEn){
             var mtag = document.getElementById('musicTagline');
-            if(mtag) mtag.innerHTML = (d.musicTaglineBn||'')+'<br>'+(d.musicTaglineEn||'');
+            if(mtag) mtag.innerHTML = (d.musicOtherBn||'')+'<br>'+(d.musicOtherEn||'');
           }
-          if(d.musicTaglineDuration) window._musicTaglineDuration = d.musicTaglineDuration * 1000;
-          window._musicTaglineEnabled = d.musicTaglineEnabled !== false;
-          if(d.waTaglineBn || d.waTaglineEn){
+          if(d.musicOtherDuration) window._musicTaglineDuration = d.musicOtherDuration * 1000;
+          window._musicTaglineEnabled = d.musicOtherEnabled !== false;
+          if(d.waOtherBn || d.waOtherEn){
             var wtag = document.getElementById('waTagline');
-            if(wtag) wtag.innerHTML = (d.waTaglineBn||'')+'<br>'+(d.waTaglineEn||'');
+            if(wtag) wtag.innerHTML = (d.waOtherBn||'')+'<br>'+(d.waOtherEn||'');
           }
-          window._waTaglineEnabled = d.waTaglineEnabled !== false;
+          window._waTaglineEnabled = d.waOtherEnabled !== false;
         }).catch(function(){});
     }catch(e){}
   }
