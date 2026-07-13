@@ -1690,6 +1690,12 @@ button,input,select{font-family:'DM Sans',sans-serif;}
         <div style="font-size:.72rem;color:var(--muted);margin-bottom:14px;">
           Music বাটনে ক্লিক করলে যে ছোট লেখাটা ভেসে ওঠে (যেমন "Take a bite of experiential shopping") — তার টেক্সট ও কতক্ষণ দেখাবে এখান থেকে ঠিক করুন।
         </div>
+        <div style="background:#fff4ec;border:1px solid var(--orange);border-radius:10px;padding:10px 12px;margin-bottom:12px;display:flex;align-items:center;gap:10px;">
+          <input type="checkbox" id="tagMusicEnabled" checked style="width:18px;height:18px;flex-shrink:0;">
+          <label for="tagMusicEnabled" style="font-size:.78rem;font-weight:700;color:var(--navy);cursor:pointer;margin:0;">
+            🎵 Music বাটনে ক্লিক করলে floating tagline দেখান
+          </label>
+        </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
           <div class="form-group" style="margin-bottom:0">
             <label>বাংলা টেক্সট</label>
@@ -7399,7 +7405,8 @@ function loadTaglineSettings(){
       var d = doc.exists ? doc.data() : {};
       document.getElementById('tagMusicBn').value = d.musicTaglineBn || 'অভিজ্ঞতাসমৃদ্ধ কেনাকাটার স্বাদ নিন';
       document.getElementById('tagMusicEn').value = d.musicTaglineEn || 'Take a bite of experiential shopping';
-      document.getElementById('tagMusicDuration').value = d.musicTaglineDuration || 5;
+      document.getElementById('tagMusicDuration').value = d.musicTaglineDuration || 6;
+      document.getElementById('tagMusicEnabled').checked = d.musicTaglineEnabled !== false; // default ON
       document.getElementById('tagWaBn').value = d.waTaglineBn || 'সরাসরি আমাদের সাথে কথা বলুন';
       document.getElementById('tagWaEn').value = d.waTaglineEn || 'Chat with us directly';
       document.getElementById('tagWaEnabled').checked = d.waTaglineEnabled !== false; // default ON
@@ -7412,6 +7419,7 @@ function saveTaglineSettings(){
     musicTaglineBn: document.getElementById('tagMusicBn').value.trim() || 'অভিজ্ঞতাসমৃদ্ধ কেনাকাটার স্বাদ নিন',
     musicTaglineEn: document.getElementById('tagMusicEn').value.trim() || 'Take a bite of experiential shopping',
     musicTaglineDuration: parseInt(document.getElementById('tagMusicDuration').value)||6,
+    musicTaglineEnabled: document.getElementById('tagMusicEnabled').checked,
     waTaglineBn: document.getElementById('tagWaBn').value.trim() || 'সরাসরি আমাদের সাথে কথা বলুন',
     waTaglineEn: document.getElementById('tagWaEn').value.trim() || 'Chat with us directly',
     waTaglineEnabled: document.getElementById('tagWaEnabled').checked,
