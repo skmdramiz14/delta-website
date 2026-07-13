@@ -1486,12 +1486,13 @@ function showNoFirebase(){
   setTimeout(function(){ _tryInitMusic(20); }, 600);
 
   var _musicTaglineTimer = null;
+  window._musicTaglineDuration = window._musicTaglineDuration || 6000;
   function _showMusicTagline(){
     var tag = document.getElementById('musicTagline');
     if(!tag) return;
     clearTimeout(_musicTaglineTimer);
     tag.classList.add('show');
-    _musicTaglineTimer = setTimeout(function(){ tag.classList.remove('show'); }, 10000);
+    _musicTaglineTimer = setTimeout(function(){ tag.classList.remove('show'); }, window._musicTaglineDuration);
   }
 
   window._toggleShoppingMusic = function(){
@@ -1500,7 +1501,6 @@ function showNoFirebase(){
     if(!wrap || !btn) return;
     var url = wrap.dataset.musicUrl;
     if(!url) return;
-    _showMusicTagline();
     if(!_musicAudio){
       _musicAudio = new Audio(url);
       _musicAudio.loop = true;
@@ -1513,6 +1513,7 @@ function showNoFirebase(){
     } else {
       _musicAudio.play().catch(function(){});
       _musicPlaying = true; btn.classList.add('playing');
+      _showMusicTagline(); // only show on PLAY, not on pause
     }
   };
 })();
@@ -1570,6 +1571,7 @@ function showNoFirebase(){
   var WA_PAGE_ID = 'festival';
   var WA_CITY = (typeof CITY !== 'undefined') ? CITY : 'manteswar';
 
+  window._waConfigReady = false;
   function _tryInitWa(attemptsLeft){
     if(typeof firebase === 'undefined' || !firebase.apps || firebase.apps.length === 0){
       if(attemptsLeft <= 0) return;
@@ -1582,15 +1584,32 @@ function showNoFirebase(){
         .then(function(doc){
           if(!doc.exists) return;
           var d = doc.data();
-          var phone = (d.phoneNumber||'').replace(/[^\d+]/g,'');
+          var phone = (d.phoneNumber||'').replace(/[^\d]/g,'');
           var msg = (d.messages && d.messages[WA_PAGE_ID]) || 'সাহায্য দরকার';
           if(!phone) return;
           var waBtn = document.getElementById('waBtn');
           if(waBtn) waBtn.href = 'https://wa.me/'+phone+'?text='+encodeURIComponent(msg);
+          window._waConfigReady = true;
+        }).catch(function(){});
+      // Also fetch shared tagline settings (text/duration/on-off) for both Music and WhatsApp
+      db.collection('cities').doc(WA_CITY).collection('settings').doc('taglineConfig').get()
+        .then(function(doc){
+          if(!doc.exists) return;
+          var d = doc.data();
+          if(d.musicTaglineBn || d.musicTaglineEn){
+            var mtag = document.getElementById('musicTagline');
+            if(mtag) mtag.innerHTML = (d.musicTaglineBn||'')+'<br>'+(d.musicTaglineEn||'');
+          }
+          if(d.musicTaglineDuration) window._musicTaglineDuration = d.musicTaglineDuration * 1000;
+          if(d.waTaglineBn || d.waTaglineEn){
+            var wtag = document.getElementById('waTagline');
+            if(wtag) wtag.innerHTML = (d.waTaglineBn||'')+'<br>'+(d.waTaglineEn||'');
+          }
+          window._waTaglineEnabled = d.waTaglineEnabled !== false;
         }).catch(function(){});
     }catch(e){}
   }
-  setTimeout(function(){ _tryInitWa(20); }, 600);
+  setTimeout(function(){ _tryInitWa(40); }, 400);
 
   setTimeout(function(){
     var waBtn = document.getElementById('waBtn');
@@ -1611,6 +1630,18 @@ function showNoFirebase(){
   }, 100);
 
   window.triggerWaRipple = function(e){
+    if(!window._waConfigReady){
+      e.preventDefault();
+      var wrap = document.querySelector('.wa-float');
+      if(wrap){
+        var msg = document.createElement('div');
+        msg.textContent = 'একটু অপেক্ষা করুন, যোগাযোগের তথ্য লোড হচ্ছে...';
+        msg.style.cssText = 'position:fixed;bottom:80px;right:18px;background:#0F3B31;color:#fff;padding:10px 16px;border-radius:10px;font-size:.78rem;z-index:2000;box-shadow:0 6px 18px rgba(0,0,0,.3);';
+        document.body.appendChild(msg);
+        setTimeout(function(){ msg.remove(); }, 2500);
+      }
+      return;
+    }
     var btn = e.currentTarget;
     var rect = btn.getBoundingClientRect();
     var size = Math.max(rect.width, rect.height) * 1.6;
@@ -1624,11 +1655,13 @@ function showNoFirebase(){
     btn.appendChild(ripple);
     setTimeout(function(){ ripple.remove(); }, 650);
 
-    var tag = document.getElementById('waTagline');
-    if(tag){
-      clearTimeout(tag._hideTimer);
-      tag.classList.add('show');
-      tag._hideTimer = setTimeout(function(){ tag.classList.remove('show'); }, 10000);
+    if(window._waTaglineEnabled !== false){
+      var tag = document.getElementById('waTagline');
+      if(tag){
+        clearTimeout(tag._hideTimer);
+        tag.classList.add('show');
+        tag._hideTimer = setTimeout(function(){ tag.classList.remove('show'); }, 10000);
+      }
     }
   };
 })();
