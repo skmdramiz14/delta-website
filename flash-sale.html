@@ -590,7 +590,9 @@ function showEmpty(msg){
 
   var _musicTaglineTimer = null;
   window._musicTaglineDuration = window._musicTaglineDuration || 6000;
+  window._musicTaglineEnabled = (window._musicTaglineEnabled !== undefined) ? window._musicTaglineEnabled : true;
   function _showMusicTagline(){
+    if(!window._musicTaglineEnabled) return;
     var tag = document.getElementById('musicTagline');
     if(!tag) return;
     clearTimeout(_musicTaglineTimer);
@@ -704,6 +706,7 @@ function showEmpty(msg){
             if(mtag) mtag.innerHTML = (d.musicTaglineBn||'')+'<br>'+(d.musicTaglineEn||'');
           }
           if(d.musicTaglineDuration) window._musicTaglineDuration = d.musicTaglineDuration * 1000;
+          window._musicTaglineEnabled = d.musicTaglineEnabled !== false;
           if(d.waTaglineBn || d.waTaglineEn){
             var wtag = document.getElementById('waTagline');
             if(wtag) wtag.innerHTML = (d.waTaglineBn||'')+'<br>'+(d.waTaglineEn||'');
