@@ -137,7 +137,7 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 
 .hero{
   background:linear-gradient(135deg,var(--navy3) 0%,var(--navy) 40%,var(--navy2) 70%,var(--navy2) 100%);
-  padding:36px 6% 36px calc(6% + 10px);position:relative;overflow:hidden;
+  padding:36px 6%;position:relative;overflow:hidden;
   min-height:400px;display:flex;align-items:center;
 }
 /* Photo layer — this specific image is already professionally graded with its own
@@ -148,16 +148,12 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 .hero-bg-overlay{position:absolute;inset:0;z-index:0;
   background:
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E"),
-    linear-gradient(90deg,rgba(14,30,24,.24) 0%,rgba(14,30,24,.1) 42%,transparent 68%),
-    radial-gradient(45% 55% at 32% 42%,rgba(255,255,255,.05) 0%,transparent 55%),
-    radial-gradient(140% 90% at 66% 50%,transparent 45%,rgba(0,0,0,.26) 100%),
-    linear-gradient(180deg,transparent 0%,transparent 38%,rgba(16,57,45,.4) 60%,rgba(16,57,45,.85) 80%,var(--navy) 96%);}
-/* Very subtle right-side brand accent — a faint triangle outline, present but barely noticeable */
-.hero-accent-motif{position:absolute;top:50%;right:4%;transform:translateY(-50%);width:220px;height:220px;
-  opacity:.045;pointer-events:none;z-index:0;}
+    linear-gradient(90deg,rgba(14,30,24,.18) 0%,rgba(14,30,24,.07) 40%,transparent 65%),
+    radial-gradient(140% 90% at 50% 50%,transparent 55%,rgba(0,0,0,.22) 100%),
+    linear-gradient(180deg,transparent 0%,transparent 42%,rgba(16,57,45,.35) 62%,rgba(16,57,45,.8) 80%,var(--navy) 96%);}
 /* Subtle glass panel behind the text so it stays readable over any part of the photo */
 .hero-glass{background:rgba(0,0,0,.18);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-radius:18px;padding:22px 24px;}
-.hero-tagline-strong{font-weight:700;letter-spacing:.4px;text-transform:none;font-style:normal;opacity:1;white-space:nowrap;font-size:.86em;}
+.hero-tagline-strong{font-weight:700;letter-spacing:1.8px;text-transform:uppercase;font-style:normal;opacity:1;white-space:nowrap;font-size:.86em;}
 .htl-local{color:#fdf6e8;}
 .htl-sep{color:rgba(199,161,90,.7);margin:0 2px;}
 .htl-global{background:linear-gradient(135deg,#F8E7C3,#C7A15A);-webkit-background-clip:text;background-clip:text;color:transparent;}
@@ -237,14 +233,14 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
   .hero-photo{display:none;}
   .hero-unified-frame{margin:0 0 14px;border-radius:0;border-left:none;border-right:none;
     box-shadow:0 11px 30px rgba(0,0,0,.072);animation:heroFadeIn .5s ease both;} /* shadow reduced ~40%, wrapper owns the whole shape now */
-  .hero{height:280px;min-height:280px;padding:24px 28px 20px 38px;align-items:flex-start;} /* height now matches content closely — no more empty gap before Shop Now; left padding increased for breathing room */
+  .hero{min-height:280px;padding:20px 28px 16px 28px;align-items:flex-start;} /* fixed height removed — was fighting the taller text block; now sizes to content, just compressed padding */
   .hero-content{padding:0;}
-  .hero-tag{font-size:.58rem;padding:4px 9px;margin-bottom:11px;letter-spacing:.5px;}
-  .hero h1{font-size:1.9rem;margin-bottom:8px;font-weight:900;} /* DELTA wordmark is the focal point */
-  .hero-bn{font-size:.98rem;margin-bottom:8px;color:#f8e7c3;} /* headline, brighter champagne gold with glow */
-  .hero p{font-size:.72rem;line-height:1.5;margin-bottom:13px;max-width:88%;} /* narrower column, compact but still readable */
-  .hero-tagline-strong{font-weight:700;white-space:nowrap;display:inline-block;font-size:.78em;letter-spacing:.2px;}
-  .hero-about-btn{height:38px;padding:0 18px;border-width:1.5px;font-size:.72rem;white-space:nowrap;
+  .hero-tag{font-size:.58rem;padding:4px 9px;margin-bottom:8px;letter-spacing:.5px;}
+  .hero h1{font-size:1.9rem;margin-bottom:6px;font-weight:900;} /* DELTA wordmark is the focal point */
+  .hero-bn{font-size:.98rem;margin-bottom:6px;color:#f8e7c3;} /* headline, brighter champagne gold with glow */
+  .hero p{font-size:.72rem;line-height:1.42;margin-bottom:10px;max-width:88%;} /* narrower column, compact but still readable */
+  .hero-tagline-strong{font-weight:700;white-space:normal;display:inline;font-size:.78em;letter-spacing:.8px;} /* tagline wraps naturally now — full uppercase+wide-tracking version was overflowing the narrow mobile column */
+  .hero-about-btn{height:34px;padding:0 16px;border-width:1.5px;font-size:.7rem;white-space:nowrap;
     display:inline-flex;align-items:center;justify-content:center;gap:8px;
     transition:transform .18s ease,background .2s ease,box-shadow .2s ease;}
   .hero-about-btn:active{transform:scale(.96);background:rgba(201,162,39,.12);}
@@ -603,8 +599,8 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 .hts-sep{width:1px;height:14px;background:rgba(255,255,255,.2);flex-shrink:0;}
 
 /* ── HERO TAG improvement ── */
-.hero-tag{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,rgba(231,197,133,.16),rgba(199,161,90,.05));backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:.75px solid rgba(231,197,133,.4);color:#fff3da;padding:9px 24px 9px 16px;border-radius:24px;font-size:.75rem;font-weight:700;letter-spacing:1.1px;text-transform:uppercase;margin-bottom:18px;box-shadow:0 2px 10px rgba(199,161,90,.1),inset 0 1px 0 rgba(255,255,255,.1);text-shadow:0 0 6px rgba(248,231,195,.4);}
-.hero-tag svg{flex-shrink:0;filter:drop-shadow(0 0 3px rgba(248,231,195,.4));}
+.hero-tag{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,rgba(231,197,133,.22),rgba(199,161,90,.08));border:1px solid rgba(231,197,133,.5);color:#fff3da;padding:7px 20px 7px 14px;border-radius:24px;font-size:.75rem;font-weight:700;letter-spacing:1.1px;text-transform:uppercase;margin-bottom:18px;box-shadow:0 3px 16px rgba(199,161,90,.18),inset 0 1px 0 rgba(255,255,255,.12);text-shadow:0 0 12px rgba(248,231,195,.8),0 0 22px rgba(199,161,90,.5);}
+.hero-tag svg{flex-shrink:0;filter:drop-shadow(0 0 6px rgba(248,231,195,.85));}
 
 @media(max-width:768px){
   .hero-stats-box{padding:14px 6px;}
@@ -750,8 +746,8 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 }
 .hero-btn-outline{background:transparent;color:#fff;border:2px solid rgba(255,255,255,.35);padding:13px 28px;border-radius:9px;font-size:.95rem;cursor:pointer;transition:all .2s;}
 .hero-btn-outline:hover{border-color:#fff;background:rgba(255,255,255,.1);}
-.hero-about-btn{background:linear-gradient(180deg,rgba(212,175,55,.06),rgba(212,175,55,.02));color:#ffd98a;border:1.5px solid #D4AF37;padding:14px 26px;border-radius:16px;font-size:.86rem;font-weight:700;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px;box-shadow:0 3px 10px rgba(0,0,0,.14);}
-.hero-about-btn:hover{background:rgba(212,175,55,.1);border-color:#D4AF37;box-shadow:0 4px 14px rgba(0,0,0,.18);}
+.hero-about-btn{background:transparent;color:#ffd98a;border:2px solid rgba(201,162,39,.55);padding:12px 26px;border-radius:16px;font-size:.86rem;font-weight:700;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px;box-shadow:0 4px 18px rgba(201,162,39,.22),0 0 0 1px rgba(201,162,39,.08);}
+.hero-about-btn:hover{background:rgba(201,162,39,.15);border-color:var(--orange);box-shadow:0 6px 24px rgba(201,162,39,.35),0 0 0 1px rgba(201,162,39,.15);}
 .hero-btn-full{width:100%;text-align:center;justify-content:center;}
 .hero-pill-row{display:flex;gap:10px;align-items:stretch;}
 .hero-pill{
@@ -1394,8 +1390,8 @@ body.lang-bn .lang-en{display:none!important;}
   /* ── HERO ── */
   .hero{min-height:340px;}
   .hero h1{font-size:1.85rem;line-height:1.25;}
-  .hero-bn{font-size:.9rem;margin-bottom:10px;}
-  .hero p{font-size:.85rem;line-height:1.65;margin-bottom:20px;}
+  .hero-bn{font-size:.9rem;margin-bottom:7px;}
+  .hero p{font-size:.85rem;line-height:1.55;margin-bottom:14px;}
   .hero-tag{font-size:.7rem;padding:5px 11px;margin-bottom:14px;}
 
   /* Hero search */
@@ -1568,9 +1564,9 @@ body.lang-bn .lang-en{display:none!important;}
   .hamburger-btn{width:46px;height:46px;font-size:.85rem;}
 
   /* HERO */
-  .hero{min-height:320px;}
+  .hero{min-height:280px;}
   .hero h1{font-size:1.9rem!important;line-height:1.15!important;}
-  .hero p{font-size:.72rem!important;line-height:1.5!important;margin-bottom:13px;}
+  .hero p{font-size:.72rem!important;line-height:1.42!important;margin-bottom:10px;}
   .hero-search-big input{font-size:.95rem;padding:0 16px;}
   .hero-search-big,.hero-search-big input{height:52px;}
   .hero-search-big{padding-right:48px;}
@@ -2203,12 +2199,10 @@ img{max-width:100%;height:auto;}
   <div class="hero-bg-img" style="background-image:url('hero-bg.jpg');"></div>
   <!-- Dark overlay + vignette, sits above the photo, below the content -->
   <div class="hero-bg-overlay"></div>
-  <!-- Subtle grid pattern — opacity আরও কমানো (point 7: ~35% reduction) -->
-  <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.012) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.012) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;"></div>
+  <!-- Subtle grid pattern — opacity কমানো -->
+  <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;"></div>
   <!-- Logo পিছনে subtle radial glow -->
   <div style="position:absolute;top:10%;left:3%;width:340px;height:340px;background:radial-gradient(circle,rgba(99,102,241,.1) 0%,transparent 65%);border-radius:50%;pointer-events:none;z-index:0;"></div>
-  <!-- Very subtle right-side brand accent — faint DELTA triangle outline, barely noticeable (point 8) -->
-  <svg class="hero-accent-motif" viewBox="0 0 200 200" fill="none"><path d="M100 20L180 180H20L100 20Z" stroke="#D4AF37" stroke-width="1.5"/><path d="M100 70L145 155H55L100 70Z" stroke="#D4AF37" stroke-width="1"/></svg>
   <!-- Thin gold geometric accent line (right side) -->
   <!-- Thin gold geometric line is already baked into the photo itself — no CSS duplicate needed -->
   <div class="hero-inner" style="position:relative;z-index:1;">
@@ -2216,7 +2210,7 @@ img{max-width:100%;height:auto;}
       <div class="hero-tag"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 2L14.12 9.88L22 12L14.12 14.12L12 22L9.88 14.12L2 12L9.88 9.88L12 2Z" fill="url(#heroTagStarGrad)"/><defs><linearGradient id="heroTagStarGrad" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse"><stop stop-color="#F8E7C3"/><stop offset="1" stop-color="#C7A15A"/></linearGradient></defs></svg> <span class="lang-bn">ভারতের প্রথম লোকাল সুপার অ্যাপ</span><span class="lang-en">India's First Local Super App</span></div>
       <h1>△ DELT<em>A</em></h1>
       <div class="hero-bn"><span class="lang-bn">পরিবর্তনের ব-দ্বীপ</span><span class="lang-en">The Delta of Change</span></div>
-      <p><span class="lang-bn">শুধু কেনাকাটা নয় — আপনার শহরের গল্প, এক জায়গায়। <span class="hero-tagline-strong"><span class="htl-local">Of the People, By the Sellers,</span><span class="htl-sep"> </span><span class="htl-global">For the Delta.</span></span></span><span class="lang-en">More than shopping — it's your city's story, in one place. <span class="hero-tagline-strong"><span class="htl-local">Of the People, By the Sellers,</span><span class="htl-sep"> </span><span class="htl-global">For the Delta.</span></span></span></p>
+      <p><span class="lang-bn">শুধু কেনাকাটা নয় — আপনার শহরের গল্প, এক জায়গায়। যেখানে প্রতিটি অর্ডার একটা সম্পর্ক তৈরি করে, আর প্রতিটি সম্পর্ক একটা বিশ্বাস। <span class="hero-tagline-strong"><span class="htl-local">Local Roots</span><span class="htl-sep">, </span><span class="htl-global">Global Horizons</span></span></span><span class="lang-en">More than shopping — it's your city's story, in one place. Where every order builds a relationship, and every relationship builds trust. <span class="hero-tagline-strong"><span class="htl-local">Local Roots</span><span class="htl-sep">, </span><span class="htl-global">Global Horizons</span></span></span></p>
       <button class="hero-about-btn" onclick="document.getElementById('whyDeltaSection').scrollIntoView({behavior:'smooth'})">
         <span class="lang-bn">আমাদের সম্পর্কে জানুন →</span><span class="lang-en">Learn About Us →</span>
       </button>
