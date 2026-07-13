@@ -41,6 +41,26 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 .hero-sub{color:rgba(248,236,210,.85);font-size:.92rem;line-height:1.6;max-width:480px;margin:0 auto;font-family:'Tiro Bangla',Georgia,serif;}
 .hero-count{color:var(--gold);font-size:.78rem;font-weight:700;letter-spacing:.5px;margin-top:16px;text-transform:uppercase;}
 
+/* ── QUICK JUMP STRIP — scroll-free direct access to any branch ── */
+.quick-jump-wrap{background:var(--white);border-bottom:1px solid var(--border);padding:16px 0;position:sticky;top:56px;z-index:90;}
+.quick-jump-label{font-size:.68rem;font-weight:700;color:var(--orange-dark);letter-spacing:1px;text-transform:uppercase;padding:0 20px;margin-bottom:10px;max-width:1100px;margin-left:auto;margin-right:auto;}
+.quick-jump-scroll{display:flex;gap:16px;overflow-x:auto;padding:0 20px 4px;max-width:1100px;margin:0 auto;scrollbar-width:none;}
+.quick-jump-scroll.expanded{flex-wrap:wrap;overflow-x:visible;justify-content:flex-start;}
+.quick-jump-more-icon{background:var(--sand);border:1.5px dashed var(--orange-dark);color:var(--orange-dark);
+  font-weight:800;font-size:1.1rem;box-shadow:none;}
+.quick-jump-scroll::-webkit-scrollbar{display:none;}
+.quick-jump-item{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;flex-shrink:0;width:64px;transition:transform .15s ease;}
+.quick-jump-item:active{transform:scale(.94);}
+.quick-jump-icon{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:1.5rem;box-shadow:0 3px 10px rgba(0,0,0,.1);border:2px solid transparent;background-clip:padding-box;overflow:hidden;position:relative;}
+.quick-jump-icon img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;}
+.quick-jump-label-text{font-size:.66rem;font-weight:600;color:var(--charcoal);text-align:center;line-height:1.2;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:64px;}
+.quick-jump-item.soon{opacity:.45;cursor:default;}
+.quick-jump-item.soon:active{transform:none;}
+.quick-jump-soon-dot{position:absolute;bottom:-2px;right:-2px;background:var(--gold);color:#1a1408;font-size:.5rem;
+  font-weight:800;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #fff;}
+
 /* ── MAIN CONTENT ── */
 .main{max-width:1100px;margin:0 auto;padding:32px 16px 60px;}
 .section-label{font-size:.75rem;font-weight:700;color:var(--orange-dark);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:4px;}
@@ -105,7 +125,13 @@ body.lang-bn .lang-en{display:none!important;}
     <span class="lang-bn">একটা প্ল্যাটফর্ম, অনেকগুলো জগৎ — বাজার থেকে উৎসব, তাজা সবজি থেকে উপহার। যেটা আপনার আজ দরকার, সেটাই বেছে নিন।</span>
     <span class="lang-en">One platform, many worlds — from everyday shopping to festive gifting, farm-fresh produce to flash deals. Pick what you need today.</span>
   </p>
-  <div class="hero-count"><span class="lang-bn">৫টি সক্রিয় শাখা · আরও আসছে</span><span class="lang-en">5 Live Branches · More Coming</span></div>
+  <div class="hero-count"><span class="lang-bn">৬টি সক্রিয় শাখা · আরও আসছে</span><span class="lang-en">6 Live Branches · More Coming</span></div>
+</div>
+
+<!-- QUICK JUMP — scroll না করেও সরাসরি কোনো branch-এ যাওয়া যাবে -->
+<div class="quick-jump-wrap">
+  <div class="quick-jump-label"><span class="lang-bn">দ্রুত যান</span><span class="lang-en">Quick Jump</span></div>
+  <div class="quick-jump-scroll" id="quickJumpStrip"></div>
 </div>
 
 <!-- MAIN -->
@@ -130,6 +156,12 @@ function setLang(l){
 
 // ── FALLBACK BRANCHES — used only if Firestore has no data yet or fails to load ──
 var ECOSYSTEM_BRANCHES_FALLBACK = [
+  {
+    icon:'🏪', color:'#8B5A2B', url:'shops.html', status:'live',
+    name_bn:'কাছের দোকান', name_en:'Nearby Shops',
+    desc_bn:'আপনার আশেপাশের প্রতিটি দোকান, একসাথে — খুঁজুন, দেখুন, অর্ডার করুন।',
+    desc_en:'Every shop near you, in one place — discover, browse, and order.'
+  },
   {
     icon:'🏮', color:'#3d2a6b', url:'bazaar.html', status:'live',
     name_bn:'DELTA বাজার', name_en:'DELTA Bazaar',
@@ -176,22 +208,42 @@ var ECOSYSTEM_BRANCHES_FALLBACK = [
   // {icon:'✈️', color:'#0d6b8c', url:'travel.html', status:'live', name_bn:'DELTA ভ্রমণ', name_en:'DELTA Travel', desc_bn:'...', desc_en:'...'},
 ];
 
+// ── Premium SVG icon set — replaces emoji for a crisper, device-consistent look ──
+// Falls back to a generic storefront icon for any emoji not in this map (so future
+// branches added by Admin always look premium even before we add a specific icon for them).
+var ICON_SVG_MAP = {
+  '🏪': '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9L5 4H19L20 9"/><path d="M4 9C4 10.1 4.9 11 6 11C7.1 11 8 10.1 8 9C8 10.1 8.9 11 10 11C11.1 11 12 10.1 12 9C12 10.1 12.9 11 14 11C15.1 11 16 10.1 16 9C16 10.1 16.9 11 18 11C19.1 11 20 10.1 20 9"/><path d="M5 11V20H19V11"/><path d="M10 20V15C10 14.4 10.4 14 11 14H13C13.6 14 14 14.4 14 15V20"/></svg>',
+  '🏮': '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2V4"/><path d="M7 6C7 4.5 9 4 12 4C15 4 17 4.5 17 6V16C17 17.5 15 18 12 18C9 18 7 17.5 7 16V6Z"/><path d="M9 6C9 8 9 14 9 16"/><path d="M15 6C15 8 15 14 15 16"/><path d="M12 18V22"/><path d="M9 22H15"/></svg>',
+  '🎁': '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="9" width="16" height="12" rx="1"/><path d="M4 13H20"/><path d="M12 9V21"/><path d="M12 9C10 9 8.5 7.5 8.5 6C8.5 4.5 9.5 4 10.5 4C11.5 4 12 6 12 9Z"/><path d="M12 9C14 9 15.5 7.5 15.5 6C15.5 4.5 14.5 4 13.5 4C12.5 4 12 6 12 9Z"/></svg>',
+  '🎊': '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20L9 15"/><path d="M6 9L4 4"/><path d="M15 6L20 4"/><path d="M9 20L12 12L20 9L17 17L9 20Z"/><circle cx="6" cy="6" r="1"/><circle cx="18" cy="14" r="1"/></svg>',
+  '🌿': '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 20C6 12 10 4 20 4C20 14 14 18 6 20Z"/><path d="M6 20C6 16 9 12 15 10"/></svg>',
+  '⚡': '<svg viewBox="0 0 24 24" fill="#fff" stroke="none"><path d="M13 2L4 14H11L10 22L20 9H13L13 2Z"/></svg>',
+  '♻️': '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4L15 9H9L12 4Z"/><path d="M18 8L21 13L16.5 15.5"/><path d="M21 17H15L17.5 21"/><path d="M9 21L6 16H11.5"/><path d="M3 13L6 8L9.5 10"/></svg>',
+  '🔧': '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3C15.9 5.1 17.7 4.7 19.3 5.4L16.5 8.2L16 10.5L18.3 11L21.1 8.2C21.7 9.8 21.4 11.7 20.1 12.9C18.7 14.3 16.7 14.6 15 13.9L7 21.9C6.2 22.7 4.9 22.7 4.1 21.9C3.3 21.1 3.3 19.8 4.1 19L12.1 11C11.4 9.3 11.7 7.3 13.1 5.9"/></svg>'
+};
+var DEFAULT_ICON_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9L5 4H19L20 9"/><path d="M4 9C4 10.1 4.9 11 6 11C7.1 11 8 10.1 8 9C8 10.1 8.9 11 10 11C11.1 11 12 10.1 12 9C12 10.1 12.9 11 14 11C15.1 11 16 10.1 16 9C16 10.1 16.9 11 18 11C19.1 11 20 10.1 20 9"/><path d="M5 11V20H19V11"/><path d="M10 20V15C10 14.4 10.4 14 11 14H13C13.6 14 14 14.4 14 15V20"/></svg>';
+
+function getIconMarkup(b, size){
+  if(b.bannerUrl) return '<img src="' + b.bannerUrl + '" alt="' + (b.name_en||'') + '">';
+  var svg = ICON_SVG_MAP[b.icon] || DEFAULT_ICON_SVG;
+  return '<span style="width:' + size + 'px;height:' + size + 'px;display:inline-flex;">' + svg + '</span>';
+}
+
 function renderBranches(list){
   _branchesRendered = true;
   var grid = document.getElementById('branchGrid');
   if(!list || !list.length){
     grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--muted);padding:40px 0;"><span class="lang-bn">এখনো কোনো branch যোগ করা হয়নি।</span><span class="lang-en">No branches added yet.</span></div>';
+    var stripEmpty = document.getElementById('quickJumpStrip');
+    if(stripEmpty) stripEmpty.innerHTML = '';
     return;
   }
   grid.innerHTML = list.map(function(b){
     var isLive = b.status === 'live';
     var cls = 'branch-card' + (isLive ? '' : ' soon');
     var click = isLive ? " onclick=\"window.location.href='" + b.url + "'\"" : '';
-    var bannerContent = b.bannerUrl
-      ? '<img src="' + b.bannerUrl + '" alt="' + (b.name_en||'') + '">'
-      : b.icon;
     return '<div class="' + cls + '"' + click + '>' +
-      '<div class="branch-banner" style="background:linear-gradient(135deg,' + b.color + 'cc,' + b.color + '99);">' + bannerContent +
+      '<div class="branch-banner" style="background:linear-gradient(135deg,' + b.color + 'cc,' + b.color + '99);">' + getIconMarkup(b, 40) +
         (isLive ? '<span class="branch-arrow">→</span>' : '<span class="branch-soon-badge"><span class="lang-bn">শীঘ্রই</span><span class="lang-en">Soon</span></span>') +
       '</div>' +
       '<div class="branch-body">' +
@@ -201,6 +253,55 @@ function renderBranches(list){
       '</div>' +
     '</div>';
   }).join('');
+  renderQuickJump(list);
+}
+
+// ── Quick Jump — shows a limited set by default, "আরো দেখো / See More" reveals the rest ──
+// (same progressive-disclosure pattern as the homepage's category section)
+var QUICK_JUMP_VISIBLE_COUNT = 6;
+var _allQuickJumpBranches = [];
+var _quickJumpExpanded = false;
+
+function renderQuickJump(list){
+  _allQuickJumpBranches = list;
+  _quickJumpExpanded = false;
+  renderQuickJumpItems();
+}
+
+function renderQuickJumpItems(){
+  var strip = document.getElementById('quickJumpStrip');
+  if(!strip) return;
+  var list = _allQuickJumpBranches;
+  var showAll = _quickJumpExpanded || list.length <= QUICK_JUMP_VISIBLE_COUNT;
+  var visible = showAll ? list : list.slice(0, QUICK_JUMP_VISIBLE_COUNT);
+
+  strip.classList.toggle('expanded', showAll && list.length > QUICK_JUMP_VISIBLE_COUNT);
+
+  var html = visible.map(function(b){
+    var isLive = b.status === 'live';
+    var cls = 'quick-jump-item' + (isLive ? '' : ' soon');
+    var click = isLive ? " onclick=\"window.location.href='" + b.url + "'\"" : '';
+    return '<div class="' + cls + '"' + click + '>' +
+      '<div class="quick-jump-icon" style="background:linear-gradient(135deg,' + b.color + 'cc,' + b.color + '99);">' +
+        getIconMarkup(b, 26) +
+        (isLive ? '' : '<span class="quick-jump-soon-dot">⏳</span>') +
+      '</div>' +
+      '<div class="quick-jump-label-text"><span class="lang-bn">' + b.name_bn.replace('DELTA ','') + '</span><span class="lang-en">' + b.name_en.replace('DELTA ','') + '</span></div>' +
+    '</div>';
+  }).join('');
+
+  if(!showAll && list.length > QUICK_JUMP_VISIBLE_COUNT){
+    html += '<div class="quick-jump-item" onclick="expandQuickJump()">' +
+      '<div class="quick-jump-icon quick-jump-more-icon">+' + (list.length - QUICK_JUMP_VISIBLE_COUNT) + '</div>' +
+      '<div class="quick-jump-label-text"><span class="lang-bn">আরো দেখো</span><span class="lang-en">See More</span></div>' +
+    '</div>';
+  }
+  strip.innerHTML = html;
+}
+
+function expandQuickJump(){
+  _quickJumpExpanded = true;
+  renderQuickJumpItems();
 }
 
 // ── Load branches from Firestore (Admin-managed via Admin Panel → 🌐 DELTA Ecosystem tab) ──
