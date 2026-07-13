@@ -1917,6 +1917,12 @@ button,input,select{font-family:'DM Sans',sans-serif;}
       <div class="sec-head" style="margin-top:24px;">
         <div class="sec-title" style="font-size:1rem;">সব Branch <small id="ecoCount"></small></div>
       </div>
+      <div id="ecoSeedZone" style="display:none;margin-bottom:14px;background:var(--yellow2);border:1px dashed var(--yellow);border-radius:12px;padding:14px;">
+        <div style="font-size:.82rem;color:var(--navy);margin-bottom:8px;">
+          ⚠️ Firestore-এ এখনো কোনো branch নেই — <b>ecosystem.html</b> এখন শুধু code-এ বসানো ৭টা default branch (fallback) দেখাচ্ছে, যেগুলো এখান থেকে এডিট করা যাবে না। নিচের বাটনে ক্লিক করে সেই ৭টা branch একবারে Firestore-এ যোগ করে দিন — তারপর থেকে সবকিছু এখান থেকেই এডিট করতে পারবেন।
+        </div>
+        <button class="btn-sm btn-orange" onclick="seedDefaultEcosystemBranches()">🌱 ডিফল্ট ৭টি Branch এক ক্লিকে যোগ করুন</button>
+      </div>
       <div id="ecosystemBranchesList" style="display:flex;flex-direction:column;gap:10px;"><div style="color:var(--muted);font-size:.82rem;">লোড হচ্ছে...</div></div>
     </div>
 
@@ -7527,10 +7533,55 @@ function loadEcosystemBranches(){
       allEcosystemBranches = [];
       snap.forEach(function(d){ allEcosystemBranches.push(Object.assign({id:d.id}, d.data())); });
       allEcosystemBranches.sort(function(a,b){ return (a.order||99)-(b.order||99); });
+      var seedZone = document.getElementById('ecoSeedZone');
+      if(seedZone) seedZone.style.display = allEcosystemBranches.length ? 'none' : 'block';
       renderEcosystemBranchesList();
     }).catch(function(){
       wrap.innerHTML = '<div style="color:var(--muted);font-size:.82rem;">লোড করতে সমস্যা হয়েছে।</div>';
     });
+}
+
+var ECOSYSTEM_DEFAULT_SEED = [
+  {icon:'🏮', color:'#3d2a6b', url:'bazaar.html', status:'live', order:1,
+    name_bn:'DELTA বাজার', name_en:'DELTA Bazaar',
+    desc_bn:'প্রয়োজনীয় জিনিস, সেরা দামে — অর্ডার করুন, আমরা খুঁজে এনে দিই।',
+    desc_en:'Everyday essentials at the best price — order, and we source it for you.'},
+  {icon:'🎁', color:'#7B1FA2', url:'hampers.html', status:'live', order:2,
+    name_bn:'DELTA হ্যাম্পার', name_en:'DELTA Hampers',
+    desc_bn:'উপহার যেখানে ভালোবাসার গল্প বলে — প্রিয়জনের জন্য সাজানো প্যাকেজ।',
+    desc_en:'Gifts that tell a story — thoughtfully curated packages for your loved ones.'},
+  {icon:'🎊', color:'#c0392b', url:'festival.html', status:'live', order:3,
+    name_bn:'DELTA উৎসব', name_en:'DELTA Festival',
+    desc_bn:'উৎসবের রঙে বিশেষ অফার, কুপন আর লাকি ড্র — আনন্দ ভাগ করে নিন।',
+    desc_en:'Special festival offers, coupons, and lucky draws — celebrate together.'},
+  {icon:'🌿', color:'#3d6b28', url:'fresh.html', status:'live', order:4,
+    name_bn:'DELTA ফ্রেশ', name_en:'DELTA Fresh',
+    desc_bn:'খামার থেকে সরাসরি আপনার রান্নাঘরে — তাজা মাছ, সবজি, ফল প্রতিদিন।',
+    desc_en:'Farm to your kitchen, same day — fresh fish, vegetables, and fruit daily.'},
+  {icon:'⚡', color:'#d35400', url:'flash-sale.html', status:'live', order:5,
+    name_bn:'ফ্ল্যাশ সেল', name_en:'Flash Sale',
+    desc_bn:'সীমিত সময়ের জন্য সেরা ছাড় — দ্রুত না নিলে হাতছাড়া হয়ে যাবে।',
+    desc_en:'Limited-time deals on your favourite shops — grab them before they\'re gone.'},
+  {icon:'♻️', color:'#16697a', url:null, status:'soon', order:6,
+    name_bn:'DELTA রিমার্কেট', name_en:'DELTA ReMarket',
+    desc_bn:'পুরনো জিনিসের নতুন জীবন — নিরাপদ সেকেন্ড-হ্যান্ড মার্কেটপ্লেস।',
+    desc_en:'Give pre-loved items a new life — a safe second-hand marketplace.'},
+  {icon:'🔧', color:'#5d4037', url:null, status:'soon', order:7,
+    name_bn:'DELTA রেন্টাল ক্লাব', name_en:'DELTA Rental Club',
+    desc_bn:'প্রয়োজন যতক্ষণ, ভাড়া ততক্ষণ — যন্ত্রপাতি থেকে ইভেন্ট সরঞ্জাম।',
+    desc_en:'Rent what you need, only when you need it — tools to event gear.'}
+];
+
+function seedDefaultEcosystemBranches(){
+  if(!confirm('বর্তমান ৭টি default branch Firestore-এ যোগ করতে চান?')) return;
+  var ref = db.collection('cities').doc(CITY).collection('ecosystemBranches');
+  var proms = ECOSYSTEM_DEFAULT_SEED.map(function(b){
+    return ref.add(Object.assign({}, b, {updatedAt: new Date().toISOString()}));
+  });
+  Promise.all(proms).then(function(){
+    showToast('৭টি branch যোগ হয়েছে ✅ এখন এডিট করা যাবে','green');
+    loadEcosystemBranches();
+  }).catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
 }
 
 function renderEcosystemBranchesList(){
