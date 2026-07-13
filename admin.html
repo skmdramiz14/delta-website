@@ -373,6 +373,9 @@ button,input,select{font-family:'DM Sans',sans-serif;}
     <button class="tab-btn" id="tab-heroslides" onclick="goTab('heroslides',this)">
       <span>🏠 Hero Slides</span>
     </button>
+    <button class="tab-btn" id="tab-whatsapp" onclick="goTab('whatsapp',this)">
+      <span>📱 WhatsApp Management</span>
+    </button>
     <button class="tab-btn" id="tab-hampers" onclick="goTab('hampers',this)">
       <span>🎁 Hamper Management</span>
     </button>
@@ -1660,15 +1663,46 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 
       <div id="musicTracksListWrap"><div style="color:var(--muted);font-size:.82rem;">লোড হচ্ছে...</div></div>
 
-      <!-- WHATSAPP MANAGEMENT -->
-      <div class="add-zone-card" style="margin-top:20px;border-color:#25D366;">
-        <div style="font-size:.9rem;font-weight:700;color:var(--navy);margin-bottom:4px;">📱 WhatsApp Management</div>
+      <!-- MUSIC TAGLINE SETTINGS -->
+      <div class="add-zone-card" style="margin-top:20px;border-color:var(--gold-muted,#C7A15A);">
+        <div style="font-size:.9rem;font-weight:700;color:var(--navy);margin-bottom:4px;">🏷️ Music Floating Tagline</div>
+        <div style="font-size:.72rem;color:var(--muted);margin-bottom:14px;">
+          Music বাটনে ক্লিক করলে যে ছোট লেখাটা ভেসে ওঠে (যেমন "Take a bite of experiential shopping") — তার টেক্সট ও কতক্ষণ দেখাবে এখান থেকে ঠিক করুন।
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
+          <div class="form-group" style="margin-bottom:0">
+            <label>বাংলা টেক্সট</label>
+            <input type="text" class="form-input" id="tagMusicBn" placeholder="অভিজ্ঞতাসমৃদ্ধ কেনাকাটার স্বাদ নিন">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>English Text</label>
+            <input type="text" class="form-input" id="tagMusicEn" placeholder="Take a bite of experiential shopping">
+          </div>
+          <div class="form-group" style="margin-bottom:0;grid-column:1/-1;">
+            <label>কতক্ষণ দেখাবে (সেকেন্ড)</label>
+            <input type="number" class="form-input" id="tagMusicDuration" value="6" min="2" max="30" style="max-width:120px;">
+          </div>
+        </div>
+        <button class="btn-sm btn-orange" onclick="saveTaglineSettings()">🏷️ সেভ করুন</button>
+        <span style="font-size:.72rem;color:var(--muted)" id="tagSaveStatus"></span>
+      </div>
+    </div>
+
+    <!-- ═══ WHATSAPP MANAGEMENT PAGE (dedicated tab) ═══ -->
+    <div class="page" id="page-whatsapp">
+      <div class="sec-head">
+        <div class="sec-title">📱 WhatsApp Management <small>প্রতিটা পেজের floating WhatsApp বাটন, প্রথম মেসেজ, ও tagline নিয়ন্ত্রণ করুন</small></div>
+      </div>
+
+      <!-- WHATSAPP NUMBER + PER-PAGE MESSAGES -->
+      <div class="add-zone-card" style="margin-bottom:20px;border-color:#25D366;">
+        <div style="font-size:.9rem;font-weight:700;color:var(--navy);margin-bottom:4px;">💬 নম্বর ও প্রথম মেসেজ</div>
         <div style="font-size:.72rem;color:var(--muted);margin-bottom:14px;">
           প্রতিটা পেজে floating 💬 বাটন থাকবে — প্রতিটা পেজের জন্য আলাদা pre-filled প্রথম মেসেজ ঠিক করে দিন, যাতে গ্রাহক WhatsApp খুললেই বুঝতে পারেন কোন পেজ থেকে এসেছেন।
         </div>
 
         <div class="form-group" style="margin-bottom:14px;">
-          <label>WhatsApp নম্বর * <span style="font-weight:400;color:var(--muted);">(দেশের কোড সহ, যেমন +918145776998)</span></label>
+          <label>WhatsApp নম্বর * <span style="font-weight:400;color:var(--muted);">(দেশের কোড সহ, + দিন বা না দিন দুটোই চলবে)</span></label>
           <input type="text" class="form-input" id="waPhoneNumber" placeholder="+91XXXXXXXXXX">
         </div>
 
@@ -1713,6 +1747,32 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 
         <button class="btn-sm btn-orange" onclick="saveWhatsAppConfig()">📱 সেভ করুন</button>
         <span style="font-size:.72rem;color:var(--muted)" id="waConfigSaveStatus"></span>
+      </div>
+
+      <!-- WHATSAPP TAGLINE -->
+      <div class="add-zone-card" style="border-color:var(--gold-muted,#C7A15A);">
+        <div style="font-size:.9rem;font-weight:700;color:var(--navy);margin-bottom:4px;">🏷️ Floating Tagline</div>
+        <div style="font-size:.72rem;color:var(--muted);margin-bottom:14px;">
+          WhatsApp বাটনে ক্লিক করলে যে ছোট লেখাটা ভেসে ওঠে, তার টেক্সট ও on/off এখান থেকে নিয়ন্ত্রণ করুন।
+        </div>
+        <div style="background:#fff4ec;border:1px solid var(--orange);border-radius:10px;padding:10px 12px;margin-bottom:12px;display:flex;align-items:center;gap:10px;">
+          <input type="checkbox" id="tagWaEnabled" checked style="width:18px;height:18px;flex-shrink:0;">
+          <label for="tagWaEnabled" style="font-size:.78rem;font-weight:700;color:var(--navy);cursor:pointer;margin:0;">
+            💬 WhatsApp বাটনে ক্লিক করলে floating tagline দেখান
+          </label>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+          <div class="form-group" style="margin-bottom:0">
+            <label>বাংলা টেক্সট</label>
+            <input type="text" class="form-input" id="tagWaBn" placeholder="সরাসরি আমাদের সাথে কথা বলুন">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>English Text</label>
+            <input type="text" class="form-input" id="tagWaEn" placeholder="Chat with us directly">
+          </div>
+        </div>
+        <button class="btn-sm btn-orange" onclick="saveTaglineSettings()">🏷️ সেভ করুন</button>
+        <span style="font-size:.72rem;color:var(--muted)" id="waTagSaveStatus"></span>
       </div>
     </div>
 
@@ -2190,7 +2250,8 @@ function goTab(tab, btn){
   if(tab==='hampers') loadHamperManagement();
   if(tab==='hamperorders') loadHamperOrders();
   if(tab==='sponsoredshops'){ loadSponsoredShops(); loadFeaturedProductSellerDropdown(); loadFeaturedProducts(); }
-  if(tab==='heroslides'){ loadBrandSlide(); loadHouseSlides(); loadMusicTracks(); loadWhatsAppConfig(); }
+  if(tab==='heroslides'){ loadBrandSlide(); loadHouseSlides(); loadMusicTracks(); loadTaglineSettings(); }
+  if(tab==='whatsapp'){ loadWhatsAppConfig(); loadTaglineSettings(); }
 }
 
 // ═══ DATA LOADING ═══
@@ -7293,6 +7354,43 @@ function saveWhatsAppConfig(){
       showToast('সমস্যা: '+e.message,'red');
     });
 }
+
+// ═══════════════════ FLOATING TAGLINE SETTINGS ═══════════════════
+function loadTaglineSettings(){
+  db.collection('cities').doc(CITY).collection('settings').doc('taglineConfig').get()
+    .then(function(doc){
+      var d = doc.exists ? doc.data() : {};
+      document.getElementById('tagMusicBn').value = d.musicTaglineBn || 'অভিজ্ঞতাসমৃদ্ধ কেনাকাটার স্বাদ নিন';
+      document.getElementById('tagMusicEn').value = d.musicTaglineEn || 'Take a bite of experiential shopping';
+      document.getElementById('tagMusicDuration').value = d.musicTaglineDuration || 5;
+      document.getElementById('tagWaBn').value = d.waTaglineBn || 'সরাসরি আমাদের সাথে কথা বলুন';
+      document.getElementById('tagWaEn').value = d.waTaglineEn || 'Chat with us directly';
+      document.getElementById('tagWaEnabled').checked = d.waTaglineEnabled !== false; // default ON
+    }).catch(function(){});
+}
+
+function saveTaglineSettings(){
+  var statusEls = [document.getElementById('tagSaveStatus'), document.getElementById('waTagSaveStatus')].filter(Boolean);
+  var data = {
+    musicTaglineBn: document.getElementById('tagMusicBn').value.trim() || 'অভিজ্ঞতাসমৃদ্ধ কেনাকাটার স্বাদ নিন',
+    musicTaglineEn: document.getElementById('tagMusicEn').value.trim() || 'Take a bite of experiential shopping',
+    musicTaglineDuration: parseInt(document.getElementById('tagMusicDuration').value)||6,
+    waTaglineBn: document.getElementById('tagWaBn').value.trim() || 'সরাসরি আমাদের সাথে কথা বলুন',
+    waTaglineEn: document.getElementById('tagWaEn').value.trim() || 'Chat with us directly',
+    waTaglineEnabled: document.getElementById('tagWaEnabled').checked,
+    updatedAt: new Date().toISOString()
+  };
+  statusEls.forEach(function(el){ el.textContent = 'সেভ হচ্ছে...'; });
+  db.collection('cities').doc(CITY).collection('settings').doc('taglineConfig').set(data)
+    .then(function(){
+      statusEls.forEach(function(el){ el.textContent='✅ সেভ হয়েছে'; setTimeout(function(){el.textContent='';},3000); });
+      showToast('Tagline সেটিংস সেভ হয়েছে ✅','green');
+    }).catch(function(e){
+      statusEls.forEach(function(el){ el.textContent='❌ সমস্যা'; });
+      showToast('সমস্যা: '+e.message,'red');
+    });
+}
+
 
 function toggleSponsoredShopStatus(id, status){
   db.collection('cities').doc(CITY).collection('bannerAds').doc(id).update({status:status})
