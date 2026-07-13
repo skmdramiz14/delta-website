@@ -153,10 +153,11 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
     linear-gradient(180deg,transparent 0%,transparent 42%,rgba(16,57,45,.35) 62%,rgba(16,57,45,.8) 80%,var(--navy) 96%);}
 /* Subtle glass panel behind the text so it stays readable over any part of the photo */
 .hero-glass{background:rgba(0,0,0,.18);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-radius:18px;padding:22px 24px;}
-.hero-tagline-strong{font-weight:700;letter-spacing:.4px;text-transform:none;font-style:normal;opacity:1;white-space:nowrap;font-size:.86em;}
+.hero-tagline-strong{font-weight:700;letter-spacing:1.8px;text-transform:uppercase;font-style:normal;opacity:1;white-space:nowrap;font-size:.86em;}
 .htl-local{color:#fdf6e8;}
 .htl-sep{color:rgba(199,161,90,.7);margin:0 2px;}
 .htl-global{background:linear-gradient(135deg,#F8E7C3,#C7A15A);-webkit-background-clip:text;background-clip:text;color:transparent;}
+.hero-tagline-standalone{margin-bottom:20px;}
 /* Ambient glow orbs */
 .hero::before{
   content:'';position:absolute;
@@ -229,7 +230,7 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
    the real photo lives on .hero itself). Banner capped at ~320-340px tall,
    spacing/radius/shadow match the approved spec, CTA is larger/tappable. */
 @media(max-width:480px){
-  .hero-inner{grid-template-columns:100%;gap:0;}
+  .hero-inner{grid-template-columns:42% 58%;gap:0;}
   .hero-photo{display:none;}
   .hero-unified-frame{margin:0 0 14px;border-radius:0;border-left:none;border-right:none;
     box-shadow:0 11px 30px rgba(0,0,0,.072);animation:heroFadeIn .5s ease both;} /* shadow reduced ~40%, wrapper owns the whole shape now */
@@ -239,7 +240,7 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
   .hero h1{font-size:1.9rem;margin-bottom:6px;font-weight:900;} /* DELTA wordmark is the focal point */
   .hero-bn{font-size:.98rem;margin-bottom:6px;color:#f8e7c3;} /* headline, brighter champagne gold with glow */
   .hero p{font-size:.72rem;line-height:1.42;margin-bottom:10px;max-width:88%;} /* narrower column, compact but still readable */
-  .hero-tagline-strong{font-weight:700;white-space:nowrap;display:inline-block;font-size:.78em;letter-spacing:.2px;}
+  .hero-tagline-strong{font-weight:700;white-space:normal;display:inline;font-size:.78em;letter-spacing:.8px;} /* tagline wraps naturally now — full uppercase+wide-tracking version was overflowing the narrow mobile column */
   .hero-about-btn{height:34px;padding:0 16px;border-width:1.5px;font-size:.7rem;white-space:nowrap;
     display:inline-flex;align-items:center;justify-content:center;gap:8px;
     transition:transform .18s ease,background .2s ease,box-shadow .2s ease;}
@@ -1332,7 +1333,7 @@ body.lang-bn .lang-en{display:none!important;}
   .why-grid{grid-template-columns:1fr 1fr 1fr;}
 }
 @media(max-width:900px){
-  .hero-inner{grid-template-columns:100%;gap:0;}
+  .hero-inner{grid-template-columns:42% 58%;gap:0;}
   .hero-phone{display:none;}
   .hero-photo{display:none;}
   .hero{min-height:360px;}
@@ -2210,7 +2211,8 @@ img{max-width:100%;height:auto;}
       <div class="hero-tag"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 2L14.12 9.88L22 12L14.12 14.12L12 22L9.88 14.12L2 12L9.88 9.88L12 2Z" fill="url(#heroTagStarGrad)"/><defs><linearGradient id="heroTagStarGrad" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse"><stop stop-color="#F8E7C3"/><stop offset="1" stop-color="#C7A15A"/></linearGradient></defs></svg> <span class="lang-bn">ভারতের প্রথম লোকাল সুপার অ্যাপ</span><span class="lang-en">India's First Local Super App</span></div>
       <h1>△ DELT<em>A</em></h1>
       <div class="hero-bn"><span class="lang-bn">পরিবর্তনের ব-দ্বীপ</span><span class="lang-en">The Delta of Change</span></div>
-      <p><span class="lang-bn">শুধু কেনাকাটা নয় — আপনার শহরের গল্প, এক জায়গায়। যেখানে প্রতিটি অর্ডার একটা সম্পর্ক তৈরি করে, আর প্রতিটি সম্পর্ক একটা বিশ্বাস। <span class="hero-tagline-strong"><span class="htl-local">Of the People, By the Sellers,</span><span class="htl-sep"> </span><span class="htl-global">For the Delta.</span></span></span><span class="lang-en">More than shopping — it's your city's story, in one place. Where every order builds a relationship, and every relationship builds trust. <span class="hero-tagline-strong"><span class="htl-local">Of the People, By the Sellers,</span><span class="htl-sep"> </span><span class="htl-global">For the Delta.</span></span></span></p>
+      <p><span class="lang-bn">শুধু কেনাকাটা নয় — আপনার শহরের গল্প, এক জায়গায়। যেখানে প্রতিটি অর্ডার একটা সম্পর্ক তৈরি করে, আর প্রতিটি সম্পর্ক একটা বিশ্বাস।</span><span class="lang-en">More than shopping — it's your city's story, in one place. Where every order builds a relationship, and every relationship builds trust.</span></p>
+      <div class="hero-tagline-standalone"><span class="hero-tagline-strong"><span class="htl-local">Of the People, By the Sellers,</span><span class="htl-sep"> </span><span class="htl-global">For the Delta.</span></span></div>
       <button class="hero-about-btn" onclick="document.getElementById('whyDeltaSection').scrollIntoView({behavior:'smooth'})">
         <span class="lang-bn">আমাদের সম্পর্কে জানুন →</span><span class="lang-en">Learn About Us →</span>
       </button>
