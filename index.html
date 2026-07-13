@@ -836,13 +836,14 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 .bn-item:active{transform:scale(.96);}
 .bn-item.bn-center{margin-top:0;}
 .bn-cart-btn-outer{position:relative;display:inline-flex;margin-top:0;}
-.bn-icon-wrap{width:46px;height:46px;border-radius:50%;overflow:hidden;position:relative;
-  background:linear-gradient(135deg,#F0C34D 0%,#FCE7A0 45%,#B8860B 100%);
-  border:2px solid #14453B;display:flex;align-items:center;justify-content:center;
-  box-shadow:0 0 0 4px rgba(20,69,59,.55),0 5px 14px rgba(184,134,11,.28),inset 0 2px 4px rgba(255,255,255,.45),inset 0 -3px 6px rgba(0,0,0,.16);
+.bn-icon-wrap{width:50px;height:50px;border-radius:50%;overflow:hidden;position:relative;
+  background:radial-gradient(circle at 32% 28%,#FCE7A0 0%,#F0C34D 45%,#B8860B 100%);
+  border:1.5px solid #14453B;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 0 2px rgba(212,175,55,.4),0 0 0 5px rgba(20,69,59,.55),0 5px 14px rgba(184,134,11,.3),
+    inset 0 2px 3px rgba(255,255,255,.55),inset 0 -3px 6px rgba(0,0,0,.2);
   transition:transform .2s ease-in-out;}
 .bn-cart-btn-outer:active .bn-icon-wrap{transform:scale(.97);}
-.bn-item.bn-center .bn-icon{width:19px;height:19px;color:#0F3B31;}
+.bn-item.bn-center .bn-icon{width:20px;height:20px;}
 .bn-cart-ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,.5);
   transform:scale(0);animation:bnRippleAnim .6s ease-out forwards;pointer-events:none;z-index:2;}
 @keyframes bnRippleAnim{to{transform:scale(1);opacity:0;}}
@@ -3512,7 +3513,7 @@ img{max-width:100%;height:auto;}
   </div>
   <div class="bn-item bn-center" id="bn-delta" onclick="bottomNavClick('delta',this);triggerDeltaRipple(event);openDeltaHub()">
     <span class="bn-cart-btn-outer">
-      <span class="bn-icon-wrap"><svg class="bn-icon" viewBox="0 0 24 24" width="24" height="24" fill="#0F3B31" stroke="none"><path d="M12 3L21.5 20H2.5L12 3Z"/></svg></span>
+      <span class="bn-icon-wrap"><svg class="bn-icon" viewBox="0 0 24 24" width="20" height="20" fill="none"><defs><linearGradient id="bnDeltaIconGrad" x1="2.5" y1="3" x2="21.5" y2="20" gradientUnits="userSpaceOnUse"><stop stop-color="#1a4a3a"/><stop offset="1" stop-color="#0A2620"/></linearGradient></defs><path d="M12 3L21.5 20H2.5L12 3Z" fill="url(#bnDeltaIconGrad)"/></svg></span>
     </span>
     <span class="bn">DELTA</span>
   </div>
