@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>DELTA Ecosystem — সব শাখা এক জায়গায়</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --navy:#10392D;--navy2:#1a4a3a;--navy3:#0E1E18;
+  --orange:#C7A15A;--orange2:#d6bd8a;--orange-dark:#b8925a;
+  --gold:#D4AF37;--gold-light:#F8E7C3;--gold-deep:#8A6215;
+  --green:#2da86a;--green2:#1a7a4c;
+  --white:#fff;--sand:#F3EFE6;--cream:#F7F1E6;
+  --border:#F0ECE5;--muted:#8A8A8A;--gray:#8A8A8A;--charcoal:#1A1A1A;
+  --orange-light:#F3EFE6;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charcoal);}
+
+/* ── NAV ── */
+.nav{background:var(--navy);padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.nav-logo{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:900;color:#fff;cursor:pointer;text-decoration:none;}
+.nav-logo em{color:var(--gold);font-style:normal;}
+.nav-back{color:rgba(255,255,255,.7);font-size:.85rem;cursor:pointer;display:flex;align-items:center;gap:6px;text-decoration:none;}
+.nav-back:hover{color:#fff;}
+.nav-lang{display:flex;gap:2px;background:rgba(255,255,255,.1);border-radius:20px;padding:3px;}
+.lang-btn{padding:4px 10px;border-radius:16px;border:none;background:transparent;color:rgba(255,255,255,.6);font-size:.75rem;font-weight:700;cursor:pointer;transition:all .2s;}
+.lang-btn.active{background:var(--gold);color:#1a1408;}
+
+/* ── HERO BANNER (Quiet Luxury — Black Emerald + Gold) ── */
+.hero-banner{
+  background-image:
+    radial-gradient(circle at center,transparent 50%,rgba(0,0,0,.18) 100%),
+    linear-gradient(135deg,var(--navy3) 0%,var(--navy) 55%,var(--navy2) 100%);
+  padding:44px 20px 46px;text-align:center;position:relative;overflow:hidden;border-bottom:1px solid rgba(212,175,55,.18);
+}
+.hero-triangle{font-size:1.6rem;background:linear-gradient(160deg,#FCEFC7 0%,#F0C34D 45%,#B8860B 100%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 10px rgba(212,175,55,.5));margin-bottom:6px;}
+.hero-title{font-family:'Playfair Display',serif;font-size:clamp(1.7rem,5vw,2.5rem);font-weight:900;color:#fff;margin-bottom:10px;letter-spacing:.3px;}
+.hero-title em{background:linear-gradient(160deg,#F8E7C3 0%,#D4AF37 55%,#8A6215 100%);-webkit-background-clip:text;background-clip:text;color:transparent;font-style:normal;filter:drop-shadow(0 0 12px rgba(212,175,55,.4));}
+.hero-sub{color:rgba(248,236,210,.85);font-size:.92rem;line-height:1.6;max-width:480px;margin:0 auto;font-family:'Tiro Bangla',Georgia,serif;}
+.hero-count{color:var(--gold);font-size:.78rem;font-weight:700;letter-spacing:.5px;margin-top:16px;text-transform:uppercase;}
+
+/* ── MAIN CONTENT ── */
+.main{max-width:1100px;margin:0 auto;padding:32px 16px 60px;}
+.section-label{font-size:.75rem;font-weight:700;color:var(--orange-dark);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:4px;}
+.section-title{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:900;color:var(--navy);margin-bottom:20px;}
+
+/* ── BRANCH GRID ── */
+.branch-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
+@media(max-width:900px){.branch-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:520px){.branch-grid{grid-template-columns:1fr;}}
+
+.branch-card{background:var(--white);border-radius:18px;overflow:hidden;box-shadow:0 4px 18px rgba(0,0,0,.06);
+  cursor:pointer;transition:transform .2s ease,box-shadow .2s ease;border:1px solid var(--border);position:relative;}
+.branch-card:hover{transform:translateY(-3px);box-shadow:0 10px 28px rgba(0,0,0,.1);}
+.branch-card:active{transform:translateY(-1px) scale(.99);}
+.branch-banner{height:96px;display:flex;align-items:center;justify-content:center;font-size:2.6rem;position:relative;}
+.branch-body{padding:16px 18px 18px;}
+.branch-name-bn{font-family:'Playfair Display',serif;font-weight:800;font-size:1.05rem;color:var(--navy);margin-bottom:3px;}
+.branch-name-en{font-size:.7rem;color:var(--muted);font-weight:600;letter-spacing:.4px;text-transform:uppercase;margin-bottom:10px;}
+.branch-desc{font-size:.82rem;color:#4a4a4a;line-height:1.55;font-family:'Tiro Bangla',Georgia,serif;}
+.branch-arrow{position:absolute;top:14px;right:14px;width:28px;height:28px;border-radius:50%;
+  background:rgba(255,255,255,.9);display:flex;align-items:center;justify-content:center;
+  font-size:.85rem;color:var(--navy);box-shadow:0 2px 8px rgba(0,0,0,.12);}
+.branch-soon-badge{position:absolute;top:14px;right:14px;background:rgba(212,175,55,.95);color:#1a1408;
+  font-size:.62rem;font-weight:800;padding:4px 10px;border-radius:10px;letter-spacing:.3px;text-transform:uppercase;}
+.branch-card.soon{cursor:default;}
+.branch-card.soon .branch-banner{opacity:.72;}
+.branch-card.soon:hover{transform:none;box-shadow:0 4px 18px rgba(0,0,0,.06);}
+
+/* ── MOBILE FIX ── */
+@media(max-width:768px){
+  html,body{overflow-x:hidden;max-width:100vw;}
+  *{max-width:100%;}
+  .hero-banner{padding:32px 5% 34px;}
+  .main{padding:24px 4% 50px;}
+}
+
+/* ── LANG ── */
+body.lang-en .lang-bn{display:none!important;}
+body.lang-bn .lang-en{display:none!important;}
+</style>
+</head>
+<body class="lang-bn">
+
+<!-- NAV -->
+<nav class="nav">
+  <a class="nav-back" href="index.html">← <span class="lang-bn">হোমে ফিরুন</span><span class="lang-en">Back to Home</span></a>
+  <a class="nav-logo" href="index.html">△ DELT<em>A</em></a>
+  <div class="nav-lang">
+    <button class="lang-btn active" id="langBn" onclick="setLang('bn')">বাং</button>
+    <button class="lang-btn" id="langEn" onclick="setLang('en')">ENG</button>
+  </div>
+</nav>
+
+<!-- HERO BANNER -->
+<div class="hero-banner">
+  <div class="hero-triangle">△</div>
+  <div class="hero-title">DELT<em>A</em> <span class="lang-bn">ইকোসিস্টেম</span><span class="lang-en">Ecosystem</span></div>
+  <p class="hero-sub">
+    <span class="lang-bn">একটা প্ল্যাটফর্ম, অনেকগুলো জগৎ — বাজার থেকে উৎসব, তাজা সবজি থেকে উপহার। যেটা আপনার আজ দরকার, সেটাই বেছে নিন।</span>
+    <span class="lang-en">One platform, many worlds — from everyday shopping to festive gifting, farm-fresh produce to flash deals. Pick what you need today.</span>
+  </p>
+  <div class="hero-count"><span class="lang-bn">৫টি সক্রিয় শাখা · আরও আসছে</span><span class="lang-en">5 Live Branches · More Coming</span></div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="section-label"><span class="lang-bn">আবিষ্কার করুন</span><span class="lang-en">Explore</span></div>
+  <div class="section-title"><span class="lang-bn">আপনার শাখা বেছে নিন</span><span class="lang-en">Choose Your Branch</span></div>
+
+  <div class="branch-grid" id="branchGrid">
+    <div style="grid-column:1/-1;text-align:center;color:var(--muted);padding:40px 0;"><span class="lang-bn">লোড হচ্ছে...</span><span class="lang-en">Loading...</span></div>
+  </div>
+</div>
+
+<script>
+var currentLang='bn';
+var _branchesRendered = false;
+function setLang(l){
+  currentLang=l;
+  document.body.className='lang-'+l;
+  document.getElementById('langBn').classList.toggle('active',l==='bn');
+  document.getElementById('langEn').classList.toggle('active',l==='en');
+}
+
+// ── FALLBACK BRANCHES — used only if Firestore has no data yet or fails to load ──
+var ECOSYSTEM_BRANCHES_FALLBACK = [
+  {
+    icon:'🏮', color:'#3d2a6b', url:'bazaar.html', status:'live',
+    name_bn:'DELTA বাজার', name_en:'DELTA Bazaar',
+    desc_bn:'প্রয়োজনীয় জিনিস, সেরা দামে — অর্ডার করুন, আমরা খুঁজে এনে দিই।',
+    desc_en:'Everyday essentials at the best price — order, and we source it for you.'
+  },
+  {
+    icon:'🎁', color:'#7B1FA2', url:'hampers.html', status:'live',
+    name_bn:'DELTA হ্যাম্পার', name_en:'DELTA Hampers',
+    desc_bn:'উপহার যেখানে ভালোবাসার গল্প বলে — প্রিয়জনের জন্য সাজানো প্যাকেজ।',
+    desc_en:'Gifts that tell a story — thoughtfully curated packages for your loved ones.'
+  },
+  {
+    icon:'🎊', color:'#c0392b', url:'festival.html', status:'live',
+    name_bn:'DELTA উৎসব', name_en:'DELTA Festival',
+    desc_bn:'উৎসবের রঙে বিশেষ অফার, কুপন আর লাকি ড্র — আনন্দ ভাগ করে নিন।',
+    desc_en:'Special festival offers, coupons, and lucky draws — celebrate together.'
+  },
+  {
+    icon:'🌿', color:'#3d6b28', url:'fresh.html', status:'live',
+    name_bn:'DELTA ফ্রেশ', name_en:'DELTA Fresh',
+    desc_bn:'খামার থেকে সরাসরি আপনার রান্নাঘরে — তাজা মাছ, সবজি, ফল প্রতিদিন।',
+    desc_en:'Farm to your kitchen, same day — fresh fish, vegetables, and fruit daily.'
+  },
+  {
+    icon:'⚡', color:'#d35400', url:'flash-sale.html', status:'live',
+    name_bn:'ফ্ল্যাশ সেল', name_en:'Flash Sale',
+    desc_bn:'সীমিত সময়ের জন্য সেরা ছাড় — দ্রুত না নিলে হাতছাড়া হয়ে যাবে।',
+    desc_en:'Limited-time deals on your favourite shops — grab them before they\'re gone.'
+  },
+  {
+    icon:'♻️', color:'#16697a', url:null, status:'soon',
+    name_bn:'DELTA রিমার্কেট', name_en:'DELTA ReMarket',
+    desc_bn:'পুরনো জিনিসের নতুন জীবন — নিরাপদ সেকেন্ড-হ্যান্ড মার্কেটপ্লেস।',
+    desc_en:'Give pre-loved items a new life — a safe second-hand marketplace.'
+  },
+  {
+    icon:'🔧', color:'#5d4037', url:null, status:'soon',
+    name_bn:'DELTA রেন্টাল ক্লাব', name_en:'DELTA Rental Club',
+    desc_bn:'প্রয়োজন যতক্ষণ, ভাড়া ততক্ষণ — যন্ত্রপাতি থেকে ইভেন্ট সরঞ্জাম।',
+    desc_en:'Rent what you need, only when you need it — tools to event gear.'
+  }
+  // Future branches — just add a new object here, e.g.:
+  // {icon:'✈️', color:'#0d6b8c', url:'travel.html', status:'live', name_bn:'DELTA ভ্রমণ', name_en:'DELTA Travel', desc_bn:'...', desc_en:'...'},
+];
+
+function renderBranches(list){
+  _branchesRendered = true;
+  var grid = document.getElementById('branchGrid');
+  if(!list || !list.length){
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--muted);padding:40px 0;"><span class="lang-bn">এখনো কোনো branch যোগ করা হয়নি।</span><span class="lang-en">No branches added yet.</span></div>';
+    return;
+  }
+  grid.innerHTML = list.map(function(b){
+    var isLive = b.status === 'live';
+    var cls = 'branch-card' + (isLive ? '' : ' soon');
+    var click = isLive ? " onclick=\"window.location.href='" + b.url + "'\"" : '';
+    return '<div class="' + cls + '"' + click + '>' +
+      '<div class="branch-banner" style="background:linear-gradient(135deg,' + b.color + 'cc,' + b.color + '99);">' + b.icon +
+        (isLive ? '<span class="branch-arrow">→</span>' : '<span class="branch-soon-badge"><span class="lang-bn">শীঘ্রই</span><span class="lang-en">Soon</span></span>') +
+      '</div>' +
+      '<div class="branch-body">' +
+        '<div class="branch-name-bn"><span class="lang-bn">' + b.name_bn + '</span><span class="lang-en">' + b.name_en + '</span></div>' +
+        '<div class="branch-name-en">' + (isLive ? (currentLang==='bn' ? b.name_en : b.name_bn) : (currentLang==='bn' ? 'শীঘ্রই আসছে' : 'Coming Soon')) + '</div>' +
+        '<div class="branch-desc"><span class="lang-bn">' + b.desc_bn + '</span><span class="lang-en">' + b.desc_en + '</span></div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+// ── Load branches from Firestore (Admin-managed via Admin Panel → 🌐 DELTA Ecosystem tab) ──
+// Falls back to the hardcoded list above if Firestore has nothing yet or fails to load.
+var fbcfg={apiKey:"AIzaSyA6TrrnCMwv1aa1WPqGvTVWlnieB2pVOEU",authDomain:"delta-platform-82fc0.firebaseapp.com",projectId:"delta-platform-82fc0",storageBucket:"delta-platform-82fc0.firebasestorage.app",messagingSenderId:"444904180433",appId:"1:444904180433:web:6706eba4d73a30cd67d3f0"};
+var CITY = 'manteswar';
+
+(function(){
+  var scripts = ['https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js','https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js'];
+  var loaded = 0;
+  scripts.forEach(function(src){
+    var el = document.createElement('script'); el.src = src;
+    el.onload = function(){ if(++loaded === scripts.length) initFirestoreBranches(); };
+    el.onerror = function(){ renderBranches(ECOSYSTEM_BRANCHES_FALLBACK); };
+    document.head.appendChild(el);
+  });
+})();
+
+function initFirestoreBranches(){
+  try{
+    firebase.initializeApp(fbcfg);
+    var db = firebase.firestore();
+    db.collection('cities').doc(CITY).collection('ecosystemBranches').get()
+      .then(function(snap){
+        if(snap.empty){ renderBranches(ECOSYSTEM_BRANCHES_FALLBACK); return; }
+        var branches = [];
+        snap.forEach(function(d){ branches.push(Object.assign({id:d.id}, d.data())); });
+        branches.sort(function(a,b){ return (a.order||99) - (b.order||99); });
+        renderBranches(branches);
+      }).catch(function(){ renderBranches(ECOSYSTEM_BRANCHES_FALLBACK); });
+  }catch(e){ renderBranches(ECOSYSTEM_BRANCHES_FALLBACK); }
+}
+
+// Safety: if Firebase takes too long, show the fallback after 5s instead of hanging on "Loading..."
+setTimeout(function(){
+  if(!_branchesRendered) renderBranches(ECOSYSTEM_BRANCHES_FALLBACK);
+}, 5000);
+</script>
+</body>
+</html>
