@@ -52,14 +52,16 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 @media(max-width:520px){.branch-grid{grid-template-columns:1fr;}}
 
 .branch-card{background:var(--white);border-radius:18px;overflow:hidden;box-shadow:0 4px 18px rgba(0,0,0,.06);
-  cursor:pointer;transition:transform .2s ease,box-shadow .2s ease;border:1px solid var(--border);position:relative;}
+  cursor:pointer;transition:transform .2s ease,box-shadow .2s ease;border:1px solid var(--border);position:relative;
+  aspect-ratio:1/1;display:flex;flex-direction:column;}
 .branch-card:hover{transform:translateY(-3px);box-shadow:0 10px 28px rgba(0,0,0,.1);}
 .branch-card:active{transform:translateY(-1px) scale(.99);}
-.branch-banner{height:96px;display:flex;align-items:center;justify-content:center;font-size:2.6rem;position:relative;}
-.branch-body{padding:16px 18px 18px;}
-.branch-name-bn{font-family:'Playfair Display',serif;font-weight:800;font-size:1.05rem;color:var(--navy);margin-bottom:3px;}
-.branch-name-en{font-size:.7rem;color:var(--muted);font-weight:600;letter-spacing:.4px;text-transform:uppercase;margin-bottom:10px;}
-.branch-desc{font-size:.82rem;color:#4a4a4a;line-height:1.55;font-family:'Tiro Bangla',Georgia,serif;}
+.branch-banner{flex:0 0 42%;display:flex;align-items:center;justify-content:center;font-size:2.4rem;position:relative;}
+.branch-body{flex:1;min-height:0;padding:14px 16px;display:flex;flex-direction:column;justify-content:center;}
+.branch-name-bn{font-family:'Playfair Display',serif;font-weight:800;font-size:1rem;color:var(--navy);margin-bottom:2px;}
+.branch-name-en{font-size:.68rem;color:var(--muted);font-weight:600;letter-spacing:.4px;text-transform:uppercase;margin-bottom:8px;}
+.branch-desc{font-size:.78rem;color:#4a4a4a;line-height:1.45;font-family:'Tiro Bangla',Georgia,serif;
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
 .branch-arrow{position:absolute;top:14px;right:14px;width:28px;height:28px;border-radius:50%;
   background:rgba(255,255,255,.9);display:flex;align-items:center;justify-content:center;
   font-size:.85rem;color:var(--navy);box-shadow:0 2px 8px rgba(0,0,0,.12);}
