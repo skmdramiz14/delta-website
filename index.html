@@ -4981,7 +4981,10 @@ function applyBrandSlideCustomization(cfg){
         e.stopPropagation();
         vid.muted = !vid.muted;
         muteBtn.textContent = vid.muted ? '🔇' : '🔊';
-        if(!vid.muted) _setExclusiveSound(vid, muteBtn);
+        if(!vid.muted){
+          vid.volume = (parseInt(cfg.videoVolume)||70) / 100;
+          _setExclusiveSound(vid, muteBtn);
+        }
         else if(_activeSoundVideo === vid){ _activeSoundVideo = null; _activeSoundBtn = null; }
       };
       bgImgLayer.parentNode.insertBefore(muteBtn, vid.nextSibling);
@@ -5156,7 +5159,7 @@ function _heroPremiumSlideHTML(ad){
   var link = ad.linkUrl || '#';
   var isShopAd = ad.type === 'shop_ad'; // house slides (DELTA's own) don't get a "Sponsored" disclosure
   var mediaHtml = video ?
-    ('<video class="hps-media" style="object-position:'+videoPos+';transform:scale('+videoZoom+');" src="'+video+'" autoplay muted loop playsinline poster="'+img+'"></video>')
+    ('<video class="hps-media" style="object-position:'+videoPos+';transform:scale('+videoZoom+');" data-volume="'+(ad.videoVolume||70)+'" src="'+video+'" autoplay muted loop playsinline poster="'+img+'"></video>')
     : (img ? '<img class="hps-media" src="'+img+'" loading="lazy">' : '');
   var muteBtnHtml = video ?
     '<span class="hps-mute-btn" onclick="event.stopPropagation();_toggleSlideMute(this)" title="Sound on/off">🔇</span>' : '';
@@ -5232,7 +5235,11 @@ function _toggleSlideMute(btn){
   if(!vid) return;
   vid.muted = !vid.muted;
   btn.textContent = vid.muted ? '🔇' : '🔊';
-  if(!vid.muted) _setExclusiveSound(vid, btn);
+  if(!vid.muted){
+    // Admin-set cap — plays at this % of the device's own volume when the customer unmutes
+    vid.volume = (parseInt(vid.dataset.volume)||70) / 100;
+    _setExclusiveSound(vid, btn);
+  }
   else if(_activeSoundVideo === vid){ _activeSoundVideo = null; _activeSoundBtn = null; }
 }
 
@@ -5428,7 +5435,7 @@ function _sponsoredSlideHTML(ad, idx){
   // FULL BANNER MODE — pre-made graphic with everything baked in; just show the image/video, full-bleed, clickable
   if(ad.fullBanner){
     var fbMedia = video
-      ? '<video src="'+video+'" autoplay muted loop playsinline poster="'+img+'" style="width:100%;height:100%;object-fit:cover;object-position:'+videoPos+';transform:scale('+videoZoom+');display:block;"></video>'
+      ? '<video src="'+video+'" autoplay muted loop playsinline poster="'+img+'" data-volume="'+(ad.videoVolume||70)+'" style="width:100%;height:100%;object-fit:cover;object-position:'+videoPos+';transform:scale('+videoZoom+');display:block;"></video>'
       : (img ? '<img src="'+img+'" alt="'+(ad.shopName||ad.title||'')+'" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy">' : '');
     return '<div style="flex-shrink:0;width:'+(100/_adSlides.length)+'%;position:relative;overflow:hidden;cursor:pointer;background:#f2e9d3;" '+
         'onclick="window.location.href=\''+link+'\'">'+
@@ -5457,7 +5464,7 @@ function _sponsoredSlideHTML(ad, idx){
   ) : '';
 
   var sideMedia = video
-    ? '<video src="'+video+'" autoplay muted loop playsinline poster="'+img+'" style="width:100%;height:100%;object-fit:cover;object-position:'+videoPos+';transform:scale('+videoZoom+');"></video>'
+    ? '<video src="'+video+'" autoplay muted loop playsinline poster="'+img+'" data-volume="'+(ad.videoVolume||70)+'" style="width:100%;height:100%;object-fit:cover;object-position:'+videoPos+';transform:scale('+videoZoom+');"></video>'
     : (img ? '<img src="'+img+'" style="width:100%;height:100%;object-fit:cover;" loading="lazy">' : '');
 
   return '<div style="flex-shrink:0;width:'+(100/_adSlides.length)+'%;background:linear-gradient(135deg,#faf5e8,#f2e9d3);position:relative;overflow:hidden;cursor:pointer;" '+
