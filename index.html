@@ -5167,17 +5167,21 @@ var _shoppingMusicPlaying = false;
 
 function initShoppingMusic(){
   if(!db) return;
-  db.collection('cities').doc(CITY).collection('settings').doc('shoppingMusic').get()
-    .then(function(doc){
+  db.collection('cities').doc(CITY).collection('musicTracks')
+    .where('status','==','active').get()
+    .then(function(snap){
       var wrap = document.getElementById('musicFloatWrap');
       if(!wrap) return;
-      var cfg = doc.exists ? doc.data() : {};
-      if(cfg.enabled && cfg.musicUrl){
-        wrap.style.display = 'block';
-        wrap.dataset.musicUrl = cfg.musicUrl;
-      } else {
-        wrap.style.display = 'none';
-      }
+      var candidates = [];
+      snap.forEach(function(d){
+        var t = Object.assign({id:d.id}, d.data());
+        var pages = t.assignedPages || [];
+        if(pages.indexOf('index') !== -1) candidates.push(t);
+      });
+      if(!candidates.length){ wrap.style.display = 'none'; return; }
+      candidates.sort(function(a,b){ return (b.priority||0)-(a.priority||0); });
+      wrap.style.display = 'block';
+      wrap.dataset.musicUrl = candidates[0].musicUrl;
     }).catch(function(){});
 }
 
