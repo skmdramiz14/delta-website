@@ -5034,15 +5034,19 @@ function initHeroCarousel(otherSlides, hideBrand){
     // No House Slides / Premium Ads — brand hero stays, no rotation
     premiumWrap.style.display = 'none';
     brand.style.visibility = 'visible';
-    viewport.style.height = ''; // let it size naturally to the (visible) brand hero again
+    viewport.style.height = ''; viewport.style.minHeight = ''; // let it size naturally to the (visible) brand hero again
     _heroSlides = [];
     return;
   }
 
-  // Lock the viewport to the Brand Hero's EXACT measured pixel height (not just CSS auto-sizing).
+  // Lock the viewport to AT LEAST the Brand Hero's measured pixel height (not just CSS auto-sizing).
   // This removes any ambiguity that could leave a 1-3px sliver of the dark fallback background
-  // showing at the edge when the Premium slide overlay swaps in.
-  viewport.style.height = brand.offsetHeight + 'px';
+  // showing at the edge when the Premium slide overlay swaps in. Using min-height (not height)
+  // means if the brand content ends up taller than this initial measurement — e.g. because a
+  // web font (Tiro Bangla / Hind Siliguri) finishes loading a moment later and reflows the
+  // Bengali text — the viewport can still grow to fit it instead of clipping content like the
+  // "আমাদের সম্পর্কে জানুন" button.
+  viewport.style.minHeight = brand.offsetHeight + 'px';
 
   // Safety net: if admin asked to hide the Brand Slide, only honor that when there's at least
   // one other active slide to show instead — never let Hero end up completely empty.
@@ -5279,7 +5283,7 @@ window.addEventListener('resize', function(){
     if(wasHidden) brand.style.visibility = 'visible'; // briefly reveal to measure true height
     var h = brand.offsetHeight;
     if(wasHidden) brand.style.visibility = 'hidden';
-    viewport.style.height = h + 'px';
+    viewport.style.minHeight = h + 'px';
   }, 200);
 });
 
