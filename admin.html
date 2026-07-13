@@ -373,6 +373,9 @@ button,input,select{font-family:'DM Sans',sans-serif;}
     <button class="tab-btn" id="tab-heroslides" onclick="goTab('heroslides',this)">
       <span>🏠 Hero Slides</span>
     </button>
+    <button class="tab-btn" id="tab-music" onclick="goTab('music',this)">
+      <span>🎵 Music Management</span>
+    </button>
     <button class="tab-btn" id="tab-whatsapp" onclick="goTab('whatsapp',this)">
       <span>📱 WhatsApp Management</span>
     </button>
@@ -1630,6 +1633,14 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 
       <div id="houseSlidesListWrap"><div style="color:var(--muted);font-size:.82rem;">লোড হচ্ছে...</div></div>
 
+    </div>
+
+    <!-- ═══ MUSIC MANAGEMENT PAGE (dedicated tab) ═══ -->
+    <div class="page" id="page-music">
+      <div class="sec-head">
+        <div class="sec-title">🎵 Music Management <small>প্রতিটা পেজের floating Music বাটন, ট্র্যাক, ও tagline নিয়ন্ত্রণ করুন</small></div>
+      </div>
+
       <!-- SHOPPING MUSIC (multi-track) -->
       <div class="add-zone-card" style="margin-top:20px;">
         <div id="musicFormTitle" style="font-size:.9rem;font-weight:700;color:var(--navy);margin-bottom:4px;">🎵 নতুন Music Track যোগ করুন</div>
@@ -1676,6 +1687,7 @@ button,input,select{font-family:'DM Sans',sans-serif;}
             <label style="display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" class="mt-page-cb" value="festival"> Festival</label>
             <label style="display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" class="mt-page-cb" value="flashsale"> Flash Sale</label>
             <label style="display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" class="mt-page-cb" value="sponsoredshops"> Sponsored Shops (page)</label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" class="mt-page-cb" value="ecosystem"> DELTA Ecosystem (page)</label>
           </div>
         </div>
 
@@ -2418,7 +2430,8 @@ function goTab(tab, btn){
   if(tab==='hampers') loadHamperManagement();
   if(tab==='hamperorders') loadHamperOrders();
   if(tab==='sponsoredshops'){ loadSponsoredShops(); loadFeaturedProductSellerDropdown(); loadFeaturedProducts(); }
-  if(tab==='heroslides'){ loadBrandSlide(); loadHouseSlides(); loadMusicTracks(); loadTaglineSettings(); }
+  if(tab==='heroslides'){ loadBrandSlide(); loadHouseSlides(); }
+  if(tab==='music'){ loadMusicTracks(); loadTaglineSettings(); }
   if(tab==='whatsapp'){ loadWhatsAppConfig(); loadTaglineSettings(); }
   if(tab==='ecosystem') loadEcosystemBranches();
 }
@@ -7561,31 +7574,35 @@ function loadEcosystemBranches(){
 }
 
 var ECOSYSTEM_DEFAULT_SEED = [
-  {icon:'🏮', color:'#3d2a6b', url:'bazaar.html', status:'live', order:1,
+  {icon:'🏪', color:'#8B5A2B', url:'shops.html', status:'live', order:1,
+    name_bn:'কাছের দোকান', name_en:'Nearby Shops',
+    desc_bn:'আপনার আশেপাশের প্রতিটি দোকান, একসাথে — খুঁজুন, দেখুন, অর্ডার করুন।',
+    desc_en:'Every shop near you, in one place — discover, browse, and order.'},
+  {icon:'🏮', color:'#3d2a6b', url:'bazaar.html', status:'live', order:2,
     name_bn:'DELTA বাজার', name_en:'DELTA Bazaar',
     desc_bn:'প্রয়োজনীয় জিনিস, সেরা দামে — অর্ডার করুন, আমরা খুঁজে এনে দিই।',
     desc_en:'Everyday essentials at the best price — order, and we source it for you.'},
-  {icon:'🎁', color:'#7B1FA2', url:'hampers.html', status:'live', order:2,
+  {icon:'🎁', color:'#7B1FA2', url:'hampers.html', status:'live', order:3,
     name_bn:'DELTA হ্যাম্পার', name_en:'DELTA Hampers',
     desc_bn:'উপহার যেখানে ভালোবাসার গল্প বলে — প্রিয়জনের জন্য সাজানো প্যাকেজ।',
     desc_en:'Gifts that tell a story — thoughtfully curated packages for your loved ones.'},
-  {icon:'🎊', color:'#c0392b', url:'festival.html', status:'live', order:3,
+  {icon:'🎊', color:'#c0392b', url:'festival.html', status:'live', order:4,
     name_bn:'DELTA উৎসব', name_en:'DELTA Festival',
     desc_bn:'উৎসবের রঙে বিশেষ অফার, কুপন আর লাকি ড্র — আনন্দ ভাগ করে নিন।',
     desc_en:'Special festival offers, coupons, and lucky draws — celebrate together.'},
-  {icon:'🌿', color:'#3d6b28', url:'fresh.html', status:'live', order:4,
+  {icon:'🌿', color:'#3d6b28', url:'fresh.html', status:'live', order:5,
     name_bn:'DELTA ফ্রেশ', name_en:'DELTA Fresh',
     desc_bn:'খামার থেকে সরাসরি আপনার রান্নাঘরে — তাজা মাছ, সবজি, ফল প্রতিদিন।',
     desc_en:'Farm to your kitchen, same day — fresh fish, vegetables, and fruit daily.'},
-  {icon:'⚡', color:'#d35400', url:'flash-sale.html', status:'live', order:5,
+  {icon:'⚡', color:'#d35400', url:'flash-sale.html', status:'live', order:6,
     name_bn:'ফ্ল্যাশ সেল', name_en:'Flash Sale',
     desc_bn:'সীমিত সময়ের জন্য সেরা ছাড় — দ্রুত না নিলে হাতছাড়া হয়ে যাবে।',
     desc_en:'Limited-time deals on your favourite shops — grab them before they\'re gone.'},
-  {icon:'♻️', color:'#16697a', url:null, status:'soon', order:6,
+  {icon:'♻️', color:'#16697a', url:null, status:'soon', order:7,
     name_bn:'DELTA রিমার্কেট', name_en:'DELTA ReMarket',
     desc_bn:'পুরনো জিনিসের নতুন জীবন — নিরাপদ সেকেন্ড-হ্যান্ড মার্কেটপ্লেস।',
     desc_en:'Give pre-loved items a new life — a safe second-hand marketplace.'},
-  {icon:'🔧', color:'#5d4037', url:null, status:'soon', order:7,
+  {icon:'🔧', color:'#5d4037', url:null, status:'soon', order:8,
     name_bn:'DELTA রেন্টাল ক্লাব', name_en:'DELTA Rental Club',
     desc_bn:'প্রয়োজন যতক্ষণ, ভাড়া ততক্ষণ — যন্ত্রপাতি থেকে ইভেন্ট সরঞ্জাম।',
     desc_en:'Rent what you need, only when you need it — tools to event gear.'}
