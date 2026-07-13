@@ -1687,29 +1687,54 @@ button,input,select{font-family:'DM Sans',sans-serif;}
       <!-- MUSIC TAGLINE SETTINGS -->
       <div class="add-zone-card" style="margin-top:20px;border-color:var(--gold-muted,#C7A15A);">
         <div style="font-size:.9rem;font-weight:700;color:var(--navy);margin-bottom:4px;">🏷️ Music Floating Tagline</div>
-        <div style="font-size:.72rem;color:var(--muted);margin-bottom:14px;">
-          Music বাটনে ক্লিক করলে যে ছোট লেখাটা ভেসে ওঠে (যেমন "Take a bite of experiential shopping") — তার টেক্সট ও কতক্ষণ দেখাবে এখান থেকে ঠিক করুন।
+        <div style="font-size:.72rem;color:var(--muted);margin-bottom:16px;">
+          Music বাটনে ক্লিক করলে যে ছোট লেখাটা ভেসে ওঠে, তার টেক্সট/duration/on-off — Homepage আর বাকি সব পেজের জন্য আলাদা আলাদা ঠিক করুন।
         </div>
+
+        <div style="font-size:.82rem;font-weight:700;color:var(--navy);margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border);">🏠 Homepage (Index)</div>
         <div style="background:#fff4ec;border:1px solid var(--orange);border-radius:10px;padding:10px 12px;margin-bottom:12px;display:flex;align-items:center;gap:10px;">
-          <input type="checkbox" id="tagMusicEnabled" checked style="width:18px;height:18px;flex-shrink:0;">
-          <label for="tagMusicEnabled" style="font-size:.78rem;font-weight:700;color:var(--navy);cursor:pointer;margin:0;">
-            🎵 Music বাটনে ক্লিক করলে floating tagline দেখান
+          <input type="checkbox" id="tagMusicIndexEnabled" checked style="width:18px;height:18px;flex-shrink:0;">
+          <label for="tagMusicIndexEnabled" style="font-size:.78rem;font-weight:700;color:var(--navy);cursor:pointer;margin:0;">
+            🎵 Homepage-এ Music tagline দেখান
+          </label>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;">
+          <div class="form-group" style="margin-bottom:0">
+            <label>বাংলা টেক্সট</label>
+            <input type="text" class="form-input" id="tagMusicIndexBn" placeholder="অভিজ্ঞতাসমৃদ্ধ কেনাকাটার স্বাদ নিন">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>English Text</label>
+            <input type="text" class="form-input" id="tagMusicIndexEn" placeholder="Take a bite of experiential shopping">
+          </div>
+          <div class="form-group" style="margin-bottom:0;grid-column:1/-1;">
+            <label>কতক্ষণ দেখাবে (সেকেন্ড)</label>
+            <input type="number" class="form-input" id="tagMusicIndexDuration" value="6" min="2" max="30" style="max-width:120px;">
+          </div>
+        </div>
+
+        <div style="font-size:.82rem;font-weight:700;color:var(--navy);margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border);">📄 বাকি সব পেজ <span style="font-weight:400;color:var(--muted);">(Bazaar, Fresh, Hampers, Shops, Entrepreneurs, Festival, Flash Sale, Sponsored Shops)</span></div>
+        <div style="background:#fff4ec;border:1px solid var(--orange);border-radius:10px;padding:10px 12px;margin-bottom:12px;display:flex;align-items:center;gap:10px;">
+          <input type="checkbox" id="tagMusicOtherEnabled" checked style="width:18px;height:18px;flex-shrink:0;">
+          <label for="tagMusicOtherEnabled" style="font-size:.78rem;font-weight:700;color:var(--navy);cursor:pointer;margin:0;">
+            🎵 বাকি পেজগুলোতে Music tagline দেখান
           </label>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
           <div class="form-group" style="margin-bottom:0">
             <label>বাংলা টেক্সট</label>
-            <input type="text" class="form-input" id="tagMusicBn" placeholder="অভিজ্ঞতাসমৃদ্ধ কেনাকাটার স্বাদ নিন">
+            <input type="text" class="form-input" id="tagMusicOtherBn" placeholder="অভিজ্ঞতাসমৃদ্ধ কেনাকাটার স্বাদ নিন">
           </div>
           <div class="form-group" style="margin-bottom:0">
             <label>English Text</label>
-            <input type="text" class="form-input" id="tagMusicEn" placeholder="Take a bite of experiential shopping">
+            <input type="text" class="form-input" id="tagMusicOtherEn" placeholder="Take a bite of experiential shopping">
           </div>
           <div class="form-group" style="margin-bottom:0;grid-column:1/-1;">
             <label>কতক্ষণ দেখাবে (সেকেন্ড)</label>
-            <input type="number" class="form-input" id="tagMusicDuration" value="6" min="2" max="30" style="max-width:120px;">
+            <input type="number" class="form-input" id="tagMusicOtherDuration" value="6" min="2" max="30" style="max-width:120px;">
           </div>
         </div>
+
         <button class="btn-sm btn-orange" onclick="saveTaglineSettings()">🏷️ সেভ করুন</button>
         <span style="font-size:.72rem;color:var(--muted)" id="tagSaveStatus"></span>
       </div>
@@ -1779,25 +1804,46 @@ button,input,select{font-family:'DM Sans',sans-serif;}
       <!-- WHATSAPP TAGLINE -->
       <div class="add-zone-card" style="border-color:var(--gold-muted,#C7A15A);">
         <div style="font-size:.9rem;font-weight:700;color:var(--navy);margin-bottom:4px;">🏷️ Floating Tagline</div>
-        <div style="font-size:.72rem;color:var(--muted);margin-bottom:14px;">
-          WhatsApp বাটনে ক্লিক করলে যে ছোট লেখাটা ভেসে ওঠে, তার টেক্সট ও on/off এখান থেকে নিয়ন্ত্রণ করুন।
+        <div style="font-size:.72rem;color:var(--muted);margin-bottom:16px;">
+          WhatsApp বাটনে ক্লিক করলে যে ছোট লেখাটা ভেসে ওঠে, তার টেক্সট ও on/off — Homepage আর বাকি সব পেজের জন্য আলাদা আলাদা ঠিক করুন।
         </div>
+
+        <div style="font-size:.82rem;font-weight:700;color:var(--navy);margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border);">🏠 Homepage (Index)</div>
         <div style="background:#fff4ec;border:1px solid var(--orange);border-radius:10px;padding:10px 12px;margin-bottom:12px;display:flex;align-items:center;gap:10px;">
-          <input type="checkbox" id="tagWaEnabled" checked style="width:18px;height:18px;flex-shrink:0;">
-          <label for="tagWaEnabled" style="font-size:.78rem;font-weight:700;color:var(--navy);cursor:pointer;margin:0;">
-            💬 WhatsApp বাটনে ক্লিক করলে floating tagline দেখান
+          <input type="checkbox" id="tagWaIndexEnabled" checked style="width:18px;height:18px;flex-shrink:0;">
+          <label for="tagWaIndexEnabled" style="font-size:.78rem;font-weight:700;color:var(--navy);cursor:pointer;margin:0;">
+            💬 Homepage-এ WhatsApp tagline দেখান
+          </label>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;">
+          <div class="form-group" style="margin-bottom:0">
+            <label>বাংলা টেক্সট</label>
+            <input type="text" class="form-input" id="tagWaIndexBn" placeholder="সরাসরি আমাদের সাথে কথা বলুন">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>English Text</label>
+            <input type="text" class="form-input" id="tagWaIndexEn" placeholder="Chat with us directly">
+          </div>
+        </div>
+
+        <div style="font-size:.82rem;font-weight:700;color:var(--navy);margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border);">📄 বাকি সব পেজ <span style="font-weight:400;color:var(--muted);">(Bazaar, Fresh, Hampers, Shops, Entrepreneurs, Festival, Flash Sale, Sponsored Shops)</span></div>
+        <div style="background:#fff4ec;border:1px solid var(--orange);border-radius:10px;padding:10px 12px;margin-bottom:12px;display:flex;align-items:center;gap:10px;">
+          <input type="checkbox" id="tagWaOtherEnabled" checked style="width:18px;height:18px;flex-shrink:0;">
+          <label for="tagWaOtherEnabled" style="font-size:.78rem;font-weight:700;color:var(--navy);cursor:pointer;margin:0;">
+            💬 বাকি পেজগুলোতে WhatsApp tagline দেখান
           </label>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
           <div class="form-group" style="margin-bottom:0">
             <label>বাংলা টেক্সট</label>
-            <input type="text" class="form-input" id="tagWaBn" placeholder="সরাসরি আমাদের সাথে কথা বলুন">
+            <input type="text" class="form-input" id="tagWaOtherBn" placeholder="সরাসরি আমাদের সাথে কথা বলুন">
           </div>
           <div class="form-group" style="margin-bottom:0">
             <label>English Text</label>
-            <input type="text" class="form-input" id="tagWaEn" placeholder="Chat with us directly">
+            <input type="text" class="form-input" id="tagWaOtherEn" placeholder="Chat with us directly">
           </div>
         </div>
+
         <button class="btn-sm btn-orange" onclick="saveTaglineSettings()">🏷️ সেভ করুন</button>
         <span style="font-size:.72rem;color:var(--muted)" id="waTagSaveStatus"></span>
       </div>
@@ -7403,26 +7449,44 @@ function loadTaglineSettings(){
   db.collection('cities').doc(CITY).collection('settings').doc('taglineConfig').get()
     .then(function(doc){
       var d = doc.exists ? doc.data() : {};
-      document.getElementById('tagMusicBn').value = d.musicTaglineBn || 'অভিজ্ঞতাসমৃদ্ধ কেনাকাটার স্বাদ নিন';
-      document.getElementById('tagMusicEn').value = d.musicTaglineEn || 'Take a bite of experiential shopping';
-      document.getElementById('tagMusicDuration').value = d.musicTaglineDuration || 6;
-      document.getElementById('tagMusicEnabled').checked = d.musicTaglineEnabled !== false; // default ON
-      document.getElementById('tagWaBn').value = d.waTaglineBn || 'সরাসরি আমাদের সাথে কথা বলুন';
-      document.getElementById('tagWaEn').value = d.waTaglineEn || 'Chat with us directly';
-      document.getElementById('tagWaEnabled').checked = d.waTaglineEnabled !== false; // default ON
+      // Music — Homepage
+      document.getElementById('tagMusicIndexBn').value = d.musicIndexBn || 'অভিজ্ঞতাসমৃদ্ধ কেনাকাটার স্বাদ নিন';
+      document.getElementById('tagMusicIndexEn').value = d.musicIndexEn || 'Take a bite of experiential shopping';
+      document.getElementById('tagMusicIndexDuration').value = d.musicIndexDuration || 6;
+      document.getElementById('tagMusicIndexEnabled').checked = d.musicIndexEnabled !== false;
+      // Music — Other Pages
+      document.getElementById('tagMusicOtherBn').value = d.musicOtherBn || 'অভিজ্ঞতাসমৃদ্ধ কেনাকাটার স্বাদ নিন';
+      document.getElementById('tagMusicOtherEn').value = d.musicOtherEn || 'Take a bite of experiential shopping';
+      document.getElementById('tagMusicOtherDuration').value = d.musicOtherDuration || 6;
+      document.getElementById('tagMusicOtherEnabled').checked = d.musicOtherEnabled !== false;
+      // WhatsApp — Homepage
+      document.getElementById('tagWaIndexBn').value = d.waIndexBn || 'সরাসরি আমাদের সাথে কথা বলুন';
+      document.getElementById('tagWaIndexEn').value = d.waIndexEn || 'Chat with us directly';
+      document.getElementById('tagWaIndexEnabled').checked = d.waIndexEnabled !== false;
+      // WhatsApp — Other Pages
+      document.getElementById('tagWaOtherBn').value = d.waOtherBn || 'সরাসরি আমাদের সাথে কথা বলুন';
+      document.getElementById('tagWaOtherEn').value = d.waOtherEn || 'Chat with us directly';
+      document.getElementById('tagWaOtherEnabled').checked = d.waOtherEnabled !== false;
     }).catch(function(){});
 }
 
 function saveTaglineSettings(){
   var statusEls = [document.getElementById('tagSaveStatus'), document.getElementById('waTagSaveStatus')].filter(Boolean);
   var data = {
-    musicTaglineBn: document.getElementById('tagMusicBn').value.trim() || 'অভিজ্ঞতাসমৃদ্ধ কেনাকাটার স্বাদ নিন',
-    musicTaglineEn: document.getElementById('tagMusicEn').value.trim() || 'Take a bite of experiential shopping',
-    musicTaglineDuration: parseInt(document.getElementById('tagMusicDuration').value)||6,
-    musicTaglineEnabled: document.getElementById('tagMusicEnabled').checked,
-    waTaglineBn: document.getElementById('tagWaBn').value.trim() || 'সরাসরি আমাদের সাথে কথা বলুন',
-    waTaglineEn: document.getElementById('tagWaEn').value.trim() || 'Chat with us directly',
-    waTaglineEnabled: document.getElementById('tagWaEnabled').checked,
+    musicIndexBn: document.getElementById('tagMusicIndexBn').value.trim() || 'অভিজ্ঞতাসমৃদ্ধ কেনাকাটার স্বাদ নিন',
+    musicIndexEn: document.getElementById('tagMusicIndexEn').value.trim() || 'Take a bite of experiential shopping',
+    musicIndexDuration: parseInt(document.getElementById('tagMusicIndexDuration').value)||6,
+    musicIndexEnabled: document.getElementById('tagMusicIndexEnabled').checked,
+    musicOtherBn: document.getElementById('tagMusicOtherBn').value.trim() || 'অভিজ্ঞতাসমৃদ্ধ কেনাকাটার স্বাদ নিন',
+    musicOtherEn: document.getElementById('tagMusicOtherEn').value.trim() || 'Take a bite of experiential shopping',
+    musicOtherDuration: parseInt(document.getElementById('tagMusicOtherDuration').value)||6,
+    musicOtherEnabled: document.getElementById('tagMusicOtherEnabled').checked,
+    waIndexBn: document.getElementById('tagWaIndexBn').value.trim() || 'সরাসরি আমাদের সাথে কথা বলুন',
+    waIndexEn: document.getElementById('tagWaIndexEn').value.trim() || 'Chat with us directly',
+    waIndexEnabled: document.getElementById('tagWaIndexEnabled').checked,
+    waOtherBn: document.getElementById('tagWaOtherBn').value.trim() || 'সরাসরি আমাদের সাথে কথা বলুন',
+    waOtherEn: document.getElementById('tagWaOtherEn').value.trim() || 'Chat with us directly',
+    waOtherEnabled: document.getElementById('tagWaOtherEnabled').checked,
     updatedAt: new Date().toISOString()
   };
   statusEls.forEach(function(el){ el.textContent = 'সেভ হচ্ছে...'; });
