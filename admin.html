@@ -1624,6 +1624,13 @@ button,input,select{font-family:'DM Sans',sans-serif;}
             <label>Priority (1-10) <span style="font-weight:400;color:var(--muted);">— একই পেজে ২টা active track থাকলে বেশি priority-টা বাজবে</span></label>
             <input type="number" class="form-input" id="mtPriority" value="5" min="1" max="10">
           </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>Default Volume <span style="font-weight:400;color:var(--muted);">— গ্রাহকের ফোনের volume যতই বেশি থাকুক, এর বেশি জোরে বাজবে না</span></label>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <input type="range" id="mtVolume" min="10" max="100" step="5" value="70" style="flex:1;" oninput="document.getElementById('mtVolumeLabel').textContent=this.value+'%'">
+              <span id="mtVolumeLabel" style="font-size:.8rem;font-weight:700;color:var(--navy);min-width:38px;">70%</span>
+            </div>
+          </div>
           <div class="form-group" style="margin-bottom:0;grid-column:1/-1;">
             <label>Mood / Emotion নোট <span style="font-weight:400;color:var(--muted);">— এই track কী ধরনের অনুভূতি বহন করছে (নিজের রেফারেন্সের জন্য)</span></label>
             <textarea class="form-input" id="mtMood" placeholder="যেমন: শান্ত, lounge, বিকেলের চা-চক্রের মতো আরামদায়ক" style="min-height:50px;"></textarea>
@@ -1652,6 +1659,61 @@ button,input,select{font-family:'DM Sans',sans-serif;}
       </div>
 
       <div id="musicTracksListWrap"><div style="color:var(--muted);font-size:.82rem;">লোড হচ্ছে...</div></div>
+
+      <!-- WHATSAPP MANAGEMENT -->
+      <div class="add-zone-card" style="margin-top:20px;border-color:#25D366;">
+        <div style="font-size:.9rem;font-weight:700;color:var(--navy);margin-bottom:4px;">📱 WhatsApp Management</div>
+        <div style="font-size:.72rem;color:var(--muted);margin-bottom:14px;">
+          প্রতিটা পেজে floating 💬 বাটন থাকবে — প্রতিটা পেজের জন্য আলাদা pre-filled প্রথম মেসেজ ঠিক করে দিন, যাতে গ্রাহক WhatsApp খুললেই বুঝতে পারেন কোন পেজ থেকে এসেছেন।
+        </div>
+
+        <div class="form-group" style="margin-bottom:14px;">
+          <label>WhatsApp নম্বর * <span style="font-weight:400;color:var(--muted);">(দেশের কোড সহ, যেমন +918145776998)</span></label>
+          <input type="text" class="form-input" id="waPhoneNumber" placeholder="+91XXXXXXXXXX">
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+          <div class="form-group" style="margin-bottom:0;grid-column:1/-1;">
+            <label>হোমপেজ-এর প্রথম মেসেজ</label>
+            <input type="text" class="form-input" id="waMsg_index" placeholder="DELTA তে সাহায্য দরকার">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>DELTA Bazaar</label>
+            <input type="text" class="form-input" id="waMsg_bazaar" placeholder="DELTA Bazaar সম্পর্কে জানতে চাই">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>DELTA Fresh</label>
+            <input type="text" class="form-input" id="waMsg_fresh" placeholder="DELTA Fresh সম্পর্কে জানতে চাই">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>Hampers</label>
+            <input type="text" class="form-input" id="waMsg_hampers" placeholder="Hampers সম্পর্কে জানতে চাই">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>Shops Directory</label>
+            <input type="text" class="form-input" id="waMsg_shops" placeholder="দোকান সম্পর্কে জানতে চাই">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>Entrepreneurs</label>
+            <input type="text" class="form-input" id="waMsg_entrepreneurs" placeholder="উদ্যোক্তা হতে চাই">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>Festival</label>
+            <input type="text" class="form-input" id="waMsg_festival" placeholder="উৎসবের অফার জানতে চাই">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>Flash Sale</label>
+            <input type="text" class="form-input" id="waMsg_flashsale" placeholder="Flash Sale সম্পর্কে জানতে চাই">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>Sponsored Shops (page)</label>
+            <input type="text" class="form-input" id="waMsg_sponsoredshops" placeholder="Sponsored Shop সম্পর্কে জানতে চাই">
+          </div>
+        </div>
+
+        <button class="btn-sm btn-orange" onclick="saveWhatsAppConfig()">📱 সেভ করুন</button>
+        <span style="font-size:.72rem;color:var(--muted)" id="waConfigSaveStatus"></span>
+      </div>
     </div>
 
     <!-- ═══ HAMPER MANAGEMENT PAGE ═══ -->
@@ -2128,7 +2190,7 @@ function goTab(tab, btn){
   if(tab==='hampers') loadHamperManagement();
   if(tab==='hamperorders') loadHamperOrders();
   if(tab==='sponsoredshops'){ loadSponsoredShops(); loadFeaturedProductSellerDropdown(); loadFeaturedProducts(); }
-  if(tab==='heroslides'){ loadBrandSlide(); loadHouseSlides(); loadMusicTracks(); }
+  if(tab==='heroslides'){ loadBrandSlide(); loadHouseSlides(); loadMusicTracks(); loadWhatsAppConfig(); }
 }
 
 // ═══ DATA LOADING ═══
@@ -7109,7 +7171,7 @@ function renderMusicTracksList(){
           (isActive ? ' <span style="font-size:.6rem;font-weight:700;background:#eef9f0;color:#1a7a4c;padding:2px 7px;border-radius:10px;">চালু</span>' : ' <span style="font-size:.6rem;font-weight:700;background:var(--sand);color:var(--muted);padding:2px 7px;border-radius:10px;">বন্ধ</span>')+
         '</div>'+
         (t.mood ? '<div style="font-size:.72rem;color:var(--muted);margin-top:2px;font-style:italic;">"'+t.mood+'"</div>' : '')+
-        '<div style="font-size:.72rem;color:var(--muted);margin-top:4px;">Priority: '+(t.priority||1)+
+        '<div style="font-size:.72rem;color:var(--muted);margin-top:4px;">Priority: '+(t.priority||1)+' · 🔊 '+(t.volume||70)+'%'+
           (pageLabels ? ' · 📄 '+pageLabels : ' · <span style="color:#c0392b;">কোনো পেজ assign করা নেই</span>')+
         '</div>'+
       '</div>'+
@@ -7137,6 +7199,7 @@ function saveMusicTrack(){
     musicUrl: musicUrl,
     trackName: document.getElementById('mtName').value.trim() || 'Untitled Track',
     priority: parseInt(document.getElementById('mtPriority').value)||1,
+    volume: parseInt(document.getElementById('mtVolume').value)||70,
     mood: document.getElementById('mtMood').value.trim(),
     assignedPages: assignedPages,
     updatedAt: new Date().toISOString()
@@ -7158,6 +7221,8 @@ function editMusicTrack(id){
   document.getElementById('mtUrl').value = t.musicUrl||'';
   document.getElementById('mtName').value = t.trackName||'';
   document.getElementById('mtPriority').value = t.priority||5;
+  document.getElementById('mtVolume').value = t.volume||70;
+  document.getElementById('mtVolumeLabel').textContent = (t.volume||70)+'%';
   document.getElementById('mtMood').value = t.mood||'';
   var assignedPages = t.assignedPages || [];
   document.querySelectorAll('.mt-page-cb').forEach(function(cb){ cb.checked = assignedPages.indexOf(cb.value) !== -1; });
@@ -7170,6 +7235,8 @@ function cancelMusicTrackEdit(){
   document.getElementById('mtUrl').value = '';
   document.getElementById('mtName').value = '';
   document.getElementById('mtPriority').value = 5;
+  document.getElementById('mtVolume').value = 70;
+  document.getElementById('mtVolumeLabel').textContent = '70%';
   document.getElementById('mtMood').value = '';
   document.querySelectorAll('.mt-page-cb').forEach(function(cb){ cb.checked = false; });
   document.getElementById('musicFormTitle').textContent = '🎵 নতুন Music Track যোগ করুন';
@@ -7188,6 +7255,43 @@ function deleteMusicTrack(id){
   db.collection('cities').doc(CITY).collection('musicTracks').doc(id).delete()
     .then(function(){ loadMusicTracks(); showToast('মুছে ফেলা হয়েছে','green'); })
     .catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
+}
+
+// ═══════════════════ WHATSAPP MANAGEMENT ═══════════════════
+var WA_PAGES = ['index','bazaar','fresh','hampers','shops','entrepreneurs','festival','flashsale','sponsoredshops'];
+
+function loadWhatsAppConfig(){
+  db.collection('cities').doc(CITY).collection('settings').doc('whatsappConfig').get()
+    .then(function(doc){
+      var d = doc.exists ? doc.data() : {};
+      document.getElementById('waPhoneNumber').value = d.phoneNumber||'';
+      var messages = d.messages||{};
+      WA_PAGES.forEach(function(p){
+        var el = document.getElementById('waMsg_'+p);
+        if(el) el.value = messages[p]||'';
+      });
+    }).catch(function(){});
+}
+
+function saveWhatsAppConfig(){
+  var statusEl = document.getElementById('waConfigSaveStatus');
+  var phoneNumber = document.getElementById('waPhoneNumber').value.trim();
+  if(!phoneNumber){ showToast('WhatsApp নম্বর দিন','red'); return; }
+  var messages = {};
+  WA_PAGES.forEach(function(p){
+    var el = document.getElementById('waMsg_'+p);
+    if(el) messages[p] = el.value.trim();
+  });
+  var data = { phoneNumber: phoneNumber, messages: messages, updatedAt: new Date().toISOString() };
+  if(statusEl) statusEl.textContent = 'সেভ হচ্ছে...';
+  db.collection('cities').doc(CITY).collection('settings').doc('whatsappConfig').set(data)
+    .then(function(){
+      if(statusEl){ statusEl.textContent='✅ সেভ হয়েছে'; setTimeout(function(){statusEl.textContent='';},3000); }
+      showToast('WhatsApp সেটিংস সেভ হয়েছে ✅','green');
+    }).catch(function(e){
+      if(statusEl) statusEl.textContent='❌ সমস্যা';
+      showToast('সমস্যা: '+e.message,'red');
+    });
 }
 
 function toggleSponsoredShopStatus(id, status){
