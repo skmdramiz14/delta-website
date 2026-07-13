@@ -1798,6 +1798,10 @@ button,input,select{font-family:'DM Sans',sans-serif;}
             <label>Sponsored Shops (page)</label>
             <input type="text" class="form-input" id="waMsg_sponsoredshops" placeholder="Sponsored Shop সম্পর্কে জানতে চাই">
           </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>DELTA Ecosystem (page)</label>
+            <input type="text" class="form-input" id="waMsg_ecosystem" placeholder="DELTA-র বিভিন্ন branch সম্পর্কে জানতে চাই">
+          </div>
         </div>
 
         <button class="btn-sm btn-orange" onclick="saveWhatsAppConfig()">📱 সেভ করুন</button>
@@ -1866,12 +1870,26 @@ button,input,select{font-family:'DM Sans',sans-serif;}
         <input type="hidden" id="ecoEditId" value="">
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+          <div class="form-group" style="margin-bottom:0;grid-column:1/-1;">
+            <label>Banner Image * <span style="font-weight:400;color:var(--muted);">(landscape ছবি, যেমন 800×500px)</span></label>
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div id="ecoBannerPreview" style="width:150px;height:94px;border-radius:10px;background:var(--sand);display:flex;align-items:center;justify-content:center;font-size:.68rem;color:var(--muted);overflow:hidden;cursor:pointer;flex-shrink:0;border:1px dashed var(--border);text-align:center;" onclick="document.getElementById('ecoBannerFile').click()">
+                📷 ছবি আপলোড করতে<br>ক্লিক করুন
+              </div>
+              <div style="font-size:.72rem;color:var(--muted);">
+                💡 ছবি আপলোড না করলে ডানপাশের Icon (Emoji) fallback হিসেবে দেখাবে।<br>
+                <span id="ecoBannerStatus"></span>
+              </div>
+            </div>
+            <input type="file" id="ecoBannerFile" accept="image/*" style="display:none" onchange="uploadEcoBanner(this)">
+            <input type="hidden" id="ecoBannerUrl" value="">
+          </div>
           <div class="form-group" style="margin-bottom:0">
-            <label>Icon (Emoji) *</label>
+            <label>Icon (Emoji) <span style="font-weight:400;color:var(--muted);">— fallback, ছবি না থাকলে দেখাবে</span></label>
             <input type="text" class="form-input" id="ecoIcon" placeholder="🏮" maxlength="4">
           </div>
           <div class="form-group" style="margin-bottom:0">
-            <label>Banner Color * <span style="font-weight:400;color:var(--muted);">(hex code)</span></label>
+            <label>Banner Color * <span style="font-weight:400;color:var(--muted);">(hex code — ছবির উপর হালকা tint হিসেবে ব্যবহার হয়)</span></label>
             <div style="display:flex;align-items:center;gap:8px;">
               <input type="color" id="ecoColorPicker" value="#3d2a6b" style="width:40px;height:38px;border:1px solid var(--border);border-radius:8px;cursor:pointer;" oninput="document.getElementById('ecoColor').value=this.value">
               <input type="text" class="form-input" id="ecoColor" placeholder="#3d2a6b" style="flex:1;" oninput="document.getElementById('ecoColorPicker').value=this.value">
@@ -7363,7 +7381,8 @@ var MUSIC_PAGES = [
   {value:'entrepreneurs', label:'Entrepreneurs'},
   {value:'festival', label:'Festival'},
   {value:'flashsale', label:'Flash Sale'},
-  {value:'sponsoredshops', label:'Sponsored Shops (page)'}
+  {value:'sponsoredshops', label:'Sponsored Shops (page)'},
+  {value:'ecosystem', label:'DELTA Ecosystem (page)'}
 ];
 
 function loadMusicTracks(){
@@ -7486,7 +7505,7 @@ function deleteMusicTrack(id){
 }
 
 // ═══════════════════ WHATSAPP MANAGEMENT ═══════════════════
-var WA_PAGES = ['index','bazaar','fresh','hampers','shops','entrepreneurs','festival','flashsale','sponsoredshops'];
+var WA_PAGES = ['index','bazaar','fresh','hampers','shops','entrepreneurs','festival','flashsale','sponsoredshops','ecosystem'];
 
 function loadWhatsAppConfig(){
   db.collection('cities').doc(CITY).collection('settings').doc('whatsappConfig').get()
@@ -7597,7 +7616,7 @@ function renderEcosystemBranchesList(){
       ? '<span style="background:#eef9f0;color:#1a7a4c;font-size:.68rem;font-weight:700;padding:2px 9px;border-radius:10px;white-space:nowrap;">✅ Live</span>'
       : '<span style="background:rgba(212,175,55,.15);color:#8a6215;font-size:.68rem;font-weight:700;padding:2px 9px;border-radius:10px;white-space:nowrap;">🔜 শীঘ্রই</span>';
     return '<div style="display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px 14px;flex-wrap:wrap;">'+
-      '<div style="width:44px;height:44px;border-radius:12px;background:'+(b.color||'#333')+';display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;">'+(b.icon||'🔷')+'</div>'+
+      '<div style="width:44px;height:44px;border-radius:12px;background:'+(b.color||'#333')+';display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;overflow:hidden;">'+(b.bannerUrl ? '<img src="'+b.bannerUrl+'" style="width:100%;height:100%;object-fit:cover;">' : (b.icon||'🔷'))+'</div>'+
       '<div style="flex:1;min-width:150px;">'+
         '<div style="font-weight:700;font-size:.88rem;color:var(--navy);">'+(b.name_bn||'—')+' <span style="font-weight:400;color:var(--muted);font-size:.76rem;">'+(b.name_en||'')+'</span></div>'+
         '<div style="font-size:.74rem;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:280px;">'+(b.desc_bn||'')+'</div>'+
@@ -7613,6 +7632,9 @@ function renderEcosystemBranchesList(){
 function resetEcosystemForm(){
   document.getElementById('ecoEditId').value = '';
   document.getElementById('ecoIcon').value = '';
+  document.getElementById('ecoBannerUrl').value = '';
+  document.getElementById('ecoBannerPreview').innerHTML = '📷 ছবি আপলোড করতে<br>ক্লিক করুন';
+  document.getElementById('ecoBannerStatus').textContent = '';
   document.getElementById('ecoColor').value = '';
   document.getElementById('ecoColorPicker').value = '#3d2a6b';
   document.getElementById('ecoNameBn').value = '';
@@ -7625,11 +7647,44 @@ function resetEcosystemForm(){
   document.getElementById('ecoFormTitle').textContent = '🌐 নতুন Branch যোগ করুন';
 }
 
+async function uploadEcoBanner(input){
+  var file = input.files[0];
+  if(!file) return;
+  var preview = document.getElementById('ecoBannerPreview');
+  var status = document.getElementById('ecoBannerStatus');
+  preview.innerHTML = '<div style="font-size:.7rem;color:var(--muted);">⏳ আপলোড হচ্ছে...</div>';
+  var fd = new FormData();
+  fd.append('file', file);
+  fd.append('upload_preset', PRESET);
+  fd.append('cloud_name', CLOUD);
+  fd.append('folder', 'delta/ecosystem-banners');
+  try{
+    var res = await fetch('https://api.cloudinary.com/v1_1/'+CLOUD+'/image/upload', {method:'POST', body:fd});
+    var data = await res.json();
+    if(data.secure_url){
+      document.getElementById('ecoBannerUrl').value = data.secure_url;
+      preview.innerHTML = '<img src="'+data.secure_url+'" style="width:100%;height:100%;object-fit:cover;">';
+      status.textContent = '✅ আপলোড সম্পন্ন';
+    } else {
+      preview.innerHTML = '📷 ছবি আপলোড করতে<br>ক্লিক করুন';
+      status.textContent = '❌ আপলোড ব্যর্থ, আবার চেষ্টা করুন';
+    }
+  }catch(e){
+    preview.innerHTML = '📷 ছবি আপলোড করতে<br>ক্লিক করুন';
+    status.textContent = '❌ সমস্যা: '+e.message;
+  }
+}
+
 function editEcosystemBranch(id){
   var b = allEcosystemBranches.find(function(x){ return x.id===id; });
   if(!b) return;
   document.getElementById('ecoEditId').value = id;
   document.getElementById('ecoIcon').value = b.icon||'';
+  document.getElementById('ecoBannerUrl').value = b.bannerUrl||'';
+  document.getElementById('ecoBannerPreview').innerHTML = b.bannerUrl
+    ? '<img src="'+b.bannerUrl+'" style="width:100%;height:100%;object-fit:cover;">'
+    : '📷 ছবি আপলোড করতে<br>ক্লিক করুন';
+  document.getElementById('ecoBannerStatus').textContent = '';
   document.getElementById('ecoColor').value = b.color||'';
   document.getElementById('ecoColorPicker').value = b.color||'#3d2a6b';
   document.getElementById('ecoNameBn').value = b.name_bn||'';
@@ -7645,6 +7700,7 @@ function editEcosystemBranch(id){
 
 function saveEcosystemBranch(){
   var icon = document.getElementById('ecoIcon').value.trim();
+  var bannerUrl = document.getElementById('ecoBannerUrl').value.trim();
   var color = document.getElementById('ecoColor').value.trim();
   var nameBn = document.getElementById('ecoNameBn').value.trim();
   var nameEn = document.getElementById('ecoNameEn').value.trim();
@@ -7655,7 +7711,10 @@ function saveEcosystemBranch(){
   var order = parseInt(document.getElementById('ecoOrder').value) || 10;
   var editId = document.getElementById('ecoEditId').value;
 
-  if(!icon || !color || !nameBn || !nameEn || !descBn || !descEn){
+  if(!bannerUrl && !icon){
+    showToast('Banner ছবি আপলোড করুন অথবা অন্তত একটা Icon (Emoji) দিন','red'); return;
+  }
+  if(!color || !nameBn || !nameEn || !descBn || !descEn){
     showToast('সব প্রয়োজনীয় ঘর (*) পূরণ করুন','red'); return;
   }
   if(status==='live' && !url){
@@ -7663,7 +7722,7 @@ function saveEcosystemBranch(){
   }
 
   var data = {
-    icon: icon, color: color, name_bn: nameBn, name_en: nameEn,
+    icon: icon, bannerUrl: bannerUrl || null, color: color, name_bn: nameBn, name_en: nameEn,
     desc_bn: descBn, desc_en: descEn, status: status, url: url || null,
     order: order, updatedAt: new Date().toISOString()
   };
