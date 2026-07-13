@@ -1333,10 +1333,10 @@ function loadDpSocialProof(hamperId){
     }).catch(function(){ /* silently skip if query unavailable */ });
 }
 
-/* ── reviews (Firestore: hamperReviews collection) ── */
+/* ── reviews (Firestore: hampers/{hamperId}/reviews subcollection — matches Admin panel) ── */
 function loadDpReviews(hamperId){
   document.getElementById('dpReviewList').innerHTML = '<div style="font-size:.78rem;color:var(--muted);padding:8px 0;">লোড হচ্ছে...</div>';
-  db.collection('hamperReviews').where('hamperId','==',hamperId).get()
+  db.collection('hampers').doc(hamperId).collection('reviews').get()
     .then(function(snap){
       dpReviewsCache = [];
       snap.forEach(function(d){ dpReviewsCache.push(d.data()); });
@@ -1436,8 +1436,7 @@ function submitDpReview(){
   if(!dpSelectedStars){ showToast('স্টার রেটিং দিন'); return; }
   if(!name){ showToast('আপনার নাম লিখুন'); return; }
 
-  db.collection('hamperReviews').add({
-    hamperId: currentDetailHamper.id,
+  db.collection('hampers').doc(currentDetailHamper.id).collection('reviews').add({
     name: name,
     rating: dpSelectedStars,
     comment: text,
