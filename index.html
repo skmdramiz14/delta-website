@@ -229,18 +229,18 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
    the real photo lives on .hero itself). Banner capped at ~320-340px tall,
    spacing/radius/shadow match the approved spec, CTA is larger/tappable. */
 @media(max-width:480px){
-  .hero-inner{grid-template-columns:100%;gap:0;}
+  .hero-inner{grid-template-columns:42% 58%;gap:0;}
   .hero-photo{display:none;}
   .hero-unified-frame{margin:0 0 14px;border-radius:0;border-left:none;border-right:none;
     box-shadow:0 11px 30px rgba(0,0,0,.072);animation:heroFadeIn .5s ease both;} /* shadow reduced ~40%, wrapper owns the whole shape now */
-  .hero{min-height:280px;padding:20px 28px 16px 28px;align-items:flex-start;} /* fixed height removed — was fighting the taller text block; now sizes to content, just compressed padding */
+  .hero{height:280px;min-height:280px;padding:24px 28px 20px 28px;align-items:flex-start;} /* height now matches content closely — no more empty gap before Shop Now */
   .hero-content{padding:0;}
-  .hero-tag{font-size:.58rem;padding:4px 9px;margin-bottom:8px;letter-spacing:.5px;}
-  .hero h1{font-size:1.9rem;margin-bottom:6px;font-weight:900;} /* DELTA wordmark is the focal point */
-  .hero-bn{font-size:.98rem;margin-bottom:6px;color:#f8e7c3;} /* headline, brighter champagne gold with glow */
-  .hero p{font-size:.72rem;line-height:1.42;margin-bottom:10px;max-width:88%;} /* narrower column, compact but still readable */
+  .hero-tag{font-size:.58rem;padding:4px 9px;margin-bottom:11px;letter-spacing:.5px;}
+  .hero h1{font-size:1.9rem;margin-bottom:8px;font-weight:900;} /* DELTA wordmark is the focal point */
+  .hero-bn{font-size:.98rem;margin-bottom:8px;color:#f8e7c3;} /* headline, brighter champagne gold with glow */
+  .hero p{font-size:.72rem;line-height:1.5;margin-bottom:13px;max-width:88%;} /* narrower column, compact but still readable */
   .hero-tagline-strong{font-weight:700;white-space:nowrap;display:inline-block;font-size:.78em;letter-spacing:.2px;}
-  .hero-about-btn{height:34px;padding:0 16px;border-width:1.5px;font-size:.7rem;white-space:nowrap;
+  .hero-about-btn{height:38px;padding:0 18px;border-width:1.5px;font-size:.72rem;white-space:nowrap;
     display:inline-flex;align-items:center;justify-content:center;gap:8px;
     transition:transform .18s ease,background .2s ease,box-shadow .2s ease;}
   .hero-about-btn:active{transform:scale(.96);background:rgba(201,162,39,.12);}
@@ -1332,7 +1332,7 @@ body.lang-bn .lang-en{display:none!important;}
   .why-grid{grid-template-columns:1fr 1fr 1fr;}
 }
 @media(max-width:900px){
-  .hero-inner{grid-template-columns:100%;gap:0;}
+  .hero-inner{grid-template-columns:42% 58%;gap:0;}
   .hero-phone{display:none;}
   .hero-photo{display:none;}
   .hero{min-height:360px;}
@@ -1390,8 +1390,8 @@ body.lang-bn .lang-en{display:none!important;}
   /* ── HERO ── */
   .hero{min-height:340px;}
   .hero h1{font-size:1.85rem;line-height:1.25;}
-  .hero-bn{font-size:.9rem;margin-bottom:7px;}
-  .hero p{font-size:.85rem;line-height:1.55;margin-bottom:14px;}
+  .hero-bn{font-size:.9rem;margin-bottom:10px;}
+  .hero p{font-size:.85rem;line-height:1.65;margin-bottom:20px;}
   .hero-tag{font-size:.7rem;padding:5px 11px;margin-bottom:14px;}
 
   /* Hero search */
@@ -1564,9 +1564,9 @@ body.lang-bn .lang-en{display:none!important;}
   .hamburger-btn{width:46px;height:46px;font-size:.85rem;}
 
   /* HERO */
-  .hero{min-height:280px;}
+  .hero{min-height:320px;}
   .hero h1{font-size:1.9rem!important;line-height:1.15!important;}
-  .hero p{font-size:.72rem!important;line-height:1.42!important;margin-bottom:10px;}
+  .hero p{font-size:.72rem!important;line-height:1.5!important;margin-bottom:13px;}
   .hero-search-big input{font-size:.95rem;padding:0 16px;}
   .hero-search-big,.hero-search-big input{height:52px;}
   .hero-search-big{padding-right:48px;}
