@@ -5293,7 +5293,8 @@ function _showMusicTagline(){
   _musicTaglineTimer = setTimeout(function(){ tag.classList.remove('show'); }, _musicTaglineDuration);
 }
 
-// Fetches admin-configured tagline text/duration/on-off (music) and text/enabled (WhatsApp)
+// Fetches admin-configured tagline text/duration/on-off — Homepage-specific settings
+// (the "Other Pages" settings apply to bazaar/fresh/hampers/etc, not this file)
 var _waTaglineEnabled = true;
 function initTaglineConfig(){
   if(!db) return;
@@ -5301,18 +5302,18 @@ function initTaglineConfig(){
     .then(function(doc){
       if(!doc.exists) return;
       var d = doc.data();
-      if(d.musicTaglineDuration) _musicTaglineDuration = d.musicTaglineDuration * 1000;
-      _musicTaglineEnabled = d.musicTaglineEnabled !== false;
+      if(d.musicIndexDuration) _musicTaglineDuration = d.musicIndexDuration * 1000;
+      _musicTaglineEnabled = d.musicIndexEnabled !== false;
       var musicTag = document.getElementById('musicTagline');
-      if(musicTag && (d.musicTaglineBn || d.musicTaglineEn)){
+      if(musicTag && (d.musicIndexBn || d.musicIndexEn)){
         var b1 = musicTag.querySelector('.lang-bn'), e1 = musicTag.querySelector('.lang-en');
-        if(b1 && d.musicTaglineBn) b1.textContent = d.musicTaglineBn;
-        if(e1 && d.musicTaglineEn) e1.textContent = d.musicTaglineEn;
+        if(b1 && d.musicIndexBn) b1.textContent = d.musicIndexBn;
+        if(e1 && d.musicIndexEn) e1.textContent = d.musicIndexEn;
       }
-      _waTaglineEnabled = d.waTaglineEnabled !== false;
+      _waTaglineEnabled = d.waIndexEnabled !== false;
       var waTag = document.getElementById('waTagline');
-      if(waTag && (d.waTaglineBn || d.waTaglineEn)){
-        waTag.innerHTML = (d.waTaglineBn||'সরাসরি আমাদের সাথে কথা বলুন') + '<br>' + (d.waTaglineEn||'Chat with us directly');
+      if(waTag && (d.waIndexBn || d.waIndexEn)){
+        waTag.innerHTML = (d.waIndexBn||'সরাসরি আমাদের সাথে কথা বলুন') + '<br>' + (d.waIndexEn||'Chat with us directly');
       }
     }).catch(function(){});
 }
