@@ -1703,5 +1703,87 @@ function checkoutCart(){
 // init cart badge on load
 window.addEventListener('load', function(){ updateCartBadge(); });
 </script>
+
+<!-- SHOPPING MUSIC FLOAT (self-contained — admin-managed via Hero Slides tab, multi-track) -->
+<style>
+.music-float{position:fixed;bottom:24px;right:18px;z-index:1500;}
+.music-btn{width:44px;height:44px;background:#0F3B31;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;box-shadow:0 10px 28px rgba(0,0,0,.22),0 0 12px rgba(212,175,55,.22);cursor:pointer;
+  border:1.5px solid #D4AF37;overflow:hidden;position:relative;z-index:2;color:#D4AF37;
+  transition:transform .2s ease;}
+.music-btn::before{content:'';position:absolute;inset:0;border-radius:50%;
+  background:radial-gradient(circle at 30% 25%,rgba(255,255,255,.18),rgba(255,255,255,.03) 60%);
+  pointer-events:none;}
+.music-btn svg{position:relative;z-index:1;flex-shrink:0;}
+.music-btn:hover{transform:scale(1.06);}
+.music-btn:active{transform:scale(.96);}
+.music-note-icon{display:block;position:relative;z-index:1;}
+.music-btn.playing .music-note-icon{display:none;}
+.music-eq{display:none;align-items:flex-end;justify-content:center;gap:3px;height:16px;position:relative;z-index:1;}
+.music-btn.playing .music-eq{display:flex;}
+.music-eq span{width:3px;background:#D4AF37;border-radius:2px;transform-origin:bottom;animation:eqBounce .9s ease-in-out infinite;}
+.music-eq span:nth-child(1){height:7px;animation-delay:0s;}
+.music-eq span:nth-child(2){height:15px;animation-delay:.2s;}
+.music-eq span:nth-child(3){height:10px;animation-delay:.4s;}
+@keyframes eqBounce{0%,100%{transform:scaleY(.4);}50%{transform:scaleY(1);}}
+@media(max-width:768px){.music-float{bottom:20px;right:16px;}}
+</style>
+<div class="music-float" id="musicFloatWrap" style="display:none;">
+  <div class="music-btn" id="musicBtn" onclick="_toggleShoppingMusic()" title="Shopping Music">
+    <svg class="music-note-icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+    <span class="music-eq" aria-hidden="true"><span></span><span></span><span></span></span>
+  </div>
+</div>
+<script>
+(function(){
+  var MUSIC_PAGE_ID = 'hampers';
+  var MUSIC_CITY = (typeof CITY !== 'undefined') ? CITY : 'manteswar';
+  var _musicAudio = null, _musicPlaying = false;
+
+  function _tryInitMusic(attemptsLeft){
+    if(typeof firebase === 'undefined' || !firebase.apps || firebase.apps.length === 0){
+      if(attemptsLeft <= 0) return;
+      setTimeout(function(){ _tryInitMusic(attemptsLeft-1); }, 500);
+      return;
+    }
+    try{
+      var db = firebase.firestore();
+      db.collection('cities').doc(MUSIC_CITY).collection('musicTracks')
+        .where('status','==','active').get().then(function(snap){
+          var wrap = document.getElementById('musicFloatWrap');
+          if(!wrap) return;
+          var candidates = [];
+          snap.forEach(function(d){
+            var t = Object.assign({id:d.id}, d.data());
+            var pages = t.assignedPages || [];
+            if(pages.indexOf(MUSIC_PAGE_ID) !== -1) candidates.push(t);
+          });
+          if(!candidates.length){ wrap.style.display='none'; return; }
+          candidates.sort(function(a,b){ return (b.priority||0)-(a.priority||0); });
+          wrap.style.display = 'block';
+          wrap.dataset.musicUrl = candidates[0].musicUrl;
+        }).catch(function(){});
+    }catch(e){}
+  }
+  // Give the page's own Firebase init a head start, then try (retrying up to ~10s)
+  setTimeout(function(){ _tryInitMusic(20); }, 600);
+
+  window._toggleShoppingMusic = function(){
+    var wrap = document.getElementById('musicFloatWrap');
+    var btn = document.getElementById('musicBtn');
+    if(!wrap || !btn) return;
+    var url = wrap.dataset.musicUrl;
+    if(!url) return;
+    if(!_musicAudio){ _musicAudio = new Audio(url); _musicAudio.loop = true; }
+    if(_musicPlaying){
+      _musicAudio.pause(); _musicPlaying = false; btn.classList.remove('playing');
+    } else {
+      _musicAudio.play().catch(function(){});
+      _musicPlaying = true; btn.classList.add('playing');
+    }
+  };
+})();
+</script>
+
 </body>
 </html>
