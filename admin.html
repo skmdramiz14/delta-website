@@ -1603,34 +1603,55 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 
       <div id="houseSlidesListWrap"><div style="color:var(--muted);font-size:.82rem;">লোড হচ্ছে...</div></div>
 
-      <!-- SHOPPING MUSIC -->
+      <!-- SHOPPING MUSIC (multi-track) -->
       <div class="add-zone-card" style="margin-top:20px;">
-        <div style="font-size:.9rem;font-weight:700;color:var(--navy);margin-bottom:4px;">🎵 Shopping Music</div>
+        <div id="musicFormTitle" style="font-size:.9rem;font-weight:700;color:var(--navy);margin-bottom:4px;">🎵 নতুন Music Track যোগ করুন</div>
         <div style="font-size:.72rem;color:var(--muted);margin-bottom:14px;">
-          Homepage-এ একটা ছোট floating 🎵 বাটন দেখাবে (WhatsApp বাটনের ঠিক উপরে) — গ্রাহক চাইলে ক্লিক করে shopping-এর সময় হালকা background music চালাতে পারবেন। কখনো নিজে থেকে autoplay হবে না, শুধু গ্রাহক ক্লিক করলেই বাজবে।
+          প্রতিটা পেজে একটা ছোট floating 🎵 বাটন দেখাবে — গ্রাহক ক্লিক করলে তবেই বাজবে (কখনো autoplay না)। একাধিক track রাখতে পারবেন, প্রতিটা আলাদা পেজে/mood-এ assign করে দিন।
         </div>
-
-        <div style="background:#fff4ec;border:1px solid var(--orange);border-radius:10px;padding:10px 12px;margin-bottom:12px;display:flex;align-items:center;gap:10px;">
-          <input type="checkbox" id="musicEnabled" style="width:18px;height:18px;flex-shrink:0;">
-          <label for="musicEnabled" style="font-size:.78rem;font-weight:700;color:var(--navy);cursor:pointer;margin:0;">
-            🎵 Shopping Music বাটন চালু রাখুন
-          </label>
-        </div>
+        <input type="hidden" id="mtEditId" value="">
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
           <div class="form-group" style="margin-bottom:0;grid-column:1/-1;">
             <label>Music File URL * <span style="font-weight:400;color:var(--muted);">(Cloudinary audio URL — mp3)</span></label>
-            <input type="text" class="form-input" id="musicUrl" placeholder="Cloudinary URL (mp3)">
+            <input type="text" class="form-input" id="mtUrl" placeholder="Cloudinary URL (mp3)">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>Track নাম</label>
+            <input type="text" class="form-input" id="mtName" placeholder="যেমন: Peaceful Sitar Loop">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>Priority (1-10) <span style="font-weight:400;color:var(--muted);">— একই পেজে ২টা active track থাকলে বেশি priority-টা বাজবে</span></label>
+            <input type="number" class="form-input" id="mtPriority" value="5" min="1" max="10">
           </div>
           <div class="form-group" style="margin-bottom:0;grid-column:1/-1;">
-            <label>Track নাম (ঐচ্ছিক, শুধু নিজের রেফারেন্সের জন্য)</label>
-            <input type="text" class="form-input" id="musicTrackName" placeholder="যেমন: Peaceful Sitar Loop">
+            <label>Mood / Emotion নোট <span style="font-weight:400;color:var(--muted);">— এই track কী ধরনের অনুভূতি বহন করছে (নিজের রেফারেন্সের জন্য)</span></label>
+            <textarea class="form-input" id="mtMood" placeholder="যেমন: শান্ত, lounge, বিকেলের চা-চক্রের মতো আরামদায়ক" style="min-height:50px;"></textarea>
           </div>
         </div>
 
-        <button class="btn-sm btn-orange" onclick="saveShoppingMusic()">🎵 সেভ করুন</button>
-        <span style="font-size:.72rem;color:var(--muted)" id="musicSaveStatus"></span>
+        <div style="background:#fff4ec;border:1px solid var(--orange);border-radius:10px;padding:12px;margin-bottom:12px;">
+          <div style="font-size:.78rem;font-weight:700;color:var(--navy);margin-bottom:8px;">📄 কোন কোন পেজে চলবে</div>
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;font-size:.8rem;">
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" class="mt-page-cb" value="index"> হোমপেজ</label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" class="mt-page-cb" value="bazaar"> DELTA Bazaar</label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" class="mt-page-cb" value="fresh"> DELTA Fresh</label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" class="mt-page-cb" value="hampers"> Hampers</label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" class="mt-page-cb" value="shops"> Shops Directory</label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" class="mt-page-cb" value="entrepreneurs"> Entrepreneurs</label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" class="mt-page-cb" value="festival"> Festival</label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" class="mt-page-cb" value="flashsale"> Flash Sale</label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" class="mt-page-cb" value="sponsoredshops"> Sponsored Shops (page)</label>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:10px;align-items:center;">
+          <button class="btn-sm btn-orange" onclick="saveMusicTrack()" id="musicTrackSaveBtn">🎵 Save করুন</button>
+          <button class="btn-sm btn-outline" onclick="cancelMusicTrackEdit()" id="musicTrackCancelBtn" style="display:none;">✕ বাতিল</button>
+        </div>
       </div>
+
+      <div id="musicTracksListWrap"><div style="color:var(--muted);font-size:.82rem;">লোড হচ্ছে...</div></div>
     </div>
 
     <!-- ═══ HAMPER MANAGEMENT PAGE ═══ -->
@@ -2107,7 +2128,7 @@ function goTab(tab, btn){
   if(tab==='hampers') loadHamperManagement();
   if(tab==='hamperorders') loadHamperOrders();
   if(tab==='sponsoredshops'){ loadSponsoredShops(); loadFeaturedProductSellerDropdown(); loadFeaturedProducts(); }
-  if(tab==='heroslides'){ loadBrandSlide(); loadHouseSlides(); loadShoppingMusic(); }
+  if(tab==='heroslides'){ loadBrandSlide(); loadHouseSlides(); loadMusicTracks(); }
 }
 
 // ═══ DATA LOADING ═══
@@ -7041,37 +7062,132 @@ function deleteHouseSlide(id){
     .catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
 }
 
-// ═══════════════════ SHOPPING MUSIC ═══════════════════
-function loadShoppingMusic(){
-  db.collection('cities').doc(CITY).collection('settings').doc('shoppingMusic').get()
-    .then(function(doc){
-      var d = doc.exists ? doc.data() : {};
-      document.getElementById('musicEnabled').checked = !!d.enabled;
-      document.getElementById('musicUrl').value = d.musicUrl||'';
-      document.getElementById('musicTrackName').value = d.trackName||'';
-    }).catch(function(){});
+// ═══════════════════ SHOPPING MUSIC (multi-track) ═══════════════════
+var allMusicTracks = [];
+var MUSIC_PAGES = [
+  {value:'index', label:'হোমপেজ'},
+  {value:'bazaar', label:'DELTA Bazaar'},
+  {value:'fresh', label:'DELTA Fresh'},
+  {value:'hampers', label:'Hampers'},
+  {value:'shops', label:'Shops Directory'},
+  {value:'entrepreneurs', label:'Entrepreneurs'},
+  {value:'festival', label:'Festival'},
+  {value:'flashsale', label:'Flash Sale'},
+  {value:'sponsoredshops', label:'Sponsored Shops (page)'}
+];
+
+function loadMusicTracks(){
+  db.collection('cities').doc(CITY).collection('musicTracks').get().then(function(snap){
+    allMusicTracks = [];
+    snap.forEach(function(d){ allMusicTracks.push(Object.assign({id:d.id}, d.data())); });
+    allMusicTracks.sort(function(a,b){ return (b.priority||0)-(a.priority||0); });
+    renderMusicTracksList();
+  }).catch(function(){
+    var wrap = document.getElementById('musicTracksListWrap');
+    if(wrap) wrap.innerHTML = '<div style="color:var(--muted);font-size:.82rem;">কোনো Music Track নেই</div>';
+  });
 }
 
-function saveShoppingMusic(){
-  var statusEl = document.getElementById('musicSaveStatus');
-  var enabled = document.getElementById('musicEnabled').checked;
-  var musicUrl = document.getElementById('musicUrl').value.trim();
-  if(enabled && !musicUrl){ showToast('Music URL দিন, অথবা "চালু রাখুন" আনচেক করুন','red'); return; }
+function renderMusicTracksList(){
+  var wrap = document.getElementById('musicTracksListWrap');
+  if(!wrap) return;
+  if(!allMusicTracks.length){
+    wrap.innerHTML = '<div style="color:var(--muted);font-size:.82rem;padding:14px;">এখনো কোনো Music Track যোগ করা হয়নি।</div>';
+    return;
+  }
+  wrap.innerHTML = allMusicTracks.map(function(t){
+    var isActive = t.status !== 'inactive';
+    var pages = t.assignedPages || [];
+    var pageLabels = pages.map(function(p){
+      var found = MUSIC_PAGES.find(function(mp){ return mp.value===p; });
+      return found ? found.label : p;
+    }).join(', ');
+    return '<div style="display:flex;gap:12px;align-items:flex-start;padding:12px;border:1px solid var(--border);border-radius:10px;margin-bottom:8px;background:#fff;">'+
+      '<div style="font-size:1.3rem;">🎵</div>'+
+      '<div style="flex:1;min-width:0;">'+
+        '<div style="font-size:.82rem;font-weight:700;color:var(--navy);">'+(t.trackName||'—')+
+          (isActive ? ' <span style="font-size:.6rem;font-weight:700;background:#eef9f0;color:#1a7a4c;padding:2px 7px;border-radius:10px;">চালু</span>' : ' <span style="font-size:.6rem;font-weight:700;background:var(--sand);color:var(--muted);padding:2px 7px;border-radius:10px;">বন্ধ</span>')+
+        '</div>'+
+        (t.mood ? '<div style="font-size:.72rem;color:var(--muted);margin-top:2px;font-style:italic;">"'+t.mood+'"</div>' : '')+
+        '<div style="font-size:.72rem;color:var(--muted);margin-top:4px;">Priority: '+(t.priority||1)+
+          (pageLabels ? ' · 📄 '+pageLabels : ' · <span style="color:#c0392b;">কোনো পেজ assign করা নেই</span>')+
+        '</div>'+
+      '</div>'+
+      '<button class="btn-sm '+(isActive?'btn-green':'')+'" style="font-size:.68rem;" onclick="toggleMusicTrackStatus(\''+t.id+'\','+(isActive?'false':'true')+')">'+(isActive?'⏸':'▶️')+'</button>'+
+      '<button class="btn-sm" style="background:var(--sand);color:var(--navy)" onclick="editMusicTrack(\''+t.id+'\')">✏️</button>'+
+      '<button class="btn-sm" style="background:#fdeeec;color:#c0392b" onclick="deleteMusicTrack(\''+t.id+'\')">🗑️</button>'+
+    '</div>';
+  }).join('');
+}
+
+function _getCheckedMusicPages(){
+  var checked = [];
+  document.querySelectorAll('.mt-page-cb').forEach(function(cb){ if(cb.checked) checked.push(cb.value); });
+  return checked;
+}
+
+function saveMusicTrack(){
+  var editId = document.getElementById('mtEditId').value;
+  var musicUrl = document.getElementById('mtUrl').value.trim();
+  if(!musicUrl){ showToast('Music File URL দিন','red'); return; }
+  var assignedPages = _getCheckedMusicPages();
+  if(!assignedPages.length){ showToast('অন্তত একটা পেজ বেছে নিন, নাহলে ট্র্যাকটা কোথাও দেখাবে না','red'); return; }
+
   var data = {
-    enabled: enabled,
     musicUrl: musicUrl,
-    trackName: document.getElementById('musicTrackName').value.trim(),
+    trackName: document.getElementById('mtName').value.trim() || 'Untitled Track',
+    priority: parseInt(document.getElementById('mtPriority').value)||1,
+    mood: document.getElementById('mtMood').value.trim(),
+    assignedPages: assignedPages,
     updatedAt: new Date().toISOString()
   };
-  if(statusEl) statusEl.textContent = 'সেভ হচ্ছে...';
-  db.collection('cities').doc(CITY).collection('settings').doc('shoppingMusic').set(data)
-    .then(function(){
-      if(statusEl){ statusEl.textContent='✅ সেভ হয়েছে'; setTimeout(function(){statusEl.textContent='';},3000); }
-      showToast('Shopping Music সেভ হয়েছে ✅','green');
-    }).catch(function(e){
-      if(statusEl) statusEl.textContent='❌ সমস্যা';
-      showToast('সমস্যা: '+e.message,'red');
-    });
+
+  var ref = db.collection('cities').doc(CITY).collection('musicTracks');
+  var promise = editId ? ref.doc(editId).update(data) : ref.add(Object.assign({status:'active', createdAt:new Date().toISOString()}, data));
+  promise.then(function(){
+    showToast(editId?'✅ Updated!':'✅ Music Track যোগ হয়েছে!','green');
+    cancelMusicTrackEdit();
+    loadMusicTracks();
+  }).catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
+}
+
+function editMusicTrack(id){
+  var t = allMusicTracks.find(function(x){ return x.id===id; });
+  if(!t) return;
+  document.getElementById('mtEditId').value = id;
+  document.getElementById('mtUrl').value = t.musicUrl||'';
+  document.getElementById('mtName').value = t.trackName||'';
+  document.getElementById('mtPriority').value = t.priority||5;
+  document.getElementById('mtMood').value = t.mood||'';
+  var assignedPages = t.assignedPages || [];
+  document.querySelectorAll('.mt-page-cb').forEach(function(cb){ cb.checked = assignedPages.indexOf(cb.value) !== -1; });
+  document.getElementById('musicFormTitle').textContent = '✏️ Music Track এডিট করুন';
+  document.getElementById('musicTrackCancelBtn').style.display = 'inline-flex';
+}
+
+function cancelMusicTrackEdit(){
+  document.getElementById('mtEditId').value = '';
+  document.getElementById('mtUrl').value = '';
+  document.getElementById('mtName').value = '';
+  document.getElementById('mtPriority').value = 5;
+  document.getElementById('mtMood').value = '';
+  document.querySelectorAll('.mt-page-cb').forEach(function(cb){ cb.checked = false; });
+  document.getElementById('musicFormTitle').textContent = '🎵 নতুন Music Track যোগ করুন';
+  document.getElementById('musicTrackCancelBtn').style.display = 'none';
+}
+
+function toggleMusicTrackStatus(id, makeActive){
+  db.collection('cities').doc(CITY).collection('musicTracks').doc(id)
+    .update({status: makeActive?'active':'inactive'})
+    .then(function(){ loadMusicTracks(); showToast('স্ট্যাটাস আপডেট হয়েছে','green'); })
+    .catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
+}
+
+function deleteMusicTrack(id){
+  if(!confirm('এই Music Track মুছে ফেলবেন?')) return;
+  db.collection('cities').doc(CITY).collection('musicTracks').doc(id).delete()
+    .then(function(){ loadMusicTracks(); showToast('মুছে ফেলা হয়েছে','green'); })
+    .catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
 }
 
 function toggleSponsoredShopStatus(id, status){
