@@ -705,6 +705,16 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 .music-eq span:nth-child(2){height:15px;animation-delay:.2s;}
 .music-eq span:nth-child(3){height:10px;animation-delay:.4s;}
 @keyframes eqBounce{0%,100%{transform:scaleY(.4);}50%{transform:scaleY(1);}}
+.music-tagline{position:absolute;bottom:56px;right:0;max-width:190px;text-align:right;
+  background:linear-gradient(135deg,#0F3B31,#0a2820);color:#E9C874;
+  font-family:'Playfair Display',serif;font-size:.76rem;font-weight:700;line-height:1.4;
+  padding:11px 16px;border-radius:14px;border:1px solid rgba(212,175,55,.4);
+  box-shadow:0 10px 28px rgba(0,0,0,.28);white-space:normal;pointer-events:none;
+  opacity:0;transform:translateY(8px);transition:opacity .45s ease,transform .45s ease;z-index:3;}
+.music-tagline::after{content:'';position:absolute;bottom:-6px;right:16px;width:12px;height:12px;
+  background:#0a2820;border-right:1px solid rgba(212,175,55,.4);border-bottom:1px solid rgba(212,175,55,.4);
+  transform:rotate(45deg);}
+.music-tagline.show{opacity:1;transform:translateY(0);}
 .wa-btn{width:44px;height:44px;background:#0F3B31;border-radius:50%;display:flex;align-items:center;
   justify-content:center;box-shadow:0 10px 28px rgba(0,0,0,.22),0 0 12px rgba(212,175,55,.22);cursor:pointer;
   border:1.5px solid #D4AF37;overflow:hidden;
@@ -3554,6 +3564,10 @@ img{max-width:100%;height:auto;}
 <!-- WHATSAPP FLOAT — Deep Emerald + Gold premium theme -->
 <div class="wa-float">
   <div class="wa-hint" id="waHint"><span class="lang-bn">💬 সাহায্য লাগবে?</span><span class="lang-en">💬 Need help?</span></div>
+  <div class="music-tagline" id="waTagline">
+    <span class="lang-bn">সরাসরি আমাদের সাথে কথা বলুন</span>
+    <span class="lang-en">Chat with us directly</span>
+  </div>
   <a class="wa-btn" id="waBtn" href="https://wa.me/+91XXXXXXXXXX?text=DELTA%20তে%20সাহায্য%20দরকার" target="_blank" title="WhatsApp এ যোগাযোগ করুন" onclick="triggerWaRipple(event)">
     <svg width="22" height="22" viewBox="0 0 24 24" fill="#fff"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.82 12.04 21.82H12.05C17.5 21.82 21.95 17.37 21.95 11.91C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2ZM12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.71 20.28 11.91C20.28 16.46 16.59 20.15 12.04 20.15C10.56 20.15 9.12 19.76 7.85 19.01L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 14.98 3.8 13.46 3.8 11.91C3.8 7.36 7.5 3.67 12.05 3.67ZM8.53 6.99C8.37 6.99 8.1 7.05 7.87 7.3C7.64 7.55 7 8.15 7 9.36C7 10.57 7.89 11.74 8.01 11.9C8.14 12.06 9.76 14.65 12.32 15.68C14.44 16.53 14.87 16.36 15.33 16.32C15.79 16.28 16.8 15.72 17.01 15.14C17.22 14.56 17.22 14.06 17.16 13.96C17.1 13.86 16.94 13.8 16.7 13.68C16.46 13.56 15.28 12.98 15.06 12.9C14.84 12.82 14.68 12.78 14.52 13.02C14.36 13.26 13.9 13.8 13.76 13.96C13.62 14.12 13.48 14.14 13.24 14.02C13 13.9 12.23 13.65 11.31 12.83C10.6 12.2 10.12 11.42 9.98 11.18C9.84 10.94 9.96 10.81 10.08 10.69C10.19 10.58 10.32 10.4 10.44 10.26C10.56 10.12 10.6 10.02 10.68 9.86C10.76 9.7 10.72 9.56 10.66 9.44C10.6 9.32 10.12 8.13 9.9 7.65C9.71 7.22 9.51 7.23 9.34 7.22C9.2 7.21 9.04 7.21 8.88 7.21L8.53 6.99Z"/></svg>
   </a>
@@ -3561,6 +3575,10 @@ img{max-width:100%;height:auto;}
 
 <!-- SHOPPING MUSIC FLOAT — hidden until admin sets a track; toggled via _toggleShoppingMusic() -->
 <div class="music-float" id="musicFloatWrap" style="display:none;">
+  <div class="music-tagline" id="musicTagline">
+    <span class="lang-bn">অভিজ্ঞতাসমৃদ্ধ কেনাকাটার স্বাদ নিন</span>
+    <span class="lang-en">Take a bite of experiential shopping</span>
+  </div>
   <div class="music-btn" id="musicBtn" onclick="_toggleShoppingMusic()" title="Shopping Music">
     <svg class="music-note-icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
     <span class="music-eq" aria-hidden="true"><span></span><span></span><span></span></span>
@@ -3749,6 +3767,28 @@ function triggerWaRipple(e){
   ripple.style.top = cy + 'px';
   btn.appendChild(ripple);
   setTimeout(function(){ ripple.remove(); }, 650);
+
+  var tag = document.getElementById('waTagline');
+  if(tag){
+    clearTimeout(tag._hideTimer);
+    tag.classList.add('show');
+    tag._hideTimer = setTimeout(function(){ tag.classList.remove('show'); }, 10000);
+  }
+}
+
+// Fetch admin-configured phone number + this page's pre-filled message
+function initWhatsAppConfig(){
+  if(!db) return;
+  db.collection('cities').doc(CITY).collection('settings').doc('whatsappConfig').get()
+    .then(function(doc){
+      if(!doc.exists) return;
+      var d = doc.data();
+      var phone = (d.phoneNumber||'').replace(/[^\d+]/g,'');
+      var msg = (d.messages && d.messages.index) || 'DELTA তে সাহায্য দরকার';
+      if(!phone) return;
+      var waBtn = document.getElementById('waBtn');
+      if(waBtn) waBtn.href = 'https://wa.me/'+phone+'?text='+encodeURIComponent(msg);
+    }).catch(function(){});
 }
 
 function openPinModal(){
@@ -3886,6 +3926,7 @@ async function loadData(retryCount){
     initEcoCounter(allShops, allProducts);
     initSponsoredAd();
     initShoppingMusic();
+    initWhatsAppConfig();
     initFestivalBanner();
     loadMarqueeFromFirebase();
     loadCategoryConfigFromFirebase();
@@ -5182,6 +5223,7 @@ function initShoppingMusic(){
       candidates.sort(function(a,b){ return (b.priority||0)-(a.priority||0); });
       wrap.style.display = 'block';
       wrap.dataset.musicUrl = candidates[0].musicUrl;
+      wrap.dataset.musicVolume = candidates[0].volume || 70;
     }).catch(function(){});
 }
 
@@ -5192,9 +5234,14 @@ function _toggleShoppingMusic(){
   var url = wrap.dataset.musicUrl;
   if(!url) return;
 
+  _showMusicTagline(); // every tap shows the floating tagline for 10s
+
   if(!_shoppingMusicAudio){
     _shoppingMusicAudio = new Audio(url);
     _shoppingMusicAudio.loop = true;
+    // Admin-set cap — plays at this % of whatever the customer's device volume is,
+    // so a maxed-out phone volume doesn't suddenly blast music at full loudness.
+    _shoppingMusicAudio.volume = (parseInt(wrap.dataset.musicVolume)||70) / 100;
   }
 
   if(_shoppingMusicPlaying){
@@ -5215,6 +5262,15 @@ function _toggleShoppingMusic(){
 }
 
 // Called when an ad video's sound is turned on — pause background music so they don't overlap
+var _musicTaglineTimer = null;
+function _showMusicTagline(){
+  var tag = document.getElementById('musicTagline');
+  if(!tag) return;
+  clearTimeout(_musicTaglineTimer);
+  tag.classList.add('show');
+  _musicTaglineTimer = setTimeout(function(){ tag.classList.remove('show'); }, 10000);
+}
+
 function _pauseShoppingMusicForVideoSound(){
   if(_shoppingMusicPlaying && _shoppingMusicAudio){
     _shoppingMusicAudio.pause();
