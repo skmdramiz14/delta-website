@@ -3574,12 +3574,17 @@ img{max-width:100%;height:auto;}
 <!-- BOTTOM NAV (Mobile) -->
 <div class="bottom-nav" id="bottomNav">
   <div class="bn-item active" id="bn-home" onclick="bottomNavClick('home',this);window.scrollTo({top:0,behavior:'smooth'})">
-    <span class="bn-icon-pill bn-premium-badge"><svg class="bn-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10.5L12 4L20 10.5V20C20 20.55 19.55 21 19 21H15V15H9V21H5C4.45 21 4 20.55 4 20V10.5Z"/></svg></span>
+    <span class="bn-icon-pill"><svg class="bn-icon" viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10.5L12 4L20 10.5V20C20 20.55 19.55 21 19 21H15V15H9V21H5C4.45 21 4 20.55 4 20V10.5Z"/></svg></span>
     <span class="bn">Home</span>
     <span class="bn-active-dot"></span>
   </div>
+  <div class="bn-item" id="bn-media" onclick="bottomNavClick('media',this);window.location.href='media-feed.html'">
+    <span class="bn-icon-pill bn-premium-badge"><svg class="bn-icon" viewBox="0 0 24 24" width="15" height="15" fill="none"><circle cx="12" cy="12" r="9.3" stroke="currentColor" stroke-width="1.7"/><path d="M9.7 8.3c0-.75.8-1.2 1.44-.82l5.35 3.2c.62.37.62 1.27 0 1.64l-5.35 3.2c-.64.38-1.44-.07-1.44-.82V8.3Z" fill="currentColor"/></svg></span>
+    <span class="bn">MEDIA</span>
+    <span class="bn-active-dot"></span>
+  </div>
   <div class="bn-item" id="bn-shop" onclick="bottomNavClick('shop',this);window.location.href='shops.html'">
-    <span class="bn-icon-pill bn-premium-badge"><svg class="bn-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9L5 4H19L20 9"/><path d="M4 9C4 10.1 4.9 11 6 11C7.1 11 8 10.1 8 9C8 10.1 8.9 11 10 11C11.1 11 12 10.1 12 9C12 10.1 12.9 11 14 11C15.1 11 16 10.1 16 9C16 10.1 16.9 11 18 11C19.1 11 20 10.1 20 9"/><path d="M5 11V20H19V11"/><path d="M10 20V15C10 14.4 10.4 14 11 14H13C13.6 14 14 14.4 14 15V20"/></svg></span>
+    <span class="bn-icon-pill"><svg class="bn-icon" viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9L5 4H19L20 9"/><path d="M4 9C4 10.1 4.9 11 6 11C7.1 11 8 10.1 8 9C8 10.1 8.9 11 10 11C11.1 11 12 10.1 12 9C12 10.1 12.9 11 14 11C15.1 11 16 10.1 16 9C16 10.1 16.9 11 18 11C19.1 11 20 10.1 20 9"/><path d="M5 11V20H19V11"/><path d="M10 20V15C10 14.4 10.4 14 11 14H13C13.6 14 14 14.4 14 15V20"/></svg></span>
     <span class="bn">Shop</span>
     <span class="bn-active-dot"></span>
   </div>
@@ -3594,13 +3599,8 @@ img{max-width:100%;height:auto;}
     <span class="bn">Reels</span>
     <span class="bn-active-dot"></span>
   </div>
-  <div class="bn-item" id="bn-media" onclick="bottomNavClick('media',this);window.location.href='media-feed.html'">
-    <span class="bn-icon-pill bn-premium-badge"><svg class="bn-icon" viewBox="0 0 24 24" width="15" height="15" fill="none"><circle cx="12" cy="12" r="9.3" stroke="currentColor" stroke-width="1.7"/><path d="M9.7 8.3c0-.75.8-1.2 1.44-.82l5.35 3.2c.62.37.62 1.27 0 1.64l-5.35 3.2c-.64.38-1.44-.07-1.44-.82V8.3Z" fill="currentColor"/></svg></span>
-    <span class="bn">MEDIA</span>
-    <span class="bn-active-dot"></span>
-  </div>
   <div class="bn-item" id="bn-menu" onclick="bottomNavClick('menu',this);openSideMenu()">
-    <span class="bn-icon-pill bn-premium-badge"><svg class="bn-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6H20M4 12H20M4 18H20"/></svg></span>
+    <span class="bn-icon-pill"><svg class="bn-icon" viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6H20M4 12H20M4 18H20"/></svg></span>
     <span class="bn">Menu</span>
     <span class="bn-active-dot"></span>
   </div>
