@@ -91,6 +91,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 .branch-card.soon{cursor:default;}
 .branch-card.soon .branch-banner{opacity:.72;}
 .branch-card.soon:hover{transform:none;box-shadow:0 4px 18px rgba(0,0,0,.06);}
+.branch-card-highlight{animation:branchCardFlash 1.4s ease;}
+@keyframes branchCardFlash{
+  0%{box-shadow:0 0 0 3px rgba(212,175,55,.7),0 4px 18px rgba(0,0,0,.06);}
+  100%{box-shadow:0 4px 18px rgba(0,0,0,.06);}
+}
 
 /* ── MOBILE FIX ── */
 @media(max-width:768px){
@@ -238,11 +243,11 @@ function renderBranches(list){
     if(stripEmpty) stripEmpty.innerHTML = '';
     return;
   }
-  grid.innerHTML = list.map(function(b){
+  grid.innerHTML = list.map(function(b, idx){
     var isLive = b.status === 'live';
     var cls = 'branch-card' + (isLive ? '' : ' soon');
     var click = isLive ? " onclick=\"window.location.href='" + b.url + "'\"" : '';
-    return '<div class="' + cls + '"' + click + '>' +
+    return '<div class="' + cls + '" id="branchCard' + idx + '"' + click + '>' +
       '<div class="branch-banner" style="background:linear-gradient(135deg,' + b.color + 'cc,' + b.color + '99);">' + getIconMarkup(b, 40) +
         (isLive ? '<span class="branch-arrow">→</span>' : '<span class="branch-soon-badge"><span class="lang-bn">শীঘ্রই</span><span class="lang-en">Soon</span></span>') +
       '</div>' +
@@ -258,7 +263,7 @@ function renderBranches(list){
 
 // ── Quick Jump — shows a limited set by default, "আরো দেখো / See More" reveals the rest ──
 // (same progressive-disclosure pattern as the homepage's category section)
-var QUICK_JUMP_VISIBLE_COUNT = 6;
+var QUICK_JUMP_VISIBLE_COUNT = 10; // toggle only kicks in once branches grow beyond this — for now all show at once, no click needed
 var _allQuickJumpBranches = [];
 var _quickJumpExpanded = false;
 
@@ -272,15 +277,17 @@ function renderQuickJumpItems(){
   var strip = document.getElementById('quickJumpStrip');
   if(!strip) return;
   var list = _allQuickJumpBranches;
-  var showAll = _quickJumpExpanded || list.length <= QUICK_JUMP_VISIBLE_COUNT;
+  var hasExtra = list.length > QUICK_JUMP_VISIBLE_COUNT;
+  var showAll = _quickJumpExpanded || !hasExtra;
   var visible = showAll ? list : list.slice(0, QUICK_JUMP_VISIBLE_COUNT);
 
-  strip.classList.toggle('expanded', showAll && list.length > QUICK_JUMP_VISIBLE_COUNT);
+  strip.classList.toggle('expanded', showAll && hasExtra);
 
   var html = visible.map(function(b){
+    var idx = _allQuickJumpBranches.indexOf(b);
     var isLive = b.status === 'live';
     var cls = 'quick-jump-item' + (isLive ? '' : ' soon');
-    var click = isLive ? " onclick=\"window.location.href='" + b.url + "'\"" : '';
+    var click = isLive ? " onclick=\"scrollToBranchCard(" + idx + ")\"" : '';
     return '<div class="' + cls + '"' + click + '>' +
       '<div class="quick-jump-icon" style="background:linear-gradient(135deg,' + b.color + 'cc,' + b.color + '99);">' +
         getIconMarkup(b, 26) +
@@ -290,17 +297,34 @@ function renderQuickJumpItems(){
     '</div>';
   }).join('');
 
-  if(!showAll && list.length > QUICK_JUMP_VISIBLE_COUNT){
-    html += '<div class="quick-jump-item" onclick="expandQuickJump()">' +
-      '<div class="quick-jump-icon quick-jump-more-icon">+' + (list.length - QUICK_JUMP_VISIBLE_COUNT) + '</div>' +
-      '<div class="quick-jump-label-text"><span class="lang-bn">আরো দেখো</span><span class="lang-en">See More</span></div>' +
-    '</div>';
+  // Toggle tile — always present when there are extra items, switches between
+  // "আরো দেখো / See More" and "কম দেখুন / See Less" (same pattern as the homepage's category section)
+  if(hasExtra){
+    if(!showAll){
+      html += '<div class="quick-jump-item" onclick="toggleQuickJump()">' +
+        '<div class="quick-jump-icon quick-jump-more-icon">+' + (list.length - QUICK_JUMP_VISIBLE_COUNT) + '</div>' +
+        '<div class="quick-jump-label-text"><span class="lang-bn">আরো দেখো</span><span class="lang-en">See More</span></div>' +
+      '</div>';
+    } else {
+      html += '<div class="quick-jump-item" onclick="toggleQuickJump()">' +
+        '<div class="quick-jump-icon quick-jump-more-icon">▴</div>' +
+        '<div class="quick-jump-label-text"><span class="lang-bn">কম দেখুন</span><span class="lang-en">See Less</span></div>' +
+      '</div>';
+    }
   }
   strip.innerHTML = html;
 }
 
-function expandQuickJump(){
-  _quickJumpExpanded = true;
+function scrollToBranchCard(idx){
+  var card = document.getElementById('branchCard' + idx);
+  if(!card) return;
+  card.scrollIntoView({behavior:'smooth', block:'center'});
+  card.classList.add('branch-card-highlight');
+  setTimeout(function(){ card.classList.remove('branch-card-highlight'); }, 1400);
+}
+
+function toggleQuickJump(){
+  _quickJumpExpanded = !_quickJumpExpanded;
   renderQuickJumpItems();
 }
 
