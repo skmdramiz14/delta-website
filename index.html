@@ -7609,7 +7609,10 @@ function loadDeltaStories(){
       console.info('Falling back to demo stories so the structure is still visible.');
       loadingEl.style.display='none';
       dsStories = DEMO_STORIES.slice();
-      renderStoryBubbles();
+      getPinnedOfficialContent('story').then(function(pinned){
+        dsPinnedOfficial = pinned;
+        renderStoryBubbles();
+      });
     });
 }
 
@@ -7697,11 +7700,13 @@ function ringClassFor(d){
   return 'ds-ring-stock';
 }
 
+var dsAllGroups = []; // ordered list of {stories:[...]}, matches bubble order exactly — powers cross-author auto-advance
+
 function renderStoryBubbles(){
   var wrap = document.getElementById('deltaStoriesRow');
-  // remove previously rendered bubbles (keep "Your Story" as first child)
   Array.from(wrap.querySelectorAll('.ds-item')).forEach(function(el){el.remove()});
   var loadingEl = document.getElementById('dsLoading'); if(loadingEl) loadingEl.remove();
+  dsAllGroups = [];
 
   // Slot #1 — always Pinned DELTA Official, independent of the ranking algorithm
   if(dsPinnedOfficial){
@@ -7713,7 +7718,9 @@ function renderStoryBubbles(){
         '<div class="ds-pinned-badge">📌</div>'+
       '</div>'+
       '<div class="ds-label">DELTA Official</div>';
-    pinItem.onclick = function(){ openStoryViewerGroup([dsPinnedOfficial]); };
+    var pinGroupIndex = dsAllGroups.length;
+    dsAllGroups.push([dsPinnedOfficial]);
+    pinItem.onclick = function(){ openStoryViewerAt(pinGroupIndex); };
     wrap.appendChild(pinItem);
   }
 
@@ -7745,14 +7752,27 @@ function renderStoryBubbles(){
         (first.authorAvatarUrl ? '<div class="ds-avatar"><img src="'+first.authorAvatarUrl+'"></div>' : '<div class="ds-avatar">🏪</div>')+
       '</div>'+
       '<div class="ds-label">'+(first.authorDisplayName||'Unknown')+'</div>';
-    item.onclick = function(){ openStoryViewerGroup(stories); };
+    var groupIndex = dsAllGroups.length;
+    dsAllGroups.push(stories);
+    item.onclick = function(){ openStoryViewerAt(groupIndex); };
     wrap.appendChild(item);
   });
 }
 
 // ═══ STORY VIEWER ═══
 var svGroup = [];
+var svGroupIndex = -1; // index into dsAllGroups, -1 means "opened directly, not from the row" (e.g. legacy single-group calls)
+
+function openStoryViewerAt(groupIndex){
+  svGroupIndex = groupIndex;
+  svGroup = dsAllGroups[groupIndex];
+  svIndex = 0;
+  document.getElementById('storyViewerOverlay').classList.add('open');
+  buildProgressBars();
+  renderStorySlide();
+}
 function openStoryViewerGroup(stories){
+  svGroupIndex = -1; // not part of dsAllGroups — next/prev won't chain past this group's edges
   svGroup = stories;
   svIndex = 0;
   document.getElementById('storyViewerOverlay').classList.add('open');
@@ -7849,8 +7869,37 @@ function startSvProgress(fixedDurationMs){
     if(svProgress >= duration) svNext();
   }, tick);
 }
-function svNext(){ svIndex++; if(svIndex>=svGroup.length){ closeStoryViewer(); return; } renderStorySlide(); }
-function svPrev(){ svIndex--; if(svIndex<0) svIndex=0; renderStorySlide(); }
+function svNext(){
+  svIndex++;
+  if(svIndex >= svGroup.length){
+    // Reached the end of this author's stories — chain into the NEXT author's
+    // group, matching Instagram/Facebook. Only possible if opened from the row
+    // (svGroupIndex >= 0); a directly-opened single group just closes.
+    if(svGroupIndex >= 0 && svGroupIndex+1 < dsAllGroups.length){
+      openStoryViewerAt(svGroupIndex+1);
+    } else {
+      closeStoryViewer();
+    }
+    return;
+  }
+  renderStorySlide();
+}
+function svPrev(){
+  svIndex--;
+  if(svIndex < 0){
+    // Reached the start — chain BACK into the previous author's last story
+    if(svGroupIndex > 0){
+      svGroupIndex--;
+      svGroup = dsAllGroups[svGroupIndex];
+      svIndex = svGroup.length - 1;
+      buildProgressBars();
+    } else {
+      svIndex = 0; // already at the very first story overall — stay put
+      return;
+    }
+  }
+  renderStorySlide();
+}
 function closeStoryViewer(){
   clearInterval(svTimer);
   document.getElementById('storyViewerOverlay').classList.remove('open');
