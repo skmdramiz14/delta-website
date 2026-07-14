@@ -7546,6 +7546,18 @@ var dsPinnedOfficial = null;
 // Resolves whichever mediaProfiles doc has primaryBadge=='delta_official' (not
 // hardcoded to one UID, so it keeps working if the official account changes),
 // then pulls their latest published item of the given type.
+// Demo fallback — visible ONLY when no real mediaProfiles doc has
+// primaryBadge:'delta_official' set yet. Same reasoning as DEMO_STORIES: lets
+// you see the Pinned slot's visual structure before the real official profile exists.
+var DEMO_PINNED_OFFICIAL = {
+  id:'demo-official-pin', pinned:true, data:{
+    authorUid:'demo-official', authorDisplayName:'DELTA Official', authorAvatarUrl:'',
+    mediaUrls:['https://images.unsplash.com/photo-1607083206869-4c7672e72a8a?w=800&q=70'],
+    videoUrl:null, caption:'দুর্গাপূজা স্পেশাল লঞ্চ আসছে ২০ অক্টোবর! 🎉', postSubType:'business_update',
+    ctaType:'none', tags:{shopId:null,productId:null,categoryId:null},
+    createdAt:new Date(Date.now()-30*60000).toISOString(), expiresAt:new Date(Date.now()+23*3600000).toISOString()
+  }
+};
 async function getDeltaOfficialUid(){
   try{
     var snap = await db.collection('cities').doc(CITY).collection('mediaProfiles')
@@ -7556,7 +7568,10 @@ async function getDeltaOfficialUid(){
 }
 async function getPinnedOfficialContent(type){
   var uid = await getDeltaOfficialUid();
-  if(!uid) return null;
+  if(!uid){
+    console.info('No real DELTA Official profile yet (mediaProfiles.primaryBadge=="delta_official") — showing demo pin instead.');
+    return type==='story' ? DEMO_PINNED_OFFICIAL : null;
+  }
   try{
     var snap = await db.collection('cities').doc(CITY).collection('mediaContent')
       .where('authorUid','==',uid).where('type','==',type).where('status','==','published')
@@ -7807,9 +7822,11 @@ function renderStorySlide(){
   }
   bottom.innerHTML += '<div class="sv-action-row">'+
     '<div class="sv-reply-input-fake" onclick="event.stopPropagation();openSvReply(\''+id+'\')">Reply...</div>'+
-    '<button class="sv-action-btn" onclick="event.stopPropagation();svReact(\''+id+'\')">❤️</button>'+
+    '<button class="sv-action-btn" id="svReactHeart-'+id+'" onclick="event.stopPropagation();svReact(\''+id+'\',\'love\')">🤍</button>'+
+    '<button class="sv-action-btn" id="svReactFire-'+id+'" onclick="event.stopPropagation();svReact(\''+id+'\',\'fire\')">🔥</button>'+
     '<button class="sv-action-btn" onclick="event.stopPropagation();svShare(\''+id+'\')">↗️</button>'+
     '</div>';
+  checkSvReaction(id);
 
   startSvProgress(d.videoUrl ? null : 6000); // photo: 6s (5-7 range); video: driven by actual playback
   if(mediaEl.tagName==='VIDEO'){
@@ -7849,16 +7866,37 @@ function closeStoryViewer(){
   ['mouseup','touchend'].forEach(function(ev){ wrap.addEventListener(ev, function(){ svPaused=false; var v=wrap.querySelector('video'); if(v) v.play().catch(function(){}); }); });
 })();
 
-// Swipe down to close
+// Swipe gestures — down to close (Instagram-style), left/right to navigate (Facebook-style)
 (function(){
   var overlay = document.getElementById('storyViewerOverlay');
   if(!overlay) return;
-  var startY = null;
-  overlay.addEventListener('touchstart', function(e){ startY = e.touches[0].clientY; }, {passive:true});
+  var startX = null, startY = null, gestureDone = false;
+
+  overlay.addEventListener('touchstart', function(e){
+    startX = e.touches[0].clientX; startY = e.touches[0].clientY; gestureDone = false;
+  }, {passive:true});
+
   overlay.addEventListener('touchmove', function(e){
-    if(startY===null) return;
-    var diff = e.touches[0].clientY - startY;
-    if(diff > 100){ closeStoryViewer(); startY=null; }
+    if(startY===null || gestureDone) return;
+    var diffY = e.touches[0].clientY - startY;
+    var diffX = e.touches[0].clientX - startX;
+    // Vertical swipe dominant → close (matches the "swipe down" from your spec)
+    if(Math.abs(diffY) > Math.abs(diffX) && diffY > 100){
+      gestureDone = true; closeStoryViewer();
+    }
+  }, {passive:true});
+
+  overlay.addEventListener('touchend', function(e){
+    if(startX===null || gestureDone) return;
+    var endX = (e.changedTouches && e.changedTouches[0].clientX) || startX;
+    var endY = (e.changedTouches && e.changedTouches[0].clientY) || startY;
+    var diffX = endX - startX;
+    var diffY = endY - startY;
+    // Horizontal swipe dominant → next/previous story (Facebook-style, alongside the tap zones)
+    if(Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 55){
+      if(diffX < 0) svNext(); else svPrev();
+    }
+    startX = null; startY = null;
   }, {passive:true});
 })();
 
@@ -7866,10 +7904,28 @@ function svVisitShop(shopId, productId){
   if(!shopId){ alert('কোনো shop link করা নেই'); return; }
   location.href='shop.html?id='+shopId+'&city='+CITY+(productId?('&product='+productId):'');
 }
-function svReact(id){
+function svReact(id, type){
   if(!currentUser){ alert('লগইন করুন প্রথমে'); return; }
-  db.collection('cities').doc(CITY).collection('mediaContent').doc(id).collection('likes').doc(currentUser.uid)
-    .set({likedAt:new Date().toISOString()}).catch(function(e){console.error(e);});
+  var ref = db.collection('cities').doc(CITY).collection('mediaContent').doc(id).collection('likes').doc(currentUser.uid);
+  ref.get().then(function(d){
+    if(d.exists && d.data().reaction===type){
+      ref.delete(); // tapping the same active reaction again removes it
+    } else {
+      ref.set({likedAt:new Date().toISOString(), reaction:type});
+    }
+    checkSvReaction(id);
+  }).catch(function(e){console.error(e);});
+}
+function checkSvReaction(id){
+  if(!currentUser) return;
+  db.collection('cities').doc(CITY).collection('mediaContent').doc(id).collection('likes').doc(currentUser.uid).get().then(function(d){
+    var heartBtn = document.getElementById('svReactHeart-'+id);
+    var fireBtn = document.getElementById('svReactFire-'+id);
+    if(!heartBtn || !fireBtn) return;
+    var active = d.exists ? d.data().reaction : null;
+    heartBtn.textContent = active==='love' ? '❤️' : '🤍';
+    fireBtn.style.opacity = active==='fire' ? '1' : '.65';
+  }).catch(function(){});
 }
 function svShare(id){
   var url = location.origin+'/index.html?story='+id+'&city='+CITY;
