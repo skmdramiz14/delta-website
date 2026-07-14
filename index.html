@@ -61,12 +61,13 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 
 /* ── DELTA VIDEO BUTTON — pill + gold icon badge + NEW tag ── */
 .video-nav-btn{
-  position:relative;background:var(--navy);border:none;cursor:pointer;
+  position:relative;background:var(--navy);border:none;cursor:pointer;flex-shrink:0;
   height:52px;padding:6px 18px 6px 6px;border-radius:30px;
   display:flex;align-items:center;gap:9px;
   box-shadow:0 4px 14px rgba(16,57,45,.35);
   transition:transform .15s ease-in-out,box-shadow .15s ease-in-out;
 }
+@media(min-width:341px){.video-nav-btn{margin-left:8px;}}
 .video-nav-btn:hover{background:var(--navy2);box-shadow:0 6px 18px rgba(16,57,45,.45);}
 .video-nav-btn:active{transform:scale(.96);}
 .video-icon-badge{
@@ -2158,9 +2159,11 @@ img{max-width:100%;height:auto;}
         <div class="search-suggestions" id="navSuggestions"></div>
       </div>
     </div>
-    <div class="nav-loc-btn" id="navLocBtn" onclick="openPinModal()">
-      <svg viewBox="0 0 24 24" width="10" height="10" style="flex-shrink:0;margin-top:1px"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Z" fill="#C7A15A"/><circle cx="12" cy="9" r="2.6" fill="#fff"/></svg> <span>Manteswar</span> <span class="lds-arrow">▾</span>
-    </div>
+    <button class="video-nav-btn" id="videosNavBtn" onclick="location.href='media-feed.html'" title="DELTA Videos">
+      <span class="video-icon-badge"><svg viewBox="0 0 24 24" fill="none"><path d="M9.5 8.2C9.5 7.5 10.25 7.05 10.87 7.4L16.3 10.6C16.9 10.96 16.9 11.84 16.3 12.2L10.87 15.4C10.25 15.75 9.5 15.3 9.5 14.6V8.2Z" fill="#fff"/></svg></span>
+      <span class="video-label">Video</span>
+      <span class="video-new-badge">NEW</span>
+    </button>
     <div class="nav-actions">
       <div class="lang-toggle">
         <button class="lang-btn active" id="langBn" onclick="setLang('bn')">বাং</button>
@@ -2169,11 +2172,6 @@ img{max-width:100%;height:auto;}
       <button class="cart-btn cart-btn-white" onclick="openCart()">
         <svg viewBox="0 0 24 24" fill="none"><path d="M3 4h2l2.2 11.2a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.6L21 8H6.2" stroke="var(--navy)" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/><circle cx="10" cy="20" r="1.1" fill="var(--navy)"/><circle cx="17" cy="20" r="1.1" fill="var(--navy)"/></svg> <span class="cart-btn-label">কার্ট</span>
         <span class="cart-badge" id="cartBadge">0</span>
-      </button>
-      <button class="video-nav-btn" id="videosNavBtn" onclick="location.href='media-feed.html'" title="DELTA Videos">
-        <span class="video-icon-badge"><svg viewBox="0 0 24 24" fill="none"><path d="M9.5 8.2C9.5 7.5 10.25 7.05 10.87 7.4L16.3 10.6C16.9 10.96 16.9 11.84 16.3 12.2L10.87 15.4C10.25 15.75 9.5 15.3 9.5 14.6V8.2Z" fill="#fff"/></svg></span>
-        <span class="video-label">Video</span>
-        <span class="video-new-badge">NEW</span>
       </button>
       <div class="user-chip" id="userChip" onclick="handleUserBtn()"><svg viewBox="0 0 24 24"><circle class="ic-stroke" cx="12" cy="8" r="3.5"/><path class="ic-stroke" d="M5 20c0-4 3-6.5 7-6.5s7 2.5 7 6.5"/></svg> <span id="userLabel" class="user-chip-label">লগইন</span></div>
       <button class="hamburger-btn" onclick="openSideMenu()" title="Menu">☰</button>
@@ -2206,7 +2204,7 @@ img{max-width:100%;height:auto;}
 <div class="loc-deliver-strip">
   <div class="lds-item" onclick="openPinModal()">
     <span class="lds-icon"><svg viewBox="0 0 24 24" width="15" height="15"><path class="ic-stroke" d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Z"/><circle class="ic-gold" cx="12" cy="9" r="1.6"/></svg></span>
-    <span><span class="lang-bn">Manteswar ও আশপাশ</span><span class="lang-en">Manteswar &amp; nearby</span></span>
+    <span><span class="lang-bn"><span id="ldsCityBn">Manteswar</span> ও আশপাশ</span><span class="lang-en"><span id="ldsCityEn">Manteswar</span> &amp; nearby</span></span>
   </div>
   <div class="lds-sep"></div>
   <div class="lds-item">
@@ -3729,11 +3727,12 @@ function detectCity(){
 }
 
 function updateCityUI(){
+  var cityNames={manteswar:'Manteswar',katwa:'Katwa',ausgram:'Ausgram'};
+  var cityLabel = cityNames[CITY]||'Manteswar';
   var locBtn=document.getElementById('navLocBtn');
-  if(locBtn){
-    var cityNames={manteswar:'Manteswar',katwa:'Katwa',ausgram:'Ausgram'};
-    locBtn.querySelector('span').textContent=cityNames[CITY]||'Manteswar';
-  }
+  if(locBtn){ locBtn.querySelector('span').textContent=cityLabel; }
+  var ldsBn=document.getElementById('ldsCityBn'); if(ldsBn) ldsBn.textContent=cityLabel;
+  var ldsEn=document.getElementById('ldsCityEn'); if(ldsEn) ldsEn.textContent=cityLabel;
 }
 
 // ── PINCODE DELIVERY CHECK ──
