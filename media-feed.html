@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>DELTA Media — Feed</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --navy:#10392D;--navy2:#1a4a3a;
+  --orange:#C7A15A;--orange-dark:#b8925a;
+  --green:#2da86a;--green2:#1a7a4c;
+  --white:#fff;--sand:#F3EFE6;--cream:#F7F1E6;
+  --border:#F0ECE5;--muted:#8A8A8A;--charcoal:#1A1A1A;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charcoal);padding-bottom:76px;}
+.nav{background:var(--navy);padding:0 16px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;}
+.nav-logo{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:900;color:#fff;}
+.nav-logo em{color:var(--orange);font-style:normal;}
+.nav-icons{display:flex;gap:16px;}
+.nav-icon-btn{background:none;border:none;color:#fff;font-size:1.1rem;cursor:pointer;position:relative;}
+
+/* ── FILTER TABS (Section 9.2 — ship simple filter tabs first, mixed feed later) ── */
+.filter-row{display:flex;gap:8px;padding:12px 14px;overflow-x:auto;background:#fff;border-bottom:1px solid var(--border);position:sticky;top:56px;z-index:100;}
+.filter-chip{padding:8px 16px;border-radius:20px;font-size:.82rem;font-weight:700;white-space:nowrap;cursor:pointer;border:1.5px solid var(--border);color:var(--muted);background:#fff;}
+.filter-chip.active{background:var(--navy);color:#fff;border-color:var(--navy);}
+
+.feed-wrap{max-width:520px;margin:0 auto;padding:12px 0;}
+.post-card{background:#fff;margin-bottom:10px;border-radius:0;}
+.post-head{display:flex;align-items:center;gap:10px;padding:12px 14px;}
+.post-avatar{width:38px;height:38px;border-radius:50%;background:var(--sand);object-fit:cover;flex-shrink:0;}
+.post-author{flex:1;min-width:0;}
+.post-author-name{font-weight:800;font-size:.85rem;color:var(--navy);display:flex;align-items:center;gap:4px;}
+.post-author-meta{font-size:.7rem;color:var(--muted);}
+.post-badge-mini{font-size:.6rem;font-weight:700;padding:2px 7px;border-radius:8px;background:var(--sand);color:var(--navy);}
+.post-follow-btn{padding:6px 12px;border-radius:16px;border:1.5px solid var(--navy);color:var(--navy);background:none;font-size:.75rem;font-weight:700;cursor:pointer;}
+.post-follow-btn.following{background:var(--sand);border-color:var(--sand);}
+
+.post-caption{padding:0 14px 10px;font-size:.85rem;line-height:1.5;white-space:pre-wrap;}
+.post-media{width:100%;background:var(--sand);position:relative;}
+.post-media img,.post-media video{width:100%;max-height:520px;object-fit:cover;display:block;}
+.post-media-badge{position:absolute;top:10px;left:10px;background:rgba(0,0,0,.55);color:#fff;font-size:.65rem;font-weight:700;padding:3px 9px;border-radius:8px;text-transform:uppercase;}
+.carousel-dots{position:absolute;bottom:8px;left:0;right:0;display:flex;justify-content:center;gap:4px;}
+.carousel-dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.6);}
+.carousel-dot.active{background:#fff;}
+
+.engage-row{display:flex;align-items:center;gap:16px;padding:10px 14px 4px;font-size:.85rem;}
+.engage-btn{background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:5px;color:var(--charcoal);font-size:.95rem;}
+.engage-btn.liked{color:#e0245e;}
+.engage-spacer{flex:1;}
+
+.commerce-tag-card{margin:8px 14px;padding:10px;background:var(--sand);border-radius:12px;display:flex;align-items:center;gap:10px;}
+.commerce-tag-thumb{width:44px;height:44px;border-radius:8px;object-fit:cover;background:#fff;flex-shrink:0;}
+.commerce-tag-info{flex:1;min-width:0;font-size:.78rem;}
+.commerce-tag-name{font-weight:800;color:var(--navy);}
+.commerce-tag-price{color:var(--green2);font-weight:700;}
+.btn-cta{padding:8px 14px;border-radius:9px;border:none;background:var(--navy);color:#fff;font-size:.78rem;font-weight:700;cursor:pointer;white-space:nowrap;}
+
+.insights-row{margin:0 14px 10px;padding:9px 12px;background:#f4f9f6;border-radius:10px;font-size:.72rem;color:var(--muted);display:flex;justify-content:space-between;}
+.insights-row b{color:var(--navy);}
+
+.poll-wrap{margin:0 14px 10px;}
+.poll-opt-bar{position:relative;border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:6px;cursor:pointer;overflow:hidden;font-size:.83rem;font-weight:600;}
+.poll-opt-fill{position:absolute;left:0;top:0;bottom:0;background:#eaf3ee;z-index:0;}
+.poll-opt-label{position:relative;z-index:1;display:flex;justify-content:space-between;}
+
+.story-row{display:flex;gap:10px;padding:12px 14px;overflow-x:auto;background:#fff;border-bottom:1px solid var(--border);}
+.story-item{flex:0 0 auto;text-align:center;}
+.story-ring{width:58px;height:58px;border-radius:50%;border:2.5px solid var(--orange);padding:2px;display:flex;align-items:center;justify-content:center;}
+.story-ring img{width:100%;height:100%;border-radius:50%;object-fit:cover;}
+.story-label{font-size:.65rem;margin-top:4px;color:var(--muted);max-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+.empty-state{padding:60px 20px;text-align:center;color:var(--muted);}
+.empty-state-icon{font-size:2.4rem;margin-bottom:10px;}
+.loading-state{padding:40px;text-align:center;color:var(--muted);font-size:.85rem;}
+
+.bottom-nav{position:fixed;left:0;right:0;bottom:0;height:66px;background:linear-gradient(180deg,#081B18,#051311);display:flex;border-top:1px solid rgba(212,175,55,.18);z-index:900;padding-bottom:env(safe-area-inset-bottom,0px);}
+.bn-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:.68rem;font-weight:600;color:#A8A8A8;cursor:pointer;}
+.bn-item.active{color:#D4AF37;}
+.bn-item svg{width:19px;height:19px;}
+.bn-item.bn-center .bn-icon-wrap{width:44px;height:44px;border-radius:50%;background:radial-gradient(circle at 32% 28%,#FCE7A0,#F0C34D 45%,#B8860B 100%);display:flex;align-items:center;justify-content:center;margin-bottom:2px;}
+
+.comment-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:flex-end;justify-content:center;}
+.comment-modal.open{display:flex;}
+.comment-sheet{background:#fff;width:100%;max-width:520px;border-radius:18px 18px 0 0;max-height:75vh;display:flex;flex-direction:column;}
+.comment-sheet-head{padding:14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;font-weight:800;}
+.comment-list{flex:1;overflow-y:auto;padding:10px 14px;}
+.comment-item{padding:8px 0;font-size:.82rem;border-bottom:1px solid var(--border);}
+.comment-item b{color:var(--navy);}
+.comment-input-row{display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--border);}
+.comment-input-row input{flex:1;padding:10px 12px;border-radius:20px;border:1.5px solid var(--border);background:var(--sand);}
+.comment-input-row button{background:var(--navy);color:#fff;border:none;border-radius:20px;padding:0 16px;font-weight:700;cursor:pointer;}
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <div class="nav-logo">DELTA <em>Media</em></div>
+  <div class="nav-icons">
+    <button class="nav-icon-btn">🔍</button>
+    <button class="nav-icon-btn">🔔</button>
+    <button class="nav-icon-btn" onclick="location.href='create-studio.html?city='+CITY">➕</button>
+  </div>
+</div>
+
+<!-- Filter tabs — Section 9.2: simple content-type filter first, mixed feed deferred -->
+<div class="filter-row" id="filterRow">
+  <div class="filter-chip active" data-t="all">সব</div>
+  <div class="filter-chip" data-t="post">Post</div>
+  <div class="filter-chip" data-t="reel">Reel</div>
+  <div class="filter-chip" data-t="video">Video</div>
+  <div class="filter-chip" data-t="story">Story</div>
+</div>
+
+<!-- Story row (Section 10.4 — 24hr auto-expire) -->
+<div class="story-row" id="storyRow"></div>
+
+<div class="feed-wrap" id="feedWrap">
+  <div class="loading-state" id="loadingState">লোড হচ্ছে...</div>
+</div>
+<div class="empty-state" id="emptyState" style="display:none;">
+  <div class="empty-state-icon">🎬</div>
+  <div>এখনও কোনো published content নেই</div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <div class="bn-item" onclick="location.href='index.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 10.5L12 4L20 10.5V20C20 20.55 19.55 21 19 21H15V15H9V21H5C4.45 21 4 20.55 4 20V10.5Z"/></svg>হোম</div>
+  <div class="bn-item" onclick="location.href='shops.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 9L5 4H19L20 9M4 9V20H20V9M4 9C4 10.1 8 10.1 8 9C8 10.1 12 10.1 12 9C12 10.1 16 10.1 16 9C16 10.1 20 10.1 20 9"/></svg>দোকান</div>
+  <div class="bn-item bn-center" onclick="location.href='ecosystem.html'"><div class="bn-icon-wrap"><span style="color:#0A2620;font-weight:900;">△</span></div>DELTA</div>
+  <div class="bn-item active" onclick="location.reload()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10L21 7V17L16 14"/></svg>Reels</div>
+  <div class="bn-item" onclick="alert('Menu')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6H20M4 12H20M4 18H20"/></svg>মেনু</div>
+</div>
+
+<!-- Comment sheet -->
+<div class="comment-modal" id="commentModal">
+  <div class="comment-sheet">
+    <div class="comment-sheet-head">Comments <button onclick="closeComments()" style="background:none;border:none;font-size:1.1rem;cursor:pointer;">✕</button></div>
+    <div class="comment-list" id="commentList"></div>
+    <div class="comment-input-row">
+      <input type="text" id="commentInput" placeholder="মন্তব্য লিখুন...">
+      <button onclick="postComment()">পাঠান</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var fbcfg={apiKey:"AIzaSyA6TrrnCMwv1aa1WPqGvTVWlnieB2pVOEU",authDomain:"delta-platform-82fc0.firebaseapp.com",projectId:"delta-platform-82fc0",storageBucket:"delta-platform-82fc0.firebasestorage.app",messagingSenderId:"444904180433",appId:"1:444904180433:web:6706eba4d73a30cd67d3f0"};
+firebase.initializeApp(fbcfg);
+var auth=firebase.auth();
+var db=firebase.firestore();
+var CITY = new URLSearchParams(location.search).get('city') || 'manteswar';
+var currentUser=null;
+var activeFilter='all';
+var activeCommentContentId=null;
+
+auth.onAuthStateChanged(function(u){ currentUser=u; loadFeed(); loadStories(); });
+
+document.getElementById('filterRow').addEventListener('click', function(e){
+  var chip = e.target.closest('.filter-chip'); if(!chip) return;
+  document.querySelectorAll('.filter-chip').forEach(function(c){c.classList.remove('active');});
+  chip.classList.add('active');
+  activeFilter = chip.dataset.t;
+  loadFeed();
+});
+
+function loadStories(){
+  var wrap=document.getElementById('storyRow'); wrap.innerHTML='';
+  var now=new Date().toISOString();
+  db.collection('cities').doc(CITY).collection('mediaContent')
+    .where('type','==','story').where('status','==','published')
+    .orderBy('createdAt','desc').limit(15).get().then(function(snap){
+      snap.forEach(function(doc){
+        var d=doc.data();
+        if(d.expiresAt && d.expiresAt < now) return; // client-side TTL filter
+        var thumb = d.thumbnailUrl || (d.mediaUrls&&d.mediaUrls[0]) || d.authorAvatarUrl || '';
+        var item=document.createElement('div'); item.className='story-item';
+        item.innerHTML='<div class="story-ring">'+(thumb?'<img src="'+thumb+'">':'👤')+'</div><div class="story-label">'+(d.authorDisplayName||'')+'</div>';
+        item.onclick=function(){ openContentDetail(doc.id); };
+        wrap.appendChild(item);
+      });
+    }).catch(function(e){console.error(e);});
+}
+
+function loadFeed(){
+  var wrap=document.getElementById('feedWrap');
+  wrap.innerHTML = '<div class="loading-state">লোড হচ্ছে...</div>';
+  document.getElementById('emptyState').style.display='none';
+
+  var q = db.collection('cities').doc(CITY).collection('mediaContent').where('status','==','published');
+  if(activeFilter!=='all') q = q.where('type','==',activeFilter);
+  else q = q.where('type','in',['post','reel','video']); // "সব" excludes stories/live from main scroll, matches story row being separate
+
+  q.orderBy('createdAt','desc').limit(20).get().then(function(snap){
+    wrap.innerHTML='';
+    if(snap.empty){ document.getElementById('emptyState').style.display='block'; return; }
+    snap.forEach(function(doc){ renderPostCard(doc.id, doc.data(), wrap); });
+  }).catch(function(e){
+    console.error(e);
+    wrap.innerHTML='<div class="loading-state">লোড করতে সমস্যা হয়েছে</div>';
+  });
+}
+
+function badgeLabel(profile){
+  // Lightweight — full badge lookup lives on media-profile.html; feed just shows a short tag if we have it denormalized
+  return '';
+}
+
+function renderPostCard(id, d, wrap){
+  var card=document.createElement('div'); card.className='post-card';
+
+  // ── Header ──
+  var head=document.createElement('div'); head.className='post-head';
+  head.innerHTML =
+    '<img class="post-avatar" src="'+(d.authorAvatarUrl||'')+'" onerror="this.style.display=\'none\'">'+
+    '<div class="post-author"><div class="post-author-name">'+(d.authorDisplayName||'Unknown')+'</div>'+
+    '<div class="post-author-meta">'+timeAgo(d.createdAt)+'</div></div>';
+  var followBtn=document.createElement('button'); followBtn.className='post-follow-btn'; followBtn.textContent='+ Follow';
+  followBtn.onclick=function(){ toggleFollowFromFeed(d.authorUid, followBtn); };
+  if(currentUser && d.authorUid===currentUser.uid) followBtn.style.display='none';
+  head.appendChild(followBtn);
+  head.onclick=function(e){ if(e.target===followBtn) return; location.href='media-profile.html?uid='+d.authorUid+'&city='+CITY; };
+  card.appendChild(head);
+
+  // ── Caption ──
+  if(d.caption){
+    var cap=document.createElement('div'); cap.className='post-caption'; cap.textContent=d.caption;
+    card.appendChild(cap);
+  }
+
+  // ── Media ──
+  var media=document.createElement('div'); media.className='post-media';
+  if(d.videoUrl){
+    media.innerHTML='<video src="'+d.videoUrl+'" controls playsinline></video><div class="post-media-badge">'+d.type+'</div>';
+  } else if(d.mediaUrls && d.mediaUrls.length){
+    media.innerHTML='<img src="'+d.mediaUrls[0]+'">'+(d.mediaUrls.length>1?'<div class="post-media-badge">1/'+d.mediaUrls.length+'</div>':'');
+  }
+  if(media.innerHTML) card.appendChild(media);
+
+  // ── Poll (if postSubType==poll) ──
+  if(d.postSubType==='poll' && d.pollOptions && d.pollOptions.length){
+    var pollWrap=document.createElement('div'); pollWrap.className='poll-wrap';
+    var total = d.pollOptions.reduce(function(s,o){return s+(o.voteCount||0);},0) || 1;
+    d.pollOptions.forEach(function(opt){
+      var pct = Math.round(((opt.voteCount||0)/total)*100);
+      var bar=document.createElement('div'); bar.className='poll-opt-bar';
+      bar.innerHTML='<div class="poll-opt-fill" style="width:'+pct+'%"></div><div class="poll-opt-label"><span>'+opt.text+'</span><span>'+pct+'%</span></div>';
+      bar.onclick=function(){ votePoll(id, opt.id); };
+      pollWrap.appendChild(bar);
+    });
+    card.appendChild(pollWrap);
+  }
+
+  // ── Engagement row (live counts via subcollection, not the stats field — see chat note) ──
+  var engage=document.createElement('div'); engage.className='engage-row';
+  var likeBtn=document.createElement('button'); likeBtn.className='engage-btn'; likeBtn.innerHTML='🤍 <span id="likeCount-'+id+'">0</span>';
+  likeBtn.onclick=function(){ toggleLike(id, likeBtn); };
+  var commentBtn=document.createElement('button'); commentBtn.className='engage-btn'; commentBtn.innerHTML='💬 <span id="commentCount-'+id+'">0</span>';
+  commentBtn.onclick=function(){ openComments(id); };
+  var shareBtn=document.createElement('button'); shareBtn.className='engage-btn'; shareBtn.innerHTML='↗️';
+  shareBtn.onclick=function(){ navigator.clipboard&&navigator.clipboard.writeText(location.origin+'/media-feed.html?content='+id); alert('Link copied'); };
+  engage.appendChild(likeBtn); engage.appendChild(commentBtn); engage.appendChild(shareBtn);
+  var spacer=document.createElement('div'); spacer.className='engage-spacer'; engage.appendChild(spacer);
+  var saveBtn=document.createElement('button'); saveBtn.className='engage-btn'; saveBtn.innerHTML='🔖'; engage.appendChild(saveBtn);
+  card.appendChild(engage);
+
+  refreshLikeCommentCounts(id);
+
+  // ── Commerce tag card (Section 7) ──
+  if(d.tags && (d.tags.productId || d.tags.shopId)){
+    var tagCard=document.createElement('div'); tagCard.className='commerce-tag-card';
+    tagCard.innerHTML =
+      '<img class="commerce-tag-thumb" src="'+(d.thumbnailUrl||(d.mediaUrls&&d.mediaUrls[0])||'')+'">'+
+      '<div class="commerce-tag-info"><div class="commerce-tag-name">'+(d.tags.categoryId||'পণ্য')+'</div></div>'+
+      '<button class="btn-cta">'+ctaLabel(d.ctaType)+'</button>';
+    tagCard.querySelector('.btn-cta').onclick=function(){ handleCta(d); };
+    card.appendChild(tagCard);
+  }
+
+  // ── Post Insights — OWNER ONLY (Section 11.4.1), never shown to public viewers ──
+  if(currentUser && d.authorUid===currentUser.uid && d.stats){
+    var ins=document.createElement('div'); ins.className='insights-row';
+    ins.innerHTML =
+      '<span><b>'+(d.stats.views||0)+'</b> Views</span>'+
+      '<span><b>'+(d.stats.clickThroughs||0)+'</b> Clicks</span>'+
+      '<span><b>'+(d.stats.cartAdds||0)+'</b> Cart</span>'+
+      '<span><b>'+(d.stats.orders||0)+'</b> Orders</span>';
+    card.appendChild(ins);
+  }
+
+  wrap.appendChild(card);
+}
+
+function ctaLabel(cta){
+  var map={view_product:'🛒 View Product',visit_shop:'🏪 Visit Shop',order_now:'📦 Order Now',book_service:'📅 Book Service',call:'📞 Call',whatsapp:'💬 WhatsApp',view_branch:'📍 Branch',get_quote:'💬 Get Quote',none:'View'};
+  return map[cta]||'View';
+}
+function handleCta(d){
+  if(d.ctaType==='visit_shop' || d.ctaType==='view_product'){
+    location.href='shop.html?id='+d.tags.shopId+'&city='+CITY+(d.tags.productId?('&product='+d.tags.productId):'');
+  } else if(d.ctaType==='whatsapp'){
+    window.open('https://wa.me/?text='+encodeURIComponent('আগ্রহী: '+(d.caption||'')),'_blank');
+  } else {
+    location.href='shop.html?id='+(d.tags.shopId||'')+'&city='+CITY;
+  }
+}
+
+// ── LIKE (subcollection write — matches rules; count read live, not from stats field) ──
+function toggleLike(contentId, btn){
+  if(!currentUser){ alert('লগইন করুন প্রথমে'); return; }
+  var ref = db.collection('cities').doc(CITY).collection('mediaContent').doc(contentId).collection('likes').doc(currentUser.uid);
+  ref.get().then(function(d){
+    if(d.exists){ ref.delete(); btn.classList.remove('liked'); btn.innerHTML='🤍 <span>'+btn.querySelector('span').textContent+'</span>'; }
+    else { ref.set({likedAt:new Date().toISOString()}); btn.classList.add('liked'); btn.innerHTML='❤️ <span>'+btn.querySelector('span').textContent+'</span>'; }
+    refreshLikeCommentCounts(contentId);
+  });
+}
+function refreshLikeCommentCounts(contentId){
+  var base=db.collection('cities').doc(CITY).collection('mediaContent').doc(contentId);
+  base.collection('likes').get().then(function(s){ var el=document.getElementById('likeCount-'+contentId); if(el) el.textContent=s.size; if(currentUser) base.collection('likes').doc(currentUser.uid).get().then(function(d){ /* state already toggled visually */ }); });
+  base.collection('comments').get().then(function(s){ var el=document.getElementById('commentCount-'+contentId); if(el) el.textContent=s.size; });
+}
+
+// ── COMMENTS ──
+function openComments(contentId){
+  activeCommentContentId=contentId;
+  document.getElementById('commentModal').classList.add('open');
+  var list=document.getElementById('commentList'); list.innerHTML='লোড হচ্ছে...';
+  db.collection('cities').doc(CITY).collection('mediaContent').doc(contentId).collection('comments')
+    .orderBy('createdAt','desc').limit(50).get().then(function(snap){
+      list.innerHTML='';
+      if(snap.empty){ list.innerHTML='<div style="color:var(--muted);text-align:center;padding:20px;">প্রথম মন্তব্য করুন</div>'; return; }
+      snap.forEach(function(doc){
+        var c=doc.data();
+        var item=document.createElement('div'); item.className='comment-item';
+        item.innerHTML='<b>'+(c.authorDisplayName||'User')+'</b> '+c.text;
+        list.appendChild(item);
+      });
+    });
+}
+function closeComments(){ document.getElementById('commentModal').classList.remove('open'); activeCommentContentId=null; }
+function postComment(){
+  if(!currentUser){ alert('লগইন করুন প্রথমে'); return; }
+  var input=document.getElementById('commentInput');
+  var text=input.value.trim(); if(!text) return;
+  db.collection('cities').doc(CITY).collection('mediaContent').doc(activeCommentContentId).collection('comments').add({
+    authorUid: currentUser.uid, authorDisplayName: currentUser.displayName||'User', text: text, status:'published', createdAt:new Date().toISOString()
+  }).then(function(){ input.value=''; openComments(activeCommentContentId); refreshLikeCommentCounts(activeCommentContentId); });
+}
+
+// ── POLL VOTE (write-once, matches rules exactly) ──
+function votePoll(contentId, optionId){
+  if(!currentUser){ alert('লগইন করুন প্রথমে'); return; }
+  db.collection('cities').doc(CITY).collection('mediaContent').doc(contentId).collection('pollVotes').doc(currentUser.uid).get().then(function(d){
+    if(d.exists){ alert('আপনি ইতিমধ্যে ভোট দিয়েছেন'); return; }
+    db.collection('cities').doc(CITY).collection('mediaContent').doc(contentId).collection('pollVotes').doc(currentUser.uid)
+      .set({optionId:optionId, votedAt:new Date().toISOString()})
+      .then(function(){ alert('ভোট দেওয়া হয়েছে ✅ (Note: shown percentages update once author/admin syncs voteCount — live tally needs a Cloud Function, same gap as follower counts)'); });
+  });
+}
+
+// ── FOLLOW FROM FEED (same subcollection pattern as media-profile.html) ──
+function toggleFollowFromFeed(targetUid, btn){
+  if(!currentUser){ alert('লগইন করুন প্রথমে'); return; }
+  var followerDoc = db.collection('cities').doc(CITY).collection('mediaProfiles').doc(targetUid).collection('followers').doc(currentUser.uid);
+  var followingDoc = db.collection('cities').doc(CITY).collection('mediaProfiles').doc(currentUser.uid).collection('following').doc(targetUid);
+  followerDoc.get().then(function(d){
+    if(d.exists){ followerDoc.delete(); followingDoc.delete(); btn.textContent='+ Follow'; btn.classList.remove('following'); }
+    else { var now=new Date().toISOString(); followerDoc.set({followedAt:now}); followingDoc.set({followedAt:now}); btn.textContent='✓ Following'; btn.classList.add('following'); }
+  });
+}
+
+function openContentDetail(id){ location.href='media-feed.html?content='+id+'&city='+CITY; }
+
+function timeAgo(iso){
+  if(!iso) return '';
+  var diff = (Date.now()-new Date(iso).getTime())/1000;
+  if(diff<3600) return Math.floor(diff/60)+'m';
+  if(diff<86400) return Math.floor(diff/3600)+'h';
+  return Math.floor(diff/86400)+'d';
+}
+</script>
+</body>
+</html>
