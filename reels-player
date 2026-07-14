@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<title>DELTA Reels</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{--navy:#10392D;--orange:#C7A15A;--orange-dark:#b8925a;--green:#1a8a4a;--red:#e0245e;}
+html,body{height:100%;background:#000;overflow:hidden;font-family:'DM Sans',sans-serif;}
+
+.top-bar{position:fixed;top:0;left:0;right:0;z-index:100;padding:calc(env(safe-area-inset-top,0px) + 10px) 12px 30px;
+  background:linear-gradient(180deg,rgba(0,0,0,.55),transparent);display:flex;flex-direction:column;gap:10px;}
+.top-bar-row{display:flex;align-items:center;justify-content:space-between;}
+.back-btn{background:rgba(255,255,255,.12);border:none;color:#fff;width:32px;height:32px;border-radius:50%;font-size:1rem;cursor:pointer;}
+.top-title{color:#fff;font-weight:800;font-size:1rem;}
+.search-btn{background:none;border:none;color:#fff;font-size:1.05rem;}
+
+.filter-chips{display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;}
+.filter-chips::-webkit-scrollbar{display:none;}
+.chip{flex-shrink:0;padding:6px 14px;border-radius:20px;font-size:.75rem;font-weight:700;color:#fff;
+  background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.2);cursor:pointer;white-space:nowrap;}
+.chip.active{background:#fff;color:#000;border-color:#fff;}
+
+.reel-scroll{height:100vh;height:100dvh;overflow-y:scroll;scroll-snap-type:y mandatory;scrollbar-width:none;}
+.reel-scroll::-webkit-scrollbar{display:none;}
+.reel-slide{position:relative;height:100vh;height:100dvh;scroll-snap-align:start;scroll-snap-stop:always;
+  display:flex;align-items:center;justify-content:center;background:#0a0a0a;overflow:hidden;}
+.reel-media{width:100%;height:100%;object-fit:cover;}
+.reel-media-img{width:100%;height:100%;object-fit:cover;}
+
+.reel-gradient-top{position:absolute;top:0;left:0;right:0;height:120px;background:linear-gradient(180deg,rgba(0,0,0,.5),transparent);pointer-events:none;}
+.reel-gradient-bottom{position:absolute;bottom:0;left:0;right:0;height:260px;background:linear-gradient(0deg,rgba(0,0,0,.85),transparent);pointer-events:none;}
+
+.action-rail{position:absolute;right:10px;bottom:190px;display:flex;flex-direction:column;align-items:center;gap:18px;z-index:20;}
+.action-btn{background:none;border:none;color:#fff;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;}
+.action-icon{width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;filter:drop-shadow(0 1px 3px rgba(0,0,0,.5));}
+.action-icon.liked{color:var(--red);}
+.action-count{font-size:.68rem;font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,.5);}
+.creator-avatar-rail{width:40px;height:40px;border-radius:50%;border:2px solid #fff;object-fit:cover;background:#333;}
+
+.reel-bottom{position:absolute;left:0;right:0;bottom:0;padding:0 78px 14px 14px;z-index:15;color:#fff;}
+.creator-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.creator-name{font-weight:800;font-size:.92rem;display:flex;align-items:center;gap:4px;}
+.creator-badge-mini{font-size:.62rem;background:rgba(255,255,255,.18);padding:2px 7px;border-radius:8px;font-weight:700;}
+.follow-mini-btn{margin-left:6px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.4);color:#fff;padding:3px 11px;border-radius:14px;font-size:.7rem;font-weight:700;cursor:pointer;}
+.follow-mini-btn.following{background:rgba(255,255,255,.5);}
+.reel-caption{font-size:.82rem;line-height:1.4;margin-bottom:4px;max-width:100%;}
+.reel-caption.clamped{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.reel-loc{font-size:.72rem;color:rgba(255,255,255,.75);display:flex;align-items:center;gap:4px;margin-bottom:10px;}
+.verified-purchase-tag{display:inline-flex;align-items:center;gap:3px;background:rgba(26,138,74,.85);font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:8px;margin-bottom:6px;}
+.review-stars{color:var(--orange);font-size:.85rem;margin-bottom:4px;}
+
+.commerce-card{background:rgba(20,20,20,.72);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.12);
+  border-radius:14px;padding:10px 12px;display:flex;align-items:center;gap:10px;}
+.commerce-card-thumb{width:42px;height:42px;border-radius:9px;object-fit:cover;background:#333;flex-shrink:0;}
+.commerce-card-info{flex:1;min-width:0;}
+.commerce-card-shop{font-size:.72rem;color:rgba(255,255,255,.65);display:flex;align-items:center;gap:4px;}
+.commerce-card-rating{color:var(--orange);}
+.commerce-card-product{font-size:.82rem;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.commerce-card-btns{display:flex;gap:6px;flex-shrink:0;}
+.cc-btn{padding:8px 12px;border-radius:9px;font-size:.72rem;font-weight:700;border:none;cursor:pointer;white-space:nowrap;}
+.cc-btn-primary{background:#fff;color:#000;}
+.cc-btn-outline{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.35);}
+
+.loading-overlay{position:fixed;inset:0;background:#000;display:flex;align-items:center;justify-content:center;color:#fff;font-size:.9rem;z-index:200;}
+.empty-overlay{position:fixed;inset:0;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;color:rgba(255,255,255,.6);gap:10px;z-index:200;text-align:center;padding:20px;}
+
+.comment-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:300;align-items:flex-end;justify-content:center;}
+.comment-modal.open{display:flex;}
+.comment-sheet{background:#fff;width:100%;max-width:520px;border-radius:18px 18px 0 0;max-height:70vh;display:flex;flex-direction:column;}
+.comment-sheet-head{padding:14px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;font-weight:800;color:#111;}
+.comment-list{flex:1;overflow-y:auto;padding:10px 14px;}
+.comment-item{padding:8px 0;font-size:.82rem;border-bottom:1px solid #f0f0f0;color:#111;}
+.comment-item b{color:var(--navy);}
+.comment-input-row{display:flex;gap:8px;padding:10px 14px;border-top:1px solid #eee;}
+.comment-input-row input{flex:1;padding:10px 12px;border-radius:20px;border:1.5px solid #eee;background:#f7f7f7;}
+.comment-input-row button{background:var(--navy);color:#fff;border:none;border-radius:20px;padding:0 16px;font-weight:700;cursor:pointer;}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="top-bar-row">
+    <button class="back-btn" onclick="history.back()">←</button>
+    <div class="top-title">DELTA Reels</div>
+    <button class="search-btn">🔍</button>
+  </div>
+  <div class="filter-chips" id="filterChips">
+    <div class="chip active" data-f="foryou">For You</div>
+    <div class="chip" data-f="following">Following</div>
+    <div class="chip" data-f="trending">Trending</div>
+    <div class="chip" data-f="food">Food</div>
+    <div class="chip" data-f="fashion">Fashion</div>
+    <div class="chip" data-f="electronics">Electronics</div>
+    <div class="chip" data-f="services">Services</div>
+    <div class="chip" data-f="nearby">Nearby</div>
+  </div>
+</div>
+
+<div class="reel-scroll" id="reelScroll" style="display:none;"></div>
+<div class="loading-overlay" id="loadingOverlay">লোড হচ্ছে...</div>
+<div class="empty-overlay" id="emptyOverlay" style="display:none;">
+  <div style="font-size:2.4rem;">🎬</div>
+  <div id="emptyText">এখনও কোনো Reel/Video নেই</div>
+</div>
+
+<div class="comment-modal" id="commentModal">
+  <div class="comment-sheet">
+    <div class="comment-sheet-head">Comments <button onclick="closeComments()" style="background:none;border:none;font-size:1.1rem;cursor:pointer;">✕</button></div>
+    <div class="comment-list" id="commentList"></div>
+    <div class="comment-input-row">
+      <input type="text" id="commentInput" placeholder="মন্তব্য লিখুন...">
+      <button onclick="postComment()">পাঠান</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var fbcfg={apiKey:"AIzaSyA6TrrnCMwv1aa1WPqGvTVWlnieB2pVOEU",authDomain:"delta-platform-82fc0.firebaseapp.com",projectId:"delta-platform-82fc0",storageBucket:"delta-platform-82fc0.firebasestorage.app",messagingSenderId:"444904180433",appId:"1:444904180433:web:6706eba4d73a30cd67d3f0"};
+firebase.initializeApp(fbcfg);
+var auth=firebase.auth();
+var db=firebase.firestore();
+var CITY = new URLSearchParams(location.search).get('city') || 'manteswar';
+var currentUser=null;
+var activeFilter='foryou';
+var followingSet=null;
+var activeCommentContentId=null;
+var io=null;
+
+auth.onAuthStateChanged(function(u){ currentUser=u; loadReels(); });
+
+document.getElementById('filterChips').addEventListener('click', function(e){
+  var chip=e.target.closest('.chip'); if(!chip) return;
+  document.querySelectorAll('.chip').forEach(function(c){c.classList.remove('active');});
+  chip.classList.add('active');
+  activeFilter=chip.dataset.f;
+  loadReels();
+});
+
+function mc(){ return db.collection('cities').doc(CITY).collection('mediaContent'); }
+
+// ── HONEST RANKING NOTE ──
+// The doc's target ranking (Nearby→Relevant→Trusted→Quality→Sponsored→Fresh) needs
+// geo-distance, a trust score, and a quality score — none of which exist in the schema
+// yet (Section 15 defers this until real usage data exists). What ships here is a
+// simple, transparent substitute: newest-first, with adminFeatured/isFeatured content
+// nudged toward the top. Swap this function out once real signals exist.
+function applyFeedRanking(docs){
+  return docs.sort(function(a,b){
+    var aBoost = (a.data.adminFeatured?2:0) + (a.data.isFeatured?1:0);
+    var bBoost = (b.data.adminFeatured?2:0) + (b.data.isFeatured?1:0);
+    if(aBoost !== bBoost) return bBoost - aBoost;
+    return new Date(b.data.createdAt) - new Date(a.data.createdAt);
+  });
+}
+
+async function loadReels(){
+  document.getElementById('loadingOverlay').style.display='flex';
+  document.getElementById('emptyOverlay').style.display='none';
+  document.getElementById('reelScroll').style.display='none';
+
+  var q = mc().where('status','==','published').where('type','in',['reel','video']);
+
+  if(activeFilter==='following'){
+    if(!currentUser){ toastEmpty('Following দেখতে লগইন করুন'); return; }
+    if(!followingSet){
+      var followSnap = await db.collection('cities').doc(CITY).collection('mediaProfiles').doc(currentUser.uid).collection('following').get();
+      followingSet = followSnap.docs.map(function(d){return d.id;});
+    }
+    if(!followingSet.length){ toastEmpty('আপনি এখনও কাউকে follow করেননি'); return; }
+  }
+
+  if(['food','fashion','electronics','services'].indexOf(activeFilter)!==-1){
+    q = q.where('tags.categoryId','==',activeFilter);
+  }
+
+  q.orderBy('createdAt','desc').limit(40).get().then(function(snap){
+    var docs = snap.docs.map(function(d){ return {id:d.id, data:d.data()}; });
+
+    if(activeFilter==='following'){
+      docs = docs.filter(function(d){ return followingSet.indexOf(d.data.authorUid)!==-1; });
+    }
+    if(activeFilter==='trending'){
+      docs.sort(function(a,b){ return ((b.data.stats&&b.data.stats.views)||0) - ((a.data.stats&&a.data.stats.views)||0); });
+    } else if(activeFilter==='nearby'){
+      showNearbyNotice();
+      docs = applyFeedRanking(docs);
+    } else {
+      docs = applyFeedRanking(docs);
+    }
+
+    document.getElementById('loadingOverlay').style.display='none';
+    if(!docs.length){ toastEmpty('এই ফিল্টারে কোনো content পাওয়া যায়নি'); return; }
+    renderReels(docs);
+  }).catch(function(e){
+    console.error(e);
+    document.getElementById('loadingOverlay').style.display='none';
+    toastEmpty('লোড করতে সমস্যা হয়েছে: '+e.message);
+  });
+}
+
+function toastEmpty(msg){
+  document.getElementById('emptyText').textContent=msg;
+  document.getElementById('emptyOverlay').style.display='flex';
+}
+var nearbyNoticeShown=false;
+function showNearbyNotice(){
+  if(nearbyNoticeShown) return; nearbyNoticeShown=true;
+  console.warn('Nearby filter: no geo-distance data on mediaContent yet — showing standard feed instead.');
+}
+
+function renderReels(docs){
+  var scroll = document.getElementById('reelScroll');
+  scroll.innerHTML=''; scroll.style.display='block';
+  docs.forEach(function(item){ scroll.appendChild(buildReelSlide(item.id, item.data)); });
+
+  if(io) io.disconnect();
+  io = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      var vid = entry.target.querySelector('video');
+      if(!vid) return;
+      if(entry.isIntersecting && entry.intersectionRatio > 0.6){
+        vid.play().catch(function(){});
+        bumpView(entry.target.dataset.contentId);
+      } else {
+        vid.pause();
+      }
+    });
+  }, {threshold:[0,0.6,1]});
+  scroll.querySelectorAll('.reel-slide').forEach(function(s){ io.observe(s); });
+}
+
+var viewedThisSession = {};
+function bumpView(contentId){
+  // A viewer cannot write another author's stats.views field under current rules
+  // (author/admin only, per the earlier flagged gap). Tracked locally per session
+  // for now; a Cloud Function is the real fix.
+  viewedThisSession[contentId] = true;
+}
+
+function buildReelSlide(id, d){
+  var slide = document.createElement('div');
+  slide.className='reel-slide'; slide.dataset.contentId=id;
+
+  var mediaHtml = d.videoUrl
+    ? '<video class="reel-media" src="'+d.videoUrl+'" loop playsinline muted="false"></video>'
+    : '<img class="reel-media-img" src="'+((d.mediaUrls&&d.mediaUrls[0])||d.thumbnailUrl||'')+'">';
+
+  var isReview = d.isReview && d.rating;
+  var starsHtml = isReview ? '<div class="review-stars">'+'★'.repeat(d.rating)+'☆'.repeat(5-d.rating)+'</div>' : '';
+  var verifiedHtml = (isReview && d.linkedOrderId) ? '<div class="verified-purchase-tag">✅ Verified Purchase</div>' : '';
+
+  var hasCommerce = d.tags && (d.tags.productId || d.tags.shopId);
+  var commerceCardHtml = hasCommerce ? buildCommerceCardHtml(d) : '';
+
+  slide.innerHTML =
+    mediaHtml +
+    '<div class="reel-gradient-top"></div>' +
+    '<div class="reel-gradient-bottom"></div>' +
+    '<div class="action-rail">' +
+      '<button class="action-btn" onclick="goToProfile(\''+d.authorUid+'\')"><img class="creator-avatar-rail" src="'+(d.authorAvatarUrl||'')+'" onerror="this.style.background=\'#333\'"></button>' +
+      '<button class="action-btn" id="likeBtn-'+id+'" onclick="toggleLike(\''+id+'\')"><span class="action-icon">🤍</span><span class="action-count" id="likeCount-'+id+'">0</span></button>' +
+      '<button class="action-btn" onclick="openComments(\''+id+'\')"><span class="action-icon">💬</span><span class="action-count" id="commentCount-'+id+'">0</span></button>' +
+      '<button class="action-btn" onclick="shareReel(\''+id+'\')"><span class="action-icon">↗️</span><span class="action-count">Share</span></button>' +
+      '<button class="action-btn" onclick="saveReel(\''+id+'\')"><span class="action-icon">🔖</span><span class="action-count">Save</span></button>' +
+    '</div>' +
+    '<div class="reel-bottom">' +
+      starsHtml + verifiedHtml +
+      '<div class="creator-row">' +
+        '<span class="creator-name" onclick="goToProfile(\''+d.authorUid+'\')">'+(d.authorDisplayName||'Unknown')+' ✓</span>' +
+        '<button class="follow-mini-btn" id="followBtn-'+id+'" onclick="toggleFollow(\''+d.authorUid+'\',\''+id+'\')">Follow</button>' +
+      '</div>' +
+      '<div class="reel-caption clamped">'+(d.caption||'')+'</div>' +
+      (d.tags&&d.tags.location ? '<div class="reel-loc">📍 '+d.tags.location+'</div>' : '<div class="reel-loc">📍 '+CITY.charAt(0).toUpperCase()+CITY.slice(1)+'</div>') +
+      commerceCardHtml +
+    '</div>';
+
+  refreshLikeCommentCounts(id);
+  if(currentUser && d.authorUid!==currentUser.uid) checkFollowState(d.authorUid, id);
+  else { var fb=slide.querySelector('#followBtn-'+id); if(fb) fb.style.display='none'; }
+
+  return slide;
+}
+
+function buildCommerceCardHtml(d){
+  var ctaMap = {view_product:['🛒 View Product','visit'],visit_shop:['🏪 Visit Shop','visit'],order_now:['📦 Order Now','visit'],
+    book_service:['📅 Book Service','visit'],call:['📞 Call','call'],whatsapp:['💬 WhatsApp','wa'],get_quote:['💬 Get Quote','wa']};
+  var primary = ctaMap[d.ctaType] || ['🏪 Visit Shop','visit'];
+  var thumb = d.thumbnailUrl || (d.mediaUrls&&d.mediaUrls[0]) || '';
+  return '<div class="commerce-card">' +
+    (thumb?'<img class="commerce-card-thumb" src="'+thumb+'">':'<div class="commerce-card-thumb"></div>') +
+    '<div class="commerce-card-info">' +
+      '<div class="commerce-card-shop">🏪 '+(d.authorDisplayName||'Shop')+' <span class="commerce-card-rating">★ 4.8</span></div>' +
+      '<div class="commerce-card-product">'+(d.tags.categoryId||d.caption||'পণ্য')+'</div>' +
+    '</div>' +
+    '<div class="commerce-card-btns">' +
+      '<button class="cc-btn cc-btn-outline" onclick="visitShopFromReel(\''+(d.tags.shopId||'')+'\')">Visit Shop</button>' +
+      '<button class="cc-btn cc-btn-primary" onclick="visitShopFromReel(\''+(d.tags.shopId||'')+'\',\''+(d.tags.productId||'')+'\')">'+primary[0]+'</button>' +
+    '</div>' +
+  '</div>';
+}
+
+function visitShopFromReel(shopId, productId){
+  if(!shopId){ alert('কোনো shop link করা নেই'); return; }
+  location.href='shop.html?id='+shopId+'&city='+CITY+(productId?('&product='+productId):'');
+}
+function goToProfile(uid){ location.href='media-profile.html?uid='+uid+'&city='+CITY; }
+
+function toggleLike(id){
+  if(!currentUser){ alert('লগইন করুন প্রথমে'); return; }
+  var ref = mc().doc(id).collection('likes').doc(currentUser.uid);
+  var btn = document.getElementById('likeBtn-'+id);
+  ref.get().then(function(d){
+    if(d.exists){ ref.delete(); btn.querySelector('.action-icon').textContent='🤍'; btn.querySelector('.action-icon').classList.remove('liked'); }
+    else { ref.set({likedAt:new Date().toISOString()}); btn.querySelector('.action-icon').textContent='❤️'; btn.querySelector('.action-icon').classList.add('liked'); }
+    refreshLikeCommentCounts(id);
+  });
+}
+function refreshLikeCommentCounts(id){
+  mc().doc(id).collection('likes').get().then(function(s){ var el=document.getElementById('likeCount-'+id); if(el) el.textContent=s.size; });
+  mc().doc(id).collection('comments').get().then(function(s){ var el=document.getElementById('commentCount-'+id); if(el) el.textContent=s.size; });
+}
+
+function checkFollowState(authorUid, id){
+  db.collection('cities').doc(CITY).collection('mediaProfiles').doc(authorUid).collection('followers').doc(currentUser.uid).get().then(function(d){
+    var btn=document.getElementById('followBtn-'+id); if(!btn) return;
+    if(d.exists){ btn.textContent='Following'; btn.classList.add('following'); }
+    else { btn.textContent='Follow'; btn.classList.remove('following'); }
+  });
+}
+function toggleFollow(targetUid, id){
+  if(!currentUser){ alert('লগইন করুন প্রথমে'); return; }
+  var followerDoc = db.collection('cities').doc(CITY).collection('mediaProfiles').doc(targetUid).collection('followers').doc(currentUser.uid);
+  var followingDoc = db.collection('cities').doc(CITY).collection('mediaProfiles').doc(currentUser.uid).collection('following').doc(targetUid);
+  followerDoc.get().then(function(d){
+    var now=new Date().toISOString();
+    if(d.exists){ followerDoc.delete(); followingDoc.delete(); }
+    else { followerDoc.set({followedAt:now}); followingDoc.set({followedAt:now}); }
+    checkFollowState(targetUid, id);
+  });
+}
+
+function shareReel(id){
+  var url = location.origin+'/reels-player.html?content='+id+'&city='+CITY;
+  if(navigator.share){ navigator.share({url:url}).catch(function(){}); }
+  else { navigator.clipboard&&navigator.clipboard.writeText(url); alert('Link copied'); }
+}
+function saveReel(id){ alert('Saved (local only — a real "saved" list needs its own collection, not built yet)'); }
+
+function openComments(id){
+  activeCommentContentId=id;
+  document.getElementById('commentModal').classList.add('open');
+  var list=document.getElementById('commentList'); list.innerHTML='লোড হচ্ছে...';
+  mc().doc(id).collection('comments').orderBy('createdAt','desc').limit(50).get().then(function(snap){
+    list.innerHTML='';
+    if(snap.empty){ list.innerHTML='<div style="text-align:center;color:#999;padding:20px;">প্রথম মন্তব্য করুন</div>'; return; }
+    snap.forEach(function(doc){
+      var c=doc.data();
+      var item=document.createElement('div'); item.className='comment-item';
+      item.innerHTML='<b>'+(c.authorDisplayName||'User')+'</b> '+c.text;
+      list.appendChild(item);
+    });
+  });
+}
+function closeComments(){ document.getElementById('commentModal').classList.remove('open'); }
+function postComment(){
+  if(!currentUser){ alert('লগইন করুন প্রথমে'); return; }
+  var input=document.getElementById('commentInput');
+  var text=input.value.trim(); if(!text) return;
+  mc().doc(activeCommentContentId).collection('comments').add({
+    authorUid:currentUser.uid, authorDisplayName:currentUser.displayName||'User', text:text, status:'published', createdAt:new Date().toISOString()
+  }).then(function(){ input.value=''; openComments(activeCommentContentId); refreshLikeCommentCounts(activeCommentContentId); });
+}
+</script>
+</body>
+</html>
