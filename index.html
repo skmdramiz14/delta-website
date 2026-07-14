@@ -124,6 +124,8 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
   text-overflow:ellipsis;white-space:nowrap;font-weight:500;}
 .ds-live-badge{position:absolute;top:-3px;left:50%;transform:translateX(-50%);background:#e0245e;color:#fff;
   font-size:.5rem;font-weight:800;padding:1px 6px;border-radius:6px;letter-spacing:.3px;z-index:2;}
+.ds-pinned-badge{position:absolute;bottom:-2px;right:-2px;background:#2f6fae;color:#fff;width:18px;height:18px;
+  border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.6rem;border:2px solid var(--cream);z-index:2;}
 .ds-loading{color:var(--muted,#8A8A8A);font-size:.75rem;padding:20px 8px;white-space:nowrap;}
 
 /* Ring colors — per DELTA Story philosophy: type is signaled without opening the story */
@@ -2306,10 +2308,6 @@ img{max-width:100%;height:auto;}
       <div class="ds-seeall" onclick="location.href='media-feed.html'">See All ›</div>
     </div>
     <div class="ds-row" id="deltaStoriesRow">
-      <div class="ds-item ds-your-story" onclick="handleYourStoryTap()">
-        <div class="ds-ring ds-ring-add"><div class="ds-avatar" id="yourStoryAvatar">👤</div><div class="ds-add-badge">+</div></div>
-        <div class="ds-label">Your Story</div>
-      </div>
       <div class="ds-loading" id="dsLoading">লোড হচ্ছে...</div>
     </div>
   </div>
@@ -7542,12 +7540,35 @@ var DEMO_STORIES = [
   }}
 ];
 
+var dsPinnedOfficial = null;
+
+// ═══ PINNED DELTA OFFICIAL — always slot #1, every content type ═══
+// Resolves whichever mediaProfiles doc has primaryBadge=='delta_official' (not
+// hardcoded to one UID, so it keeps working if the official account changes),
+// then pulls their latest published item of the given type.
+async function getDeltaOfficialUid(){
+  try{
+    var snap = await db.collection('cities').doc(CITY).collection('mediaProfiles')
+      .where('primaryBadge','==','delta_official').limit(1).get();
+    if(!snap.empty) return snap.docs[0].id;
+  }catch(e){ console.warn('Could not resolve DELTA Official account', e); }
+  return null;
+}
+async function getPinnedOfficialContent(type){
+  var uid = await getDeltaOfficialUid();
+  if(!uid) return null;
+  try{
+    var snap = await db.collection('cities').doc(CITY).collection('mediaContent')
+      .where('authorUid','==',uid).where('type','==',type).where('status','==','published')
+      .orderBy('createdAt','desc').limit(1).get();
+    if(!snap.empty){ var doc=snap.docs[0]; return {id:doc.id, data:doc.data(), pinned:true}; }
+  }catch(e){ console.warn('Could not load pinned official '+type, e); }
+  return null;
+}
+
 function loadDeltaStories(){
   var wrap = document.getElementById('deltaStoriesRow');
   var loadingEl = document.getElementById('dsLoading');
-  if(currentUser){
-    document.getElementById('yourStoryAvatar').textContent = '👤';
-  }
   var now = new Date().toISOString();
   db.collection('cities').doc(CITY).collection('mediaContent')
     .where('type','==','story').where('status','==','published')
@@ -7563,24 +7584,11 @@ function loadDeltaStories(){
         console.info('No real stories yet — showing demo stories so the structure is visible. Remove DEMO_STORIES once real sellers post.');
         dsStories = DEMO_STORIES.slice();
       }
-      // Honest ranking note: doc's target priority is Nearby→Following→Frequently
-      // Visited→Sponsored→Fresh. No geo/visit-frequency data exists yet (same gap
-      // flagged for reels-player.html/video-hub.html). This substitutes
-      // Following-first (if logged in) + Featured-boost + newest — transparent, not fake.
-      if(currentUser){
-        db.collection('cities').doc(CITY).collection('mediaProfiles').doc(currentUser.uid).collection('following').get().then(function(fs){
-          var followSet = fs.docs.map(function(d){return d.id;});
-          dsStories.sort(function(a,b){
-            var af = followSet.indexOf(a.data.authorUid)!==-1 ? 1 : 0;
-            var bf = followSet.indexOf(b.data.authorUid)!==-1 ? 1 : 0;
-            if(af!==bf) return bf-af;
-            return new Date(b.data.createdAt)-new Date(a.data.createdAt);
-          });
-          renderStoryBubbles();
-        });
-      } else {
-        renderStoryBubbles();
-      }
+      getPinnedOfficialContent('story').then(function(pinned){
+        dsPinnedOfficial = pinned;
+        if(pinned) dsStories = dsStories.filter(function(s){ return s.id!==pinned.id; }); // no duplicate
+        rankStoriesFull().then(renderStoryBubbles);
+      });
     }).catch(function(e){
       console.error('Stories load error',e);
       console.info('Falling back to demo stories so the structure is still visible.');
@@ -7588,6 +7596,78 @@ function loadDeltaStories(){
       dsStories = DEMO_STORIES.slice();
       renderStoryBubbles();
     });
+}
+
+// ═══ FULL 5-TIER STORY RANKING ARCHITECTURE ═══
+// Priority order per the doc: Nearby → Following → Frequently Visited Shops →
+// Sponsored → Fresh. Each tier below reads REAL data where it exists and falls
+// back to a neutral score (0) where it doesn't — so nobody is ranked unfairly
+// while a signal is missing, and the moment that signal starts getting written
+// (area set on profiles, shop-visit logging added, Boost ships), this same
+// function starts using it automatically. No rewrite needed later.
+async function rankStoriesFull(){
+  var myArea = null;
+  var followSet = [];
+  var visitCounts = {}; // shopId/authorUid -> visit count, from the viewer's own history
+
+  if(currentUser){
+    // Tier 1 data: Nearby — uses mediaProfiles.location.area (already a real field,
+    // set via Edit Profile). This is an AREA-NAME match, not true GPS distance —
+    // real distance-based "nearby" needs lat/lng on both viewer and shop, which
+    // isn't collected yet. Area match is a reasonable interim signal, not a fake one.
+    try{
+      var myProfile = await db.collection('cities').doc(CITY).collection('mediaProfiles').doc(currentUser.uid).get();
+      if(myProfile.exists && myProfile.data().location && myProfile.data().location.area){
+        myArea = myProfile.data().location.area.trim().toLowerCase();
+      }
+    }catch(e){ console.warn('Nearby tier: could not read own profile location', e); }
+
+    // Tier 2 data: Following — already fully real and working.
+    try{
+      var fs = await db.collection('cities').doc(CITY).collection('mediaProfiles').doc(currentUser.uid).collection('following').get();
+      followSet = fs.docs.map(function(d){return d.id;});
+    }catch(e){ console.warn('Following tier: could not load following list', e); }
+
+    // Tier 3 data: Frequently Visited Shops — reads mediaProfiles/{uid}/shopVisits/{shopId}.
+    // This subcollection doesn't get written anywhere yet (shop.html needs a small
+    // addition to log a visit on page load — self-write, no rules conflict since
+    // it's the viewer writing their own subcollection). Until that's added, this
+    // query just returns empty and the tier scores 0 for everyone — neutral, safe.
+    try{
+      var visits = await db.collection('cities').doc(CITY).collection('mediaProfiles').doc(currentUser.uid).collection('shopVisits').get();
+      visits.forEach(function(v){ visitCounts[v.id] = (v.data().visitCount)||0; });
+    }catch(e){ console.warn('Frequently-visited tier: no visit data yet (expected until shop.html logs visits)', e); }
+  }
+
+  dsStories.sort(function(a,b){
+    // Tier 1: Nearby (area-name match)
+    var aArea = a.data.location && a.data.location.area ? a.data.location.area.trim().toLowerCase() : null;
+    var bArea = b.data.location && b.data.location.area ? b.data.location.area.trim().toLowerCase() : null;
+    var aNearby = (myArea && aArea && aArea===myArea) ? 1 : 0;
+    var bNearby = (myArea && bArea && bArea===myArea) ? 1 : 0;
+    if(aNearby !== bNearby) return bNearby - aNearby;
+
+    // Tier 2: Following
+    var aFollow = followSet.indexOf(a.data.authorUid)!==-1 ? 1 : 0;
+    var bFollow = followSet.indexOf(b.data.authorUid)!==-1 ? 1 : 0;
+    if(aFollow !== bFollow) return bFollow - aFollow;
+
+    // Tier 3: Frequently Visited (keyed by tagged shopId, falling back to authorUid)
+    var aShopKey = (a.data.tags && a.data.tags.shopId) || a.data.authorUid;
+    var bShopKey = (b.data.tags && b.data.tags.shopId) || b.data.authorUid;
+    var aVisits = visitCounts[aShopKey] || 0;
+    var bVisits = visitCounts[bShopKey] || 0;
+    if(aVisits !== bVisits) return bVisits - aVisits;
+
+    // Tier 4: Sponsored — schema field already exists (isSponsored), just unused
+    // until Boost/Monetization ships. Works the instant that flag gets set.
+    var aSponsored = a.data.isSponsored ? 1 : 0;
+    var bSponsored = b.data.isSponsored ? 1 : 0;
+    if(aSponsored !== bSponsored) return bSponsored - aSponsored;
+
+    // Tier 5: Fresh — newest first, the only tier guaranteed to always have data
+    return new Date(b.data.createdAt) - new Date(a.data.createdAt);
+  });
 }
 
 function ringClassFor(d){
@@ -7605,14 +7685,30 @@ function ringClassFor(d){
 function renderStoryBubbles(){
   var wrap = document.getElementById('deltaStoriesRow');
   // remove previously rendered bubbles (keep "Your Story" as first child)
-  Array.from(wrap.querySelectorAll('.ds-item:not(.ds-your-story)')).forEach(function(el){el.remove()});
+  Array.from(wrap.querySelectorAll('.ds-item')).forEach(function(el){el.remove()});
   var loadingEl = document.getElementById('dsLoading'); if(loadingEl) loadingEl.remove();
 
+  // Slot #1 — always Pinned DELTA Official, independent of the ranking algorithm
+  if(dsPinnedOfficial){
+    var pd = dsPinnedOfficial.data;
+    var pinItem = document.createElement('div'); pinItem.className='ds-item';
+    pinItem.innerHTML =
+      '<div class="ds-ring ds-ring-official">'+
+        (pd.authorAvatarUrl ? '<div class="ds-avatar"><img src="'+pd.authorAvatarUrl+'"></div>' : '<div class="ds-avatar">🔷</div>')+
+        '<div class="ds-pinned-badge">📌</div>'+
+      '</div>'+
+      '<div class="ds-label">DELTA Official</div>';
+    pinItem.onclick = function(){ openStoryViewerGroup([dsPinnedOfficial]); };
+    wrap.appendChild(pinItem);
+  }
+
   if(!dsStories.length){
-    var empty = document.createElement('div');
-    empty.style.cssText='color:var(--muted);font-size:.75rem;padding:20px 8px;white-space:nowrap;';
-    empty.textContent = 'এখনও কোনো Story নেই — প্রথম Story আপনিই দিন!';
-    wrap.appendChild(empty);
+    if(!dsPinnedOfficial){
+      var empty = document.createElement('div');
+      empty.style.cssText='color:var(--muted);font-size:.75rem;padding:20px 8px;white-space:nowrap;';
+      empty.textContent = 'এখনও কোনো Story নেই';
+      wrap.appendChild(empty);
+    }
     return;
   }
 
@@ -7637,14 +7733,6 @@ function renderStoryBubbles(){
     item.onclick = function(){ openStoryViewerGroup(stories); };
     wrap.appendChild(item);
   });
-}
-
-// ── "Your Story" tap: view own active story if one exists, else go create one ──
-function handleYourStoryTap(){
-  if(!currentUser){ alert('লগইন করুন প্রথমে'); return; }
-  var mine = dsStories.filter(function(s){ return s.data.authorUid===currentUser.uid; });
-  if(mine.length){ openStoryViewerGroup(mine); }
-  else { location.href='create-studio.html?city='+CITY+'&type=story'; }
 }
 
 // ═══ STORY VIEWER ═══
