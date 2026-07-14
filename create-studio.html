@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Create — DELTA Media</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --navy:#10392D;--navy2:#1a4a3a;--navy3:#0E1E18;
+  --orange:#C7A15A;--orange2:#d6bd8a;--orange-dark:#b8925a;
+  --green:#2da86a;--green2:#1a7a4c;
+  --white:#fff;--sand:#F3EFE6;--cream:#F7F1E6;
+  --border:#F0ECE5;--muted:#8A8A8A;--charcoal:#1A1A1A;--red:#c0392b;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charcoal);padding-bottom:40px;}
+.nav{background:var(--navy);padding:0 16px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;}
+.nav-back{color:#fff;font-size:1.2rem;cursor:pointer;background:none;border:none;}
+.nav-title{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:900;color:#fff;}
+.nav-title em{color:var(--orange);font-style:normal;}
+
+.wrap{max-width:560px;margin:0 auto;padding:18px 16px 100px;}
+
+/* ── STEP 1: content type selector ── */
+.type-select-title{font-size:.8rem;font-weight:700;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;}
+.type-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:22px;}
+.type-opt{background:#fff;border:2px solid var(--border);border-radius:14px;padding:14px 6px;text-align:center;cursor:pointer;transition:.15s;}
+.type-opt.active{border-color:var(--orange);background:#fff8ec;}
+.type-opt-icon{font-size:1.5rem;margin-bottom:5px;}
+.type-opt-label{font-size:.72rem;font-weight:700;color:var(--navy);}
+.type-opt-sub{font-size:.6rem;color:var(--muted);margin-top:1px;}
+.type-opt.disabled{opacity:.4;cursor:not-allowed;}
+
+.section-block{background:#fff;border-radius:16px;padding:18px;margin-bottom:14px;}
+.section-label{font-size:.78rem;font-weight:700;color:var(--navy);margin-bottom:10px;}
+
+/* ── Post sub-type radio grid (Section 4.2) ── */
+.subtype-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.subtype-opt{border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;font-size:.8rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;}
+.subtype-opt input{accent-color:var(--orange);}
+.subtype-opt.active{border-color:var(--orange);background:#fff8ec;}
+
+/* ── Upload zone ── */
+.upload-zone{border:2px dashed var(--border);border-radius:14px;padding:28px 16px;text-align:center;cursor:pointer;color:var(--muted);position:relative;}
+.upload-zone.has-file{border-style:solid;padding:0;overflow:hidden;}
+.upload-zone img,.upload-zone video{width:100%;max-height:320px;object-fit:cover;display:block;}
+.upload-progress{position:absolute;bottom:0;left:0;right:0;height:4px;background:rgba(0,0,0,.1);}
+.upload-progress-bar{height:100%;background:var(--orange);width:0%;transition:width .2s;}
+.carousel-thumbs{display:flex;gap:6px;padding:8px;flex-wrap:wrap;background:#fff;}
+.carousel-thumbs img{width:52px;height:52px;object-fit:cover;border-radius:8px;}
+.upload-remove{position:absolute;top:8px;right:8px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:50%;width:26px;height:26px;cursor:pointer;z-index:5;}
+
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:.78rem;font-weight:700;color:var(--navy);margin-bottom:5px;}
+.field textarea,.field input,.field select{width:100%;padding:11px 12px;border:1.5px solid var(--border);border-radius:10px;font-family:inherit;font-size:.88rem;background:var(--sand);}
+.field textarea{resize:vertical;min-height:80px;}
+.char-count{font-size:.7rem;color:var(--muted);text-align:right;margin-top:3px;}
+
+/* ── Poll options ── */
+.poll-opt-row{display:flex;gap:6px;margin-bottom:8px;}
+.poll-opt-row input{flex:1;}
+.poll-opt-remove{background:var(--sand);border:none;border-radius:8px;width:38px;cursor:pointer;color:var(--red);font-weight:700;}
+.poll-add-btn{background:var(--sand);border:none;border-radius:10px;padding:9px 14px;font-size:.8rem;font-weight:700;color:var(--navy);cursor:pointer;}
+
+/* ── Chapters (video only) ── */
+.chapter-row{display:flex;gap:6px;margin-bottom:8px;align-items:center;}
+.chapter-row input[type=text]{flex:2;}
+.chapter-row input[type=text].time-input{flex:1;}
+.chapter-remove{background:var(--sand);border:none;border-radius:8px;width:38px;cursor:pointer;color:var(--red);font-weight:700;}
+
+/* ── Commerce tagging ── */
+.tag-search-result{max-height:180px;overflow-y:auto;border:1px solid var(--border);border-radius:10px;margin-top:6px;display:none;background:#fff;}
+.tag-result-item{padding:9px 12px;font-size:.82rem;cursor:pointer;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;}
+.tag-result-item:hover{background:var(--sand);}
+.tag-selected-chip{display:inline-flex;align-items:center;gap:6px;background:var(--sand);padding:6px 10px;border-radius:20px;font-size:.8rem;font-weight:700;color:var(--navy);margin-top:6px;}
+.tag-selected-chip button{background:none;border:none;color:var(--muted);cursor:pointer;font-size:.9rem;}
+.cta-preview{margin-top:10px;padding:10px 12px;background:var(--sand);border-radius:10px;font-size:.8rem;color:var(--navy);display:flex;align-items:center;gap:8px;}
+.cta-preview select{margin-left:auto;padding:6px 8px;border-radius:8px;border:1.5px solid var(--border);}
+
+/* ── Review fields ── */
+.rating-stars{display:flex;gap:6px;font-size:1.4rem;}
+.rating-stars span{cursor:pointer;color:var(--border);}
+.rating-stars span.on{color:var(--orange);}
+
+.submit-bar{position:fixed;left:0;right:0;bottom:0;background:#fff;padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:10px;max-width:560px;margin:0 auto;}
+.btn-draft{flex:1;padding:13px;border-radius:10px;border:1.5px solid var(--border);background:#fff;color:var(--navy);font-weight:700;font-size:.88rem;cursor:pointer;}
+.btn-submit{flex:2;padding:13px;border-radius:10px;border:none;background:var(--navy);color:#fff;font-weight:800;font-size:.88rem;cursor:pointer;}
+.btn-submit:disabled{opacity:.5;}
+
+.toast{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:12px 20px;border-radius:10px;font-size:.85rem;font-weight:600;z-index:500;display:none;text-align:center;max-width:90%;}
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <button class="nav-back" onclick="history.back()">←</button>
+  <div class="nav-title">DELTA <em>Media</em> · Create</div>
+  <div style="width:24px;"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="wrap">
+
+  <!-- STEP 1: What are you uploading? (Section 11.3) -->
+  <div class="type-select-title">কী আপলোড করছেন?</div>
+  <div class="type-grid" id="typeGrid">
+    <div class="type-opt active" data-type="post" onclick="selectType('post')">
+      <div class="type-opt-icon">📝</div><div class="type-opt-label">Post</div><div class="type-opt-sub">photo/text</div>
+    </div>
+    <div class="type-opt" data-type="story" onclick="selectType('story')">
+      <div class="type-opt-icon">⭕</div><div class="type-opt-label">Story</div><div class="type-opt-sub">24hr</div>
+    </div>
+    <div class="type-opt" data-type="reel" onclick="selectType('reel')">
+      <div class="type-opt-icon">🎬</div><div class="type-opt-label">Reel</div><div class="type-opt-sub">15-60s</div>
+    </div>
+    <div class="type-opt" data-type="video" onclick="selectType('video')">
+      <div class="type-opt-icon">📺</div><div class="type-opt-label">Video</div><div class="type-opt-sub">DELTA TV</div>
+    </div>
+  </div>
+
+  <!-- Post sub-type (Section 4.2) — only visible when type == post -->
+  <div class="section-block" id="subtypeBlock">
+    <div class="section-label">এই Post-টা কী নিয়ে?</div>
+    <div class="subtype-grid" id="subtypeGrid"></div>
+  </div>
+
+  <!-- Upload zone -->
+  <div class="section-block">
+    <div class="section-label" id="uploadLabel">ফাইল বাছুন</div>
+    <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+      <div id="uploadPlaceholder">📁<br><span style="font-size:.8rem;">ছবি বা ভিডিও আপলোড করতে ট্যাপ করুন</span></div>
+      <div class="upload-progress" id="uploadProgressWrap" style="display:none;"><div class="upload-progress-bar" id="uploadProgressBar"></div></div>
+    </div>
+    <input type="file" id="fileInput" accept="image/*,video/*" multiple style="display:none" onchange="handleFileSelect(event)">
+    <div class="carousel-thumbs" id="carouselThumbs"></div>
+  </div>
+
+  <!-- Caption -->
+  <div class="section-block">
+    <div class="field">
+      <label>ক্যাপশন</label>
+      <textarea id="captionInput" maxlength="2200" placeholder="কী নিয়ে এই পোস্ট? #hashtag যোগ করতে পারেন" oninput="updateCharCount()"></textarea>
+      <div class="char-count" id="charCount">0 / 2200</div>
+    </div>
+  </div>
+
+  <!-- Poll options — only when postSubType == poll -->
+  <div class="section-block" id="pollBlock" style="display:none;">
+    <div class="section-label">ভোটের অপশন (Poll)</div>
+    <div id="pollOptionsWrap"></div>
+    <button class="poll-add-btn" onclick="addPollOption()">+ Option যোগ করুন</button>
+  </div>
+
+  <!-- Chapters — only for video type -->
+  <div class="section-block" id="chaptersBlock" style="display:none;">
+    <div class="section-label">Chapters (Timeline Navigation)</div>
+    <div id="chaptersWrap"></div>
+    <button class="poll-add-btn" onclick="addChapter()">+ Chapter যোগ করুন</button>
+  </div>
+
+  <!-- Commerce tagging (Section 7, "nothing exists standalone") -->
+  <div class="section-block">
+    <div class="section-label">🏷 Product/Service Tag করুন</div>
+    <div class="field">
+      <label>পণ্য / সার্ভিস খুঁজুন</label>
+      <input type="text" id="tagSearchInput" placeholder="যেমন: রসগোল্লা, ইলেকট্রিশিয়ান..." oninput="searchProducts(this.value)">
+      <div class="tag-search-result" id="tagSearchResult"></div>
+    </div>
+    <div id="selectedTagChip"></div>
+    <div class="cta-preview" id="ctaPreview" style="display:none;">
+      <span id="ctaPreviewLabel">🛒 CTA: View Product</span>
+      <select id="ctaOverrideSelect" onchange="ctaOverridden=true;">
+        <option value="view_product">View Product</option>
+        <option value="visit_shop">Visit Shop</option>
+        <option value="order_now">Order Now</option>
+        <option value="book_service">Book Service</option>
+        <option value="call">Call</option>
+        <option value="whatsapp">WhatsApp</option>
+        <option value="get_quote">Get Quote</option>
+        <option value="none">None</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Review fields — shown only if user toggles "this is a review" -->
+  <div class="section-block">
+    <label style="display:flex;align-items:center;gap:8px;font-size:.85rem;font-weight:700;color:var(--navy);cursor:pointer;">
+      <input type="checkbox" id="isReviewCheck" onchange="toggleReviewFields()"> ⭐ এটি একটি Review post
+    </label>
+    <div id="reviewFieldsWrap" style="display:none;margin-top:12px;">
+      <div class="field">
+        <label>Rating</label>
+        <div class="rating-stars" id="ratingStars"></div>
+      </div>
+      <div class="field">
+        <label>Order ID (যদি থাকে — ✅ Verified Purchase দেখাবে)</label>
+        <input type="text" id="linkedOrderIdInput" placeholder="যেমন: ORD12345">
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="submit-bar">
+  <button class="btn-draft" onclick="submitContent('draft')">Draft হিসেবে রাখুন</button>
+  <button class="btn-submit" id="submitBtn" onclick="submitContent('pending')">সাবমিট করুন</button>
+</div>
+
+<script>
+var fbcfg={apiKey:"AIzaSyA6TrrnCMwv1aa1WPqGvTVWlnieB2pVOEU",authDomain:"delta-platform-82fc0.firebaseapp.com",projectId:"delta-platform-82fc0",storageBucket:"delta-platform-82fc0.firebasestorage.app",messagingSenderId:"444904180433",appId:"1:444904180433:web:6706eba4d73a30cd67d3f0"};
+firebase.initializeApp(fbcfg);
+var auth=firebase.auth();
+var db=firebase.firestore();
+var CLOUD='djthojcmy', PRESET='delta_products';
+var CITY = new URLSearchParams(location.search).get('city') || 'manteswar';
+var currentUser=null, mediaProfile=null;
+
+auth.onAuthStateChanged(function(u){
+  currentUser=u;
+  if(!u){ showToast('লগইন করুন প্রথমে'); return; }
+  db.collection('cities').doc(CITY).collection('mediaProfiles').doc(u.uid).get().then(function(doc){
+    if(!doc.exists){ showToast('প্রথমে DELTA Media Profile তৈরি করুন'); setTimeout(function(){location.href='media-profile.html?city='+CITY;},1500); return; }
+    mediaProfile = doc.data();
+  });
+});
+
+function showToast(msg){
+  var t=document.getElementById('toast'); t.textContent=msg; t.style.display='block';
+  setTimeout(function(){t.style.display='none';},2600);
+}
+
+// ── STATE ──
+var currentType='post';
+var currentSubType='general';
+var uploadedUrls=[]; // {url, resourceType}
+var pollOptions=['',''];
+var chapters=[];
+var selectedTag=null; // {label, shopId, productId, serviceId, categoryId, branchId}
+var ctaOverridden=false;
+var currentRating=0;
+
+var SUBTYPES=[
+  ['general','সাধারণ Update'],['new_arrival','নতুন পণ্য এসেছে'],
+  ['catalog','Catalog'],['event','ইভেন্ট'],
+  ['festival_offer','উৎসবের অফার'],['hiring','চাকরি খালি আছে'],
+  ['poll','ভোট নিন (Poll)'],['community_notice','কমিউনিটি নোটিশ'],
+  ['business_update','Business Update']
+];
+
+function renderSubtypes(){
+  var g=document.getElementById('subtypeGrid'); g.innerHTML='';
+  SUBTYPES.forEach(function(s){
+    var el=document.createElement('label');
+    el.className='subtype-opt'+(s[0]===currentSubType?' active':'');
+    el.innerHTML='<input type="radio" name="subtype" value="'+s[0]+'" '+(s[0]===currentSubType?'checked':'')+'> '+s[1];
+    el.onclick=function(){ currentSubType=s[0]; renderSubtypes(); togglePollBlock(); };
+    g.appendChild(el);
+  });
+}
+renderSubtypes();
+
+function selectType(type){
+  currentType=type;
+  document.querySelectorAll('.type-opt').forEach(function(el){el.classList.toggle('active', el.dataset.type===type);});
+  document.getElementById('subtypeBlock').style.display = (type==='post') ? 'block' : 'none';
+  document.getElementById('chaptersBlock').style.display = (type==='video') ? 'block' : 'none';
+  document.getElementById('uploadLabel').textContent = type==='story' ? 'Story ফাইল (ছবি/ভিডিও, 24hr auto-expire)' :
+    type==='reel' ? 'Reel ভিডিও (15-60 সেকেন্ড)' : type==='video' ? 'ভিডিও (DELTA TV, লম্বা ফর্ম্যাট)' : 'ছবি/ভিডিও (একাধিক ছবি = carousel)';
+  document.getElementById('fileInput').multiple = (type==='post');
+  document.getElementById('fileInput').accept = (type==='post') ? 'image/*' : (type==='reel'||type==='video'||type==='story') ? 'video/*,image/*' : 'image/*';
+  togglePollBlock();
+}
+
+function togglePollBlock(){
+  document.getElementById('pollBlock').style.display = (currentType==='post' && currentSubType==='poll') ? 'block' : 'none';
+  if(currentType==='post' && currentSubType==='poll' && document.getElementById('pollOptionsWrap').children.length===0) renderPollOptions();
+}
+
+// ── POLL ──
+function renderPollOptions(){
+  var wrap=document.getElementById('pollOptionsWrap'); wrap.innerHTML='';
+  pollOptions.forEach(function(val,i){
+    var row=document.createElement('div'); row.className='poll-opt-row';
+    row.innerHTML='<input type="text" placeholder="Option '+(i+1)+'" value="'+val.replace(/"/g,'&quot;')+'" oninput="pollOptions['+i+']=this.value">'+
+      (pollOptions.length>2 ? '<button class="poll-opt-remove" onclick="removePollOption('+i+')">✕</button>' : '');
+    wrap.appendChild(row);
+  });
+}
+function addPollOption(){ pollOptions.push(''); renderPollOptions(); }
+function removePollOption(i){ pollOptions.splice(i,1); renderPollOptions(); }
+
+// ── CHAPTERS ──
+function renderChapters(){
+  var wrap=document.getElementById('chaptersWrap'); wrap.innerHTML='';
+  chapters.forEach(function(c,i){
+    var row=document.createElement('div'); row.className='chapter-row';
+    row.innerHTML='<input type="text" class="time-input" placeholder="0:00" value="'+c.timeLabel+'" oninput="chapters['+i+'].timeLabel=this.value">'+
+      '<input type="text" placeholder="Label (যেমন: ছানা তৈরি)" value="'+c.label.replace(/"/g,'&quot;')+'" oninput="chapters['+i+'].label=this.value">'+
+      '<button class="chapter-remove" onclick="removeChapter('+i+')">✕</button>';
+    wrap.appendChild(row);
+  });
+}
+function addChapter(){ chapters.push({timeLabel:'',label:''}); renderChapters(); }
+function removeChapter(i){ chapters.splice(i,1); renderChapters(); }
+
+// ── FILE UPLOAD (real Cloudinary, same preset as seller-dashboard.html) ──
+function handleFileSelect(e){
+  var files = Array.from(e.target.files);
+  if(!files.length) return;
+  if(currentType!=='post') files = [files[0]]; // single file for story/reel/video
+  uploadedUrls = [];
+  document.getElementById('uploadPlaceholder').innerHTML = 'আপলোড হচ্ছে... ⏳';
+  document.getElementById('uploadProgressWrap').style.display='block';
+  var done=0;
+  files.forEach(function(file){
+    var isVideo = file.type.startsWith('video/');
+    var fd=new FormData();
+    fd.append('file',file); fd.append('upload_preset',PRESET); fd.append('cloud_name',CLOUD);
+    var endpoint = 'https://api.cloudinary.com/v1_1/'+CLOUD+'/'+(isVideo?'video':'image')+'/upload';
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', endpoint);
+    xhr.upload.onprogress = function(ev){
+      if(ev.lengthComputable){
+        document.getElementById('uploadProgressBar').style.width = Math.round((ev.loaded/ev.total)*100)+'%';
+      }
+    };
+    xhr.onload = function(){
+      done++;
+      try{
+        var res = JSON.parse(xhr.responseText);
+        uploadedUrls.push({url:res.secure_url, resourceType:isVideo?'video':'image', duration:res.duration||null});
+      }catch(err){ showToast('আপলোড ব্যর্থ হয়েছে'); }
+      if(done===files.length) renderUploadPreview();
+    };
+    xhr.onerror = function(){ showToast('আপলোড ব্যর্থ হয়েছে — নেটওয়ার্ক চেক করুন'); };
+    xhr.send(fd);
+  });
+}
+
+function renderUploadPreview(){
+  document.getElementById('uploadProgressWrap').style.display='none';
+  var zone=document.getElementById('uploadZone');
+  zone.classList.add('has-file');
+  var first=uploadedUrls[0];
+  if(!first){ zone.classList.remove('has-file'); document.getElementById('uploadPlaceholder').innerHTML='📁<br><span style="font-size:.8rem;">ছবি বা ভিডিও আপলোড করতে ট্যাপ করুন</span>'; return; }
+  document.getElementById('uploadPlaceholder').innerHTML = first.resourceType==='video'
+    ? '<video src="'+first.url+'" controls></video>'
+    : '<img src="'+first.url+'">';
+  var thumbs=document.getElementById('carouselThumbs'); thumbs.innerHTML='';
+  if(uploadedUrls.length>1){
+    uploadedUrls.forEach(function(u){
+      var img=document.createElement('img'); img.src = u.resourceType==='video'? '':u.url; thumbs.appendChild(img);
+    });
+  }
+}
+
+function updateCharCount(){
+  var v=document.getElementById('captionInput').value;
+  document.getElementById('charCount').textContent = v.length+' / 2200';
+}
+
+// ── COMMERCE TAG SEARCH (searches seller's own products first, falls back to shop name) ──
+var searchDebounce=null;
+function searchProducts(q){
+  clearTimeout(searchDebounce);
+  if(!q || q.length<2){ document.getElementById('tagSearchResult').style.display='none'; return; }
+  searchDebounce = setTimeout(function(){
+    var resultsEl = document.getElementById('tagSearchResult');
+    resultsEl.innerHTML=''; resultsEl.style.display='block';
+    // Search current user's own products (seller role) by name/nameBn prefix match
+    if(!currentUser){ return; }
+    db.collection('cities').doc(CITY).collection('sellers').doc(currentUser.uid).collection('products')
+      .limit(20).get().then(function(snap){
+        var matches=[];
+        snap.forEach(function(doc){
+          var d=doc.data();
+          var name=(d.name||'')+' '+(d.nameBn||'');
+          if(name.toLowerCase().indexOf(q.toLowerCase())!==-1) matches.push({id:doc.id,data:d});
+        });
+        if(!matches.length){
+          resultsEl.innerHTML='<div class="tag-result-item" style="color:var(--muted);">কোনো পণ্য পাওয়া যায়নি — নিজের shop-এর প্রোডাক্ট tag করুন</div>';
+          return;
+        }
+        matches.forEach(function(m){
+          var row=document.createElement('div'); row.className='tag-result-item';
+          row.innerHTML='<span>'+(m.data.nameBn||m.data.name)+'</span><span style="color:var(--muted);">₹'+(m.data.price||'-')+'</span>';
+          row.onclick=function(){ selectTag({label:m.data.nameBn||m.data.name, shopId:currentUser.uid, productId:m.id, categoryId:m.data.category||null}); };
+          resultsEl.appendChild(row);
+        });
+      });
+  }, 350);
+}
+
+function selectTag(tag){
+  selectedTag = tag;
+  document.getElementById('tagSearchResult').style.display='none';
+  document.getElementById('tagSearchInput').value='';
+  var chipWrap=document.getElementById('selectedTagChip');
+  chipWrap.innerHTML='<span class="tag-selected-chip">🏷 '+tag.label+' <button onclick="clearTag()">✕</button></span>';
+  updateCtaPreview();
+}
+function clearTag(){ selectedTag=null; document.getElementById('selectedTagChip').innerHTML=''; document.getElementById('ctaPreview').style.display='none'; }
+
+function updateCtaPreview(){
+  if(!selectedTag){ document.getElementById('ctaPreview').style.display='none'; return; }
+  var cta = selectedTag.productId ? 'view_product' : selectedTag.serviceId ? 'book_service' : 'visit_shop';
+  document.getElementById('ctaPreview').style.display='flex';
+  document.getElementById('ctaPreviewLabel').textContent = '🛒 Auto CTA: '+cta.replace('_',' ');
+  document.getElementById('ctaOverrideSelect').value = cta;
+  ctaOverridden=false;
+}
+
+// ── REVIEW FIELDS ──
+function toggleReviewFields(){
+  var on = document.getElementById('isReviewCheck').checked;
+  document.getElementById('reviewFieldsWrap').style.display = on ? 'block' : 'none';
+  if(on && document.getElementById('ratingStars').children.length===0) renderRatingStars();
+}
+function renderRatingStars(){
+  var wrap=document.getElementById('ratingStars'); wrap.innerHTML='';
+  for(var i=1;i<=5;i++){
+    (function(i){
+      var s=document.createElement('span'); s.textContent='★';
+      s.className = i<=currentRating ? 'on':'';
+      s.onclick=function(){ currentRating=i; renderRatingStars(); };
+      wrap.appendChild(s);
+    })(i);
+  }
+}
+
+// ── SUBMIT (client can only ever set status draft|pending — matches rules exactly) ──
+function submitContent(status){
+  if(!currentUser){ showToast('লগইন করুন প্রথমে'); return; }
+  if(!uploadedUrls.length && currentType!=='post'){ showToast('একটি ফাইল আপলোড করুন'); return; }
+  if(currentType==='post' && !document.getElementById('captionInput').value.trim() && !uploadedUrls.length){ showToast('ক্যাপশন বা ছবি অন্তত একটা দিন'); return; }
+
+  var isPoll = currentType==='post' && currentSubType==='poll';
+  if(isPoll){
+    var validOpts = pollOptions.filter(function(o){return o.trim();});
+    if(validOpts.length<2){ showToast('অন্তত ২টি Poll option দিন'); return; }
+  }
+
+  var ctaType = ctaOverridden ? document.getElementById('ctaOverrideSelect').value :
+    (selectedTag ? (selectedTag.productId?'view_product':selectedTag.serviceId?'book_service':'visit_shop') : 'none');
+
+  var data = {
+    type: currentType,
+    postSubType: currentType==='post' ? currentSubType : null,
+    authorUid: currentUser.uid,
+    authorDisplayName: (mediaProfile&&mediaProfile.displayName)||'',
+    authorAvatarUrl: (mediaProfile&&mediaProfile.avatarUrl)||'',
+    caption: document.getElementById('captionInput').value.trim(),
+    mediaUrls: uploadedUrls.filter(function(u){return u.resourceType==='image';}).map(function(u){return u.url;}),
+    videoUrl: (uploadedUrls[0]&&uploadedUrls[0].resourceType==='video') ? uploadedUrls[0].url : null,
+    thumbnailUrl: uploadedUrls[0] ? (uploadedUrls[0].resourceType==='image'?uploadedUrls[0].url:null) : null,
+    duration: (uploadedUrls[0]&&uploadedUrls[0].duration) || null,
+    chapters: (currentType==='video' && chapters.length) ? chapters.map(function(c){return {timeLabel:c.timeLabel,label:c.label};}) : null,
+    pollOptions: isPoll ? pollOptions.filter(function(o){return o.trim();}).map(function(o,i){return {id:'opt'+i,text:o,voteCount:0};}) : null,
+    tags: {
+      shopId: selectedTag ? selectedTag.shopId : null,
+      productId: selectedTag ? (selectedTag.productId||null) : null,
+      serviceId: selectedTag ? (selectedTag.serviceId||null) : null,
+      categoryId: selectedTag ? (selectedTag.categoryId||null) : null,
+      branchId: null, offerId: null, couponId: null
+    },
+    ctaType: ctaType,
+    isReview: document.getElementById('isReviewCheck').checked,
+    rating: document.getElementById('isReviewCheck').checked ? (currentRating||null) : null,
+    linkedOrderId: document.getElementById('isReviewCheck').checked ? (document.getElementById('linkedOrderIdInput').value.trim()||null) : null,
+    helpfulVotesOnThis: 0,
+    status: status, // 'draft' or 'pending' only — matches Firestore rule exactly
+    visibility: 'public',
+    expiresAt: currentType==='story' ? new Date(Date.now()+24*3600*1000).toISOString() : null,
+    stats: {views:0,likes:0,comments:0,shares:0,saves:0,clickThroughs:0,cartAdds:0,orders:0},
+    isFeatured: false,
+    isSponsored: false, boostId: null,
+    createdAt: new Date().toISOString(), updatedAt: new Date().toISOString()
+  };
+
+  document.getElementById('submitBtn').disabled = true;
+  document.getElementById('submitBtn').textContent = status==='draft' ? 'সেভ হচ্ছে...' : 'সাবমিট হচ্ছে...';
+
+  db.collection('cities').doc(CITY).collection('mediaContent').add(data)
+    .then(function(){
+      if(status==='draft'){
+        showToast('Draft হিসেবে সেভ হয়েছে ✅');
+        setTimeout(function(){ location.href='media-profile.html?city='+CITY; },1200);
+      } else {
+        showToast('আপনার content Admin review-তে আছে, approve হলেই সবাই দেখতে পাবে।');
+        setTimeout(function(){ location.href='media-profile.html?city='+CITY; },1800);
+      }
+    })
+    .catch(function(e){
+      showToast('Error: '+e.message);
+      document.getElementById('submitBtn').disabled=false;
+      document.getElementById('submitBtn').textContent='সাবমিট করুন';
+    });
+}
+</script>
+</body>
+</html>
