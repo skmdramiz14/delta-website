@@ -59,31 +59,44 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 .cart-btn-white:hover{background:var(--orange-light);}
 .cart-btn-white .cart-btn-label{color:var(--navy);}
 
-/* ── DELTA VIDEO BUTTON — pill + gold icon badge + NEW tag ── */
+/* ── DELTA VIDEO BUTTON — pill + gold icon badge + NEW tag (premium, black & gold) ── */
 .video-nav-btn{
-  position:relative;background:var(--navy);border:none;cursor:pointer;flex-shrink:0;
-  height:52px;padding:6px 18px 6px 6px;border-radius:30px;
-  display:flex;align-items:center;gap:9px;
-  box-shadow:0 4px 14px rgba(16,57,45,.35);
+  position:relative;cursor:pointer;flex-shrink:0;background:none;border:none;
+  height:54px;padding:7px 24px 7px 7px;border-radius:30px;
+  display:flex;align-items:center;gap:11px;
+  box-shadow:0 0 0 1px rgba(212,175,55,.3),0 6px 16px rgba(0,0,0,.35);
   transition:transform .15s ease-in-out,box-shadow .15s ease-in-out;
 }
+.video-btn-bg{
+  position:absolute;inset:0;border-radius:inherit;overflow:hidden;z-index:0;
+  background:linear-gradient(135deg,#2b2b2b 0%,#161616 55%,#000 100%);
+}
+.video-btn-bg::before{
+  content:'';position:absolute;top:-70%;left:-15%;width:55%;height:240%;
+  background:linear-gradient(115deg,rgba(255,255,255,.18) 0%,rgba(255,255,255,0) 60%);
+  transform:rotate(20deg);pointer-events:none;
+}
 @media(min-width:341px){.video-nav-btn{margin-left:8px;}}
-.video-nav-btn:hover{background:var(--navy2);box-shadow:0 6px 18px rgba(16,57,45,.45);}
+.video-nav-btn:hover{box-shadow:0 0 0 1px rgba(212,175,55,.45),0 8px 20px rgba(0,0,0,.45);}
 .video-nav-btn:active{transform:scale(.96);}
 .video-icon-badge{
-  width:34px;height:34px;border-radius:10px;flex-shrink:0;
-  border:2px solid var(--orange);background:rgba(255,255,255,.06);
+  position:relative;z-index:1;width:36px;height:36px;border-radius:11px;flex-shrink:0;
+  border:2px solid var(--orange);
+  background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.14),rgba(255,255,255,.02) 70%);
   display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 8px rgba(212,175,55,.3),inset 0 1px 2px rgba(255,255,255,.2);
 }
-.video-icon-badge svg{width:16px;height:16px;}
-.video-label{color:#fff;font-weight:800;font-size:1rem;white-space:nowrap;letter-spacing:.2px;}
+.video-icon-badge svg{width:17px;height:17px;filter:drop-shadow(0 1px 1px rgba(0,0,0,.3));}
+.video-label{position:relative;z-index:1;color:#fff;font-weight:800;font-size:1.05rem;white-space:nowrap;letter-spacing:.2px;text-shadow:0 1px 2px rgba(0,0,0,.3);}
 .video-new-badge{
-  position:absolute;top:-8px;right:-6px;background:var(--orange);color:var(--navy);
-  font-size:.6rem;font-weight:800;padding:2px 9px;border-radius:10px;
-  box-shadow:0 2px 5px rgba(0,0,0,.2);letter-spacing:.3px;
+  position:absolute;top:-8px;right:-8px;z-index:3;
+  background:linear-gradient(135deg,#ffe08a,var(--orange) 45%,var(--orange-dark));
+  color:#2a1c00;font-size:.62rem;font-weight:900;padding:3px 10px;border-radius:10px;
+  box-shadow:0 2px 6px rgba(0,0,0,.4),0 0 0 1.5px rgba(255,255,255,.5);
+  letter-spacing:.4px;line-height:1.3;
 }
 @media(max-width:768px){
-  .video-nav-btn{padding:6px;gap:0;}
+  .video-nav-btn{padding:7px;gap:0;}
   .video-label{display:none;}
 }
 .user-chip{background:var(--surface);border:1px solid var(--border);color:var(--navy);padding:0 16px;height:56px;border-radius:17px;cursor:pointer;font-size:.82rem;display:flex;align-items:center;justify-content:center;gap:6px;font-weight:600;transition:transform .18s;box-shadow:0 8px 24px rgba(0,0,0,.05);}
@@ -119,12 +132,16 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 .nav-cat.nav-cat-all:not(.active) .nav-cat-grid i{background:#C7A15A;}
 
 /* ── LOCATION / DELIVERY INFO PILL — merged into a single elegant pill ── */
-.loc-deliver-strip{display:flex;align-items:center;gap:0;background:var(--bar-bg);border-radius:24px;height:42px;margin:24px 5% 0;padding:0 10px;font-size:.72rem;color:#333;box-shadow:0 8px 24px rgba(0,0,0,.05);}
+.loc-deliver-strip{display:flex;align-items:center;gap:10px;margin:24px 5% 0;font-size:.72rem;color:#333;}
 .lds-item{display:flex;align-items:center;gap:12px;flex:1;min-width:0;cursor:default;padding:0 16px;line-height:1;}
 .lds-item[onclick]{cursor:pointer;}
+.lds-loc{flex:none;flex-shrink:0;background:var(--surface);border-radius:24px;height:42px;padding:0 18px;
+  box-shadow:0 8px 24px rgba(0,0,0,.05);transition:all .18s;color:var(--charcoal);}
+.lds-loc:hover{background:var(--orange-light);}
+.lds-loc .lds-arrow{font-size:1.09rem;opacity:.7;color:var(--charcoal);margin-left:2px;}
+.lds-marquee{background:var(--bar-bg);border-radius:24px;height:42px;padding:0 16px;box-shadow:0 8px 24px rgba(0,0,0,.05);}
 .lds-icon{flex-shrink:0;display:flex;align-items:center;line-height:1;}
-.lds-item span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1;color:#2B2B2B;font-weight:600;display:flex;align-items:center;}
-.lds-sep{width:1px;height:16px;background:rgba(0,0,0,.05);flex-shrink:0;}
+.lds-loc-label,.lds-scroll-mask{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1;color:#2B2B2B;font-weight:600;display:flex;align-items:center;}
 .lds-scroll-mask{display:block!important;overflow:hidden!important;text-overflow:clip!important;flex:1;min-width:0;}
 .lds-scroll-track{display:inline-flex;white-space:nowrap;width:max-content;}
 .lds-scroll-seg{padding-right:36px;flex-shrink:0;display:inline-flex;align-items:center;}
@@ -133,11 +150,13 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 }
 @keyframes ldsScroll{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
 @media(max-width:768px){
-  .loc-deliver-strip{font-size:.66rem;margin:22px 4% 0;height:39px;}
+  .loc-deliver-strip{font-size:.66rem;margin:22px 4% 0;}
+  .lds-loc,.lds-marquee{height:39px;}
   .lds-item{padding:0 12px;}
 }
 @media(max-width:480px){
-  .loc-deliver-strip{font-size:.6rem;height:36px;}
+  .loc-deliver-strip{font-size:.6rem;}
+  .lds-loc,.lds-marquee{height:36px;}
   .lds-item{padding:0 9px;}
 }
 
@@ -2159,7 +2178,8 @@ img{max-width:100%;height:auto;}
         <div class="search-suggestions" id="navSuggestions"></div>
       </div>
     </div>
-    <button class="video-nav-btn" id="videosNavBtn" onclick="location.href='media-feed.html'" title="DELTA Videos">
+    <button class="video-nav-btn" id="videosNavBtn" onclick="location.href='reels-player.html'" title="DELTA Reels">
+      <span class="video-btn-bg"></span>
       <span class="video-icon-badge"><svg viewBox="0 0 24 24" fill="none"><path d="M9.5 8.2C9.5 7.5 10.25 7.05 10.87 7.4L16.3 10.6C16.9 10.96 16.9 11.84 16.3 12.2L10.87 15.4C10.25 15.75 9.5 15.3 9.5 14.6V8.2Z" fill="#fff"/></svg></span>
       <span class="video-label">Video</span>
       <span class="video-new-badge">NEW</span>
@@ -2202,12 +2222,12 @@ img{max-width:100%;height:auto;}
 
 <!-- LOCATION / DELIVERY STRIP -->
 <div class="loc-deliver-strip">
-  <div class="lds-item" onclick="openPinModal()">
+  <div class="lds-item lds-loc" onclick="openPinModal()">
     <span class="lds-icon"><svg viewBox="0 0 24 24" width="15" height="15"><path class="ic-stroke" d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Z"/><circle class="ic-gold" cx="12" cy="9" r="1.6"/></svg></span>
-    <span><span class="lang-bn"><span id="ldsCityBn">Manteswar</span> ও আশপাশ</span><span class="lang-en"><span id="ldsCityEn">Manteswar</span> &amp; nearby</span></span>
+    <span class="lds-loc-label"><span class="lang-bn"><span id="ldsCityBn">Manteswar</span> ও আশপাশ</span><span class="lang-en"><span id="ldsCityEn">Manteswar</span> &amp; nearby</span></span>
+    <span class="lds-arrow">▾</span>
   </div>
-  <div class="lds-sep"></div>
-  <div class="lds-item">
+  <div class="lds-item lds-marquee">
     <span class="lds-icon"><svg viewBox="0 0 24 24" width="16" height="16"><path class="ic-stroke" d="M2 8h11v8H2z"/><path class="ic-stroke" d="M13 11h4l3 3v2h-7z"/><circle class="ic-stroke" cx="6" cy="18" r="1.6"/><circle class="ic-stroke" cx="16.5" cy="18" r="1.6"/><circle class="ic-gold" cx="18" cy="13.3" r="1.1"/></svg></span>
     <span class="lds-scroll-mask"><span class="lds-scroll-track">
       <span class="lds-scroll-seg"><span class="lang-bn">ভারতের সেরা লোকাল মার্কেট — Order Local, Support Local</span><span class="lang-en">India's Best Local Market — Order Local, Support Local</span></span>
@@ -3548,7 +3568,7 @@ img{max-width:100%;height:auto;}
     </span>
     <span class="bn">DELTA</span>
   </div>
-  <div class="bn-item" id="bn-reels" onclick="bottomNavClick('reels',this);window.location.href='media-feed.html'">
+  <div class="bn-item" id="bn-reels" onclick="bottomNavClick('reels',this);window.location.href='reels-player.html'">
     <span class="bn-icon-pill"><svg class="bn-icon" viewBox="0 0 24 24" width="19" height="19" fill="none"><rect x="2" y="2" width="20" height="20" rx="6" stroke="currentColor" stroke-width="1.6"/><path d="M9.5 8.2C9.5 7.5 10.25 7.05 10.87 7.4L16.3 10.6C16.9 10.96 16.9 11.84 16.3 12.2L10.87 15.4C10.25 15.75 9.5 15.3 9.5 14.6V8.2Z" fill="currentColor"/></svg></span>
     <span class="bn">Reels</span>
     <span class="bn-active-dot"></span>
