@@ -18,16 +18,71 @@
   --border:#F0ECE5;--muted:#8A8A8A;--charcoal:#1A1A1A;
 }
 body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charcoal);padding-bottom:76px;}
-.nav{background:var(--navy);padding:0 16px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;}
-.nav-logo{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:900;color:#fff;}
-.nav-logo em{color:var(--orange);font-style:normal;}
-.nav-icons{display:flex;gap:16px;}
-.nav-icon-btn{background:none;border:none;color:#fff;font-size:1.1rem;cursor:pointer;position:relative;}
+.nav{background:#fff;padding:0 16px;height:64px;display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:200;border-bottom:1px solid var(--border);gap:12px;
+  box-shadow:0 2px 12px rgba(16,57,45,.04);}
+.nav-brand{display:flex;align-items:center;gap:9px;flex-shrink:0;}
+.nav-brand-icon{width:32px;height:32px;flex-shrink:0;filter:drop-shadow(0 1px 2px rgba(0,0,0,.12));}
+.nav-brand-text{display:flex;flex-direction:column;line-height:1.15;}
+.nav-logo-delta{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:900;color:var(--navy);letter-spacing:.3px;}
+.nav-tagline{font-size:.58rem;color:var(--muted);display:none;letter-spacing:.1px;}
+.nav-page-title{font-family:'Playfair Display',serif;font-size:.95rem;font-weight:800;color:var(--navy);
+  padding-left:12px;border-left:1.5px solid var(--border);flex-shrink:0;display:none;}
+.nav-page-title em{color:var(--orange-dark,#b8925a);font-style:normal;}
+
+.nav-avatar-wrap{display:flex;align-items:center;gap:3px;cursor:pointer;flex-shrink:0;}
+.nav-avatar{width:36px;height:36px;border-radius:50%;background:var(--sand);object-fit:cover;
+  border:2px solid var(--orange);box-shadow:0 0 0 2px rgba(199,161,90,.15),0 2px 6px rgba(0,0,0,.1);}
+.nav-avatar-fallback{width:36px;height:36px;border-radius:50%;background:var(--sand);display:flex;align-items:center;justify-content:center;
+  font-size:1rem;color:var(--navy);border:2px solid var(--orange);box-shadow:0 0 0 2px rgba(199,161,90,.15),0 2px 6px rgba(0,0,0,.1);}
+.nav-avatar-chevron{color:var(--muted);font-size:.68rem;display:none;}
+
+.nav-search-desktop{display:none;flex:1;max-width:400px;position:relative;}
+.nav-search-desktop input{width:100%;padding:9px 40px 9px 16px;border-radius:22px;border:1.5px solid var(--border);
+  background:var(--sand);font-size:.82rem;transition:box-shadow .15s;}
+.nav-search-desktop input:focus{outline:none;border-color:var(--orange);box-shadow:0 0 0 3px rgba(199,161,90,.15);}
+.nav-search-desktop .nsd-icon{position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;}
+
+.nav-create-btn{display:none;align-items:center;gap:6px;
+  background:linear-gradient(135deg,#1a4a3a,var(--navy) 60%,#0a2620);color:#fff;border:1.5px solid rgba(212,175,55,.4);
+  padding:9px 20px;border-radius:22px;font-weight:700;font-size:.82rem;cursor:pointer;white-space:nowrap;flex-shrink:0;
+  box-shadow:0 3px 10px rgba(16,57,45,.3);transition:box-shadow .15s,transform .15s;}
+.nav-create-btn:hover{box-shadow:0 4px 14px rgba(16,57,45,.4);}
+.nav-create-btn:active{transform:scale(.96);}
+
+.nav-icons{display:flex;gap:14px;align-items:center;flex-shrink:0;}
+.nav-icon-btn{background:none;border:none;color:var(--navy);font-size:1.1rem;cursor:pointer;position:relative;
+  width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:background .15s;}
+.nav-icon-btn:hover{background:var(--sand);}
+.nav-icon-badge{position:absolute;top:2px;right:2px;background:#e0245e;color:#fff;font-size:.55rem;font-weight:800;
+  border-radius:50%;width:15px;height:15px;display:flex;align-items:center;justify-content:center;}
+
+@media(min-width:1024px){
+  .nav-tagline{display:block;}
+  .nav-page-title{display:block;}
+  .nav-avatar-chevron{display:inline;}
+  .nav-search-desktop{display:block;}
+  .nav-create-btn{display:flex;}
+  .nav-icons{gap:16px;}
+}
+/* Mobile search — reuses .nav-search-desktop as a toggled overlay below the header */
+.nav-search-desktop.mobile-search-open{display:block!important;position:absolute;top:64px;left:0;right:0;
+  max-width:none;padding:10px 14px;background:#fff;border-bottom:1px solid var(--border);z-index:199;}
 
 /* ── FILTER TABS (Section 9.2 — ship simple filter tabs first, mixed feed later) ── */
-.filter-row{display:flex;gap:8px;padding:12px 14px;overflow-x:auto;background:#fff;border-bottom:1px solid var(--border);position:sticky;top:56px;z-index:100;}
+.filter-row{display:flex;gap:8px;padding:12px 14px;overflow-x:auto;background:#fff;border-bottom:1px solid var(--border);position:sticky;z-index:100;}
+#sortRow{top:64px;}
+#filterRow{top:110px;}
 .filter-chip{padding:8px 16px;border-radius:20px;font-size:.82rem;font-weight:700;white-space:nowrap;cursor:pointer;border:1.5px solid var(--border);color:var(--muted);background:#fff;}
 .filter-chip.active{background:var(--navy);color:#fff;border-color:var(--navy);}
+
+/* Premium segmented control just for the sort row (For You/Following/Nearby/Trending) */
+#sortRow{background:#fff;padding:14px 14px 10px;gap:0;border-bottom:1px solid var(--border);}
+#sortRow .filter-chip{background:var(--sand);border:none;color:var(--charcoal);font-size:.8rem;padding:8px 16px;
+  border-radius:18px;margin-right:8px;transition:all .2s ease;}
+#sortRow .filter-chip.active{background:var(--navy);color:#fff;box-shadow:0 3px 10px rgba(16,57,45,.3);
+  transform:translateY(-1px);}
+#sortRow .filter-chip:not(.active):hover{background:var(--orange-light,#F3EFE6);color:var(--navy);}
 
 .feed-wrap{max-width:520px;margin:0 auto;padding:12px 0;}
 .post-card{background:#fff;margin-bottom:10px;border-radius:0;}
@@ -62,17 +117,31 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 
 .insights-row{margin:0 14px 10px;padding:9px 12px;background:#f4f9f6;border-radius:10px;font-size:.72rem;color:var(--muted);display:flex;justify-content:space-between;}
 .insights-row b{color:var(--navy);}
+.review-stars-feed{padding:0 14px 4px;color:var(--orange);font-size:.9rem;}
+.verified-purchase-feed{margin:0 14px 8px;display:inline-flex;align-items:center;gap:4px;background:#e6f7ec;color:var(--green2);font-size:.7rem;font-weight:700;padding:3px 10px;border-radius:8px;}
 
 .poll-wrap{margin:0 14px 10px;}
 .poll-opt-bar{position:relative;border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:6px;cursor:pointer;overflow:hidden;font-size:.83rem;font-weight:600;}
 .poll-opt-fill{position:absolute;left:0;top:0;bottom:0;background:#eaf3ee;z-index:0;}
 .poll-opt-label{position:relative;z-index:1;display:flex;justify-content:space-between;}
 
-.story-row{display:flex;gap:10px;padding:12px 14px;overflow-x:auto;background:#fff;border-bottom:1px solid var(--border);}
-.story-item{flex:0 0 auto;text-align:center;}
-.story-ring{width:58px;height:58px;border-radius:50%;border:2.5px solid var(--orange);padding:2px;display:flex;align-items:center;justify-content:center;}
-.story-ring img{width:100%;height:100%;border-radius:50%;object-fit:cover;}
-.story-label{font-size:.65rem;margin-top:4px;color:var(--muted);max-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.story-row{display:flex;gap:14px;padding:16px 14px;overflow-x:auto;background:#fff;border-bottom:1px solid var(--border);scrollbar-width:none;}
+.story-row::-webkit-scrollbar{display:none;}
+.story-item{flex:0 0 auto;text-align:center;cursor:pointer;width:64px;}
+.story-ring{width:62px;height:62px;border-radius:50%;padding:2.5px;display:flex;align-items:center;justify-content:center;position:relative;
+  box-shadow:0 2px 8px rgba(0,0,0,.08);}
+.story-ring img{width:100%;height:100%;border-radius:50%;object-fit:cover;border:2px solid #fff;}
+.story-ring-official{background:linear-gradient(135deg,#4a90d9,#8b5cf6,#e0245e);}
+.story-ring-stock{background:linear-gradient(135deg,#2da86a,#1a7a4c);}
+.story-ring-offer{background:linear-gradient(135deg,#F0C34D,#C7A15A);}
+.story-ring-service{background:linear-gradient(135deg,#a370d9,#7c3ead);}
+.story-ring-urgent{background:linear-gradient(135deg,#e0524a,#c0392b);}
+.story-live-badge{position:absolute;bottom:-3px;left:50%;transform:translateX(-50%);background:#e0245e;color:#fff;
+  font-size:.5rem;font-weight:800;padding:1.5px 7px;border-radius:6px;letter-spacing:.3px;white-space:nowrap;
+  box-shadow:0 1px 4px rgba(224,36,94,.5);}
+.story-pinned-badge{position:absolute;bottom:-3px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;
+  font-size:.55rem;padding:1.5px 6px;border-radius:6px;}
+.story-label{font-size:.68rem;margin-top:8px;color:var(--charcoal);font-weight:600;max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 
 .empty-state{padding:60px 20px;text-align:center;color:var(--muted);}
 .empty-state-icon{font-size:2.4rem;margin-bottom:10px;}
@@ -94,37 +163,235 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 .comment-input-row{display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--border);}
 .comment-input-row input{flex:1;padding:10px 12px;border-radius:20px;border:1.5px solid var(--border);background:var(--sand);}
 .comment-input-row button{background:var(--navy);color:#fff;border:none;border-radius:20px;padding:0 16px;font-weight:700;cursor:pointer;}
+
+/* ═══ DESKTOP 3-COLUMN LAYOUT (≥1024px only — mobile stays exactly as before) ═══ */
+.mh-grid{display:block;}
+.mh-left-sidebar,.mh-right-sidebar{display:none;}
+@media(min-width:1024px){
+  .mh-grid{display:grid;grid-template-columns:240px minmax(0,600px) 300px;gap:20px;max-width:1180px;margin:0 auto;padding:20px 16px;align-items:start;}
+  .mh-left-sidebar,.mh-right-sidebar{display:block;position:sticky;top:76px;}
+  .mh-center{min-width:0;}
+  .bottom-nav{display:none;} /* desktop uses the sidebar nav instead */
+  .nav{position:sticky;}
+}
+
+.mh-nav-item{display:flex;align-items:center;gap:13px;padding:10px 12px;border-radius:12px;font-size:.9rem;font-weight:600;
+  color:var(--charcoal);cursor:pointer;margin-bottom:3px;transition:all .15s ease;position:relative;}
+.mh-nav-item:hover{background:var(--sand);}
+.mh-nav-item.active{background:linear-gradient(135deg,#eef7f1,#e4f2ea);color:var(--navy);font-weight:800;}
+.mh-nav-item.active::before{content:'';position:absolute;left:-12px;top:50%;transform:translateY(-50%);
+  width:3px;height:20px;background:var(--orange);border-radius:0 3px 3px 0;}
+.mh-nav-item .mhi{width:30px;height:30px;border-radius:9px;background:var(--sand);display:flex;align-items:center;
+  justify-content:center;font-size:.95rem;flex-shrink:0;transition:all .15s ease;}
+.mh-nav-item.active .mhi{background:var(--navy);color:#fff;box-shadow:0 2px 6px rgba(16,57,45,.3);}
+.mh-nav-item:hover .mhi{transform:scale(1.06);}
+
+.mh-login-box{background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:16px;margin-top:16px;}
+.mh-login-box h4{font-size:.9rem;color:var(--navy);margin-bottom:6px;}
+.mh-login-box p{font-size:.76rem;color:var(--muted);margin-bottom:12px;line-height:1.4;}
+.mh-login-btn{width:100%;padding:10px;background:linear-gradient(135deg,#1a4a3a,var(--navy) 60%,#0a2620);color:#fff;
+  border:1.5px solid rgba(212,175,55,.4);border-radius:12px;font-weight:700;font-size:.82rem;cursor:pointer;
+  box-shadow:0 3px 10px rgba(16,57,45,.25);transition:box-shadow .15s;}
+.mh-login-btn:hover{box-shadow:0 4px 14px rgba(16,57,45,.35);}
+
+.mh-official-card{background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:16px;margin-top:14px;}
+.mh-official-top{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.mh-official-avatar{width:38px;height:38px;border-radius:10px;background:var(--navy);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.1rem;flex-shrink:0;}
+.mh-official-name{font-weight:800;font-size:.85rem;color:var(--navy);display:flex;align-items:center;gap:4px;}
+.mh-official-handle{font-size:.72rem;color:var(--muted);}
+.mh-official-desc{font-size:.76rem;color:var(--muted);margin-bottom:10px;line-height:1.4;}
+.mh-follow-btn-full{width:100%;padding:9px;background:linear-gradient(135deg,#1a4a3a,var(--navy) 60%,#0a2620);color:#fff;
+  border:1.5px solid rgba(212,175,55,.4);border-radius:12px;font-weight:700;font-size:.8rem;cursor:pointer;
+  box-shadow:0 3px 10px rgba(16,57,45,.25);transition:box-shadow .15s;}
+.mh-follow-btn-full:hover{box-shadow:0 4px 14px rgba(16,57,45,.35);}
+.mh-follow-btn-full.following{background:var(--sand);color:var(--navy);border-color:var(--border);box-shadow:none;}
+
+.mh-widget{background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:16px;margin-bottom:16px;}
+.mh-widget-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.mh-widget-title{font-weight:800;font-size:.88rem;color:var(--navy);}
+.mh-widget-seeall{font-size:.72rem;color:var(--green2);font-weight:700;cursor:pointer;}
+.mh-follow-row{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.mh-follow-row:last-child{margin-bottom:0;}
+.mh-follow-avatar{width:36px;height:36px;border-radius:50%;background:var(--sand);object-fit:cover;flex-shrink:0;}
+.mh-follow-info{flex:1;min-width:0;}
+.mh-follow-name{font-size:.8rem;font-weight:700;color:var(--navy);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.mh-follow-handle{font-size:.68rem;color:var(--muted);}
+.mh-follow-btn-sm{padding:6px 13px;border-radius:16px;background:var(--sand);color:var(--navy);border:1.5px solid var(--border);font-size:.72rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .15s;}
+.mh-follow-btn-sm:hover{border-color:var(--orange);}
+.mh-follow-btn-sm.following{background:var(--navy);color:#fff;border-color:var(--navy);}
+
+.mh-trending-scroll{display:flex;gap:8px;overflow-x:auto;}
+.mh-trending-card{flex:0 0 90px;cursor:pointer;}
+.mh-trending-thumb{width:90px;height:90px;border-radius:10px;object-fit:cover;background:var(--sand);}
+.mh-trending-views{font-size:.66rem;color:var(--muted);margin-top:4px;display:flex;align-items:center;gap:3px;}
+
+.mh-creator-row{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.mh-creator-row:last-child{margin-bottom:0;}
+.mh-creator-rank{width:18px;font-size:.75rem;font-weight:800;color:var(--orange-dark,#b8925a);}
+.mh-creator-avatar{width:34px;height:34px;border-radius:50%;background:var(--sand);object-fit:cover;flex-shrink:0;}
+.mh-creator-meta{font-size:.68rem;color:var(--muted);}
+
+.mh-premium-card{background:linear-gradient(135deg,#fff8ec,#fdf0d5);border:1.5px solid var(--orange);border-radius:14px;padding:16px;margin-bottom:16px;}
+.mh-premium-title{font-weight:800;font-size:.9rem;color:var(--navy);display:flex;align-items:center;gap:6px;margin-bottom:6px;}
+.mh-premium-sub{font-size:.74rem;color:var(--muted);margin-bottom:10px;}
+.mh-premium-list{font-size:.74rem;color:var(--charcoal);margin-bottom:12px;padding-left:18px;line-height:1.7;}
+.mh-premium-btn{width:100%;padding:9px;background:var(--orange);color:#fff;border:none;border-radius:10px;font-weight:800;font-size:.8rem;cursor:pointer;}
+
+.mh-crossplatform-card{background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:16px;}
+.mh-cp-badge{display:inline-block;background:var(--sand);color:var(--orange-dark,#b8925a);font-size:.62rem;font-weight:800;padding:3px 9px;border-radius:8px;margin-bottom:8px;}
+.mh-cp-desc{font-size:.76rem;color:var(--muted);margin-bottom:12px;}
+.mh-cp-icons{display:flex;gap:8px;margin-bottom:12px;}
+.mh-cp-icon{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:1rem;color:#fff;}
+.mh-cp-try-btn{width:100%;padding:9px;background:var(--sand);color:var(--muted);border:none;border-radius:10px;font-weight:700;font-size:.8rem;cursor:not-allowed;}
+
+.pinned-post-badge{display:inline-flex;align-items:center;gap:4px;background:var(--sand);color:var(--orange-dark,#b8925a);font-size:.68rem;font-weight:700;padding:3px 10px;border-radius:8px;}
 </style>
 </head>
 <body>
 
 <div class="nav">
-  <div class="nav-logo">DELTA <em>Media</em></div>
+  <div class="nav-brand">
+    <svg class="nav-brand-icon" viewBox="0 0 24 24" fill="none"><path d="M12 3L21.5 20H2.5L12 3Z" fill="var(--navy)"/><path d="M12 3L16.5 20H7.5L12 3Z" fill="var(--orange)" fill-opacity=".55"/></svg>
+    <div class="nav-brand-text">
+      <div class="nav-logo-delta">DELTA</div>
+      <div class="nav-tagline">Local Roots. Global Wings.</div>
+    </div>
+  </div>
+
+  <div class="nav-page-title">DELTA <em>Media</em></div>
+
+  <div class="nav-avatar-wrap" id="navAvatarWrap" onclick="handleNavAvatarClick()">
+    <div class="nav-avatar-fallback" id="navAvatarFallback">👤</div>
+    <img class="nav-avatar" id="navAvatarImg" src="" style="display:none;" onerror="this.style.display='none'">
+    <span class="nav-avatar-chevron">▾</span>
+  </div>
+
+  <div class="nav-search-desktop">
+    <input type="text" id="navSearchDesktop" placeholder="Search creators, shops, posts...">
+    <span class="nsd-icon">🔍</span>
+  </div>
+
+  <button class="nav-create-btn" onclick="location.href='create-studio.html?city='+CITY">✦ Create</button>
+
   <div class="nav-icons">
-    <button class="nav-icon-btn">🔍</button>
-    <button class="nav-icon-btn">🔔</button>
-    <button class="nav-icon-btn" onclick="location.href='create-studio.html?city='+CITY">➕</button>
+    <button class="nav-icon-btn" onclick="toggleMobileSearch()" title="Search">🔍</button>
+    <button class="nav-icon-btn" onclick="location.href='video-hub.html?city='+CITY" title="DELTA TV / Video Hub">📺</button>
+    <button class="nav-icon-btn" title="Messages">💬</button>
+    <button class="nav-icon-btn" title="Notifications">🔔</button>
   </div>
 </div>
 
-<!-- Filter tabs — Section 9.2: simple content-type filter first, mixed feed deferred -->
-<div class="filter-row" id="filterRow">
-  <div class="filter-chip active" data-t="all">সব</div>
-  <div class="filter-chip" data-t="post">Post</div>
-  <div class="filter-chip" data-t="reel">Reel</div>
-  <div class="filter-chip" data-t="video">Video</div>
-  <div class="filter-chip" data-t="story">Story</div>
-</div>
+<div class="mh-grid">
+  <!-- ═══ LEFT SIDEBAR (desktop only) ═══ -->
+  <div class="mh-left-sidebar">
+    <div class="mh-nav-item active" onclick="location.reload()"><span class="mhi">🏠</span>Home</div>
+    <div class="mh-nav-item" onclick="document.getElementById('storyRow').scrollIntoView({behavior:'smooth'})"><span class="mhi">⭕</span>Stories</div>
+    <div class="mh-nav-item" onclick="location.href='reels-player.html?city='+CITY"><span class="mhi">🎬</span>Reels</div>
+    <div class="mh-nav-item" onclick="location.href='video-hub.html?city='+CITY"><span class="mhi">📺</span>Videos</div>
+    <div class="mh-nav-item" onclick="document.querySelector('[data-t=post]').click()"><span class="mhi">📝</span>Posts</div>
+    <div class="mh-nav-item" onclick="alert('Live Shopping — coming soon, needs streaming infrastructure')"><span class="mhi">🔴</span>Live</div>
+    <div class="mh-nav-item" onclick="location.href='shops.html'"><span class="mhi">🏪</span>Shops</div>
+    <div class="mh-nav-item" onclick="alert('Creator directory — not built yet')"><span class="mhi">👥</span>Creators</div>
+    <div class="mh-nav-item" onclick="alert('Saved list — not built yet')"><span class="mhi">🔖</span>Saved</div>
+    <div class="mh-nav-item" onclick="alert('Notifications — not built yet')"><span class="mhi">🔔</span>Alerts</div>
+    <div class="mh-nav-item" onclick="document.querySelector('[data-s=trending]').click()"><span class="mhi">🔎</span>Explore</div>
 
-<!-- Story row (Section 10.4 — 24hr auto-expire) -->
-<div class="story-row" id="storyRow"></div>
+    <div class="mh-login-box" id="mhLoginBox" style="display:none;">
+      <h4>Login to engage</h4>
+      <p>Like, Comment, Follow, Save and create content</p>
+      <button class="mh-login-btn" onclick="location.href='index.html'">Login / Sign Up</button>
+    </div>
 
-<div class="feed-wrap" id="feedWrap">
-  <div class="loading-state" id="loadingState">লোড হচ্ছে...</div>
-</div>
-<div class="empty-state" id="emptyState" style="display:none;">
-  <div class="empty-state-icon">🎬</div>
-  <div>এখনও কোনো published content নেই</div>
+    <div class="mh-official-card" id="mhOfficialCard" style="display:none;">
+      <div class="mh-official-top">
+        <div class="mh-official-avatar">🔷</div>
+        <div>
+          <div class="mh-official-name">DELTA Official ✓</div>
+          <div class="mh-official-handle" id="mhOfficialHandle">@delta.official</div>
+        </div>
+      </div>
+      <div class="mh-official-desc">Official updates, offers, campaigns and more.</div>
+      <button class="mh-follow-btn-full" id="mhOfficialFollowBtn">Follow</button>
+    </div>
+  </div>
+
+  <!-- ═══ CENTER FEED (existing content, unchanged) ═══ -->
+  <div class="mh-center">
+    <!-- NEW: algorithmic sort row per updated Media Home spec — reuses the same honest
+         ranking approach already used in reels-player.html / video-hub.html -->
+    <div class="filter-row" id="sortRow">
+      <div class="filter-chip active" data-s="foryou">For You</div>
+      <div class="filter-chip" data-s="nearby">Nearby</div>
+      <div class="filter-chip" data-s="following">Following</div>
+      <div class="filter-chip" data-s="trending">Trending</div>
+    </div>
+
+    <!-- Content-type filter — Section 9.2: simple content-type filter, still useful alongside sort -->
+    <div class="filter-row" id="filterRow">
+      <div class="filter-chip active" data-t="all">সব</div>
+      <div class="filter-chip" data-t="post">Post</div>
+      <div class="filter-chip" data-t="reel">Reel</div>
+      <div class="filter-chip" data-t="video">Video</div>
+      <div class="filter-chip" data-t="story">Story</div>
+    </div>
+
+    <!-- Story row (Section 10.4 — 24hr auto-expire) -->
+    <div class="story-row" id="storyRow"></div>
+
+    <div class="feed-wrap" id="feedWrap">
+      <div class="loading-state" id="loadingState">লোড হচ্ছে...</div>
+    </div>
+    <div class="empty-state" id="emptyState" style="display:none;">
+      <div class="empty-state-icon">🎬</div>
+      <div>এখনও কোনো published content নেই</div>
+    </div>
+  </div>
+
+  <!-- ═══ RIGHT SIDEBAR (desktop only) ═══ -->
+  <div class="mh-right-sidebar">
+    <div class="mh-widget">
+      <div class="mh-widget-head"><div class="mh-widget-title">Who to Follow</div><div class="mh-widget-seeall">See All</div></div>
+      <div id="mhWhoToFollow"><div style="color:var(--muted);font-size:.78rem;">লোড হচ্ছে...</div></div>
+    </div>
+
+    <div class="mh-widget">
+      <div class="mh-widget-head"><div class="mh-widget-title">Trending Reels</div><div class="mh-widget-seeall" onclick="location.href='reels-player.html?city='+CITY">See All</div></div>
+      <div class="mh-trending-scroll" id="mhTrendingReels"><div style="color:var(--muted);font-size:.78rem;">লোড হচ্ছে...</div></div>
+    </div>
+
+    <div class="mh-widget">
+      <div class="mh-widget-head"><div class="mh-widget-title">Top Creators</div><div class="mh-widget-seeall">See All</div></div>
+      <div id="mhTopCreators"><div style="color:var(--muted);font-size:.78rem;">লোড হচ্ছে...</div></div>
+    </div>
+
+    <!-- Static upsell — Boost/Monetization is intentionally deferred (Section 14.2),
+         this is a non-functional preview card only, no purchase flow exists -->
+    <div class="mh-premium-card">
+      <div class="mh-premium-title">👑 Go Premium</div>
+      <div class="mh-premium-sub">Unlock powerful tools to grow your business</div>
+      <ul class="mh-premium-list">
+        <li>Live Selling</li><li>Ad Streaming</li><li>Featured Profile</li>
+        <li>Featured Reels</li><li>Sponsored Content</li><li>Advanced Analytics</li>
+      </ul>
+      <button class="mh-premium-btn" onclick="alert('Premium plans — not launched yet')">Upgrade Now</button>
+    </div>
+
+    <!-- Static upsell — same feature Section 15 explicitly deferred (needs per-platform
+         OAuth + months of API approval). Preview only, publishing is not functional. -->
+    <div class="mh-crossplatform-card">
+      <span class="mh-cp-badge">Premium Feature</span>
+      <div style="font-weight:800;font-size:.85rem;color:var(--navy);margin-bottom:4px;">Cross-Platform Publishing</div>
+      <div class="mh-cp-desc">Create once and publish everywhere.</div>
+      <div class="mh-cp-icons">
+        <div class="mh-cp-icon" style="background:#1877f2;">f</div>
+        <div class="mh-cp-icon" style="background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);">📷</div>
+        <div class="mh-cp-icon" style="background:#ff0000;">▶</div>
+        <div class="mh-cp-icon" style="background:#000;">𝕏</div>
+        <div class="mh-cp-icon" style="background:#0a66c2;">in</div>
+      </div>
+      <button class="mh-cp-try-btn" disabled title="Needs per-platform OAuth approval — not built yet">Try Premium</button>
+    </div>
+  </div>
 </div>
 
 <!-- BOTTOM NAV -->
@@ -132,7 +399,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
   <div class="bn-item" onclick="location.href='index.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 10.5L12 4L20 10.5V20C20 20.55 19.55 21 19 21H15V15H9V21H5C4.45 21 4 20.55 4 20V10.5Z"/></svg>হোম</div>
   <div class="bn-item" onclick="location.href='shops.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 9L5 4H19L20 9M4 9V20H20V9M4 9C4 10.1 8 10.1 8 9C8 10.1 12 10.1 12 9C12 10.1 16 10.1 16 9C16 10.1 20 10.1 20 9"/></svg>দোকান</div>
   <div class="bn-item bn-center" onclick="location.href='ecosystem.html'"><div class="bn-icon-wrap"><span style="color:#0A2620;font-weight:900;">△</span></div>DELTA</div>
-  <div class="bn-item active" onclick="location.reload()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10L21 7V17L16 14"/></svg>Reels</div>
+  <div class="bn-item" onclick="location.href='reels-player.html?city='+CITY"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10L21 7V17L16 14"/></svg>Reels</div>
   <div class="bn-item" onclick="alert('Menu')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6H20M4 12H20M4 18H20"/></svg>মেনু</div>
 </div>
 
@@ -156,37 +423,133 @@ var db=firebase.firestore();
 var CITY = new URLSearchParams(location.search).get('city') || 'manteswar';
 var currentUser=null;
 var activeFilter='all';
+var activeSort='foryou';
+var followingSetFeed=null;
 var activeCommentContentId=null;
 
-auth.onAuthStateChanged(function(u){ currentUser=u; loadFeed(); loadStories(); });
+auth.onAuthStateChanged(function(u){
+  currentUser=u; loadFeed(); loadStories();
+  document.getElementById('mhLoginBox').style.display = u ? 'none' : 'block';
+  loadMhOfficialCard();
+  loadMhWhoToFollow();
+  loadMhTrendingReels();
+  loadMhTopCreators();
+  loadNavAvatar();
+});
+
+function loadNavAvatar(){
+  var img = document.getElementById('navAvatarImg');
+  var fallback = document.getElementById('navAvatarFallback');
+  if(!currentUser){ img.style.display='none'; fallback.style.display='flex'; return; }
+  db.collection('cities').doc(CITY).collection('mediaProfiles').doc(currentUser.uid).get().then(function(doc){
+    if(doc.exists && doc.data().avatarUrl){ img.src = doc.data().avatarUrl; img.style.display='block'; fallback.style.display='none'; }
+    else { img.style.display='none'; fallback.style.display='flex'; }
+  }).catch(function(){ img.style.display='none'; fallback.style.display='flex'; });
+}
+function handleNavAvatarClick(){
+  if(!currentUser){ location.href='index.html'; return; }
+  location.href='media-profile.html?uid='+currentUser.uid+'&city='+CITY;
+}
+function toggleMobileSearch(){
+  document.getElementById('navSearchDesktop').classList.toggle('mobile-search-open');
+  var input = document.getElementById('navSearchDesktop').querySelector('input');
+  if(document.getElementById('navSearchDesktop').classList.contains('mobile-search-open')) input.focus();
+}
+// Search — client-side substring match over whatever the feed already fetched.
+// NOT full-text/creator/shop search — that needs Algolia (Step 23.5, not built).
+document.getElementById('navSearchDesktop').querySelector('input').addEventListener('keydown', function(e){
+  if(e.key!=='Enter') return;
+  var q = e.target.value.trim().toLowerCase();
+  if(!q) return;
+  var cards = document.querySelectorAll('#feedWrap .post-card');
+  var matchCount = 0;
+  cards.forEach(function(card){
+    var text = card.textContent.toLowerCase();
+    var show = text.indexOf(q)!==-1;
+    card.style.display = show ? '' : 'none';
+    if(show) matchCount++;
+  });
+  if(matchCount===0) alert('এই মুহূর্তে load হওয়া content-এর মধ্যে "'+e.target.value+'" পাওয়া যায়নি');
+});
+
+document.getElementById('sortRow').addEventListener('click', function(e){
+  var chip = e.target.closest('.filter-chip'); if(!chip) return;
+  document.querySelectorAll('#sortRow .filter-chip').forEach(function(c){c.classList.remove('active');});
+  chip.classList.add('active');
+  activeSort = chip.dataset.s;
+  loadFeed();
+});
 
 document.getElementById('filterRow').addEventListener('click', function(e){
   var chip = e.target.closest('.filter-chip'); if(!chip) return;
-  document.querySelectorAll('.filter-chip').forEach(function(c){c.classList.remove('active');});
+  document.querySelectorAll('#filterRow .filter-chip').forEach(function(c){c.classList.remove('active');});
   chip.classList.add('active');
   activeFilter = chip.dataset.t;
   loadFeed();
 });
 
+// Demo fallback — same reasoning as index.html: lets the row's real visual
+// structure be seen before real sellers start posting stories.
+var DEMO_MF_STORIES = [
+  { data:{ authorUid:'demo-freshmart', authorDisplayName:'Fresh Mart', authorAvatarUrl:'https://images.unsplash.com/photo-1542838132-92c53300491e?w=200&q=60', ringType:'stock', isLive:true } },
+  { data:{ authorUid:'demo-fishcorner', authorDisplayName:'Fish Corner', authorAvatarUrl:'https://images.unsplash.com/photo-1544943910-4c1dc44aab44?w=200&q=60', ringType:'offer' } },
+  { data:{ authorUid:'demo-salon', authorDisplayName:'Salon XYZ', authorAvatarUrl:'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=200&q=60', ringType:'service' } },
+  { data:{ authorUid:'demo-pharmacy', authorDisplayName:'Green Pharmacy', authorAvatarUrl:'', ringType:'urgent' } }
+];
 function loadStories(){
   var wrap=document.getElementById('storyRow'); wrap.innerHTML='';
   var now=new Date().toISOString();
-  db.collection('cities').doc(CITY).collection('mediaContent')
-    .where('type','==','story').where('status','==','published')
-    .orderBy('createdAt','desc').limit(15).get().then(function(snap){
-      snap.forEach(function(doc){
-        var d=doc.data();
-        if(d.expiresAt && d.expiresAt < now) return; // client-side TTL filter
-        var thumb = d.thumbnailUrl || (d.mediaUrls&&d.mediaUrls[0]) || d.authorAvatarUrl || '';
+
+  getMhOfficialUid().then(function(officialUid){
+    var pinnedHtml = '';
+    var renderRealStories = function(list, isDemo){
+      list.forEach(function(entry){
+        var d = entry.data;
+        var thumb = d.authorAvatarUrl || '';
+        var ringClass = 'story-ring-'+(d.ringType||'stock');
         var item=document.createElement('div'); item.className='story-item';
-        item.innerHTML='<div class="story-ring">'+(thumb?'<img src="'+thumb+'">':'👤')+'</div><div class="story-label">'+(d.authorDisplayName||'')+'</div>';
-        item.onclick=function(){ openContentDetail(doc.id); };
+        item.innerHTML =
+          '<div class="story-ring '+ringClass+'">'+
+            (thumb?'<img src="'+thumb+'">':'<div style="width:100%;height:100%;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;">🏪</div>')+
+            (d.isLive?'<span class="story-live-badge">LIVE</span>':'')+
+          '</div><div class="story-label">'+(d.authorDisplayName||'')+'</div>';
+        if(!isDemo) item.onclick=function(){ openContentDetail(entry.id); };
         wrap.appendChild(item);
       });
-    }).catch(function(e){console.error(e);});
+    };
+
+    // Slot #1 — Pinned DELTA Official, only if a real official profile exists (no fake pin here)
+    if(officialUid){
+      db.collection('cities').doc(CITY).collection('mediaProfiles').doc(officialUid).get().then(function(pDoc){
+        var pinItem=document.createElement('div'); pinItem.className='story-item';
+        pinItem.innerHTML =
+          '<div class="story-ring story-ring-official">'+
+            (pDoc.exists && pDoc.data().avatarUrl ? '<img src="'+pDoc.data().avatarUrl+'">' : '<div style="width:100%;height:100%;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;">🔷</div>')+
+            '<span class="story-pinned-badge">📌</span>'+
+          '</div><div class="story-label">DELTA Official</div>';
+        wrap.insertBefore(pinItem, wrap.firstChild);
+      });
+    }
+
+    db.collection('cities').doc(CITY).collection('mediaContent')
+      .where('type','==','story').where('status','==','published')
+      .orderBy('createdAt','desc').limit(15).get().then(function(snap){
+        var real = [];
+        snap.forEach(function(doc){
+          var d=doc.data();
+          if(d.expiresAt && d.expiresAt < now) return;
+          real.push({id:doc.id, data:d});
+        });
+        if(real.length){ renderRealStories(real, false); }
+        else { renderRealStories(DEMO_MF_STORIES, true); }
+      }).catch(function(e){
+        console.error(e);
+        renderRealStories(DEMO_MF_STORIES, true);
+      });
+  });
 }
 
-function loadFeed(){
+async function loadFeed(){
   var wrap=document.getElementById('feedWrap');
   wrap.innerHTML = '<div class="loading-state">লোড হচ্ছে...</div>';
   document.getElementById('emptyState').style.display='none';
@@ -195,14 +558,206 @@ function loadFeed(){
   if(activeFilter!=='all') q = q.where('type','==',activeFilter);
   else q = q.where('type','in',['post','reel','video']); // "সব" excludes stories/live from main scroll, matches story row being separate
 
-  q.orderBy('createdAt','desc').limit(20).get().then(function(snap){
+  if(activeSort==='following' && !currentUser){
     wrap.innerHTML='';
-    if(snap.empty){ document.getElementById('emptyState').style.display='block'; return; }
-    snap.forEach(function(doc){ renderPostCard(doc.id, doc.data(), wrap); });
+    document.getElementById('emptyState').querySelector('div:last-child').textContent='Following দেখতে লগইন করুন';
+    document.getElementById('emptyState').style.display='block';
+    return;
+  }
+  if(activeSort==='following' && !followingSetFeed){
+    var fs = await db.collection('cities').doc(CITY).collection('mediaProfiles').doc(currentUser.uid).collection('following').get();
+    followingSetFeed = fs.docs.map(function(d){return d.id;});
+  }
+  if(activeSort==='nearby') console.warn('Nearby: no geo field on mediaContent yet — showing standard feed instead.');
+
+  q.orderBy('createdAt','desc').limit(40).get().then(async function(snap){
+    var docs = snap.docs.map(function(d){return {id:d.id, data:d.data()};});
+
+    if(activeSort==='following'){
+      docs = docs.filter(function(d){ return followingSetFeed.indexOf(d.data.authorUid)!==-1; });
+    } else if(activeSort==='trending'){
+      docs.sort(function(a,b){ return ((b.data.stats&&b.data.stats.views)||0) - ((a.data.stats&&a.data.stats.views)||0); });
+    } else {
+      // foryou / nearby (fallback) — same honest Featured-boost + newest substitute
+      // used across reels-player.html and video-hub.html; no real trust/quality/geo
+      // scoring exists yet (Section 15, deferred).
+      docs.sort(function(a,b){
+        var ab=(a.data.adminFeatured?2:0)+(a.data.isFeatured?1:0);
+        var bb=(b.data.adminFeatured?2:0)+(b.data.isFeatured?1:0);
+        if(ab!==bb) return bb-ab;
+        return new Date(b.data.createdAt)-new Date(a.data.createdAt);
+      });
+    }
+
+    // Pinned DELTA Official post — only on the default For You view, matching
+    // your reference image; not shown under Following/Trending/Nearby to avoid
+    // it feeling out of place in those more specific views.
+    var pinnedPost = null;
+    if(activeSort==='foryou' && (activeFilter==='all' || activeFilter==='post')){
+      var officialUid = await getMhOfficialUid();
+      if(officialUid){
+        try{
+          var pSnap = await db.collection('cities').doc(CITY).collection('mediaContent')
+            .where('authorUid','==',officialUid).where('type','==','post').where('status','==','published')
+            .orderBy('createdAt','desc').limit(1).get();
+          if(!pSnap.empty){
+            var pDoc = pSnap.docs[0];
+            pinnedPost = {id:pDoc.id, data:pDoc.data()};
+            docs = docs.filter(function(d){ return d.id!==pinnedPost.id; }); // no duplicate
+          }
+        }catch(e){ console.warn('Pinned post load error', e); }
+      }
+    }
+
+    wrap.innerHTML='';
+    if(pinnedPost) renderPostCard(pinnedPost.id, pinnedPost.data, wrap, true);
+    if(!docs.length && !pinnedPost){
+      document.getElementById('emptyState').querySelector('div:last-child').textContent = activeSort==='following' ? 'আপনি এখনও কাউকে follow করেননি' : 'এখনও কোনো published content নেই';
+      document.getElementById('emptyState').style.display='block';
+      return;
+    }
+    docs.forEach(function(item){ renderPostCard(item.id, item.data, wrap); });
   }).catch(function(e){
     console.error(e);
     wrap.innerHTML='<div class="loading-state">লোড করতে সমস্যা হয়েছে</div>';
   });
+}
+
+// ═══ LEFT SIDEBAR: DELTA Official card ═══
+// Reuses the same primaryBadge=='delta_official' lookup pattern already used
+// for the Pinned Story slot on index.html — not hardcoded to one UID.
+var mhOfficialUid = null;
+async function getMhOfficialUid(){
+  if(mhOfficialUid) return mhOfficialUid;
+  try{
+    var snap = await db.collection('cities').doc(CITY).collection('mediaProfiles')
+      .where('primaryBadge','==','delta_official').limit(1).get();
+    if(!snap.empty){ mhOfficialUid = snap.docs[0].id; return mhOfficialUid; }
+  }catch(e){ console.warn('Could not resolve DELTA Official account', e); }
+  return null;
+}
+async function loadMhOfficialCard(){
+  var uid = await getMhOfficialUid();
+  var card = document.getElementById('mhOfficialCard');
+  card.style.display='block';
+  var followBtn = document.getElementById('mhOfficialFollowBtn');
+
+  if(!uid){
+    // Demo fallback — same reasoning as Stories: shows the real layout before a
+    // real mediaProfiles.primaryBadge=='delta_official' account exists.
+    document.getElementById('mhOfficialHandle').textContent = '@delta.official';
+    followBtn.textContent='Follow';
+    followBtn.onclick = function(){ alert('Demo card — set a real mediaProfiles.primaryBadge=="delta_official" account to make this functional'); };
+    return;
+  }
+
+  var profileDoc = await db.collection('cities').doc(CITY).collection('mediaProfiles').doc(uid).get();
+  if(profileDoc.exists){
+    document.getElementById('mhOfficialHandle').textContent = '@'+(profileDoc.data().username||'delta.official');
+  }
+  if(currentUser && uid===currentUser.uid){ followBtn.style.display='none'; return; }
+  followBtn.onclick = function(){ toggleMhFollow(uid, followBtn); };
+  if(currentUser){
+    db.collection('cities').doc(CITY).collection('mediaProfiles').doc(uid).collection('followers').doc(currentUser.uid).get().then(function(d){
+      if(d.exists){ followBtn.textContent='Following'; followBtn.classList.add('following'); }
+    });
+  }
+}
+function toggleMhFollow(targetUid, btn){
+  if(!currentUser){ alert('লগইন করুন প্রথমে'); return; }
+  var followerDoc = db.collection('cities').doc(CITY).collection('mediaProfiles').doc(targetUid).collection('followers').doc(currentUser.uid);
+  var followingDoc = db.collection('cities').doc(CITY).collection('mediaProfiles').doc(currentUser.uid).collection('following').doc(targetUid);
+  followerDoc.get().then(function(d){
+    var now = new Date().toISOString();
+    if(d.exists){ followerDoc.delete(); followingDoc.delete(); btn.textContent='Follow'; btn.classList.remove('following'); }
+    else { followerDoc.set({followedAt:now}); followingDoc.set({followedAt:now}); btn.textContent='Following'; btn.classList.add('following'); }
+  });
+}
+
+// ═══ RIGHT SIDEBAR: Who to Follow ═══
+// Shows a few creators the viewer doesn't already follow. Small-scale query
+// (limit 15, client-filtered) — fine at current size, would need a proper
+// recommendation query at real scale.
+async function loadMhWhoToFollow(){
+  var wrap = document.getElementById('mhWhoToFollow');
+  try{
+    var followSet = [];
+    if(currentUser){
+      var fs = await db.collection('cities').doc(CITY).collection('mediaProfiles').doc(currentUser.uid).collection('following').get();
+      followSet = fs.docs.map(function(d){return d.id;});
+    }
+    var snap = await db.collection('cities').doc(CITY).collection('mediaProfiles').limit(15).get();
+    var candidates = snap.docs.filter(function(d){
+      return d.id!==(currentUser&&currentUser.uid) && followSet.indexOf(d.id)===-1;
+    }).slice(0,3);
+    if(!candidates.length){ wrap.innerHTML='<div style="color:var(--muted);font-size:.78rem;">এই মুহূর্তে suggest করার মতো কেউ নেই</div>'; return; }
+    wrap.innerHTML='';
+    candidates.forEach(function(doc){
+      var p = doc.data();
+      var row = document.createElement('div'); row.className='mh-follow-row';
+      row.innerHTML =
+        '<img class="mh-follow-avatar" src="'+(p.avatarUrl||'')+'" onerror="this.style.background=\'var(--sand)\'">'+
+        '<div class="mh-follow-info"><div class="mh-follow-name">'+(p.displayName||'Unknown')+'</div>'+
+        '<div class="mh-follow-handle">@'+(p.username||'user')+'</div></div>'+
+        '<button class="mh-follow-btn-sm">Follow</button>';
+      row.querySelector('.mh-follow-avatar').onclick = function(){ location.href='media-profile.html?uid='+doc.id+'&city='+CITY; };
+      row.querySelector('.mh-follow-btn-sm').onclick = function(e){ toggleMhFollow(doc.id, e.target); };
+      wrap.appendChild(row);
+    });
+  }catch(e){ console.warn('Who to Follow load error', e); wrap.innerHTML='<div style="color:var(--muted);font-size:.78rem;">লোড করতে সমস্যা হয়েছে</div>'; }
+}
+
+// ═══ RIGHT SIDEBAR: Trending Reels ═══
+async function loadMhTrendingReels(){
+  var wrap = document.getElementById('mhTrendingReels');
+  try{
+    var snap = await db.collection('cities').doc(CITY).collection('mediaContent')
+      .where('type','==','reel').where('status','==','published').orderBy('createdAt','desc').limit(20).get();
+    var docs = snap.docs.map(function(d){return {id:d.id, data:d.data()};});
+    docs.sort(function(a,b){ return ((b.data.stats&&b.data.stats.views)||0) - ((a.data.stats&&a.data.stats.views)||0); });
+    docs = docs.slice(0,3);
+    if(!docs.length){ wrap.innerHTML='<div style="color:var(--muted);font-size:.78rem;">এখনও কোনো Reel নেই</div>'; return; }
+    wrap.innerHTML='';
+    docs.forEach(function(item){
+      var d = item.data;
+      var card = document.createElement('div'); card.className='mh-trending-card';
+      card.innerHTML =
+        '<img class="mh-trending-thumb" src="'+(d.thumbnailUrl||'')+'" onerror="this.style.background=\'var(--sand)\'">'+
+        '<div class="mh-trending-views">▶ '+((d.stats&&d.stats.views)||0)+'</div>';
+      card.onclick = function(){ location.href='reels-player.html?city='+CITY; };
+      wrap.appendChild(card);
+    });
+  }catch(e){ console.warn('Trending Reels load error', e); wrap.innerHTML='<div style="color:var(--muted);font-size:.78rem;">লোড করতে সমস্যা হয়েছে</div>'; }
+}
+
+// ═══ RIGHT SIDEBAR: Top Creators ═══
+// Honest note: there's no denormalized follower-count field, so this computes
+// counts live by reading each candidate's followers subcollection — fine at
+// small scale (limit 8 candidates), would need a real leaderboard/Cloud
+// Function to stay cheap once there are hundreds of creators.
+async function loadMhTopCreators(){
+  var wrap = document.getElementById('mhTopCreators');
+  try{
+    var snap = await db.collection('cities').doc(CITY).collection('mediaProfiles').limit(8).get();
+    var withCounts = await Promise.all(snap.docs.map(async function(doc){
+      var followers = await doc.ref.collection('followers').get();
+      return {id:doc.id, data:doc.data(), count:followers.size};
+    }));
+    withCounts.sort(function(a,b){ return b.count - a.count; });
+    var top = withCounts.slice(0,3);
+    if(!top.length || top[0].count===0){ wrap.innerHTML='<div style="color:var(--muted);font-size:.78rem;">এখনও কোনো ranking data নেই</div>'; return; }
+    wrap.innerHTML='';
+    top.forEach(function(item, i){
+      var row = document.createElement('div'); row.className='mh-creator-row';
+      row.innerHTML =
+        '<div class="mh-creator-rank">'+(i+1)+'</div>'+
+        '<img class="mh-creator-avatar" src="'+(item.data.avatarUrl||'')+'" onerror="this.style.background=\'var(--sand)\'">'+
+        '<div class="mh-follow-info"><div class="mh-follow-name">'+(item.data.displayName||'Unknown')+'</div>'+
+        '<div class="mh-creator-meta">'+item.count+' Followers</div></div>';
+      row.onclick = function(){ location.href='media-profile.html?uid='+item.id+'&city='+CITY; };
+      wrap.appendChild(row);
+    });
+  }catch(e){ console.warn('Top Creators load error', e); wrap.innerHTML='<div style="color:var(--muted);font-size:.78rem;">লোড করতে সমস্যা হয়েছে</div>'; }
 }
 
 function badgeLabel(profile){
@@ -210,7 +765,7 @@ function badgeLabel(profile){
   return '';
 }
 
-function renderPostCard(id, d, wrap){
+function renderPostCard(id, d, wrap, isPinned){
   var card=document.createElement('div'); card.className='post-card';
 
   // ── Header ──
@@ -218,13 +773,25 @@ function renderPostCard(id, d, wrap){
   head.innerHTML =
     '<img class="post-avatar" src="'+(d.authorAvatarUrl||'')+'" onerror="this.style.display=\'none\'">'+
     '<div class="post-author"><div class="post-author-name">'+(d.authorDisplayName||'Unknown')+'</div>'+
-    '<div class="post-author-meta">'+timeAgo(d.createdAt)+'</div></div>';
+    '<div class="post-author-meta">'+timeAgo(d.createdAt)+'</div></div>'+
+    (isPinned ? '<span class="pinned-post-badge">📌 Pinned</span>' : '');
   var followBtn=document.createElement('button'); followBtn.className='post-follow-btn'; followBtn.textContent='+ Follow';
   followBtn.onclick=function(){ toggleFollowFromFeed(d.authorUid, followBtn); };
   if(currentUser && d.authorUid===currentUser.uid) followBtn.style.display='none';
   head.appendChild(followBtn);
   head.onclick=function(e){ if(e.target===followBtn) return; location.href='media-profile.html?uid='+d.authorUid+'&city='+CITY; };
   card.appendChild(head);
+
+  // ── Review styling (star rating + Verified Purchase) — per updated Media Home spec ──
+  if(d.isReview && d.rating){
+    var starsDiv=document.createElement('div'); starsDiv.className='review-stars-feed';
+    starsDiv.textContent = '★'.repeat(d.rating) + '☆'.repeat(5-d.rating);
+    card.appendChild(starsDiv);
+    if(d.linkedOrderId){
+      var vDiv=document.createElement('div'); vDiv.className='verified-purchase-feed'; vDiv.textContent='✅ Verified Purchase';
+      card.appendChild(vDiv);
+    }
+  }
 
   // ── Caption ──
   if(d.caption){
