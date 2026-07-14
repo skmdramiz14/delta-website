@@ -1,4 +1,4 @@
-<!DOCTYPE html>    
+<!DOCTYPE html> 
 <html lang="bn">
 <head>
 <meta charset="UTF-8">
@@ -53,6 +53,38 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 .cart-btn:active{transform:scale(.97);}
 .cart-btn svg{width:20px;height:20px;flex-shrink:0;}
 .cart-badge{position:absolute;top:-7px;right:-7px;background:var(--orange);color:#1a2010;font-size:.62rem;font-weight:800;width:18px;height:18px;border-radius:50%;display:none;align-items:center;justify-content:center;border:2px solid var(--cream);}
+
+/* ── Cart: white pill (per updated design) ── */
+.cart-btn-white{background:#fff;color:var(--navy);border:1.5px solid var(--border);box-shadow:0 4px 14px rgba(0,0,0,.04);}
+.cart-btn-white:hover{background:var(--orange-light);}
+.cart-btn-white .cart-btn-label{color:var(--navy);}
+
+/* ── DELTA VIDEO BUTTON — pill + gold icon badge + NEW tag ── */
+.video-nav-btn{
+  position:relative;background:var(--navy);border:none;cursor:pointer;
+  height:52px;padding:6px 18px 6px 6px;border-radius:30px;
+  display:flex;align-items:center;gap:9px;
+  box-shadow:0 4px 14px rgba(16,57,45,.35);
+  transition:transform .15s ease-in-out,box-shadow .15s ease-in-out;
+}
+.video-nav-btn:hover{background:var(--navy2);box-shadow:0 6px 18px rgba(16,57,45,.45);}
+.video-nav-btn:active{transform:scale(.96);}
+.video-icon-badge{
+  width:34px;height:34px;border-radius:10px;flex-shrink:0;
+  border:2px solid var(--orange);background:rgba(255,255,255,.06);
+  display:flex;align-items:center;justify-content:center;
+}
+.video-icon-badge svg{width:16px;height:16px;}
+.video-label{color:#fff;font-weight:800;font-size:1rem;white-space:nowrap;letter-spacing:.2px;}
+.video-new-badge{
+  position:absolute;top:-8px;right:-6px;background:var(--orange);color:var(--navy);
+  font-size:.6rem;font-weight:800;padding:2px 9px;border-radius:10px;
+  box-shadow:0 2px 5px rgba(0,0,0,.2);letter-spacing:.3px;
+}
+@media(max-width:768px){
+  .video-nav-btn{padding:6px;gap:0;}
+  .video-label{display:none;}
+}
 .user-chip{background:var(--surface);border:1px solid var(--border);color:var(--navy);padding:0 16px;height:56px;border-radius:17px;cursor:pointer;font-size:.82rem;display:flex;align-items:center;justify-content:center;gap:6px;font-weight:600;transition:transform .18s;box-shadow:0 8px 24px rgba(0,0,0,.05);}
 .user-chip svg{width:20px;height:20px;flex-shrink:0;}
 .user-chip svg .ic-stroke{stroke:var(--navy);}
@@ -2134,9 +2166,14 @@ img{max-width:100%;height:auto;}
         <button class="lang-btn active" id="langBn" onclick="setLang('bn')">বাং</button>
         <button class="lang-btn" id="langEn" onclick="setLang('en')">ENG</button>
       </div>
-      <button class="cart-btn" onclick="openCart()">
-        <svg viewBox="0 0 24 24" fill="none"><path d="M3 4h2l2.2 11.2a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.6L21 8H6.2" stroke="#C7A15A" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/><circle cx="10" cy="20" r="1.1" fill="#C7A15A"/><circle cx="17" cy="20" r="1.1" fill="#C7A15A"/></svg> <span class="cart-btn-label">কার্ট</span>
+      <button class="cart-btn cart-btn-white" onclick="openCart()">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M3 4h2l2.2 11.2a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.6L21 8H6.2" stroke="var(--navy)" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/><circle cx="10" cy="20" r="1.1" fill="var(--navy)"/><circle cx="17" cy="20" r="1.1" fill="var(--navy)"/></svg> <span class="cart-btn-label">কার্ট</span>
         <span class="cart-badge" id="cartBadge">0</span>
+      </button>
+      <button class="video-nav-btn" id="videosNavBtn" onclick="location.href='media-feed.html'" title="DELTA Videos">
+        <span class="video-icon-badge"><svg viewBox="0 0 24 24" fill="none"><path d="M9.5 8.2C9.5 7.5 10.25 7.05 10.87 7.4L16.3 10.6C16.9 10.96 16.9 11.84 16.3 12.2L10.87 15.4C10.25 15.75 9.5 15.3 9.5 14.6V8.2Z" fill="#fff"/></svg></span>
+        <span class="video-label">Video</span>
+        <span class="video-new-badge">NEW</span>
       </button>
       <div class="user-chip" id="userChip" onclick="handleUserBtn()"><svg viewBox="0 0 24 24"><circle class="ic-stroke" cx="12" cy="8" r="3.5"/><path class="ic-stroke" d="M5 20c0-4 3-6.5 7-6.5s7 2.5 7 6.5"/></svg> <span id="userLabel" class="user-chip-label">লগইন</span></div>
       <button class="hamburger-btn" onclick="openSideMenu()" title="Menu">☰</button>
@@ -3407,6 +3444,7 @@ img{max-width:100%;height:auto;}
         <div class="smd-panel-title">আমার অ্যাকাউন্ট</div>
         <div class="smd-cat-list">
           <div class="smd-cat-row" onclick="closeSideMenu();handleUserBtn()"><span>🔐</span><span id="smdLoginLabel">লগইন / রেজিস্ট্রেশন</span></div>
+          <div class="smd-cat-row" onclick="closeSideMenu();goToMyDeltaMedia()"><span>🎬</span>আমার DELTA Media</div>
           <div class="smd-cat-row" onclick="closeSideMenu();openCart()"><span>🛒</span>আমার কার্ট</div>
           <div class="smd-cat-row" onclick="closeSideMenu();openRequestModal()"><span>📦</span>পণ্য রিকোয়েস্ট</div>
         </div>
@@ -3512,14 +3550,14 @@ img{max-width:100%;height:auto;}
     </span>
     <span class="bn">DELTA</span>
   </div>
+  <div class="bn-item" id="bn-reels" onclick="bottomNavClick('reels',this);window.location.href='media-feed.html'">
+    <span class="bn-icon-pill"><svg class="bn-icon" viewBox="0 0 24 24" width="19" height="19" fill="none"><rect x="2" y="2" width="20" height="20" rx="6" stroke="currentColor" stroke-width="1.6"/><path d="M9.5 8.2C9.5 7.5 10.25 7.05 10.87 7.4L16.3 10.6C16.9 10.96 16.9 11.84 16.3 12.2L10.87 15.4C10.25 15.75 9.5 15.3 9.5 14.6V8.2Z" fill="currentColor"/></svg></span>
+    <span class="bn">Reels</span>
+    <span class="bn-active-dot"></span>
+  </div>
   <div class="bn-item" id="bn-menu" onclick="bottomNavClick('menu',this);openSideMenu()">
     <span class="bn-icon-pill"><svg class="bn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6H20M4 12H20M4 18H20"/></svg></span>
     <span class="bn">মেনু</span>
-    <span class="bn-active-dot"></span>
-  </div>
-  <div class="bn-item" id="bn-account" onclick="bottomNavClick('account',this);handleUserBtn()">
-    <span class="bn-icon-pill"><svg class="bn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20C5.5 16 8.4 14 12 14C15.6 14 18.5 16 19.5 20"/></svg></span>
-    <span class="bn">আমার</span>
     <span class="bn-active-dot"></span>
   </div>
 </div>
@@ -7091,6 +7129,10 @@ async function placeOrder(){
 
 // ── AUTH ──
 function handleUserBtn(){if(currentUser){if(confirm('লগআউট করবেন?'))auth.signOut();}else openAuth();}
+function goToMyDeltaMedia(){
+  if(currentUser){ window.location.href='media-profile.html?uid='+currentUser.uid+'&city='+CITY; }
+  else { openAuth(); }
+}
 function openAuth(){document.getElementById('authModal').classList.add('open');}
 function closeAuth(){document.getElementById('authModal').classList.remove('open');}
 function authTab(t,el){
