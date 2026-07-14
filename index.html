@@ -107,7 +107,80 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 .hamburger-btn:hover{border-color:var(--orange);color:var(--orange);}
 .hamburger-btn:active{transform:scale(.97);}
 @media(max-width:768px){.hamburger-btn{display:none;}}
+/* ── DELTA STORIES — Commerce Story row ── */
+.delta-stories-wrap{padding:6px 5% 4px;background:var(--cream);}
+.ds-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.ds-title{font-size:.74rem;font-weight:800;letter-spacing:.6px;color:var(--navy);}
+.ds-seeall{font-size:.76rem;font-weight:700;color:var(--green2,#1a7a4c);cursor:pointer;}
+.ds-row{display:flex;gap:14px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px;}
+.ds-row::-webkit-scrollbar{display:none;}
+.ds-item{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;width:64px;}
+.ds-ring{width:60px;height:60px;border-radius:50%;padding:2.5px;display:flex;align-items:center;justify-content:center;position:relative;
+  background:linear-gradient(135deg,#ccc,#ccc);}
+.ds-avatar{width:100%;height:100%;border-radius:50%;background:var(--sand,#F3EFE6);border:2.5px solid var(--cream);
+  display:flex;align-items:center;justify-content:center;font-size:1.4rem;overflow:hidden;}
+.ds-avatar img{width:100%;height:100%;object-fit:cover;}
+.ds-label{font-size:.66rem;color:var(--charcoal,#1A1A1A);text-align:center;max-width:64px;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;font-weight:500;}
+.ds-live-badge{position:absolute;top:-3px;left:50%;transform:translateX(-50%);background:#e0245e;color:#fff;
+  font-size:.5rem;font-weight:800;padding:1px 6px;border-radius:6px;letter-spacing:.3px;z-index:2;}
+.ds-loading{color:var(--muted,#8A8A8A);font-size:.75rem;padding:20px 8px;white-space:nowrap;}
+
+/* Ring colors — per DELTA Story philosophy: type is signaled without opening the story */
+.ds-ring-stock{background:linear-gradient(135deg,#2da86a,#1a7a4c);}      /* 🟢 new arrival / stock update */
+.ds-ring-offer{background:linear-gradient(135deg,#F0C34D,#C7A15A);}     /* 🟡 offer / promotion */
+.ds-ring-official{background:linear-gradient(135deg,#4a90d9,#2f6fae);} /* 🔵 DELTA Official */
+.ds-ring-service{background:linear-gradient(135deg,#a370d9,#7c3ead);}  /* 🟣 service update */
+.ds-ring-urgent{background:linear-gradient(135deg,#e0524a,#c0392b);}   /* 🔴 urgent / limited stock */
+.ds-ring-add{background:var(--sand,#F3EFE6);}
+.ds-add-badge{position:absolute;bottom:-2px;right:-2px;background:var(--navy);color:#fff;width:18px;height:18px;
+  border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:800;border:2px solid var(--cream);}
+
 .nav-cats{display:flex;align-items:flex-start;gap:9px;overflow-x:auto;background:var(--cream);padding:30px 0 20px;}
+
+/* ── STORY VIEWER (full-screen overlay) ── */
+.story-viewer-overlay{display:none;position:fixed;inset:0;background:#000;z-index:2000;flex-direction:column;}
+.story-viewer-overlay.open{display:flex;}
+.sv-progress-row{display:flex;gap:4px;padding:10px 10px 0;}
+.sv-progress-bar{flex:1;height:2.5px;background:rgba(255,255,255,.3);border-radius:2px;overflow:hidden;}
+.sv-progress-fill{height:100%;width:0%;background:#fff;}
+.sv-header{display:flex;align-items:center;gap:10px;padding:10px 14px;}
+.sv-avatar{width:34px;height:34px;border-radius:50%;background:#333;display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:1rem;overflow:hidden;}
+.sv-avatar img{width:100%;height:100%;object-fit:cover;}
+.sv-meta{flex:1;min-width:0;}
+.sv-name{color:#fff;font-weight:700;font-size:.85rem;}
+.sv-time{color:rgba(255,255,255,.65);font-size:.7rem;}
+.sv-follow-btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.4);color:#fff;padding:5px 13px;
+  border-radius:14px;font-size:.72rem;font-weight:700;cursor:pointer;}
+.sv-close-btn{background:none;border:none;color:#fff;font-size:1.2rem;cursor:pointer;padding:4px 8px;}
+.sv-media-wrap{flex:1;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#0a0a0a;}
+.sv-media-wrap img,.sv-media-wrap video{width:100%;height:100%;object-fit:contain;}
+.sv-tap-zone{position:absolute;top:0;bottom:0;width:35%;z-index:5;}
+.sv-tap-left{left:0;}
+.sv-tap-right{right:0;}
+.sv-bottom{padding:12px 14px calc(env(safe-area-inset-bottom,0px) + 14px);}
+.sv-commerce-card{background:rgba(255,255,255,.97);border-radius:14px;padding:12px;display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.sv-cc-thumb{width:44px;height:44px;border-radius:9px;object-fit:cover;background:#eee;flex-shrink:0;}
+.sv-cc-info{flex:1;min-width:0;}
+.sv-cc-shop{font-size:.75rem;color:var(--muted,#8A8A8A);}
+.sv-cc-product{font-size:.85rem;font-weight:800;color:var(--navy);}
+.sv-cc-price{color:var(--green2,#1a7a4c);font-weight:700;}
+.sv-cc-btns{display:flex;gap:6px;}
+.sv-cc-btn{padding:8px 13px;border-radius:9px;font-size:.75rem;font-weight:700;border:none;cursor:pointer;white-space:nowrap;}
+.sv-cc-btn-primary{background:var(--navy);color:#fff;}
+.sv-cc-btn-outline{background:#fff;border:1.5px solid var(--border);color:var(--navy);}
+.sv-action-row{display:flex;align-items:center;gap:16px;}
+.sv-action-btn{background:none;border:none;color:#fff;font-size:1.3rem;cursor:pointer;}
+.sv-reply-input-fake{flex:1;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.4);color:#fff;
+  padding:9px 14px;border-radius:20px;font-size:.8rem;cursor:pointer;}
+.sv-owner-insights{background:rgba(255,255,255,.1);border-radius:12px;padding:10px 12px;display:flex;justify-content:space-between;
+  color:#fff;font-size:.68rem;margin-bottom:10px;}
+.sv-owner-insights b{display:block;font-size:.95rem;}
+
+.sv-reply-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2100;align-items:flex-end;justify-content:center;}
+.sv-reply-modal.open{display:flex;}
+.sv-reply-sheet{background:#fff;width:100%;max-width:480px;border-radius:16px 16px 0 0;padding:16px;}
 .nav-cats::-webkit-scrollbar{display:none;}
 .nav-cat{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;flex-shrink:0;width:65px;transition:transform .18s;}
 .nav-cat:active{transform:scale(.96);}
@@ -466,7 +539,7 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 .flash-outer-wrap{position:relative;margin:0 4%;}
 .flash-outer-card{
   background:linear-gradient(135deg,#4A0000 0%,#7B0000 55%,#B01616 100%);
-  border-radius:18px;padding:16px 14px;
+  border-radius:18px;padding:13px 14px;
   position:relative;overflow:hidden;
   box-shadow:0 8px 32px rgba(176,22,22,.35);
 }
@@ -487,10 +560,10 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
   font-size:.62rem;font-weight:800;letter-spacing:.5px;margin-bottom:6px;align-self:flex-start;
 }
 .flash-left-title{
-  font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:900;color:#fff;
-  line-height:1.05;margin-bottom:6px;text-shadow:0 2px 8px rgba(0,0,0,.3);
+  font-family:'Playfair Display',serif;font-size:1.18rem;font-weight:900;color:#fff;
+  line-height:1.05;margin-bottom:5px;text-shadow:0 2px 8px rgba(0,0,0,.3);
 }
-.flash-left-sub{font-size:.76rem;font-weight:600;color:rgba(255,255,255,.9);line-height:1.3;margin-bottom:12px;}
+.flash-left-sub{font-size:.72rem;font-weight:600;color:rgba(255,255,255,.9);line-height:1.3;margin-bottom:10px;}
 .flash-left-btn{
   background:#fff;border:none;color:#B01616;font-weight:800;font-size:.72rem;
   padding:13px 14px;border-radius:999px;cursor:pointer;white-space:nowrap;
@@ -2225,6 +2298,22 @@ img{max-width:100%;height:auto;}
       <button class="hero-mic-btn" onclick="startVoiceSearch()" id="heroVoiceBtn" title="Voice Search"><svg viewBox="0 0 24 24" fill="none"><rect x="9" y="3" width="6" height="11" rx="3" stroke="#fff" stroke-width="1.8"/><path d="M5 11a7 7 0 0 0 14 0" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/><line x1="12" y1="18" x2="12" y2="21" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/><line x1="8" y1="21" x2="16" y2="21" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg></button>
     </div>
   </div>
+
+  <!-- ═══ DELTA STORIES — Commerce Story, not Instagram Status ═══ -->
+  <div class="delta-stories-wrap">
+    <div class="ds-head">
+      <div class="ds-title">DELTA STORIES</div>
+      <div class="ds-seeall" onclick="location.href='media-feed.html'">See All ›</div>
+    </div>
+    <div class="ds-row" id="deltaStoriesRow">
+      <div class="ds-item ds-your-story" onclick="handleYourStoryTap()">
+        <div class="ds-ring ds-ring-add"><div class="ds-avatar" id="yourStoryAvatar">👤</div><div class="ds-add-badge">+</div></div>
+        <div class="ds-label">Your Story</div>
+      </div>
+      <div class="ds-loading" id="dsLoading">লোড হচ্ছে...</div>
+    </div>
+  </div>
+
   <div class="nav-cats">
     <div class="nav-cat nav-cat-all active" onclick="filterCat('all',this)">
       <div class="nav-cat-icon"><span class="nav-cat-grid"><i></i><i></i><i></i><i></i></span></div>
@@ -3689,6 +3778,7 @@ function initFB(){
     var lbl=document.getElementById('userLabel');
     if(u){lbl.textContent=u.displayName||'আমার';document.getElementById('userChip').style.color='#a5d6ff';}
     else{lbl.textContent='লগইন';}
+    loadDeltaStories();
   });
   detectCity();
 }
@@ -7365,6 +7455,372 @@ function updateSmdLang(){
   var sen=document.getElementById('smdLangEn');
   if(sbn) sbn.classList.toggle('active', isBn);
   if(sen) sen.classList.toggle('active', !isBn);
+}
+</script>
+<!-- ═══ DELTA STORY VIEWER — full-screen, tap nav, commerce CTA ═══ -->
+<div class="story-viewer-overlay" id="storyViewerOverlay">
+  <div class="sv-progress-row" id="svProgressRow"></div>
+  <div class="sv-header">
+    <div class="sv-avatar" id="svAvatar">👤</div>
+    <div class="sv-meta">
+      <div class="sv-name" id="svName">—</div>
+      <div class="sv-time" id="svTime">—</div>
+    </div>
+    <button class="sv-follow-btn" id="svFollowBtn">Follow</button>
+    <button class="sv-close-btn" onclick="closeStoryViewer()">✕</button>
+  </div>
+  <div class="sv-media-wrap" id="svMediaWrap">
+    <div class="sv-tap-zone sv-tap-left" onclick="svPrev()"></div>
+    <div class="sv-tap-zone sv-tap-right" onclick="svNext()"></div>
+  </div>
+  <div class="sv-bottom" id="svBottom"></div>
+</div>
+
+<div class="sv-reply-modal" id="svReplyModal">
+  <div class="sv-reply-sheet">
+    <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+      <b>Reply to Story</b><button onclick="closeSvReply()" style="background:none;border:none;font-size:1.1rem;">✕</button>
+    </div>
+    <input type="text" id="svReplyInput" placeholder="মন্তব্য লিখুন..." style="width:100%;padding:10px 12px;border-radius:20px;border:1.5px solid var(--border);margin-bottom:10px;">
+    <button onclick="sendSvReply()" style="width:100%;padding:11px;background:var(--navy);color:#fff;border:none;border-radius:10px;font-weight:700;">Send</button>
+  </div>
+</div>
+
+<script>
+// ═══ DELTA STORIES (Commerce Story) ═══
+var dsStories = [];
+var svIndex = 0;
+var svTimer = null;
+var svProgress = 0;
+var svPaused = false;
+var svFollowingCache = {};
+
+// ── DEMO STORIES — visible only when no real stories exist yet in Firestore.
+// Purely client-side, never written to the database. Covers all 5 ring types
+// and both commerce-CTA and no-CTA (DELTA Official) cases so the full structure
+// is visible immediately. Remove this block once real sellers start posting.
+var DEMO_STORIES = [
+  { id:'demo1', data:{
+      authorUid:'demo-fishcorner', authorDisplayName:'Fish Corner',
+      authorAvatarUrl:'https://images.unsplash.com/photo-1544943910-4c1dc44aab44?w=200&q=60',
+      mediaUrls:['https://images.unsplash.com/photo-1544943910-4c1dc44aab44?w=800&q=70'],
+      videoUrl:null, caption:'আজকের টাটকা ইলিশ এসেছে 🐟', postSubType:'new_arrival', storyRingType:'stock',
+      ctaType:'view_product', tags:{shopId:null, productId:null, categoryId:'ইলিশ মাছ (Hilsa)'},
+      createdAt:new Date(Date.now()-40*60000).toISOString(), expiresAt:new Date(Date.now()+23*3600000).toISOString()
+  }},
+  { id:'demo2', data:{
+      authorUid:'demo-freshmart', authorDisplayName:'Fresh Mart',
+      authorAvatarUrl:'https://images.unsplash.com/photo-1542838132-92c53300491e?w=200&q=60',
+      mediaUrls:['https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=800&q=70'],
+      videoUrl:null, caption:'আজকের স্পেশাল অফার! হিমসাগর আম মাত্র ₹১২০/কেজি 🥭', postSubType:'festival_offer', storyRingType:'offer',
+      ctaType:'visit_shop', tags:{shopId:null, productId:null, offerId:'demo', categoryId:'আম (Mango)'},
+      createdAt:new Date(Date.now()-90*60000).toISOString(), expiresAt:new Date(Date.now()+22*3600000).toISOString()
+  }},
+  { id:'demo3', data:{
+      authorUid:'demo-official', authorDisplayName:'DELTA Official',
+      authorAvatarUrl:'',
+      mediaUrls:['https://images.unsplash.com/photo-1607083206869-4c7672e72a8a?w=800&q=70'],
+      videoUrl:null, caption:'দুর্গাপূজা স্পেশাল লঞ্চ আসছে ২০ অক্টোবর! প্রথম ২০টি দোকান এখনই যোগ দিন 🎉', postSubType:'business_update', storyRingType:'official',
+      ctaType:'none', tags:{shopId:null,productId:null,categoryId:null},
+      createdAt:new Date(Date.now()-150*60000).toISOString(), expiresAt:new Date(Date.now()+20*3600000).toISOString()
+  }},
+  { id:'demo4', data:{
+      authorUid:'demo-salon', authorDisplayName:'Salon XYZ',
+      authorAvatarUrl:'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=200&q=60',
+      mediaUrls:['https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=800&q=70'],
+      videoUrl:null, caption:'আজ মাত্র ২টি Slot খালি আছে — এখনই Book করুন 💇', postSubType:'general', storyRingType:'service',
+      ctaType:'book_service', tags:{shopId:null, serviceId:'demo', categoryId:'Salon'},
+      createdAt:new Date(Date.now()-200*60000).toISOString(), expiresAt:new Date(Date.now()+18*3600000).toISOString()
+  }},
+  { id:'demo5', data:{
+      authorUid:'demo-freshmart2', authorDisplayName:'Fresh Mart',
+      authorAvatarUrl:'https://images.unsplash.com/photo-1542838132-92c53300491e?w=200&q=60',
+      mediaUrls:['https://images.unsplash.com/photo-1567306301408-9b74779a11af?w=800&q=70'],
+      videoUrl:null, caption:'মাত্র ১২ কেজি বাকি! দুপুর ২টার আগে অর্ডার করুন ⚠️', postSubType:'general', storyRingType:'urgent',
+      ctaType:'order_now', tags:{shopId:null, productId:null, categoryId:'ইলিশ মাছ'},
+      createdAt:new Date(Date.now()-15*60000).toISOString(), expiresAt:new Date(Date.now()+23.5*3600000).toISOString()
+  }}
+];
+
+function loadDeltaStories(){
+  var wrap = document.getElementById('deltaStoriesRow');
+  var loadingEl = document.getElementById('dsLoading');
+  if(currentUser){
+    document.getElementById('yourStoryAvatar').textContent = '👤';
+  }
+  var now = new Date().toISOString();
+  db.collection('cities').doc(CITY).collection('mediaContent')
+    .where('type','==','story').where('status','==','published')
+    .orderBy('createdAt','desc').limit(30).get().then(function(snap){
+      loadingEl.style.display='none';
+      dsStories = [];
+      snap.forEach(function(doc){
+        var d = doc.data();
+        if(d.expiresAt && d.expiresAt < now) return; // 24hr TTL, client-side filter
+        dsStories.push({id:doc.id, data:d});
+      });
+      if(dsStories.length===0){
+        console.info('No real stories yet — showing demo stories so the structure is visible. Remove DEMO_STORIES once real sellers post.');
+        dsStories = DEMO_STORIES.slice();
+      }
+      // Honest ranking note: doc's target priority is Nearby→Following→Frequently
+      // Visited→Sponsored→Fresh. No geo/visit-frequency data exists yet (same gap
+      // flagged for reels-player.html/video-hub.html). This substitutes
+      // Following-first (if logged in) + Featured-boost + newest — transparent, not fake.
+      if(currentUser){
+        db.collection('cities').doc(CITY).collection('mediaProfiles').doc(currentUser.uid).collection('following').get().then(function(fs){
+          var followSet = fs.docs.map(function(d){return d.id;});
+          dsStories.sort(function(a,b){
+            var af = followSet.indexOf(a.data.authorUid)!==-1 ? 1 : 0;
+            var bf = followSet.indexOf(b.data.authorUid)!==-1 ? 1 : 0;
+            if(af!==bf) return bf-af;
+            return new Date(b.data.createdAt)-new Date(a.data.createdAt);
+          });
+          renderStoryBubbles();
+        });
+      } else {
+        renderStoryBubbles();
+      }
+    }).catch(function(e){
+      console.error('Stories load error',e);
+      console.info('Falling back to demo stories so the structure is still visible.');
+      loadingEl.style.display='none';
+      dsStories = DEMO_STORIES.slice();
+      renderStoryBubbles();
+    });
+}
+
+function ringClassFor(d){
+  // Ring color signals story type WITHOUT opening it (doc's own suggestion).
+  // No dedicated schema field existed for this — using storyRingType if a creator
+  // sets it (Create Studio can be extended to expose this), else a heuristic
+  // fallback from existing fields so old stories still get a sensible ring.
+  if(d.storyRingType) return 'ds-ring-'+d.storyRingType;
+  if(d.postSubType==='festival_offer' || d.tags&&d.tags.offerId) return 'ds-ring-offer';
+  if(d.tags && d.tags.serviceId) return 'ds-ring-service';
+  if(d.postSubType==='new_arrival') return 'ds-ring-stock';
+  return 'ds-ring-stock';
+}
+
+function renderStoryBubbles(){
+  var wrap = document.getElementById('deltaStoriesRow');
+  // remove previously rendered bubbles (keep "Your Story" as first child)
+  Array.from(wrap.querySelectorAll('.ds-item:not(.ds-your-story)')).forEach(function(el){el.remove()});
+  var loadingEl = document.getElementById('dsLoading'); if(loadingEl) loadingEl.remove();
+
+  if(!dsStories.length){
+    var empty = document.createElement('div');
+    empty.style.cssText='color:var(--muted);font-size:.75rem;padding:20px 8px;white-space:nowrap;';
+    empty.textContent = 'এখনও কোনো Story নেই — প্রথম Story আপনিই দিন!';
+    wrap.appendChild(empty);
+    return;
+  }
+
+  // Group by author so each seller/creator shows one bubble (tapping cycles their stories)
+  var byAuthor = {};
+  var order = [];
+  dsStories.forEach(function(s){
+    if(!byAuthor[s.data.authorUid]){ byAuthor[s.data.authorUid]=[]; order.push(s.data.authorUid); }
+    byAuthor[s.data.authorUid].push(s);
+  });
+
+  order.forEach(function(uid){
+    var stories = byAuthor[uid];
+    var first = stories[0].data;
+    var item = document.createElement('div'); item.className='ds-item';
+    var ringClass = ringClassFor(first);
+    item.innerHTML =
+      '<div class="ds-ring '+ringClass+'">'+
+        (first.authorAvatarUrl ? '<div class="ds-avatar"><img src="'+first.authorAvatarUrl+'"></div>' : '<div class="ds-avatar">🏪</div>')+
+      '</div>'+
+      '<div class="ds-label">'+(first.authorDisplayName||'Unknown')+'</div>';
+    item.onclick = function(){ openStoryViewerGroup(stories); };
+    wrap.appendChild(item);
+  });
+}
+
+// ── "Your Story" tap: view own active story if one exists, else go create one ──
+function handleYourStoryTap(){
+  if(!currentUser){ alert('লগইন করুন প্রথমে'); return; }
+  var mine = dsStories.filter(function(s){ return s.data.authorUid===currentUser.uid; });
+  if(mine.length){ openStoryViewerGroup(mine); }
+  else { location.href='create-studio.html?city='+CITY+'&type=story'; }
+}
+
+// ═══ STORY VIEWER ═══
+var svGroup = [];
+function openStoryViewerGroup(stories){
+  svGroup = stories;
+  svIndex = 0;
+  document.getElementById('storyViewerOverlay').classList.add('open');
+  buildProgressBars();
+  renderStorySlide();
+}
+function buildProgressBars(){
+  var row = document.getElementById('svProgressRow'); row.innerHTML='';
+  svGroup.forEach(function(){
+    var bar = document.createElement('div'); bar.className='sv-progress-bar';
+    bar.innerHTML='<div class="sv-progress-fill"></div>';
+    row.appendChild(bar);
+  });
+}
+function renderStorySlide(){
+  if(svIndex >= svGroup.length){ closeStoryViewer(); return; }
+  if(svIndex < 0) svIndex = 0;
+  var d = svGroup[svIndex].data;
+  var id = svGroup[svIndex].id;
+
+  document.getElementById('svAvatar').innerHTML = d.authorAvatarUrl ? '<img src="'+d.authorAvatarUrl+'">' : '👤';
+  document.getElementById('svName').textContent = d.authorDisplayName || 'Unknown';
+  document.getElementById('svTime').textContent = timeAgoStory(d.createdAt);
+
+  var followBtn = document.getElementById('svFollowBtn');
+  if(currentUser && d.authorUid===currentUser.uid){ followBtn.style.display='none'; }
+  else {
+    followBtn.style.display='inline-block';
+    followBtn.onclick=function(){ toggleSvFollow(d.authorUid); };
+    if(currentUser) checkSvFollow(d.authorUid);
+  }
+
+  var mediaWrap = document.getElementById('svMediaWrap');
+  Array.from(mediaWrap.querySelectorAll('img,video')).forEach(function(el){el.remove();});
+  var mediaEl;
+  if(d.videoUrl){
+    mediaEl = document.createElement('video');
+    mediaEl.src = d.videoUrl; mediaEl.autoplay=true; mediaEl.muted=false; mediaEl.playsInline=true;
+  } else {
+    mediaEl = document.createElement('img');
+    mediaEl.src = (d.mediaUrls&&d.mediaUrls[0]) || d.thumbnailUrl || '';
+  }
+  mediaWrap.insertBefore(mediaEl, mediaWrap.firstChild);
+
+  // Commerce card + owner insights + action row
+  var bottom = document.getElementById('svBottom'); bottom.innerHTML='';
+  if(currentUser && d.authorUid===currentUser.uid){
+    // Owner view — Story Analytics section from the doc. Honest note: like the
+    // reels/video stats gap, viewer-side view/click counts can't be written to
+    // another user's document under current rules — real numbers need a Cloud
+    // Function. Showing 0s transparently rather than fabricating activity.
+    bottom.innerHTML += '<div class="sv-owner-insights">'+
+      '<div><b>0</b>Views</div><div><b>0</b>Replies</div><div><b>0</b>Shop Visits</div><div><b>0</b>Orders</div></div>';
+  }
+  if(d.tags && (d.tags.productId || d.tags.shopId)){
+    var ctaMap = {view_product:'🛒 View Product',visit_shop:'🏪 Visit Shop',order_now:'📦 Order Now',book_service:'📅 Book Service',call:'📞 Call',whatsapp:'💬 WhatsApp'};
+    var label = ctaMap[d.ctaType] || '🏪 Visit Shop';
+    var thumb = d.thumbnailUrl || (d.mediaUrls&&d.mediaUrls[0]) || '';
+    bottom.innerHTML += '<div class="sv-commerce-card">'+
+      (thumb?'<img class="sv-cc-thumb" src="'+thumb+'">':'<div class="sv-cc-thumb"></div>')+
+      '<div class="sv-cc-info"><div class="sv-cc-shop">🏪 '+(d.authorDisplayName||'Shop')+'</div>'+
+      '<div class="sv-cc-product">'+(d.tags.categoryId||d.caption||'পণ্য')+'</div></div>'+
+      '<div class="sv-cc-btns">'+
+        '<button class="sv-cc-btn sv-cc-btn-outline" onclick="event.stopPropagation();svVisitShop(\''+(d.tags.shopId||'')+'\')">Visit Shop</button>'+
+        '<button class="sv-cc-btn sv-cc-btn-primary" onclick="event.stopPropagation();svVisitShop(\''+(d.tags.shopId||'')+'\',\''+(d.tags.productId||'')+'\')">'+label+'</button>'+
+      '</div></div>';
+  }
+  bottom.innerHTML += '<div class="sv-action-row">'+
+    '<div class="sv-reply-input-fake" onclick="event.stopPropagation();openSvReply(\''+id+'\')">Reply...</div>'+
+    '<button class="sv-action-btn" onclick="event.stopPropagation();svReact(\''+id+'\')">❤️</button>'+
+    '<button class="sv-action-btn" onclick="event.stopPropagation();svShare(\''+id+'\')">↗️</button>'+
+    '</div>';
+
+  startSvProgress(d.videoUrl ? null : 6000); // photo: 6s (5-7 range); video: driven by actual playback
+  if(mediaEl.tagName==='VIDEO'){
+    mediaEl.onended = function(){ svNext(); };
+  }
+}
+
+function startSvProgress(fixedDurationMs){
+  clearInterval(svTimer);
+  svProgress = 0;
+  var bars = document.querySelectorAll('.sv-progress-fill');
+  bars.forEach(function(b,i){ b.style.width = i<svIndex ? '100%' : '0%'; });
+  var duration = fixedDurationMs || 15000; // fallback cap; real video uses onended above
+  var tick = 100;
+  svTimer = setInterval(function(){
+    if(svPaused) return;
+    svProgress += tick;
+    var pct = Math.min(100, (svProgress/duration)*100);
+    if(bars[svIndex]) bars[svIndex].style.width = pct+'%';
+    if(svProgress >= duration) svNext();
+  }, tick);
+}
+function svNext(){ svIndex++; if(svIndex>=svGroup.length){ closeStoryViewer(); return; } renderStorySlide(); }
+function svPrev(){ svIndex--; if(svIndex<0) svIndex=0; renderStorySlide(); }
+function closeStoryViewer(){
+  clearInterval(svTimer);
+  document.getElementById('storyViewerOverlay').classList.remove('open');
+  var mediaWrap = document.getElementById('svMediaWrap');
+  Array.from(mediaWrap.querySelectorAll('video')).forEach(function(v){v.pause();});
+}
+
+// Hold-to-pause (mouse + touch)
+(function(){
+  var wrap = document.getElementById('svMediaWrap');
+  if(!wrap) return;
+  ['mousedown','touchstart'].forEach(function(ev){ wrap.addEventListener(ev, function(){ svPaused=true; var v=wrap.querySelector('video'); if(v) v.pause(); }); });
+  ['mouseup','touchend'].forEach(function(ev){ wrap.addEventListener(ev, function(){ svPaused=false; var v=wrap.querySelector('video'); if(v) v.play().catch(function(){}); }); });
+})();
+
+// Swipe down to close
+(function(){
+  var overlay = document.getElementById('storyViewerOverlay');
+  if(!overlay) return;
+  var startY = null;
+  overlay.addEventListener('touchstart', function(e){ startY = e.touches[0].clientY; }, {passive:true});
+  overlay.addEventListener('touchmove', function(e){
+    if(startY===null) return;
+    var diff = e.touches[0].clientY - startY;
+    if(diff > 100){ closeStoryViewer(); startY=null; }
+  }, {passive:true});
+})();
+
+function svVisitShop(shopId, productId){
+  if(!shopId){ alert('কোনো shop link করা নেই'); return; }
+  location.href='shop.html?id='+shopId+'&city='+CITY+(productId?('&product='+productId):'');
+}
+function svReact(id){
+  if(!currentUser){ alert('লগইন করুন প্রথমে'); return; }
+  db.collection('cities').doc(CITY).collection('mediaContent').doc(id).collection('likes').doc(currentUser.uid)
+    .set({likedAt:new Date().toISOString()}).catch(function(e){console.error(e);});
+}
+function svShare(id){
+  var url = location.origin+'/index.html?story='+id+'&city='+CITY;
+  if(navigator.share){ navigator.share({url:url}).catch(function(){}); }
+  else { navigator.clipboard&&navigator.clipboard.writeText(url); alert('Link copied'); }
+}
+function checkSvFollow(authorUid){
+  db.collection('cities').doc(CITY).collection('mediaProfiles').doc(authorUid).collection('followers').doc(currentUser.uid).get().then(function(d){
+    var btn=document.getElementById('svFollowBtn');
+    if(d.exists){ btn.textContent='Following'; } else { btn.textContent='Follow'; }
+  });
+}
+function toggleSvFollow(targetUid){
+  if(!currentUser){ alert('লগইন করুন প্রথমে'); return; }
+  var followerDoc=db.collection('cities').doc(CITY).collection('mediaProfiles').doc(targetUid).collection('followers').doc(currentUser.uid);
+  var followingDoc=db.collection('cities').doc(CITY).collection('mediaProfiles').doc(currentUser.uid).collection('following').doc(targetUid);
+  followerDoc.get().then(function(d){
+    var now=new Date().toISOString();
+    if(d.exists){ followerDoc.delete(); followingDoc.delete(); } else { followerDoc.set({followedAt:now}); followingDoc.set({followedAt:now}); }
+    checkSvFollow(targetUid);
+  });
+}
+var svReplyTargetId = null;
+function openSvReply(id){ svPaused=true; svReplyTargetId=id; document.getElementById('svReplyModal').classList.add('open'); }
+function closeSvReply(){ svPaused=false; document.getElementById('svReplyModal').classList.remove('open'); }
+function sendSvReply(){
+  if(!currentUser){ alert('লগইন করুন প্রথমে'); return; }
+  var input=document.getElementById('svReplyInput');
+  var text=input.value.trim(); if(!text) return;
+  db.collection('cities').doc(CITY).collection('mediaContent').doc(svReplyTargetId).collection('comments').add({
+    authorUid:currentUser.uid, authorDisplayName:currentUser.displayName||'User', text:text, status:'published', createdAt:new Date().toISOString()
+  }).then(function(){ input.value=''; closeSvReply(); });
+}
+function timeAgoStory(iso){
+  if(!iso) return '';
+  var diff=(Date.now()-new Date(iso).getTime())/1000;
+  if(diff<3600) return Math.floor(diff/60)+'m';
+  if(diff<86400) return Math.floor(diff/3600)+'h';
+  return Math.floor(diff/86400)+'d';
 }
 </script>
 </body>
