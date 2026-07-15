@@ -26,11 +26,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
   /* ═══ 7. DIVIDER ═══ */
   border-bottom:1px solid #F1F1F1;box-shadow:0 1px 6px rgba(0,0,0,.04);}
 
-.nav-hamburger{background:none;border:none;color:var(--charcoal);width:27px;height:27px;border-radius:8px;
+.nav-hamburger{background:none;border:none;color:var(--charcoal);width:29px;height:29px;border-radius:8px;
   display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:background .15s;
   margin-right:3px;}
 .nav-hamburger:hover{background:var(--border);}
-.nav-hamburger svg{width:21px;height:21px;}
+.nav-hamburger svg{width:23px;height:23px;}
 
 /* ═══ 2. LOGO AREA ═══ */
 .nav-brand{display:flex;align-items:center;gap:6px;flex-shrink:0;margin-right:2px;}
@@ -47,11 +47,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 .nav-tagline{font-size:.58rem;color:var(--muted);display:none;letter-spacing:.1px;}
 /* ═══ 5. PROFILE AVATAR ═══ */
 .nav-avatar-wrap{display:flex;align-items:center;cursor:pointer;flex-shrink:0;}
-.nav-avatar-inner{position:relative;width:38px;height:38px;}
-.nav-avatar{width:38px;height:38px;border-radius:50%;background:var(--sand);object-fit:cover;
+.nav-avatar-inner{position:relative;width:42px;height:42px;}
+.nav-avatar{width:42px;height:42px;border-radius:50%;background:var(--sand);object-fit:cover;
   border:1.5px solid #fff;box-shadow:0 0 0 1.2px rgba(199,161,90,.6),0 2px 6px rgba(0,0,0,.1);}
-.nav-avatar-fallback{width:38px;height:38px;border-radius:50%;background:var(--sand);display:flex;align-items:center;justify-content:center;
-  font-size:1.05rem;color:var(--charcoal);border:1.5px solid #fff;box-shadow:0 0 0 1.2px rgba(199,161,90,.6),0 2px 6px rgba(0,0,0,.1);}
+.nav-avatar-fallback{width:42px;height:42px;border-radius:50%;background:var(--sand);display:flex;align-items:center;justify-content:center;
+  font-size:1.15rem;color:var(--charcoal);border:1.5px solid #fff;box-shadow:0 0 0 1.2px rgba(199,161,90,.6),0 2px 6px rgba(0,0,0,.1);}
 .nav-online-dot{position:absolute;bottom:0;right:0;width:11px;height:11px;border-radius:50%;
   background:#3fc97e;border:2px solid #fff;}
 .nav-avatar-chevron{color:var(--muted);font-size:.68rem;display:none;}
@@ -62,41 +62,32 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 .nav-search-desktop input:focus{outline:none;border-color:var(--orange);box-shadow:0 0 0 3px rgba(199,161,90,.15);}
 .nav-search-desktop .nsd-icon{position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;}
 
-.nav-create-square{display:flex;align-items:center;justify-content:center;width:27px;height:27px;flex-shrink:0;
-  background:#fff;color:#000;border:2.2px solid #000;border-radius:8px;cursor:pointer;
-  transition:all .15s;}
-.nav-create-square:hover{background:var(--sand);border-color:var(--navy);color:var(--navy);}
-.nav-create-square:active{transform:scale(.94);}
-.nav-create-square svg{width:16px;height:16px;}
-
 /* ═══ 3. RIGHT ICONS — equal spacing, equal size, vertically centered ═══ */
-.nav-icons{display:flex;gap:8px;align-items:center;flex-shrink:0;}
+.nav-icons{display:flex;gap:14px;align-items:center;flex-shrink:0;}
 /* Compact tier for narrow phones (<380px) — same proportions, tighter fit, still spacious relative to old design */
 @media(max-width:379px){
   .nav{padding:18px 14px;gap:6px;}
   .nav-brand{gap:4px;}
   .nav-brand-icon{width:27px;height:27px;}
   .nav-logo-delta{font-size:1.04rem;}
-  .nav-hamburger{width:25px;height:25px;}
-  .nav-hamburger svg{width:19px;height:19px;}
-  .nav-icons{gap:6px;}
-  .nav-icon-btn{width:24px;height:24px;}
-  .nav-icon-btn svg{width:18px;height:18px;}
-  .nav-create-square{width:25px;height:25px;}
-  .nav-create-square svg{width:15px;height:15px;}
-  .nav-avatar,.nav-avatar-fallback,.nav-avatar-inner{width:36px;height:36px;}
+  .nav-hamburger{width:26px;height:26px;}
+  .nav-hamburger svg{width:20px;height:20px;}
+  .nav-icons{gap:10px;}
+  .nav-icon-btn{width:26px;height:26px;}
+  .nav-icon-btn svg{width:20px;height:20px;}
+  .nav-avatar,.nav-avatar-fallback,.nav-avatar-inner{width:38px;height:38px;}
 }
 @media(max-width:345px){
   .nav{padding:16px 10px;gap:5px;}
   .nav-brand{gap:3px;}
   .nav-logo-delta{font-size:.98rem;}
-  .nav-icons{gap:5px;}
+  .nav-icons{gap:8px;}
 }
 .nav-icon-btn{background:none;border:none;color:var(--charcoal);cursor:pointer;position:relative;
-  width:26px;height:26px;display:flex;align-items:center;justify-content:center;transition:opacity .15s;
+  width:29px;height:29px;display:flex;align-items:center;justify-content:center;transition:opacity .15s;
   padding:0;flex-shrink:0;}
 .nav-icon-btn:hover{opacity:.65;}
-.nav-icon-btn svg{width:19px;height:19px;}
+.nav-icon-btn svg{width:22px;height:22px;}
 
 /* ═══ 4. NOTIFICATION BADGES — Instagram/Facebook style ═══ */
 .nav-icon-badge{position:absolute;top:-3px;right:-3px;background:#e0245e;color:#fff;font-size:.62rem;font-weight:800;
@@ -354,9 +345,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
   </div>
 
   <div class="nav-icons">
-    <button class="nav-create-square" onclick="location.href='create-studio.html?city='+CITY" title="Create">
-      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-    </button>
     <button class="nav-icon-btn" onclick="toggleMobileSearch()" title="Search">
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L20 20"/></svg>
     </button>
