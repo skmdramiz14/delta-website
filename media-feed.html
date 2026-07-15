@@ -21,24 +21,24 @@ html,body{overflow-x:hidden;max-width:100vw;}
 body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charcoal);padding-bottom:76px;}
 
 /* ═══ 1. HEADER HEIGHT + 6. VISUAL WEIGHT ═══ */
-.nav{background:var(--sand);padding:25px 20px 25px 20px;min-height:90px;display:flex;align-items:center;justify-content:space-between;
+.nav{background:var(--sand);padding:18px 16px;min-height:80px;display:flex;align-items:center;justify-content:space-between;
   position:sticky;top:0;z-index:200;gap:8px;min-width:0;max-width:100vw;
   /* ═══ 7. DIVIDER ═══ */
-  border-bottom:1px solid #F1F1F1;box-shadow:0 2px 10px rgba(0,0,0,.05);}
+  border-bottom:1px solid #F1F1F1;box-shadow:0 1px 6px rgba(0,0,0,.04);}
 
-.nav-hamburger{background:none;border:none;color:var(--charcoal);width:30px;height:30px;border-radius:8px;
+.nav-hamburger{background:none;border:none;color:var(--charcoal);width:27px;height:27px;border-radius:8px;
   display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:background .15s;
-  margin-right:2px;}
+  margin-right:3px;}
 .nav-hamburger:hover{background:var(--border);}
 .nav-hamburger svg{width:21px;height:21px;}
 
 /* ═══ 2. LOGO AREA ═══ */
-.nav-brand{display:flex;align-items:center;gap:3px;flex-shrink:0;margin-right:2px;}
-.nav-brand-icon{width:32px;height:32px;flex-shrink:0;filter:drop-shadow(0 1px 2px rgba(0,0,0,.12));}
+.nav-brand{display:flex;align-items:center;gap:6px;flex-shrink:0;margin-right:2px;}
+.nav-brand-icon{width:29px;height:29px;flex-shrink:0;filter:drop-shadow(0 1px 2px rgba(0,0,0,.12));}
 .nav-brand-text{display:flex;flex-direction:column;justify-content:center;line-height:1.2;}
 .nav-logo-delta{font-family:'Playfair Display',serif;font-size:1.12rem;font-weight:900;color:var(--charcoal);letter-spacing:.1px;
   white-space:nowrap;}
-@media(max-width:340px){
+@media(max-width:300px){
   .nav-brand{flex-shrink:1;min-width:0;overflow:hidden;}
   .nav-brand-text{min-width:0;overflow:hidden;}
   .nav-logo-delta{overflow:hidden;text-overflow:ellipsis;}
@@ -47,11 +47,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 .nav-tagline{font-size:.58rem;color:var(--muted);display:none;letter-spacing:.1px;}
 /* ═══ 5. PROFILE AVATAR ═══ */
 .nav-avatar-wrap{display:flex;align-items:center;cursor:pointer;flex-shrink:0;}
-.nav-avatar-inner{position:relative;width:37px;height:37px;}
-.nav-avatar{width:37px;height:37px;border-radius:50%;background:var(--sand);object-fit:cover;
-  border:1.5px solid #fff;box-shadow:0 0 0 1px rgba(199,161,90,.5),0 2px 6px rgba(0,0,0,.1);}
-.nav-avatar-fallback{width:37px;height:37px;border-radius:50%;background:var(--sand);display:flex;align-items:center;justify-content:center;
-  font-size:.95rem;color:var(--charcoal);border:1.5px solid #fff;box-shadow:0 0 0 1px rgba(199,161,90,.5),0 2px 6px rgba(0,0,0,.1);}
+.nav-avatar-inner{position:relative;width:38px;height:38px;}
+.nav-avatar{width:38px;height:38px;border-radius:50%;background:var(--sand);object-fit:cover;
+  border:1.5px solid #fff;box-shadow:0 0 0 1.2px rgba(199,161,90,.6),0 2px 6px rgba(0,0,0,.1);}
+.nav-avatar-fallback{width:38px;height:38px;border-radius:50%;background:var(--sand);display:flex;align-items:center;justify-content:center;
+  font-size:1.05rem;color:var(--charcoal);border:1.5px solid #fff;box-shadow:0 0 0 1.2px rgba(199,161,90,.6),0 2px 6px rgba(0,0,0,.1);}
 .nav-online-dot{position:absolute;bottom:0;right:0;width:11px;height:11px;border-radius:50%;
   background:#3fc97e;border:2px solid #fff;}
 .nav-avatar-chevron{color:var(--muted);font-size:.68rem;display:none;}
@@ -62,22 +62,35 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 .nav-search-desktop input:focus{outline:none;border-color:var(--orange);box-shadow:0 0 0 3px rgba(199,161,90,.15);}
 .nav-search-desktop .nsd-icon{position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;}
 
-.nav-create-square{display:flex;align-items:center;justify-content:center;width:22px;height:22px;flex-shrink:0;
-  background:#fff;color:#000;border:2.2px solid #000;border-radius:6px;cursor:pointer;
+.nav-create-square{display:flex;align-items:center;justify-content:center;width:27px;height:27px;flex-shrink:0;
+  background:#fff;color:#000;border:2.2px solid #000;border-radius:8px;cursor:pointer;
   transition:all .15s;}
 .nav-create-square:hover{background:var(--sand);border-color:var(--navy);color:var(--navy);}
 .nav-create-square:active{transform:scale(.94);}
-.nav-create-square svg{width:13px;height:13px;}
+.nav-create-square svg{width:16px;height:16px;}
 
 /* ═══ 3. RIGHT ICONS — equal spacing, equal size, vertically centered ═══ */
-.nav-icons{display:flex;gap:7px;align-items:center;flex-shrink:0;}
-@media(max-width:400px){
+.nav-icons{display:flex;gap:8px;align-items:center;flex-shrink:0;}
+/* Compact tier for narrow phones (<380px) — same proportions, tighter fit, still spacious relative to old design */
+@media(max-width:379px){
+  .nav{padding:18px 14px;gap:6px;}
+  .nav-brand{gap:4px;}
+  .nav-brand-icon{width:27px;height:27px;}
+  .nav-logo-delta{font-size:1.04rem;}
+  .nav-hamburger{width:25px;height:25px;}
+  .nav-hamburger svg{width:19px;height:19px;}
   .nav-icons{gap:6px;}
-  .nav{padding:15px 10px;}
+  .nav-icon-btn{width:24px;height:24px;}
+  .nav-icon-btn svg{width:18px;height:18px;}
+  .nav-create-square{width:25px;height:25px;}
+  .nav-create-square svg{width:15px;height:15px;}
+  .nav-avatar,.nav-avatar-fallback,.nav-avatar-inner{width:36px;height:36px;}
 }
-@media(max-width:365px){
-  .nav-icons{gap:4px;}
-  .nav-avatar,.nav-avatar-fallback,.nav-avatar-inner{width:34px!important;height:34px!important;}
+@media(max-width:345px){
+  .nav{padding:16px 10px;gap:5px;}
+  .nav-brand{gap:3px;}
+  .nav-logo-delta{font-size:.98rem;}
+  .nav-icons{gap:5px;}
 }
 .nav-icon-btn{background:none;border:none;color:var(--charcoal);cursor:pointer;position:relative;
   width:26px;height:26px;display:flex;align-items:center;justify-content:center;transition:opacity .15s;
@@ -86,18 +99,18 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 .nav-icon-btn svg{width:19px;height:19px;}
 
 /* ═══ 4. NOTIFICATION BADGES — Instagram/Facebook style ═══ */
-.nav-icon-badge{position:absolute;top:2px;right:0;background:#e0245e;color:#fff;font-size:.62rem;font-weight:800;
+.nav-icon-badge{position:absolute;top:-3px;right:-3px;background:#e0245e;color:#fff;font-size:.62rem;font-weight:800;
   border-radius:50%;width:16px;height:16px;min-width:16px;display:flex;align-items:center;justify-content:center;
   line-height:1;border:1.5px solid #fff;}
 
 /* ═══ ICON TAB ROW (Image 1 reference) ═══ */
 .icon-tab-row{display:flex;justify-content:space-around;align-items:center;background:var(--sand);
-  padding:11px 8px;border-bottom:1px solid var(--border);position:sticky;top:90px;z-index:190;
+  padding:13px 8px;border-bottom:1px solid var(--border);position:sticky;top:80px;z-index:190;
   overflow-x:auto;max-width:100vw;scrollbar-width:none;}
 .icon-tab-row::-webkit-scrollbar{display:none;}
 .icon-tab{background:none;border:none;color:var(--muted);cursor:pointer;padding:9px 22px;border-radius:10px;
   display:flex;align-items:center;justify-content:center;transition:all .15s ease;position:relative;}
-.icon-tab svg{width:22px;height:22px;}
+.icon-tab svg{width:24px;height:24px;}
 .icon-tab.active{color:var(--green2);}
 .icon-tab.active::after{content:'';position:absolute;bottom:-3px;left:32%;right:32%;height:3px;background:var(--green2);border-radius:2px;}
 .icon-tab:hover{background:rgba(255,255,255,.04);color:var(--charcoal);}
@@ -110,17 +123,17 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
   .icon-tab-row{display:none;} /* desktop uses the left sidebar instead */
 }
 /* Mobile search — reuses .nav-search-desktop as a toggled overlay below the header */
-.nav-search-desktop.mobile-search-open{display:block!important;position:absolute;top:98px;left:0;right:0;
+.nav-search-desktop.mobile-search-open{display:block!important;position:absolute;top:88px;left:0;right:0;
   max-width:none;padding:10px 14px;background:var(--sand);border-bottom:1px solid var(--border);z-index:199;}
 
 /* ── FILTER TABS (Section 9.2 — ship simple filter tabs first, mixed feed later) ── */
 .filter-row{display:flex;gap:8px;padding:12px 14px;overflow-x:auto;background:var(--sand);border-bottom:1px solid var(--border);position:sticky;z-index:100;max-width:100vw;scrollbar-width:none;}
 .filter-row::-webkit-scrollbar{display:none;}
-#sortRow{top:214px;}
-#filterRow{top:260px;}
+#sortRow{top:204px;}
+#filterRow{top:250px;}
 @media(max-width:1023px){
-  #sortRow{top:271px;}
-  #filterRow{top:317px;}
+  #sortRow{top:267px;}
+  #filterRow{top:313px;}
 }
 .filter-chip{padding:8px 16px;border-radius:20px;font-size:.82rem;font-weight:700;white-space:nowrap;cursor:pointer;
   border:1px solid var(--border);color:var(--muted);background:rgba(255,255,255,.05);transition:all .15s;}
@@ -242,7 +255,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 .mh-left-sidebar,.mh-right-sidebar{display:none;}
 @media(min-width:1024px){
   .mh-grid{display:grid;grid-template-columns:240px minmax(0,600px) 300px;gap:20px;max-width:1180px;margin:0 auto;padding:20px 16px;align-items:start;}
-  .mh-left-sidebar,.mh-right-sidebar{display:block;position:sticky;top:90px;}
+  .mh-left-sidebar,.mh-right-sidebar{display:block;position:sticky;top:80px;}
   .mh-center{min-width:0;}
   .bottom-nav{display:none;} /* desktop uses the sidebar nav instead */
   .nav{position:sticky;}
@@ -342,7 +355,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 
   <div class="nav-icons">
     <button class="nav-create-square" onclick="location.href='create-studio.html?city='+CITY" title="Create">
-      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
     </button>
     <button class="nav-icon-btn" onclick="toggleMobileSearch()" title="Search">
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L20 20"/></svg>
@@ -357,7 +370,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
     </button>
     <div class="nav-avatar-wrap" id="navAvatarWrap" onclick="handleNavAvatarClick()">
       <div class="nav-avatar-inner">
-        <div class="nav-avatar-fallback" id="navAvatarFallback"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3.3"/><path d="M4.5 20c1-4.2 4-6.5 7.5-6.5s6.5 2.3 7.5 6.5" stroke-linecap="round"/></svg></div>
+        <div class="nav-avatar-fallback" id="navAvatarFallback"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3.3"/><path d="M4.5 20c1-4.2 4-6.5 7.5-6.5s6.5 2.3 7.5 6.5" stroke-linecap="round"/></svg></div>
         <img class="nav-avatar" id="navAvatarImg" src="" style="display:none;" onerror="this.style.display='none'">
         <span class="nav-online-dot" id="navOnlineDot" style="display:none;"></span>
       </div>
