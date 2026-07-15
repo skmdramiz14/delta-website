@@ -99,12 +99,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
   padding:13px 8px;border-bottom:1px solid var(--border);position:sticky;top:80px;z-index:190;
   overflow-x:auto;max-width:100vw;scrollbar-width:none;}
 .icon-tab-row::-webkit-scrollbar{display:none;}
-.icon-tab{background:none;border:none;color:var(--muted);cursor:pointer;padding:9px 22px;border-radius:10px;
+.icon-tab{background:none;border:none;color:var(--muted);cursor:pointer;padding:10px 23px;border-radius:12px;
   display:flex;align-items:center;justify-content:center;transition:all .15s ease;position:relative;}
 .icon-tab svg{width:24px;height:24px;}
-.icon-tab.active{color:var(--green2);}
-.icon-tab.active::after{content:'';position:absolute;bottom:-3px;left:32%;right:32%;height:3px;background:var(--green2);border-radius:2px;}
-.icon-tab:hover{background:rgba(255,255,255,.04);color:var(--charcoal);}
+.icon-tab.active{color:var(--green2);background:rgba(26,122,76,.09);}
+.icon-tab.active::after{content:'';position:absolute;bottom:-4px;left:32%;right:32%;height:3px;background:var(--green2);border-radius:2px;}
+.icon-tab:hover{background:rgba(16,57,45,.05);color:var(--charcoal);}
 
 @media(min-width:1024px){
   .nav-tagline{display:block;}
@@ -123,8 +123,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 #sortRow{top:204px;}
 #filterRow{top:250px;}
 @media(max-width:1023px){
-  #sortRow{top:267px;}
-  #filterRow{top:313px;}
+  #sortRow{top:269px;}
+  #filterRow{top:315px;}
 }
 .filter-chip{padding:8px 16px;border-radius:20px;font-size:.82rem;font-weight:700;white-space:nowrap;cursor:pointer;
   border:1px solid var(--border);color:var(--muted);background:rgba(255,255,255,.05);transition:all .15s;}
@@ -332,7 +332,14 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
     <svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
   </button>
   <div class="nav-brand">
-    <svg class="nav-brand-icon" viewBox="0 0 24 24" fill="none"><path d="M12 3L21.5 20H2.5L12 3Z" fill="var(--navy)"/><path d="M12 3L16.5 20H7.5L12 3Z" fill="var(--orange)" fill-opacity=".7"/></svg>
+    <svg class="nav-brand-icon" viewBox="0 0 24 24" fill="none">
+      <defs>
+        <linearGradient id="dmLogoGreen" x1="2.5" y1="20.4" x2="21.7" y2="2.6" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#0E1E18"/><stop offset="1" stop-color="#245B45"/></linearGradient>
+        <linearGradient id="dmLogoGold" x1="7.6" y1="20.4" x2="16.7" y2="2.6" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#b8925a"/><stop offset="1" stop-color="#e8d2a0"/></linearGradient>
+      </defs>
+      <path d="M12 2.5L21.8 20.5H2.2L12 2.5Z" fill="url(#dmLogoGreen)" stroke-linejoin="round"/>
+      <path d="M12 2.5L16.8 20.5H7.5L12 2.5Z" fill="url(#dmLogoGold)" stroke-linejoin="round"/>
+    </svg>
     <div class="nav-brand-text">
       <div class="nav-logo-delta">DELTA <em>Media</em></div>
       <div class="nav-tagline">Local Roots. Global Wings.</div>
@@ -372,16 +379,16 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
     <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 10.5L12 4L20 10.5V20C20 20.55 19.55 21 19 21H15V15H9V21H5C4.45 21 4 20.55 4 20V10.5Z"/></svg>
   </button>
   <button class="icon-tab" onclick="location.href='reels-player.html?city='+CITY" title="Reels">
-    <svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.1" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M3 8h18" stroke-width="1.6"/><path d="M10.5 12.2v3.6l3-1.8-3-1.8Z" fill="#000" stroke="none"/></svg>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><rect x="3" y="4" width="18" height="16" rx="3.5"/><path d="M3 8h18" stroke-width="1.6"/><path d="M10.5 12.2v3.6l3-1.8-3-1.8Z" fill="currentColor" stroke="none"/></svg>
   </button>
   <button class="icon-tab" onclick="alert('Creator directory — not built yet')" title="Friends / Creators">
-    <svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.1" stroke-linecap="round"><circle cx="8" cy="8" r="3"/><circle cx="17" cy="9" r="2.6"/><path d="M3 20c0-3.3 2.2-5.5 5-5.5s5 2.2 5 5.5"/><path d="M14 20c0-2.6 1.6-4.5 3.5-4.5S21 17.4 21 20"/></svg>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="3"/><circle cx="17" cy="9" r="2.6"/><path d="M3 20c0-3.3 2.2-5.5 5-5.5s5 2.2 5 5.5"/><path d="M14 20c0-2.6 1.6-4.5 3.5-4.5S21 17.4 21 20"/></svg>
   </button>
   <button class="icon-tab" onclick="location.href='video-hub.html?city='+CITY" title="Videos">
-    <svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4L5.5 6.5M16 4l2.5 2.5"/><rect x="3" y="6.5" width="18" height="13" rx="2.2"/><path d="M10.3 10.8v4.4l3.6-2.2-3.6-2.2Z" fill="#000" stroke="none"/></svg>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4L5.5 6.5M16 4l2.5 2.5"/><rect x="3" y="6.5" width="18" height="13" rx="2.5"/><path d="M10.3 10.8v4.4l3.6-2.2-3.6-2.2Z" fill="currentColor" stroke="none"/></svg>
   </button>
   <button class="icon-tab" onclick="location.href='shops.html'" title="Shops">
-    <svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.1" stroke-linejoin="round"><path d="M4 9L5 4H19L20 9M4 9V20H20V9M4 9H20"/><path d="M9.5 20V14H14.5V20"/></svg>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M4 9L5 4H19L20 9M4 9V20H20V9M4 9H20"/><path d="M9.5 20V14H14.5V20"/></svg>
   </button>
 </div>
 
