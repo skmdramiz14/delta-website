@@ -609,13 +609,14 @@ function handleNavAvatarClick(){
   location.href='media-profile.html?uid='+currentUser.uid+'&city='+CITY;
 }
 function toggleMobileSearch(){
-  document.getElementById('navSearchDesktop').classList.toggle('mobile-search-open');
-  var input = document.getElementById('navSearchDesktop').querySelector('input');
-  if(document.getElementById('navSearchDesktop').classList.contains('mobile-search-open')) input.focus();
+  var wrapper = document.querySelector('.nav-search-desktop');
+  var input = document.getElementById('navSearchDesktop');
+  wrapper.classList.toggle('mobile-search-open');
+  if(wrapper.classList.contains('mobile-search-open')) input.focus();
 }
 // Search — client-side substring match over whatever the feed already fetched.
 // NOT full-text/creator/shop search — that needs Algolia (Step 23.5, not built).
-document.getElementById('navSearchDesktop').querySelector('input').addEventListener('keydown', function(e){
+document.getElementById('navSearchDesktop').addEventListener('keydown', function(e){
   if(e.key!=='Enter') return;
   var q = e.target.value.trim().toLowerCase();
   if(!q) return;
