@@ -10,6 +10,7 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
+html,body{overflow-x:hidden;max-width:100vw;}
 :root{
   --navy:#10392D;--navy2:#1a4a3a;
   --orange:#C7A15A;--orange-dark:#b8925a;
@@ -20,8 +21,8 @@
 body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charcoal);padding-bottom:82px;}
 
 /* ═══ 1. HEADER HEIGHT + 6. VISUAL WEIGHT ═══ */
-.nav{background:var(--sand);padding:17px 18px;min-height:76px;display:flex;align-items:center;justify-content:space-between;
-  position:sticky;top:0;z-index:200;gap:12px;
+.nav{background:var(--sand);padding:17px 14px;min-height:76px;display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:200;gap:8px;min-width:0;max-width:100vw;
   /* ═══ 7. DIVIDER ═══ */
   border-bottom:1px solid #F1F1F1;box-shadow:0 1px 6px rgba(0,0,0,.06);}
 
@@ -32,10 +33,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 .nav-hamburger svg{width:18px;height:18px;}
 
 /* ═══ 2. LOGO AREA ═══ */
-.nav-brand{display:flex;align-items:center;gap:4px;flex-shrink:0;margin-right:2px;}
+.nav-brand{display:flex;align-items:center;gap:4px;flex-shrink:1;min-width:0;margin-right:2px;overflow:hidden;}
 .nav-brand-icon{width:28px;height:28px;flex-shrink:0;filter:drop-shadow(0 1px 2px rgba(0,0,0,.12));}
-.nav-brand-text{display:flex;flex-direction:column;justify-content:center;line-height:1.2;}
-.nav-logo-delta{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:900;color:var(--charcoal);letter-spacing:.3px;}
+.nav-brand-text{display:flex;flex-direction:column;justify-content:center;line-height:1.2;min-width:0;overflow:hidden;}
+.nav-logo-delta{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:900;color:var(--charcoal);letter-spacing:.3px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .nav-logo-delta em{color:var(--orange-dark,#b8925a);font-style:normal;font-family:'DM Sans',sans-serif;font-weight:700;}
 .nav-tagline{font-size:.58rem;color:var(--muted);display:none;letter-spacing:.1px;}
 /* ═══ 5. PROFILE AVATAR ═══ */
@@ -64,6 +66,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 
 /* ═══ 3. RIGHT ICONS — equal spacing, equal size, vertically centered ═══ */
 .nav-icons{display:flex;gap:11px;align-items:center;flex-shrink:0;padding-right:2px;}
+@media(max-width:360px){
+  .nav-icons{gap:7px;}
+  .nav{padding:15px 10px;}
+}
 .nav-icon-btn{background:none;border:none;color:var(--charcoal);cursor:pointer;position:relative;
   width:30px;height:30px;display:flex;align-items:center;justify-content:center;transition:opacity .15s;
   padding:0;flex-shrink:0;}
@@ -77,7 +83,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 
 /* ═══ ICON TAB ROW (Image 1 reference) ═══ */
 .icon-tab-row{display:flex;justify-content:space-around;align-items:center;background:var(--sand);
-  padding:11px 8px;border-bottom:1px solid var(--border);position:sticky;top:76px;z-index:190;}
+  padding:11px 8px;border-bottom:1px solid var(--border);position:sticky;top:76px;z-index:190;
+  overflow-x:auto;max-width:100vw;scrollbar-width:none;}
+.icon-tab-row::-webkit-scrollbar{display:none;}
 .icon-tab{background:none;border:none;color:var(--muted);cursor:pointer;padding:9px 22px;border-radius:10px;
   display:flex;align-items:center;justify-content:center;transition:all .15s ease;position:relative;}
 .icon-tab svg{width:22px;height:22px;}
@@ -97,7 +105,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
   max-width:none;padding:10px 14px;background:var(--sand);border-bottom:1px solid var(--border);z-index:199;}
 
 /* ── FILTER TABS (Section 9.2 — ship simple filter tabs first, mixed feed later) ── */
-.filter-row{display:flex;gap:8px;padding:12px 14px;overflow-x:auto;background:var(--sand);border-bottom:1px solid var(--border);position:sticky;z-index:100;}
+.filter-row{display:flex;gap:8px;padding:12px 14px;overflow-x:auto;background:var(--sand);border-bottom:1px solid var(--border);position:sticky;z-index:100;max-width:100vw;scrollbar-width:none;}
+.filter-row::-webkit-scrollbar{display:none;}
 #sortRow{top:200px;}
 #filterRow{top:246px;}
 @media(max-width:1023px){
@@ -157,6 +166,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 .commerce-tag-name{font-weight:800;color:var(--charcoal);}
 .commerce-tag-price{color:var(--green2);font-weight:700;}
 .btn-cta{padding:8px 14px;border-radius:9px;border:none;background:var(--navy);color:#fff;font-size:.78rem;font-weight:700;cursor:pointer;white-space:nowrap;}
+.btn-cta-cart{background:#fff;color:var(--navy);border:1.5px solid var(--border)!important;padding:8px 11px!important;transition:all .2s;}
 
 .insights-row{margin:0 14px 10px;padding:9px 12px;background:#f4f9f6;border-radius:10px;font-size:.72rem;color:var(--muted);display:flex;justify-content:space-between;}
 .insights-row b{color:var(--charcoal);}
@@ -168,7 +178,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 .poll-opt-fill{position:absolute;left:0;top:0;bottom:0;background:#eaf3ee;z-index:0;}
 .poll-opt-label{position:relative;z-index:1;display:flex;justify-content:space-between;}
 
-.story-row{display:flex;gap:14px;padding:16px 14px;overflow-x:auto;background:var(--sand);border-bottom:1px solid var(--border);scrollbar-width:none;}
+.story-row{display:flex;gap:14px;padding:16px 14px;overflow-x:auto;background:var(--sand);border-bottom:1px solid var(--border);scrollbar-width:none;max-width:100vw;}
 .story-row::-webkit-scrollbar{display:none;}
 .story-item{flex:0 0 auto;text-align:center;cursor:pointer;width:64px;}
 .story-ring{width:62px;height:62px;border-radius:50%;padding:2.5px;display:flex;align-items:center;justify-content:center;position:relative;
@@ -490,20 +500,20 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 
 <!-- BOTTOM NAV -->
 <div class="bottom-nav">
-  <div class="bn-item active" onclick="location.reload()">
+  <div class="bn-item active" onclick="location.href='index.html'">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 10.5L12 4L20 10.5V20C20 20.55 19.55 21 19 21H15V15H9V21H5C4.45 21 4 20.55 4 20V10.5Z"/></svg>Home
   </div>
-  <div class="bn-item" onclick="location.href='reels-player.html?city='+CITY">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10L21 7V17L16 14"/></svg>Reels
+  <div class="bn-item" onclick="location.href='index.html'" style="position:relative;" title="Cart (shared with DELTA homepage)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h2l2.2 11.2a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.6L21 8H6.2"/><circle cx="10" cy="20" r="1.1" fill="currentColor" stroke="none"/><circle cx="17" cy="20" r="1.1" fill="currentColor" stroke="none"/></svg>Cart
+    <span class="nav-icon-badge" id="bnCartBadge" style="display:none;position:absolute;top:2px;right:20px;">0</span>
   </div>
-  <div class="bn-item bn-center" onclick="location.href='create-studio.html?city='+CITY">
-    <div class="bn-icon-wrap"><span style="color:#fff;font-weight:900;font-size:1.3rem;line-height:1;">+</span></div>Create
+  <div class="bn-item bn-center" onclick="location.href='bazaar.html'">
+    <div class="bn-icon-wrap"><span style="color:#fff;font-weight:900;font-size:1.05rem;line-height:1;">△</span></div>Bazar
   </div>
-  <div class="bn-item" onclick="alert('Inbox — messaging not built yet')" style="position:relative;">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v12H8l-4 4V4Z"/></svg>Inbox
-    <span class="nav-icon-badge" id="bnInboxBadge" style="position:absolute;top:-2px;right:20px;">2</span>
+  <div class="bn-item" onclick="openSideMenuFallback()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6H20M4 12H20M4 18H20"/></svg>Menu
   </div>
-  <div class="bn-item" onclick="handleNavAvatarClick()">
+  <div class="bn-item" onclick="location.href='index.html'" title="Your DELTA account (not your Media creator profile)">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3.3"/><path d="M4.5 20c1-4.2 4-6.5 7.5-6.5s6.5 2.3 7.5 6.5"/></svg>Profile
   </div>
 </div>
@@ -547,7 +557,18 @@ auth.onAuthStateChanged(function(u){
   loadMhTrendingReels();
   loadMhTopCreators();
   loadNavAvatar();
+  updateSharedCartBadge();
 });
+
+function updateSharedCartBadge(){
+  try{
+    var cartItems = JSON.parse(localStorage.getItem('delta_cart')||'[]');
+    var count = cartItems.reduce(function(sum,item){return sum+(item.qty||1);}, 0);
+    var badge = document.getElementById('bnCartBadge');
+    if(count > 0){ badge.textContent = count; badge.style.display = 'flex'; }
+    else { badge.style.display = 'none'; }
+  }catch(e){ console.warn('Cart badge error', e); }
+}
 
 function loadNavAvatar(){
   var img = document.getElementById('navAvatarImg');
@@ -1062,8 +1083,12 @@ function renderPostCard(id, d, wrap, isPinned){
     tagCard.innerHTML =
       '<img class="commerce-tag-thumb" src="'+(d.thumbnailUrl||(d.mediaUrls&&d.mediaUrls[0])||'')+'">'+
       '<div class="commerce-tag-info"><div class="commerce-tag-name">'+(d.tags.categoryId||'পণ্য')+'</div></div>'+
+      (d.tags.productId ? '<button class="btn-cta btn-cta-cart" title="Add to Cart">🛒</button>' : '')+
       '<button class="btn-cta">'+ctaLabel(d.ctaType)+'</button>';
-    tagCard.querySelector('.btn-cta').onclick=function(){ handleCta(d); };
+    tagCard.querySelector('.btn-cta:last-child').onclick=function(){ handleCta(d); };
+    if(d.tags.productId){
+      tagCard.querySelector('.btn-cta-cart').onclick=function(e){ addToSharedCart(d.tags.shopId, d.tags.productId, e.target); };
+    }
     card.appendChild(tagCard);
   }
 
@@ -1092,6 +1117,51 @@ function handleCta(d){
     window.open('https://wa.me/?text='+encodeURIComponent('আগ্রহী: '+(d.caption||'')),'_blank');
   } else {
     location.href='shop.html?id='+(d.tags.shopId||'')+'&city='+CITY;
+  }
+}
+
+// ── SHARED CART — writes to the exact same 'delta_cart' localStorage key that
+// index.html already reads on page load (originally built for flash-sale handoff).
+// Reusing this existing mechanism rather than inventing a new one, so items added
+// from a Media post genuinely appear in the homepage cart. Honest limitation:
+// index.html's main cart lives only in a JS variable (not persisted itself), so
+// this is a one-time transfer picked up the NEXT time index.html loads — same
+// behavior flash-sale already has today, not a live real-time-synced cart between
+// two open tabs.
+async function addToSharedCart(shopId, productId, btnEl){
+  if(!shopId || !productId){ alert('এই পণ্যটি সরাসরি shop-এর সাথে link করা নেই'); return; }
+  var originalText = btnEl.textContent;
+  btnEl.textContent = '…';
+  try{
+    var pDoc = await db.collection('cities').doc(CITY).collection('sellers').doc(shopId).collection('products').doc(productId).get();
+    if(!pDoc.exists){
+      // fallback to root-level sellers path (DELTA's dual structure)
+      pDoc = await db.collection('sellers').doc(shopId).collection('products').doc(productId).get();
+    }
+    if(!pDoc.exists){ alert('পণ্যটি খুঁজে পাওয়া যায়নি'); btnEl.textContent=originalText; return; }
+    var p = pDoc.data();
+    var existing = [];
+    try{ existing = JSON.parse(localStorage.getItem('delta_cart')||'[]'); }catch(e){ existing = []; }
+    var already = existing.find(function(item){ return item.id===productId; });
+    if(already){ already.qty = (already.qty||1) + 1; }
+    else {
+      existing.push({
+        id: productId, shopId: shopId,
+        name: p.nameBn || p.name || 'পণ্য',
+        price: p.price || 0, qty: 1,
+        imageUrl: p.imageUrl || p.imageUrls && p.imageUrls[0] || ''
+      });
+    }
+    localStorage.setItem('delta_cart', JSON.stringify(existing));
+    updateSharedCartBadge();
+    btnEl.textContent = '✓';
+    btnEl.style.background = 'var(--green2)'; btnEl.style.color='#fff';
+    setTimeout(function(){ btnEl.textContent = originalText; btnEl.style.background=''; btnEl.style.color=''; }, 1500);
+    alert('কার্টে যোগ হয়েছে ✅ — DELTA Homepage-এ ফিরে গেলে cart-এ দেখা যাবে');
+  }catch(e){
+    console.error('Add to cart error', e);
+    alert('কার্টে যোগ করতে সমস্যা হয়েছে');
+    btnEl.textContent = originalText;
   }
 }
 
