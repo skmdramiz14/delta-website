@@ -208,6 +208,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 .story-pinned-badge{position:absolute;bottom:-3px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;
   font-size:.55rem;padding:1.5px 6px;border-radius:6px;}
 .story-label{font-size:.68rem;margin-top:8px;color:var(--charcoal);font-weight:600;max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.story-add-ring{width:62px;height:62px;border-radius:50%;position:relative;display:flex;align-items:center;justify-content:center;
+  background:var(--cream);border:1.5px dashed #C9C4B4;}
+.story-add-ring img{width:100%;height:100%;border-radius:50%;object-fit:cover;opacity:.55;}
+.story-add-plus{position:absolute;bottom:-2px;right:-2px;width:20px;height:20px;border-radius:50%;background:var(--navy);
+  border:2px solid #fff;color:#D4AF63;display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800;line-height:1;}
 
 /* ── STORY VIEWER (full-screen overlay, local to DELTA Media) ── */
 .story-viewer-overlay{display:none;position:fixed;inset:0;background:#000;z-index:2000;flex-direction:column;}
@@ -405,12 +410,34 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 .mh-cp-try-btn{width:100%;padding:9px;background:var(--sand);color:var(--muted);border:none;border-radius:10px;font-weight:700;font-size:.8rem;cursor:not-allowed;}
 
 .pinned-post-badge{display:inline-flex;align-items:center;gap:4px;background:var(--sand);color:var(--orange-dark,#b8925a);font-size:.68rem;font-weight:700;padding:3px 10px;border-radius:8px;}
+
+/* ── Side Menu (hamburger drawer) ── */
+.sm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:980;opacity:0;pointer-events:none;transition:opacity .2s;}
+.sm-overlay.open{opacity:1;pointer-events:auto;}
+.sm-drawer{position:fixed;top:0;left:0;bottom:0;width:82%;max-width:320px;background:#fff;z-index:990;
+  transform:translateX(-100%);transition:transform .25s ease;display:flex;flex-direction:column;box-shadow:4px 0 24px rgba(0,0,0,.15);}
+.sm-drawer.open{transform:translateX(0);}
+.sm-head{padding:22px 18px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;}
+.sm-head-avatar{width:48px;height:48px;border-radius:50%;object-fit:cover;background:var(--cream);border:1px solid var(--border);flex-shrink:0;}
+.sm-head-avatar-fallback{width:48px;height:48px;border-radius:50%;background:var(--navy);color:#D4AF63;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.sm-head-name{font-weight:800;font-size:.92rem;color:var(--charcoal);}
+.sm-head-sub{font-size:.72rem;color:var(--muted);margin-top:2px;}
+.sm-head-login-btn{background:var(--navy);color:#fff;border:none;padding:8px 16px;border-radius:18px;font-weight:700;font-size:.78rem;cursor:pointer;}
+.sm-list{flex:1;overflow-y:auto;padding:8px 0;}
+.sm-section-label{font-size:.65rem;font-weight:800;letter-spacing:.5px;color:var(--muted);text-transform:uppercase;padding:14px 18px 6px;}
+.sm-item{display:flex;align-items:center;gap:14px;padding:12px 18px;cursor:pointer;font-size:.85rem;font-weight:600;color:var(--charcoal);}
+.sm-item:active{background:var(--cream);}
+.sm-item svg{width:20px;height:20px;flex-shrink:0;color:var(--charcoal);}
+.sm-item.sm-logout{color:#c0392b;}
+.sm-item.sm-logout svg{color:#c0392b;}
+.sm-divider{height:1px;background:var(--border);margin:8px 0;}
+.sm-foot{padding:14px 18px;font-size:.65rem;color:var(--muted);text-align:center;border-top:1px solid var(--border);}
 </style>
 </head>
 <body>
 
 <div class="nav">
-  <button class="nav-hamburger" onclick="openSideMenuFallback()" title="Menu">
+  <button class="nav-hamburger" onclick="openSideMenu()" title="Menu">
     <svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
   </button>
   <div class="nav-brand">
@@ -455,7 +482,80 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
   </div>
 </div>
 
+<!-- ═══ SIDE MENU (hamburger drawer) ═══ -->
+<div class="sm-overlay" id="smOverlay" onclick="closeSideMenu()"></div>
+<div class="sm-drawer" id="smDrawer">
+  <div class="sm-head" id="smHead">
+    <div class="sm-head-avatar-fallback" id="smHeadFallback">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3.3"/><path d="M4.5 20c1-4.2 4-6.5 7.5-6.5s6.5 2.3 7.5 6.5" stroke-linecap="round"/></svg>
+    </div>
+    <img class="sm-head-avatar" id="smHeadAvatar" src="" style="display:none;" onerror="this.style.display='none'">
+    <div id="smHeadTextWrap" style="flex:1;">
+      <div class="sm-head-name" id="smHeadName">Guest</div>
+      <div class="sm-head-sub" id="smHeadSub">Login to access your profile</div>
+    </div>
+    <button class="sm-head-login-btn" id="smHeadLoginBtn" onclick="location.href='index.html'" style="display:none;">Login</button>
+  </div>
+  <div class="sm-list" id="smList">
+    <div class="sm-section-label">Profile &amp; Content</div>
+    <div class="sm-item" onclick="smGo('profile')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="8" r="3.3"/><path d="M4.5 20c1-4.2 4-6.5 7.5-6.5s6.5 2.3 7.5 6.5" stroke-linecap="round"/></svg>
+      My Profile
+    </div>
+    <div class="sm-item" onclick="smGo('content')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+      My Posts / Reels / Stories / Videos
+    </div>
+    <div class="sm-item" onclick="smGo('saved')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-6-4.5L6 21V3Z"/></svg>
+      Saved / Bookmarked
+    </div>
+
+    <div class="sm-divider"></div>
+    <div class="sm-section-label">Performance</div>
+    <div class="sm-item" onclick="smGo('analytics')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M12 20V4M20 20v-7"/></svg>
+      Analytics &amp; Insights
+    </div>
+
+    <div class="sm-divider" id="smSellerDivider" style="display:none;"></div>
+    <div id="smSellerSection" style="display:none;">
+      <div class="sm-section-label">Account</div>
+      <div class="sm-item" onclick="smGo('sellerDashboard')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1V9.5Z"/></svg>
+        Switch to Seller Dashboard
+      </div>
+    </div>
+
+    <div class="sm-divider"></div>
+    <div class="sm-item" onclick="smGo('deltaAccount')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M12 3L21 20H3L12 3Z"/></svg>
+      My DELTA Account
+    </div>
+    <div class="sm-item" onclick="smGo('notifSettings')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 0 1 12 0c0 4 1.5 5.5 1.5 5.5H4.5S6 13 6 9Z"/><path d="M10 18a2 2 0 0 0 4 0"/></svg>
+      Notification Settings
+    </div>
+    <div class="sm-item" onclick="smGo('help')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 1.7-2.2 2-2.4 3.5" stroke-linecap="round"/><circle cx="12" cy="17" r=".4" fill="currentColor"/></svg>
+      Help &amp; Support
+    </div>
+    <div class="sm-item" onclick="smGo('share')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12L20 4L14 20L11 13L4 12Z"/></svg>
+      Share DELTA Media
+    </div>
+
+    <div class="sm-divider" id="smLogoutDivider" style="display:none;"></div>
+    <div class="sm-item sm-logout" id="smLogoutItem" onclick="smGo('logout')" style="display:none;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+      Logout
+    </div>
+  </div>
+  <div class="sm-foot">DELTA Media · v1.0</div>
+</div>
+
 <!-- ═══ ICON TAB ROW (per Image 1 reference) — quick nav, all screen sizes ═══ -->
+
 <div class="icon-tab-row">
   <button class="icon-tab active" onclick="location.reload()" title="Home">
     <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 10.5L12 4L20 10.5V20C20 20.55 19.55 21 19 21H15V15H9V21H5C4.45 21 4 20.55 4 20V10.5Z"/></svg>
@@ -535,8 +635,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
       </button>
     </div>
 
-    <!-- Inline login prompt — per Image 2 reference, shown right after Stories, before feed -->
-    <div class="inline-login-card" id="inlineLoginCard" style="display:none !important;">
+    <!-- Inline login prompt — per Image 2 reference, shown right after Stories, before feed.
+         Once logged in, this simply hides — no replacement card here anymore, since
+         Premium access now lives in the bottom navigation's center button. -->
+    <div class="inline-login-card" id="inlineLoginCard" style="display:none;">
       <div class="ilc-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></div>
       <div class="ilc-text">
         <div class="ilc-title">Create your post, story, reel or live</div>
@@ -544,24 +646,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
       </div>
       <button class="ilc-btn" onclick="location.href='index.html'">Login / Sign Up</button>
     </div>
-
-    <!-- Same slot, logged-in state: once the user is authenticated, the login
-         prompt above is no longer relevant — this Premium upsell takes its place.
-         One compact card, swipeable — cycles through premium features instead of
-         stacking a separate Cross-Platform Publishing card below it (saves vertical
-         space so the feed starts sooner). "Try Premium" always deep-links to the
-         dedicated upgrade page with full plan comparison. -->
-    <div class="inline-premium-card" id="inlinePremiumCard" style="display:flex;">
-      <div class="ipc-icon">👑</div>
-      <div class="ipc-carousel" id="ipcCarousel">
-        <div class="ipc-slide"><div class="ipc-title">Go Premium</div><div class="ipc-sub">Live Selling, Cross-Platform Publishing & more.</div></div>
-        <div class="ipc-slide"><div class="ipc-title">Go Premium</div><div class="ipc-sub">Publish once, reach Facebook, Instagram, YouTube & X.</div></div>
-        <div class="ipc-slide"><div class="ipc-title">Go Premium</div><div class="ipc-sub">Featured Profile — get seen first in your area.</div></div>
-        <div class="ipc-slide"><div class="ipc-title">Go Premium</div><div class="ipc-sub">Advanced Analytics — know what's actually converting.</div></div>
-      </div>
-      <button class="ipc-btn" onclick="location.href='premium-upgrade.html?city='+CITY">Try Premium</button>
-    </div>
-    <div class="ipc-dots" id="ipcDots" style="display:flex;"></div>
 
     <div class="feed-wrap" id="feedWrap">
       <div class="loading-state" id="loadingState">লোড হচ্ছে...</div>
@@ -628,8 +712,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h2l2.2 11.2a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.6L21 8H6.2"/><circle cx="10" cy="20" r="1.1" fill="currentColor" stroke="none"/><circle cx="17" cy="20" r="1.1" fill="currentColor" stroke="none"/></svg>Cart
     <span class="nav-icon-badge" id="bnCartBadge" style="display:none;position:absolute;top:2px;right:20px;">0</span>
   </div>
-  <div class="bn-item bn-center" onclick="location.href='create-studio.html?city='+CITY">
-    <div class="bn-icon-wrap"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#D4AF63" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div>Create
+  <div class="bn-item bn-center" onclick="location.href='premium-upgrade.html?city='+CITY" title="DELTA Premium">
+    <div class="bn-icon-wrap"><svg viewBox="0 0 24 24" width="20" height="20" fill="#D4AF63" stroke="#D4AF63" stroke-width="1" stroke-linejoin="round"><path d="M3 8.5l4.2 3.2L12 4l4.8 7.7 4.2-3.2-1.7 10.5a1 1 0 0 1-1 .8H5.7a1 1 0 0 1-1-.8L3 8.5Z"/></svg></div>Premium
   </div>
   <div class="bn-item" onclick="location.href='ecosystem.html'" title="DELTA Ecosystem">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3L21 20H3L12 3Z"/></svg>DELTA
@@ -672,12 +756,7 @@ var activeCommentContentId=null;
 
 auth.onAuthStateChanged(function(u){
   currentUser=u; loadFeed(); loadStories();
-  // DEMO: auth-based toggle disabled so the Go Premium preview stays visible
-  // regardless of real login state.
-  // document.getElementById('inlineLoginCard').style.display = u ? 'none' : 'flex';
-  // document.getElementById('inlinePremiumCard').style.display = u ? 'flex' : 'none';
-  // document.getElementById('ipcDots').style.display = u ? 'flex' : 'none';
-  initPremiumCarousel();
+  document.getElementById('inlineLoginCard').style.display = u ? 'none' : 'flex';
   loadMhOfficialCard();
   loadMhWhoToFollow();
   loadMhTrendingReels();
@@ -708,31 +787,101 @@ function loadNavAvatar(){
     else { img.style.display='none'; fallback.style.display='flex'; }
   }).catch(function(){ img.style.display='none'; fallback.style.display='flex'; });
 }
-var _ipcInitDone = false;
-function initPremiumCarousel(){
-  if(_ipcInitDone) return; // dots + listener only need to be set up once
-  _ipcInitDone = true;
-  var carousel = document.getElementById('ipcCarousel');
-  var dotsWrap = document.getElementById('ipcDots');
-  var slides = carousel.querySelectorAll('.ipc-slide');
-  dotsWrap.innerHTML = '';
-  slides.forEach(function(_, i){
-    var d = document.createElement('div');
-    d.className = 'ipc-dot' + (i===0 ? ' active' : '');
-    dotsWrap.appendChild(d);
-  });
-  carousel.addEventListener('scroll', function(){
-    var idx = Math.round(carousel.scrollLeft / carousel.clientWidth);
-    dotsWrap.querySelectorAll('.ipc-dot').forEach(function(d, i){
-      d.classList.toggle('active', i===idx);
-    });
-  }, { passive:true });
+// ═══ SIDE MENU (hamburger drawer) ═══
+// Role-conditional per Part A Section 10.1 — "Switch to Seller Dashboard" and
+// Logout only show once we know the viewer's actual state; menu items route
+// to existing pages/tabs where they exist, and give an honest "not built yet"
+// alert for anything genuinely not implemented, rather than a dead link.
+function openSideMenu(){
+  document.getElementById('smOverlay').classList.add('open');
+  document.getElementById('smDrawer').classList.add('open');
+  refreshSideMenuHead();
 }
-function openSideMenuFallback(){
-  // This page doesn't have its own side-menu system yet — the full account/settings
-  // menu already lives in index.html, so route there rather than half-building a
-  // second one here.
-  location.href='index.html';
+function closeSideMenu(){
+  document.getElementById('smOverlay').classList.remove('open');
+  document.getElementById('smDrawer').classList.remove('open');
+}
+function refreshSideMenuHead(){
+  var nameEl = document.getElementById('smHeadName');
+  var subEl = document.getElementById('smHeadSub');
+  var avatarImg = document.getElementById('smHeadAvatar');
+  var avatarFallback = document.getElementById('smHeadFallback');
+  var loginBtn = document.getElementById('smHeadLoginBtn');
+  var sellerSection = document.getElementById('smSellerSection');
+  var sellerDivider = document.getElementById('smSellerDivider');
+  var logoutItem = document.getElementById('smLogoutItem');
+  var logoutDivider = document.getElementById('smLogoutDivider');
+
+  if(!currentUser){
+    nameEl.textContent = 'Guest';
+    subEl.textContent = 'Login to access your profile';
+    avatarImg.style.display='none'; avatarFallback.style.display='flex';
+    loginBtn.style.display='inline-block';
+    sellerSection.style.display='none'; sellerDivider.style.display='none';
+    logoutItem.style.display='none'; logoutDivider.style.display='none';
+    return;
+  }
+  loginBtn.style.display='none';
+  logoutItem.style.display='flex'; logoutDivider.style.display='block';
+  db.collection('cities').doc(CITY).collection('mediaProfiles').doc(currentUser.uid).get().then(function(doc){
+    var p = doc.exists ? doc.data() : {};
+    nameEl.textContent = p.displayName || currentUser.email || 'Your Profile';
+    subEl.textContent = p.username ? ('@'+p.username) : 'View your DELTA Media profile';
+    if(p.avatarUrl){ avatarImg.src = p.avatarUrl; avatarImg.style.display='block'; avatarFallback.style.display='none'; }
+    else { avatarImg.style.display='none'; avatarFallback.style.display='flex'; }
+    var roles = p.roles || [];
+    var isSeller = roles.indexOf('seller')>=0 || !!p.linkedSellerId;
+    sellerSection.style.display = isSeller ? 'block' : 'none';
+    sellerDivider.style.display = isSeller ? 'block' : 'none';
+  }).catch(function(){
+    nameEl.textContent = currentUser.email || 'Your Profile';
+    subEl.textContent = 'View your DELTA Media profile';
+  });
+}
+function smGo(dest){
+  closeSideMenu();
+  switch(dest){
+    case 'profile':
+      if(!currentUser){ location.href='index.html'; return; }
+      location.href='media-profile.html?uid='+currentUser.uid+'&city='+CITY;
+      break;
+    case 'content':
+      if(!currentUser){ location.href='index.html'; return; }
+      location.href='media-profile.html?uid='+currentUser.uid+'&city='+CITY+'&tab=content';
+      break;
+    case 'saved':
+      if(!currentUser){ location.href='index.html'; return; }
+      location.href='media-profile.html?uid='+currentUser.uid+'&city='+CITY+'&tab=saved';
+      break;
+    case 'analytics':
+      if(!currentUser){ location.href='index.html'; return; }
+      location.href='media-profile.html?uid='+currentUser.uid+'&city='+CITY+'&tab=analytics';
+      break;
+    case 'sellerDashboard':
+      location.href='seller-dashboard.html?city='+CITY;
+      break;
+    case 'deltaAccount':
+      location.href='index.html';
+      break;
+    case 'notifSettings':
+      alert('Notification Settings — not built yet');
+      break;
+    case 'help':
+      alert('Help & Support — not built yet. For now, reach out via the Support Tickets option on the DELTA homepage.');
+      break;
+    case 'share':
+      var shareUrl = location.origin + location.pathname + '?city='+CITY;
+      if(navigator.share){
+        navigator.share({ title:'DELTA Media', text:'Watch. Trust. Shop. Support Local. — check out DELTA Media', url:shareUrl }).catch(function(){});
+      } else {
+        navigator.clipboard.writeText(shareUrl).then(function(){ alert('Link copied — share it anywhere!'); })
+          .catch(function(){ alert(shareUrl); });
+      }
+      break;
+    case 'logout':
+      auth.signOut().then(function(){ location.href='index.html'; });
+      break;
+  }
 }
 function handleNavAvatarClick(){
   if(!currentUser){ location.href='index.html'; return; }
@@ -837,7 +986,23 @@ function loadStories(){
   var now=new Date().toISOString();
   var hasCleared = false;
   function clearLoadingOnce(){
-    if(!hasCleared){ hasCleared = true; wrap.innerHTML=''; }
+    if(!hasCleared){
+      hasCleared = true;
+      wrap.innerHTML='';
+      // Slot #0 — "Add Story", media-feed-only (homepage has no upload capability).
+      var addItem = document.createElement('div'); addItem.className='story-item';
+      var avatarUrl = (currentUser && currentUser.photoURL) ? currentUser.photoURL : '';
+      addItem.innerHTML =
+        '<div class="story-add-ring">'+
+          (avatarUrl ? '<img src="'+avatarUrl+'">' : '')+
+          '<div class="story-add-plus">+</div>'+
+        '</div><div class="story-label">Add Story</div>';
+      addItem.onclick = function(){
+        if(!currentUser){ alert('লগইন করুন প্রথমে'); location.href='index.html'; return; }
+        location.href='create-studio.html?type=story&city='+CITY;
+      };
+      wrap.appendChild(addItem);
+    }
   }
 
   // ── Hard timeout safety net — if Firestore never resolves OR rejects within
@@ -1474,6 +1639,31 @@ async function loadMhDiscoverRow(){
   var scroll = document.getElementById('mhDiscoverScroll');
   row.style.display = 'block';
   scroll.innerHTML = '';
+
+  // ── Slot #0 — Pinned DELTA Official, always first, same reasoning as the
+  // Stories pin and Feed pin (Part D9 — every section's first slot is Official). ──
+  try{
+    var officialUid = await getMhOfficialUid();
+    var officialCard = document.createElement('div'); officialCard.className='mh-d-card';
+    if(officialUid){
+      var pDoc = await db.collection('cities').doc(CITY).collection('mediaProfiles').doc(officialUid).get();
+      var avatarUrl = pDoc.exists ? (pDoc.data().avatarUrl||'') : '';
+      officialCard.innerHTML =
+        '<div class="mh-d-avatar-wrap"><div class="mh-d-rank" style="background:linear-gradient(135deg,#4a90d9,#8b5cf6,#e0245e);color:#fff;">✓</div>'+
+        '<img class="mh-d-avatar" src="'+avatarUrl+'" onerror="this.style.background=\'var(--sand)\'"></div>'+
+        '<div class="mh-d-name">DELTA Official</div>'+
+        '<div class="mh-d-sub">Pinned</div>';
+      officialCard.onclick = function(){ location.href='media-profile.html?uid='+officialUid+'&city='+CITY; };
+    } else {
+      officialCard.innerHTML =
+        '<div class="mh-d-avatar-wrap"><div class="mh-d-rank" style="background:linear-gradient(135deg,#4a90d9,#8b5cf6,#e0245e);color:#fff;">✓</div>'+
+        '<div class="mh-d-avatar" style="display:flex;align-items:center;justify-content:center;background:var(--navy);color:#D4AF63;font-weight:800;">▲</div></div>'+
+        '<div class="mh-d-name">DELTA Official</div>'+
+        '<div class="mh-d-sub">Pinned</div>';
+      officialCard.onclick = function(){ alert('DELTA Official account — sets up automatically once created'); };
+    }
+    scroll.appendChild(officialCard);
+  }catch(e){ console.warn('Discover row — DELTA Official pin error', e); }
 
   // ── Who to Follow cards ──
   var DEMO_FOLLOW = [
