@@ -646,37 +646,95 @@ document.getElementById('filterRow').addEventListener('click', function(e){
   loadFeed();
 });
 
-// Demo fallback — same reasoning as index.html: lets the row's real visual
-// structure be seen before real sellers start posting stories.
+// ═══ DEMO STORIES — EXACT CLONE of index.html's DEMO_STORIES array. ═══
+// Kept byte-for-byte identical (same authors, ring types, captions, images) so
+// both pages show the same demo content until real sellers start posting.
+// If you ever update the demo set on the homepage, update this one to match.
 var DEMO_MF_STORIES = [
-  { data:{ authorUid:'demo-freshmart', authorDisplayName:'Fresh Mart', authorAvatarUrl:'https://images.unsplash.com/photo-1542838132-92c53300491e?w=200&q=60', ringType:'stock', isLive:true } },
-  { data:{ authorUid:'demo-fishcorner', authorDisplayName:'Fish Corner', authorAvatarUrl:'https://images.unsplash.com/photo-1544943910-4c1dc44aab44?w=200&q=60', ringType:'offer' } },
-  { data:{ authorUid:'demo-salon', authorDisplayName:'Salon XYZ', authorAvatarUrl:'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=200&q=60', ringType:'service' } },
-  { data:{ authorUid:'demo-pharmacy', authorDisplayName:'Green Pharmacy', authorAvatarUrl:'', ringType:'urgent' } }
+  { id:'demo1', data:{
+      authorUid:'demo-fishcorner', authorDisplayName:'Fish Corner',
+      authorAvatarUrl:'https://images.unsplash.com/photo-1544943910-4c1dc44aab44?w=200&q=60',
+      mediaUrls:['https://images.unsplash.com/photo-1544943910-4c1dc44aab44?w=800&q=70'],
+      videoUrl:null, caption:'আজকের টাটকা ইলিশ এসেছে 🐟', postSubType:'new_arrival', storyRingType:'stock',
+      ctaType:'view_product', tags:{shopId:null, productId:null, categoryId:'ইলিশ মাছ (Hilsa)'},
+      createdAt:new Date(Date.now()-40*60000).toISOString(), expiresAt:new Date(Date.now()+23*3600000).toISOString()
+  }},
+  { id:'demo2', data:{
+      authorUid:'demo-freshmart', authorDisplayName:'Fresh Mart',
+      authorAvatarUrl:'https://images.unsplash.com/photo-1542838132-92c53300491e?w=200&q=60',
+      mediaUrls:['https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=800&q=70'],
+      videoUrl:null, caption:'আজকের স্পেশাল অফার! হিমসাগর আম মাত্র ₹১২০/কেজি 🥭', postSubType:'festival_offer', storyRingType:'offer',
+      ctaType:'visit_shop', tags:{shopId:null, productId:null, offerId:'demo', categoryId:'আম (Mango)'},
+      createdAt:new Date(Date.now()-90*60000).toISOString(), expiresAt:new Date(Date.now()+22*3600000).toISOString()
+  }},
+  { id:'demo3', data:{
+      authorUid:'demo-official', authorDisplayName:'DELTA Official',
+      authorAvatarUrl:'',
+      mediaUrls:['https://images.unsplash.com/photo-1607083206869-4c7672e72a8a?w=800&q=70'],
+      videoUrl:null, caption:'দুর্গাপূজা স্পেশাল লঞ্চ আসছে ২০ অক্টোবর! প্রথম ২০টি দোকান এখনই যোগ দিন 🎉', postSubType:'business_update', storyRingType:'official',
+      ctaType:'none', tags:{shopId:null,productId:null,categoryId:null},
+      createdAt:new Date(Date.now()-150*60000).toISOString(), expiresAt:new Date(Date.now()+20*3600000).toISOString()
+  }},
+  { id:'demo4', data:{
+      authorUid:'demo-salon', authorDisplayName:'Salon XYZ',
+      authorAvatarUrl:'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=200&q=60',
+      mediaUrls:['https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=800&q=70'],
+      videoUrl:null, caption:'আজ মাত্র ২টি Slot খালি আছে — এখনই Book করুন 💇', postSubType:'general', storyRingType:'service',
+      ctaType:'book_service', tags:{shopId:null, serviceId:'demo', categoryId:'Salon'},
+      createdAt:new Date(Date.now()-200*60000).toISOString(), expiresAt:new Date(Date.now()+18*3600000).toISOString()
+  }},
+  { id:'demo5', data:{
+      authorUid:'demo-freshmart2', authorDisplayName:'Fresh Mart',
+      authorAvatarUrl:'https://images.unsplash.com/photo-1542838132-92c53300491e?w=200&q=60',
+      mediaUrls:['https://images.unsplash.com/photo-1567306301408-9b74779a11af?w=800&q=70'],
+      videoUrl:null, caption:'মাত্র ১২ কেজি বাকি! দুপুর ২টার আগে অর্ডার করুন ⚠️', postSubType:'general', storyRingType:'urgent',
+      ctaType:'order_now', tags:{shopId:null, productId:null, categoryId:'ইলিশ মাছ'},
+      createdAt:new Date(Date.now()-15*60000).toISOString(), expiresAt:new Date(Date.now()+23.5*3600000).toISOString()
+  }}
 ];
+// EXACT CLONE of index.html's DEMO_PINNED_OFFICIAL
+var DEMO_MF_PINNED_OFFICIAL = {
+  id:'demo-official-pin', pinned:true, data:{
+    authorUid:'demo-official', authorDisplayName:'DELTA Official', authorAvatarUrl:'',
+    mediaUrls:['https://images.unsplash.com/photo-1607083206869-4c7672e72a8a?w=800&q=70'],
+    videoUrl:null, caption:'দুর্গাপূজা স্পেশাল লঞ্চ আসছে ২০ অক্টোবর! 🎉', postSubType:'business_update',
+    ctaType:'none', tags:{shopId:null,productId:null,categoryId:null},
+    createdAt:new Date(Date.now()-30*60000).toISOString(), expiresAt:new Date(Date.now()+23*3600000).toISOString()
+  }
+};
+
 function loadStories(){
   var wrap=document.getElementById('storyRow'); wrap.innerHTML='';
   var now=new Date().toISOString();
 
-  getMhOfficialUid().then(function(officialUid){
-    var pinnedHtml = '';
-    var renderRealStories = function(list, isDemo){
-      list.forEach(function(entry){
-        var d = entry.data;
-        var thumb = d.authorAvatarUrl || '';
-        var ringClass = 'story-ring-'+(d.ringType||'stock');
-        var item=document.createElement('div'); item.className='story-item';
-        item.innerHTML =
-          '<div class="story-ring '+ringClass+'">'+
-            (thumb?'<img src="'+thumb+'">':'<div style="width:100%;height:100%;border-radius:50%;background:var(--sand);display:flex;align-items:center;justify-content:center;">🏪</div>')+
-            (d.isLive?'<span class="story-live-badge">LIVE</span>':'')+
-          '</div><div class="story-label">'+(d.authorDisplayName||'')+'</div>';
-        if(!isDemo) item.onclick=function(){ openContentDetail(entry.id); };
-        wrap.appendChild(item);
-      });
-    };
+  // ── Every story tap redirects to index.html, where the FULL story viewer
+  // already lives (tap/swipe navigation, hold-to-pause, Commerce Card, cross-
+  // author chaining). Media doesn't duplicate that experience — same story
+  // data, one shared viewer, matching your "homepage is a clone of Media's
+  // story section" instruction by making them literally the same feature.
+  function goToHomepageStory(storyUid){
+    location.href = 'index.html?openStory=' + encodeURIComponent(storyUid) + '&city=' + CITY;
+  }
 
-    // Slot #1 — Pinned DELTA Official, only if a real official profile exists (no fake pin here)
+  var renderRealStories = function(list, isDemo){
+    list.forEach(function(entry){
+      var d = entry.data;
+      var thumb = d.authorAvatarUrl || '';
+      var ringClass = 'story-ring-'+(d.storyRingType||d.ringType||'stock');
+      var item=document.createElement('div'); item.className='story-item';
+      item.innerHTML =
+        '<div class="story-ring '+ringClass+'">'+
+          (thumb?'<img src="'+thumb+'">':'<div style="width:100%;height:100%;border-radius:50%;background:var(--sand);display:flex;align-items:center;justify-content:center;">🏪</div>')+
+          (d.isLive?'<span class="story-live-badge">LIVE</span>':'')+
+        '</div><div class="story-label">'+(d.authorDisplayName||'')+'</div>';
+      item.onclick=function(){ goToHomepageStory(d.authorUid); };
+      wrap.appendChild(item);
+    });
+  };
+
+  getMhOfficialUid().then(function(officialUid){
+    // Slot #1 — Pinned DELTA Official. Real profile if it exists, else the
+    // same demo pin as the homepage (exact clone, not a different fallback).
     if(officialUid){
       db.collection('cities').doc(CITY).collection('mediaProfiles').doc(officialUid).get().then(function(pDoc){
         var pinItem=document.createElement('div'); pinItem.className='story-item';
@@ -685,26 +743,37 @@ function loadStories(){
             (pDoc.exists && pDoc.data().avatarUrl ? '<img src="'+pDoc.data().avatarUrl+'">' : '<div style="width:100%;height:100%;border-radius:50%;background:var(--sand);display:flex;align-items:center;justify-content:center;">🔷</div>')+
             '<span class="story-pinned-badge">📌</span>'+
           '</div><div class="story-label">DELTA Official</div>';
+        pinItem.onclick=function(){ goToHomepageStory(officialUid); };
         wrap.insertBefore(pinItem, wrap.firstChild);
       });
+    } else {
+      var pd = DEMO_MF_PINNED_OFFICIAL.data;
+      var pinItem=document.createElement('div'); pinItem.className='story-item';
+      pinItem.innerHTML =
+        '<div class="story-ring story-ring-official">'+
+          '<div style="width:100%;height:100%;border-radius:50%;background:var(--sand);display:flex;align-items:center;justify-content:center;">🔷</div>'+
+          '<span class="story-pinned-badge">📌</span>'+
+        '</div><div class="story-label">DELTA Official</div>';
+      pinItem.onclick=function(){ goToHomepageStory(pd.authorUid); };
+      wrap.insertBefore(pinItem, wrap.firstChild);
     }
-
-    db.collection('cities').doc(CITY).collection('mediaContent')
-      .where('type','==','story').where('status','==','published')
-      .orderBy('createdAt','desc').limit(15).get().then(function(snap){
-        var real = [];
-        snap.forEach(function(doc){
-          var d=doc.data();
-          if(d.expiresAt && d.expiresAt < now) return;
-          real.push({id:doc.id, data:d});
-        });
-        if(real.length){ renderRealStories(real, false); }
-        else { renderRealStories(DEMO_MF_STORIES, true); }
-      }).catch(function(e){
-        console.error(e);
-        renderRealStories(DEMO_MF_STORIES, true);
-      });
   });
+
+  db.collection('cities').doc(CITY).collection('mediaContent')
+    .where('type','==','story').where('status','==','published')
+    .orderBy('createdAt','desc').limit(15).get().then(function(snap){
+      var real = [];
+      snap.forEach(function(doc){
+        var d=doc.data();
+        if(d.expiresAt && d.expiresAt < now) return;
+        real.push({id:doc.id, data:d});
+      });
+      if(real.length){ renderRealStories(real, false); }
+      else { renderRealStories(DEMO_MF_STORIES, true); }
+    }).catch(function(e){
+      console.error(e);
+      renderRealStories(DEMO_MF_STORIES, true);
+    });
 }
 
 // ── DEMO FEED POSTS — visible only when no real posts exist yet. Same reasoning
