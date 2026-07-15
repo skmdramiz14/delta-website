@@ -484,15 +484,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
       </button>
     </div>
 
-    <!-- Content-type filter — Section 9.2: simple content-type filter, still useful alongside sort -->
-    <div class="filter-row" id="filterRow">
-      <div class="filter-chip active" data-t="all">সব</div>
-      <div class="filter-chip" data-t="post">Post</div>
-      <div class="filter-chip" data-t="reel">Reel</div>
-      <div class="filter-chip" data-t="video">Video</div>
-      <div class="filter-chip" data-t="story">Story</div>
-    </div>
-
     <!-- Inline login prompt — per Image 2 reference, shown right after Stories, before feed -->
     <div class="inline-login-card" id="inlineLoginCard" style="display:none;">
       <div class="ilc-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></div>
@@ -683,13 +674,9 @@ document.getElementById('sortRow').addEventListener('click', function(e){
   loadFeed();
 });
 
-document.getElementById('filterRow').addEventListener('click', function(e){
-  var chip = e.target.closest('.filter-chip'); if(!chip) return;
-  document.querySelectorAll('#filterRow .filter-chip').forEach(function(c){c.classList.remove('active');});
-  chip.classList.add('active');
-  activeFilter = chip.dataset.t;
-  loadFeed();
-});
+// Content-type filter row (Post/Reel/Video/Story) removed — separate pages
+// already exist for these (Reels, Video Hub, etc.). activeFilter stays 'all'
+// permanently now, which loadFeed() already handles correctly.
 
 // ═══ DEMO STORIES — EXACT CLONE of index.html's DEMO_STORIES array. ═══
 // Kept byte-for-byte identical (same authors, ring types, captions, images) so
