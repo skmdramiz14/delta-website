@@ -17,31 +17,36 @@
   --white:#fff;--sand:#ffffff;--cream:#F7F8FA;
   --border:#E7E9EC;--muted:#8A8F98;--charcoal:#1A1A1A;
 }
-body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charcoal);padding-bottom:76px;}
-.nav{background:var(--sand);padding:0 16px;height:64px;display:flex;align-items:center;justify-content:space-between;
-  position:sticky;top:0;z-index:200;border-bottom:1px solid var(--border);gap:12px;
-  box-shadow:0 2px 12px rgba(16,57,45,.04);}
-.nav-hamburger{background:none;border:none;color:var(--charcoal);width:36px;height:36px;border-radius:9px;
-  display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:background .15s;}
-.nav-hamburger:hover{background:var(--border);}
-.nav-hamburger svg{width:20px;height:20px;}
-.nav-brand{display:flex;align-items:center;gap:9px;flex-shrink:0;}
-.nav-brand-icon{width:32px;height:32px;flex-shrink:0;filter:drop-shadow(0 1px 2px rgba(0,0,0,.12));}
-.nav-brand-text{display:flex;flex-direction:column;line-height:1.15;}
-.nav-logo-delta{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:900;color:var(--charcoal);letter-spacing:.3px;}
-.nav-tagline{font-size:.58rem;color:var(--muted);display:none;letter-spacing:.1px;}
-.nav-page-title{font-family:'Playfair Display',serif;font-size:.95rem;font-weight:800;color:var(--charcoal);
-  padding-left:12px;border-left:1.5px solid var(--border);flex-shrink:0;display:none;}
-.nav-page-title em{color:var(--orange-dark,#b8925a);font-style:normal;}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charcoal);padding-bottom:82px;}
 
-.nav-avatar-wrap{display:flex;align-items:center;gap:3px;cursor:pointer;flex-shrink:0;}
-.nav-avatar-inner{position:relative;width:36px;height:36px;}
-.nav-avatar{width:36px;height:36px;border-radius:50%;background:var(--sand);object-fit:cover;
-  border:2px solid var(--orange);box-shadow:0 0 0 2px rgba(199,161,90,.15),0 2px 6px rgba(0,0,0,.1);}
-.nav-avatar-fallback{width:36px;height:36px;border-radius:50%;background:var(--sand);display:flex;align-items:center;justify-content:center;
-  font-size:1rem;color:var(--charcoal);border:2px solid var(--orange);box-shadow:0 0 0 2px rgba(199,161,90,.15),0 2px 6px rgba(0,0,0,.1);}
-.nav-online-dot{position:absolute;bottom:-1px;right:-1px;width:11px;height:11px;border-radius:50%;
-  background:#3fc97e;border:2px solid var(--sand);}
+/* ═══ 1. HEADER HEIGHT + 6. VISUAL WEIGHT ═══ */
+.nav{background:var(--sand);padding:15px 18px;min-height:72px;display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:200;gap:12px;
+  /* ═══ 7. DIVIDER ═══ */
+  border-bottom:1px solid #F1F1F1;box-shadow:0 1px 6px rgba(0,0,0,.06);}
+
+.nav-hamburger{background:none;border:none;color:var(--charcoal);width:30px;height:30px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:background .15s;
+  margin-right:2px;}
+.nav-hamburger:hover{background:var(--border);}
+.nav-hamburger svg{width:18px;height:18px;}
+
+/* ═══ 2. LOGO AREA ═══ */
+.nav-brand{display:flex;align-items:center;gap:6px;flex-shrink:0;margin-right:2px;}
+.nav-brand-icon{width:25px;height:25px;flex-shrink:0;filter:drop-shadow(0 1px 2px rgba(0,0,0,.12));}
+.nav-brand-text{display:flex;flex-direction:column;justify-content:center;line-height:1.2;}
+.nav-logo-delta{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:900;color:var(--charcoal);letter-spacing:.3px;}
+.nav-logo-delta em{color:var(--orange-dark,#b8925a);font-style:normal;font-family:'DM Sans',sans-serif;font-weight:700;}
+.nav-tagline{font-size:.58rem;color:var(--muted);display:none;letter-spacing:.1px;}
+/* ═══ 5. PROFILE AVATAR ═══ */
+.nav-avatar-wrap{display:flex;align-items:center;gap:3px;cursor:pointer;flex-shrink:0;margin-right:2px;}
+.nav-avatar-inner{position:relative;width:32px;height:32px;}
+.nav-avatar{width:32px;height:32px;border-radius:50%;background:var(--sand);object-fit:cover;
+  border:2px solid #fff;box-shadow:0 0 0 2px var(--orange),0 2px 6px rgba(0,0,0,.12);}
+.nav-avatar-fallback{width:32px;height:32px;border-radius:50%;background:var(--sand);display:flex;align-items:center;justify-content:center;
+  font-size:.85rem;color:var(--charcoal);border:2px solid #fff;box-shadow:0 0 0 2px var(--orange),0 2px 6px rgba(0,0,0,.12);}
+.nav-online-dot{position:absolute;bottom:0;right:0;width:9px;height:9px;border-radius:50%;
+  background:#3fc97e;border:2px solid #fff;}
 .nav-avatar-chevron{color:var(--muted);font-size:.68rem;display:none;}
 
 .nav-search-desktop{display:none;flex:1;max-width:400px;position:relative;}
@@ -50,50 +55,54 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 .nav-search-desktop input:focus{outline:none;border-color:var(--orange);box-shadow:0 0 0 3px rgba(199,161,90,.15);}
 .nav-search-desktop .nsd-icon{position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;}
 
-.nav-create-btn{display:none;align-items:center;gap:6px;
-  background:linear-gradient(135deg,#1a4a3a,var(--navy) 60%,#0a2620);color:#fff;border:1.5px solid rgba(212,175,55,.4);
-  padding:9px 20px;border-radius:22px;font-weight:700;font-size:.82rem;cursor:pointer;white-space:nowrap;flex-shrink:0;
-  box-shadow:0 3px 10px rgba(16,57,45,.3);transition:box-shadow .15s,transform .15s;}
-.nav-create-btn:hover{box-shadow:0 4px 14px rgba(16,57,45,.4);}
-.nav-create-btn:active{transform:scale(.96);}
+.nav-create-square{display:flex;align-items:center;justify-content:center;width:22px;height:22px;flex-shrink:0;
+  background:#fff;color:#000;border:2.2px solid #000;border-radius:6px;cursor:pointer;
+  transition:all .15s;margin-right:2px;}
+.nav-create-square:hover{background:var(--sand);border-color:var(--navy);color:var(--navy);}
+.nav-create-square:active{transform:scale(.94);}
+.nav-create-square svg{width:13px;height:13px;}
 
-.nav-icons{display:flex;gap:14px;align-items:center;flex-shrink:0;}
-.nav-icon-btn{background:none;border:none;color:var(--charcoal);font-size:1.1rem;cursor:pointer;position:relative;
-  width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:background .15s;}
-.nav-icon-btn:hover{background:var(--sand);}
-.nav-icon-badge{position:absolute;top:2px;right:2px;background:#e0245e;color:#fff;font-size:.55rem;font-weight:800;
-  border-radius:50%;width:15px;height:15px;display:flex;align-items:center;justify-content:center;}
+/* ═══ 3. RIGHT ICONS — equal spacing, equal size, vertically centered ═══ */
+.nav-icons{display:flex;gap:11px;align-items:center;flex-shrink:0;padding-right:2px;}
+.nav-icon-btn{background:none;border:none;color:var(--charcoal);cursor:pointer;position:relative;
+  width:30px;height:30px;display:flex;align-items:center;justify-content:center;transition:opacity .15s;
+  padding:0;flex-shrink:0;}
+.nav-icon-btn:hover{opacity:.65;}
+.nav-icon-btn svg{width:20px;height:20px;}
+
+/* ═══ 4. NOTIFICATION BADGES — Instagram/Facebook style ═══ */
+.nav-icon-badge{position:absolute;top:-3px;right:-4px;background:#e0245e;color:#fff;font-size:.52rem;font-weight:800;
+  border-radius:50%;width:11px;height:11px;min-width:11px;display:flex;align-items:center;justify-content:center;
+  line-height:1;border:1.5px solid #fff;}
 
 /* ═══ ICON TAB ROW (Image 1 reference) ═══ */
 .icon-tab-row{display:flex;justify-content:space-around;align-items:center;background:var(--sand);
-  padding:8px 8px;border-bottom:1px solid var(--border);position:sticky;top:64px;z-index:190;}
+  padding:8px 8px;border-bottom:1px solid var(--border);position:sticky;top:72px;z-index:190;}
 .icon-tab{background:none;border:none;color:var(--muted);cursor:pointer;padding:9px 18px;border-radius:10px;
   display:flex;align-items:center;justify-content:center;transition:all .15s ease;position:relative;}
 .icon-tab svg{width:22px;height:22px;}
 .icon-tab.active{color:var(--green2);}
-.icon-tab.active::after{content:'';position:absolute;bottom:0;left:20%;right:20%;height:2.5px;background:var(--green2);border-radius:2px 2px 0 0;}
+.icon-tab.active::after{content:'';position:absolute;bottom:0;left:15%;right:15%;height:3px;background:var(--green2);border-radius:2px 2px 0 0;}
 .icon-tab:hover{background:rgba(255,255,255,.04);color:var(--charcoal);}
 
 @media(min-width:1024px){
   .nav-tagline{display:block;}
-  .nav-page-title{display:block;}
   .nav-avatar-chevron{display:inline;}
   .nav-search-desktop{display:block;}
-  .nav-create-btn{display:flex;}
   .nav-icons{gap:16px;}
   .icon-tab-row{display:none;} /* desktop uses the left sidebar instead */
 }
 /* Mobile search — reuses .nav-search-desktop as a toggled overlay below the header */
-.nav-search-desktop.mobile-search-open{display:block!important;position:absolute;top:64px;left:0;right:0;
+.nav-search-desktop.mobile-search-open{display:block!important;position:absolute;top:74px;left:0;right:0;
   max-width:none;padding:10px 14px;background:var(--sand);border-bottom:1px solid var(--border);z-index:199;}
 
 /* ── FILTER TABS (Section 9.2 — ship simple filter tabs first, mixed feed later) ── */
 .filter-row{display:flex;gap:8px;padding:12px 14px;overflow-x:auto;background:var(--sand);border-bottom:1px solid var(--border);position:sticky;z-index:100;}
-#sortRow{top:64px;}
-#filterRow{top:110px;}
+#sortRow{top:190px;}
+#filterRow{top:236px;}
 @media(max-width:1023px){
-  #sortRow{top:121px;}
-  #filterRow{top:167px;}
+  #sortRow{top:247px;}
+  #filterRow{top:293px;}
 }
 .filter-chip{padding:8px 16px;border-radius:20px;font-size:.82rem;font-weight:700;white-space:nowrap;cursor:pointer;
   border:1px solid var(--border);color:var(--muted);background:rgba(255,255,255,.05);transition:all .15s;}
@@ -191,11 +200,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 .empty-state-icon{font-size:2.4rem;margin-bottom:10px;}
 .loading-state{padding:40px;text-align:center;color:var(--muted);font-size:.85rem;}
 
-.bottom-nav{position:fixed;left:0;right:0;bottom:0;height:66px;background:#fff;display:flex;
-  border-top:1px solid var(--border);box-shadow:0 -4px 16px rgba(0,0,0,.06);z-index:900;padding-bottom:env(safe-area-inset-bottom,0px);}
-.bn-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:.63rem;font-weight:600;color:#A8A8A8;cursor:pointer;position:relative;padding-top:4px;}
+.bottom-nav{position:fixed;left:0;right:0;bottom:0;height:70px;background:#fff;display:flex;
+  border-top:1px solid #F1F1F1;box-shadow:0 -1px 8px rgba(0,0,0,.05);z-index:900;padding-bottom:env(safe-area-inset-bottom,0px);}
+.bn-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:.63rem;font-weight:600;color:#A8A8A8;cursor:pointer;position:relative;padding-top:6px;}
 .bn-item.active{color:var(--navy);}
-.bn-item svg{width:19px;height:19px;}
+.bn-item svg{width:24px;height:24px;}
 .bn-item.bn-center .bn-icon-wrap{width:44px;height:44px;border-radius:50%;background:var(--navy);box-shadow:0 3px 10px rgba(16,57,45,.35);display:flex;align-items:center;justify-content:center;margin-bottom:2px;}
 
 .comment-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:flex-end;justify-content:center;}
@@ -297,17 +306,15 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 
 <div class="nav">
   <button class="nav-hamburger" onclick="openSideMenuFallback()" title="Menu">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    <svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.4" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
   </button>
   <div class="nav-brand">
-    <svg class="nav-brand-icon" viewBox="0 0 24 24" fill="none"><path d="M12 3L21.5 20H2.5L12 3Z" fill="#EAF2EC"/><path d="M12 3L16.5 20H7.5L12 3Z" fill="var(--orange)" fill-opacity=".7"/></svg>
+    <svg class="nav-brand-icon" viewBox="0 0 24 24" fill="none"><path d="M12 3L21.5 20H2.5L12 3Z" fill="var(--navy)"/><path d="M12 3L16.5 20H7.5L12 3Z" fill="var(--orange)" fill-opacity=".7"/></svg>
     <div class="nav-brand-text">
-      <div class="nav-logo-delta">DELTA</div>
+      <div class="nav-logo-delta">DELTA <em>Media</em></div>
       <div class="nav-tagline">Local Roots. Global Wings.</div>
     </div>
   </div>
-
-  <div class="nav-page-title">DELTA <em>Media</em></div>
 
   <div class="nav-avatar-wrap" id="navAvatarWrap" onclick="handleNavAvatarClick()">
     <div class="nav-avatar-inner">
@@ -318,26 +325,25 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
     <span class="nav-avatar-chevron">▾</span>
   </div>
 
+  <button class="nav-create-square" onclick="location.href='create-studio.html?city='+CITY" title="Create">
+    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+  </button>
+
   <div class="nav-search-desktop">
     <input type="text" id="navSearchDesktop" placeholder="Search creators, shops, posts...">
     <span class="nsd-icon">🔍</span>
   </div>
 
-  <button class="nav-create-btn" onclick="location.href='create-studio.html?city='+CITY">✦ Create</button>
-
   <div class="nav-icons">
     <button class="nav-icon-btn" onclick="toggleMobileSearch()" title="Search">
-      <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L20 20"/></svg>
-    </button>
-    <button class="nav-icon-btn" onclick="location.href='video-hub.html?city='+CITY" title="DELTA TV / Video Hub">
-      <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M10 9.5v5l4-2.5-4-2.5Z" fill="currentColor" stroke="none"/></svg>
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#000" stroke-width="2.4" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L20 20"/></svg>
     </button>
     <button class="nav-icon-btn" title="Messages">
-      <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v12H8l-4 4V4Z"/></svg>
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4C7 4 3 7.3 3 11.5c0 2.3 1.2 4.4 3.2 5.8-.1 1-.5 2.1-1.2 3 1.4-.2 2.7-.8 3.7-1.6.9.3 1.9.4 3 .4 5 0 9-3.3 9-7.5S17 4 12 4Z"/><circle cx="9" cy="11.5" r=".9" fill="#000" stroke="none"/><circle cx="12" cy="11.5" r=".9" fill="#000" stroke="none"/><circle cx="15" cy="11.5" r=".9" fill="#000" stroke="none"/></svg>
       <span class="nav-icon-badge" id="navMsgBadge">3</span>
     </button>
     <button class="nav-icon-btn" title="Notifications">
-      <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 0 1 12 0c0 4 1.5 5.5 1.5 5.5H4.5S6 13 6 9Z"/><path d="M10 18a2 2 0 0 0 4 0"/></svg>
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 0 1 12 0c0 4 1.5 5.5 1.5 5.5H4.5S6 13 6 9Z"/><path d="M10 18a2 2 0 0 0 4 0"/></svg>
       <span class="nav-icon-badge">5</span>
     </button>
   </div>
@@ -346,19 +352,19 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 <!-- ═══ ICON TAB ROW (per Image 1 reference) — quick nav, all screen sizes ═══ -->
 <div class="icon-tab-row">
   <button class="icon-tab active" onclick="location.reload()" title="Home">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 10.5L12 4L20 10.5V20C20 20.55 19.55 21 19 21H15V15H9V21H5C4.45 21 4 20.55 4 20V10.5Z"/></svg>
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 10.5L12 4L20 10.5V20C20 20.55 19.55 21 19 21H15V15H9V21H5C4.45 21 4 20.55 4 20V10.5Z"/></svg>
   </button>
   <button class="icon-tab" onclick="location.href='reels-player.html?city='+CITY" title="Reels">
-    <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="6" width="13" height="12" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M16 10L21 7V17L16 14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.1" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M3 8h18" stroke-width="1.6"/><path d="M10.5 12.2v3.6l3-1.8-3-1.8Z" fill="#000" stroke="none"/></svg>
   </button>
   <button class="icon-tab" onclick="alert('Creator directory — not built yet')" title="Friends / Creators">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="8" cy="8" r="3"/><circle cx="17" cy="9" r="2.6"/><path d="M3 20c0-3.3 2.2-5.5 5-5.5s5 2.2 5 5.5"/><path d="M14 20c0-2.6 1.6-4.5 3.5-4.5S21 17.4 21 20"/></svg>
+    <svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.1" stroke-linecap="round"><circle cx="8" cy="8" r="3"/><circle cx="17" cy="9" r="2.6"/><path d="M3 20c0-3.3 2.2-5.5 5-5.5s5 2.2 5 5.5"/><path d="M14 20c0-2.6 1.6-4.5 3.5-4.5S21 17.4 21 20"/></svg>
   </button>
   <button class="icon-tab" onclick="location.href='video-hub.html?city='+CITY" title="Videos">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9.5v5l4-2.5-4-2.5Z" fill="currentColor" stroke="none"/></svg>
+    <svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4L5.5 6.5M16 4l2.5 2.5"/><rect x="3" y="6.5" width="18" height="13" rx="2.2"/><path d="M10.3 10.8v4.4l3.6-2.2-3.6-2.2Z" fill="#000" stroke="none"/></svg>
   </button>
   <button class="icon-tab" onclick="location.href='shops.html'" title="Shops">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 9L5 4H19L20 9M4 9V20H20V9M4 9H20"/><path d="M9.5 20V14H14.5V20"/></svg>
+    <svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.1" stroke-linejoin="round"><path d="M4 9L5 4H19L20 9M4 9V20H20V9M4 9H20"/><path d="M9.5 20V14H14.5V20"/></svg>
   </button>
 </div>
 
@@ -394,6 +400,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
   <div class="mh-center">
     <!-- NEW: algorithmic sort row per updated Media Home spec — reuses the same honest
          ranking approach already used in reels-player.html / video-hub.html -->
+    <!-- Story row (Section 10.4 — 24hr auto-expire) -->
+    <div class="story-row" id="storyRow"></div>
+
+    <!-- NEW: algorithmic sort row per updated Media Home spec — reuses the same honest
+         ranking approach already used in reels-player.html / video-hub.html -->
     <div class="filter-row" id="sortRow">
       <div class="filter-chip active" data-s="foryou">For You</div>
       <div class="filter-chip" data-s="following">Following</div>
@@ -413,9 +424,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
       <div class="filter-chip" data-t="video">Video</div>
       <div class="filter-chip" data-t="story">Story</div>
     </div>
-
-    <!-- Story row (Section 10.4 — 24hr auto-expire) -->
-    <div class="story-row" id="storyRow"></div>
 
     <!-- Inline login prompt — per Image 2 reference, shown right after Stories, before feed -->
     <div class="inline-login-card" id="inlineLoginCard" style="display:none;">
