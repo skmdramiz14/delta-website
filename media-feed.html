@@ -713,6 +713,21 @@ function loadStories(){
     if(!hasCleared){ hasCleared = true; wrap.innerHTML=''; }
   }
 
+  // ── Hard timeout safety net — if Firestore never resolves OR rejects within
+  // 6s (network hang, misconfigured project, blocked connection, etc.), force
+  // the demo content instead of leaving "লোড হচ্ছে..." stuck forever. A stuck
+  // loading state with no console error usually means the query itself never
+  // came back — this makes that failure mode visible and recoverable instead
+  // of silent.
+  var timeoutFired = false;
+  var storiesTimeout = setTimeout(function(){
+    if(!hasCleared){
+      timeoutFired = true;
+      console.error('Story query timed out after 6s with no response — check Firebase project config, network, and Firestore security rules. Showing demo content instead.');
+      renderRealStories(DEMO_MF_STORIES, true);
+    }
+  }, 6000);
+
   // ── Every story tap redirects to index.html, where the FULL story viewer
   // already lives (tap/swipe navigation, hold-to-pause, Commerce Card, cross-
   // author chaining). Media doesn't duplicate that experience — same story
@@ -771,6 +786,8 @@ function loadStories(){
   db.collection('cities').doc(CITY).collection('mediaContent')
     .where('type','==','story').where('status','==','published')
     .orderBy('createdAt','desc').limit(15).get().then(function(snap){
+      clearTimeout(storiesTimeout);
+      if(timeoutFired) return; // demo already shown by the timeout — don't render twice
       var real = [];
       snap.forEach(function(doc){
         var d=doc.data();
@@ -780,6 +797,8 @@ function loadStories(){
       if(real.length){ renderRealStories(real, false); }
       else { renderRealStories(DEMO_MF_STORIES, true); }
     }).catch(function(e){
+      clearTimeout(storiesTimeout);
+      if(timeoutFired) return;
       console.error('Story query failed — showing demo. Reason:', e);
       renderRealStories(DEMO_MF_STORIES, true);
     });
