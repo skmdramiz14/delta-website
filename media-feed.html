@@ -209,6 +209,48 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
   font-size:.55rem;padding:1.5px 6px;border-radius:6px;}
 .story-label{font-size:.68rem;margin-top:8px;color:var(--charcoal);font-weight:600;max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 
+/* ── STORY VIEWER (full-screen overlay, local to DELTA Media) ── */
+.story-viewer-overlay{display:none;position:fixed;inset:0;background:#000;z-index:2000;flex-direction:column;}
+.story-viewer-overlay.open{display:flex;}
+.sv-progress-row{display:flex;gap:4px;padding:10px 10px 0;}
+.sv-progress-bar{flex:1;height:2.5px;background:rgba(255,255,255,.3);border-radius:2px;overflow:hidden;}
+.sv-progress-fill{height:100%;width:0%;background:#fff;}
+.sv-header{display:flex;align-items:center;gap:10px;padding:10px 14px;}
+.sv-avatar{width:34px;height:34px;border-radius:50%;background:#333;display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:1rem;overflow:hidden;}
+.sv-avatar img{width:100%;height:100%;object-fit:cover;}
+.sv-meta{flex:1;min-width:0;}
+.sv-name{color:#fff;font-weight:700;font-size:.85rem;}
+.sv-time{color:rgba(255,255,255,.65);font-size:.7rem;}
+.sv-follow-btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.4);color:#fff;padding:5px 13px;
+  border-radius:14px;font-size:.72rem;font-weight:700;cursor:pointer;}
+.sv-close-btn{background:none;border:none;color:#fff;font-size:1.2rem;cursor:pointer;padding:4px 8px;}
+.sv-media-wrap{flex:1;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#0a0a0a;}
+.sv-media-wrap img,.sv-media-wrap video{width:100%;height:100%;object-fit:contain;}
+.sv-tap-zone{position:absolute;top:0;bottom:0;width:35%;z-index:5;}
+.sv-tap-left{left:0;}
+.sv-tap-right{right:0;}
+.sv-bottom{padding:12px 14px calc(env(safe-area-inset-bottom,0px) + 14px);}
+.sv-commerce-card{background:rgba(255,255,255,.97);border-radius:14px;padding:12px;display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.sv-cc-thumb{width:44px;height:44px;border-radius:9px;object-fit:cover;background:#eee;flex-shrink:0;}
+.sv-cc-info{flex:1;min-width:0;}
+.sv-cc-shop{font-size:.75rem;color:var(--muted,#8A8A8A);}
+.sv-cc-product{font-size:.85rem;font-weight:800;color:var(--navy);}
+.sv-cc-btns{display:flex;gap:6px;}
+.sv-cc-btn{padding:8px 13px;border-radius:9px;font-size:.75rem;font-weight:700;border:none;cursor:pointer;white-space:nowrap;}
+.sv-cc-btn-primary{background:var(--navy);color:#fff;}
+.sv-cc-btn-outline{background:#fff;border:1.5px solid var(--border);color:var(--navy);}
+.sv-action-row{display:flex;align-items:center;gap:16px;}
+.sv-action-btn{background:none;border:none;color:#fff;font-size:1.3rem;cursor:pointer;}
+.sv-reply-input-fake{flex:1;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.4);color:#fff;
+  padding:9px 14px;border-radius:20px;font-size:.8rem;cursor:pointer;}
+.sv-owner-insights{background:rgba(255,255,255,.1);border-radius:12px;padding:10px 12px;display:flex;justify-content:space-between;
+  color:#fff;font-size:.68rem;margin-bottom:10px;}
+.sv-owner-insights b{display:block;font-size:.95rem;}
+.sv-reply-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2100;align-items:flex-end;justify-content:center;}
+.sv-reply-modal.open{display:flex;}
+.sv-reply-sheet{background:#fff;width:100%;max-width:480px;border-radius:16px 16px 0 0;padding:16px;}
+
 .empty-state{padding:60px 20px;text-align:center;color:var(--muted);}
 
 .inline-login-card{display:flex;align-items:center;gap:12px;background:var(--sand);border:1px solid var(--border);
@@ -729,14 +771,11 @@ function loadStories(){
     }
   }, 6000);
 
-  // ── Every story tap redirects to index.html, where the FULL story viewer
-  // already lives (tap/swipe navigation, hold-to-pause, Commerce Card, cross-
-  // author chaining). Media doesn't duplicate that experience — same story
-  // data, one shared viewer, matching your "homepage is a clone of Media's
-  // story section" instruction by making them literally the same feature.
-  function goToHomepageStory(storyUid){
-    location.href = 'index.html?openStory=' + encodeURIComponent(storyUid) + '&city=' + CITY;
-  }
+  // ── Story tap opens the LOCAL full-screen viewer (built into this page),
+  // not a redirect to index.html. mfAllGroups tracks bubble order so next/prev
+  // can chain from one author's last story into the next author's first,
+  // same as the homepage's viewer.
+  window.mfAllGroups = [];
 
   var renderRealStories = function(list, isDemo){
     clearLoadingOnce();
@@ -750,7 +789,9 @@ function loadStories(){
           (thumb?'<img src="'+thumb+'">':'<div style="width:100%;height:100%;border-radius:50%;background:var(--sand);display:flex;align-items:center;justify-content:center;">🏪</div>')+
           (d.isLive?'<span class="story-live-badge">LIVE</span>':'')+
         '</div><div class="story-label">'+(d.authorDisplayName||'')+'</div>';
-      item.onclick=function(){ goToHomepageStory(d.authorUid); };
+      var groupIndex = window.mfAllGroups.length;
+      window.mfAllGroups.push([entry]);
+      item.onclick=function(){ openStoryViewerAt(groupIndex); };
       wrap.appendChild(item);
     });
   };
@@ -767,7 +808,9 @@ function loadStories(){
             (pDoc.exists && pDoc.data().avatarUrl ? '<img src="'+pDoc.data().avatarUrl+'">' : '<div style="width:100%;height:100%;border-radius:50%;background:var(--sand);display:flex;align-items:center;justify-content:center;">🔷</div>')+
             '<span class="story-pinned-badge">📌</span>'+
           '</div><div class="story-label">DELTA Official</div>';
-        pinItem.onclick=function(){ goToHomepageStory(officialUid); };
+        var pinGroupIndex = window.mfAllGroups.length;
+        window.mfAllGroups.push([{id:'official-'+officialUid, data:{authorUid:officialUid, authorDisplayName:'DELTA Official', authorAvatarUrl:(pDoc.exists?pDoc.data().avatarUrl:''), ctaType:'none', tags:{}, createdAt:new Date().toISOString()}}]);
+        pinItem.onclick=function(){ openStoryViewerAt(pinGroupIndex); };
         wrap.insertBefore(pinItem, wrap.firstChild);
       }).catch(function(e){ console.error('Pinned official profile fetch failed', e); });
     } else {
@@ -779,7 +822,9 @@ function loadStories(){
           '<div style="width:100%;height:100%;border-radius:50%;background:var(--sand);display:flex;align-items:center;justify-content:center;">🔷</div>'+
           '<span class="story-pinned-badge">📌</span>'+
         '</div><div class="story-label">DELTA Official</div>';
-      pinItem.onclick=function(){ goToHomepageStory(pd.authorUid); };
+      var pinGroupIndex = window.mfAllGroups.length;
+      window.mfAllGroups.push([DEMO_MF_PINNED_OFFICIAL]);
+      pinItem.onclick=function(){ openStoryViewerAt(pinGroupIndex); };
       wrap.insertBefore(pinItem, wrap.firstChild);
     }
   }).catch(function(e){ console.error('getMhOfficialUid failed', e); });
@@ -803,6 +848,225 @@ function loadStories(){
       console.error('Story query failed — showing demo. Reason:', e);
       renderRealStories(DEMO_MF_STORIES, true);
     });
+}
+
+// ═══ STORY VIEWER — local to DELTA Media, ported from index.html ═══
+var svGroup = [];
+var svGroupIndex = -1;
+var svIndex = 0;
+var svTimer = null;
+var svProgress = 0;
+var svPaused = false;
+
+function openStoryViewerAt(groupIndex){
+  svGroupIndex = groupIndex;
+  svGroup = window.mfAllGroups[groupIndex];
+  svIndex = 0;
+  document.getElementById('storyViewerOverlay').classList.add('open');
+  buildProgressBars();
+  renderStorySlide();
+}
+function buildProgressBars(){
+  var row = document.getElementById('svProgressRow'); row.innerHTML='';
+  svGroup.forEach(function(){
+    var bar = document.createElement('div'); bar.className='sv-progress-bar';
+    bar.innerHTML='<div class="sv-progress-fill"></div>';
+    row.appendChild(bar);
+  });
+}
+function renderStorySlide(){
+  if(svIndex >= svGroup.length){ closeStoryViewer(); return; }
+  if(svIndex < 0) svIndex = 0;
+  var d = svGroup[svIndex].data;
+  var id = svGroup[svIndex].id;
+
+  document.getElementById('svAvatar').innerHTML = d.authorAvatarUrl ? '<img src="'+d.authorAvatarUrl+'">' : '👤';
+  document.getElementById('svName').textContent = d.authorDisplayName || 'Unknown';
+  document.getElementById('svTime').textContent = timeAgo(d.createdAt);
+
+  var followBtn = document.getElementById('svFollowBtn');
+  if(currentUser && d.authorUid===currentUser.uid){ followBtn.style.display='none'; }
+  else {
+    followBtn.style.display='inline-block';
+    followBtn.onclick=function(){ toggleSvFollow(d.authorUid); };
+    if(currentUser) checkSvFollow(d.authorUid);
+  }
+
+  var mediaWrap = document.getElementById('svMediaWrap');
+  Array.from(mediaWrap.querySelectorAll('img,video')).forEach(function(el){el.remove();});
+  var mediaEl;
+  if(d.videoUrl){
+    mediaEl = document.createElement('video');
+    mediaEl.src = d.videoUrl; mediaEl.autoplay=true; mediaEl.muted=false; mediaEl.playsInline=true;
+  } else {
+    mediaEl = document.createElement('img');
+    mediaEl.src = (d.mediaUrls&&d.mediaUrls[0]) || d.thumbnailUrl || d.authorAvatarUrl || '';
+  }
+  mediaWrap.insertBefore(mediaEl, mediaWrap.firstChild);
+
+  var bottom = document.getElementById('svBottom'); bottom.innerHTML='';
+  if(currentUser && d.authorUid===currentUser.uid){
+    bottom.innerHTML += '<div class="sv-owner-insights">'+
+      '<div><b>0</b>Views</div><div><b>0</b>Replies</div><div><b>0</b>Shop Visits</div><div><b>0</b>Orders</div></div>';
+  }
+  if(d.tags && (d.tags.productId || d.tags.shopId)){
+    var ctaMap = {view_product:'🛒 View Product',visit_shop:'🏪 Visit Shop',order_now:'📦 Order Now',book_service:'📅 Book Service',call:'📞 Call',whatsapp:'💬 WhatsApp'};
+    var label = ctaMap[d.ctaType] || '🏪 Visit Shop';
+    var thumb = d.thumbnailUrl || (d.mediaUrls&&d.mediaUrls[0]) || '';
+    bottom.innerHTML += '<div class="sv-commerce-card">'+
+      (thumb?'<img class="sv-cc-thumb" src="'+thumb+'">':'<div class="sv-cc-thumb"></div>')+
+      '<div class="sv-cc-info"><div class="sv-cc-shop">🏪 '+(d.authorDisplayName||'Shop')+'</div>'+
+      '<div class="sv-cc-product">'+(d.tags.categoryId||d.caption||'পণ্য')+'</div></div>'+
+      '<div class="sv-cc-btns">'+
+        '<button class="sv-cc-btn sv-cc-btn-outline" onclick="event.stopPropagation();svVisitShop(\''+(d.tags.shopId||'')+'\')">Visit Shop</button>'+
+        '<button class="sv-cc-btn sv-cc-btn-primary" onclick="event.stopPropagation();svVisitShop(\''+(d.tags.shopId||'')+'\',\''+(d.tags.productId||'')+'\')">'+label+'</button>'+
+      '</div></div>';
+  }
+  bottom.innerHTML += '<div class="sv-action-row">'+
+    '<div class="sv-reply-input-fake" onclick="event.stopPropagation();openSvReply(\''+id+'\')">Reply...</div>'+
+    '<button class="sv-action-btn" id="svReactHeart-'+id+'" onclick="event.stopPropagation();svReact(\''+id+'\',\'love\')">🤍</button>'+
+    '<button class="sv-action-btn" id="svReactFire-'+id+'" onclick="event.stopPropagation();svReact(\''+id+'\',\'fire\')">🔥</button>'+
+    '<button class="sv-action-btn" onclick="event.stopPropagation();svShare(\''+id+'\')">↗️</button>'+
+    '</div>';
+  checkSvReaction(id);
+
+  startSvProgress(d.videoUrl ? null : 6000);
+  if(mediaEl.tagName==='VIDEO'){ mediaEl.onended = function(){ svNext(); }; }
+}
+function startSvProgress(fixedDurationMs){
+  clearInterval(svTimer);
+  svProgress = 0;
+  var bars = document.querySelectorAll('.sv-progress-fill');
+  bars.forEach(function(b,i){ b.style.width = i<svIndex ? '100%' : '0%'; });
+  var duration = fixedDurationMs || 15000;
+  var tick = 100;
+  svTimer = setInterval(function(){
+    if(svPaused) return;
+    svProgress += tick;
+    var pct = Math.min(100, (svProgress/duration)*100);
+    if(bars[svIndex]) bars[svIndex].style.width = pct+'%';
+    if(svProgress >= duration) svNext();
+  }, tick);
+}
+function svNext(){
+  svIndex++;
+  if(svIndex >= svGroup.length){
+    if(svGroupIndex >= 0 && svGroupIndex+1 < window.mfAllGroups.length){
+      openStoryViewerAt(svGroupIndex+1);
+    } else {
+      closeStoryViewer();
+    }
+    return;
+  }
+  renderStorySlide();
+}
+function svPrev(){
+  svIndex--;
+  if(svIndex < 0){
+    if(svGroupIndex > 0){
+      svGroupIndex--;
+      svGroup = window.mfAllGroups[svGroupIndex];
+      svIndex = svGroup.length - 1;
+      buildProgressBars();
+    } else {
+      svIndex = 0;
+      return;
+    }
+  }
+  renderStorySlide();
+}
+function closeStoryViewer(){
+  clearInterval(svTimer);
+  document.getElementById('storyViewerOverlay').classList.remove('open');
+  var mediaWrap = document.getElementById('svMediaWrap');
+  Array.from(mediaWrap.querySelectorAll('video')).forEach(function(v){v.pause();});
+}
+(function(){
+  var wrap = document.getElementById('svMediaWrap');
+  if(!wrap) return;
+  ['mousedown','touchstart'].forEach(function(ev){ wrap.addEventListener(ev, function(){ svPaused=true; var v=wrap.querySelector('video'); if(v) v.pause(); }); });
+  ['mouseup','touchend'].forEach(function(ev){ wrap.addEventListener(ev, function(){ svPaused=false; var v=wrap.querySelector('video'); if(v) v.play().catch(function(){}); }); });
+})();
+(function(){
+  var overlay = document.getElementById('storyViewerOverlay');
+  if(!overlay) return;
+  var startX = null, startY = null, gestureDone = false;
+  overlay.addEventListener('touchstart', function(e){
+    startX = e.touches[0].clientX; startY = e.touches[0].clientY; gestureDone = false;
+  }, {passive:true});
+  overlay.addEventListener('touchmove', function(e){
+    if(startY===null || gestureDone) return;
+    var diffY = e.touches[0].clientY - startY;
+    var diffX = e.touches[0].clientX - startX;
+    if(Math.abs(diffY) > Math.abs(diffX) && diffY > 100){ gestureDone = true; closeStoryViewer(); }
+  }, {passive:true});
+  overlay.addEventListener('touchend', function(e){
+    if(startX===null || gestureDone) return;
+    var endX = (e.changedTouches && e.changedTouches[0].clientX) || startX;
+    var endY = (e.changedTouches && e.changedTouches[0].clientY) || startY;
+    var diffX = endX - startX;
+    var diffY = endY - startY;
+    if(Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 55){
+      if(diffX < 0) svNext(); else svPrev();
+    }
+    startX = null; startY = null;
+  }, {passive:true});
+})();
+function svVisitShop(shopId, productId){
+  if(!shopId){ alert('কোনো shop link করা নেই'); return; }
+  location.href='shop.html?id='+shopId+'&city='+CITY+(productId?('&product='+productId):'');
+}
+function svReact(id, type){
+  if(!currentUser){ alert('লগইন করুন প্রথমে'); return; }
+  var ref = db.collection('cities').doc(CITY).collection('mediaContent').doc(id).collection('likes').doc(currentUser.uid);
+  ref.get().then(function(d){
+    if(d.exists && d.data().reaction===type){ ref.delete(); }
+    else { ref.set({likedAt:new Date().toISOString(), reaction:type}); }
+    checkSvReaction(id);
+  }).catch(function(e){console.error(e);});
+}
+function checkSvReaction(id){
+  if(!currentUser) return;
+  db.collection('cities').doc(CITY).collection('mediaContent').doc(id).collection('likes').doc(currentUser.uid).get().then(function(d){
+    var heartBtn = document.getElementById('svReactHeart-'+id);
+    var fireBtn = document.getElementById('svReactFire-'+id);
+    if(!heartBtn || !fireBtn) return;
+    var active = d.exists ? d.data().reaction : null;
+    heartBtn.textContent = active==='love' ? '❤️' : '🤍';
+    fireBtn.style.opacity = active==='fire' ? '1' : '.65';
+  }).catch(function(){});
+}
+function svShare(id){
+  var url = location.origin+'/media-feed.html?story='+id+'&city='+CITY;
+  if(navigator.share){ navigator.share({url:url}).catch(function(){}); }
+  else { navigator.clipboard&&navigator.clipboard.writeText(url); alert('Link copied'); }
+}
+function checkSvFollow(authorUid){
+  db.collection('cities').doc(CITY).collection('mediaProfiles').doc(authorUid).collection('followers').doc(currentUser.uid).get().then(function(d){
+    var btn=document.getElementById('svFollowBtn');
+    if(d.exists){ btn.textContent='Following'; } else { btn.textContent='Follow'; }
+  });
+}
+function toggleSvFollow(targetUid){
+  if(!currentUser){ alert('লগইন করুন প্রথমে'); return; }
+  var followerDoc=db.collection('cities').doc(CITY).collection('mediaProfiles').doc(targetUid).collection('followers').doc(currentUser.uid);
+  var followingDoc=db.collection('cities').doc(CITY).collection('mediaProfiles').doc(currentUser.uid).collection('following').doc(targetUid);
+  followerDoc.get().then(function(d){
+    var now=new Date().toISOString();
+    if(d.exists){ followerDoc.delete(); followingDoc.delete(); } else { followerDoc.set({followedAt:now}); followingDoc.set({followedAt:now}); }
+    checkSvFollow(targetUid);
+  });
+}
+var svReplyTargetId = null;
+function openSvReply(id){ svPaused=true; svReplyTargetId=id; document.getElementById('svReplyModal').classList.add('open'); }
+function closeSvReply(){ svPaused=false; document.getElementById('svReplyModal').classList.remove('open'); }
+function sendSvReply(){
+  if(!currentUser){ alert('লগইন করুন প্রথমে'); return; }
+  var input=document.getElementById('svReplyInput');
+  var text=input.value.trim(); if(!text) return;
+  db.collection('cities').doc(CITY).collection('mediaContent').doc(svReplyTargetId).collection('comments').add({
+    authorUid:currentUser.uid, authorDisplayName:currentUser.displayName||'User', text:text, status:'published', createdAt:new Date().toISOString()
+  }).then(function(){ input.value=''; closeSvReply(); });
 }
 
 // ── DEMO FEED POSTS — visible only when no real posts exist yet. Same reasoning
@@ -1356,5 +1620,35 @@ function timeAgo(iso){
   return Math.floor(diff/86400)+'d';
 }
 </script>
+
+<!-- ═══ STORY VIEWER — full-screen, local to DELTA Media (no redirect) ═══ -->
+<div class="story-viewer-overlay" id="storyViewerOverlay">
+  <div class="sv-progress-row" id="svProgressRow"></div>
+  <div class="sv-header">
+    <div class="sv-avatar" id="svAvatar">👤</div>
+    <div class="sv-meta">
+      <div class="sv-name" id="svName">—</div>
+      <div class="sv-time" id="svTime">—</div>
+    </div>
+    <button class="sv-follow-btn" id="svFollowBtn">Follow</button>
+    <button class="sv-close-btn" onclick="closeStoryViewer()">✕</button>
+  </div>
+  <div class="sv-media-wrap" id="svMediaWrap">
+    <div class="sv-tap-zone sv-tap-left" onclick="svPrev()"></div>
+    <div class="sv-tap-zone sv-tap-right" onclick="svNext()"></div>
+  </div>
+  <div class="sv-bottom" id="svBottom"></div>
+</div>
+
+<div class="sv-reply-modal" id="svReplyModal">
+  <div class="sv-reply-sheet">
+    <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+      <b>Reply to Story</b><button onclick="closeSvReply()" style="background:none;border:none;font-size:1.1rem;">✕</button>
+    </div>
+    <input type="text" id="svReplyInput" placeholder="মন্তব্য লিখুন..." style="width:100%;padding:10px 12px;border-radius:20px;border:1.5px solid var(--border);margin-bottom:10px;">
+    <button onclick="sendSvReply()" style="width:100%;padding:11px;background:var(--navy);color:#fff;border:none;border-radius:10px;font-weight:700;">Send</button>
+  </div>
+</div>
+
 </body>
 </html>
