@@ -704,8 +704,14 @@ var DEMO_MF_PINNED_OFFICIAL = {
 };
 
 function loadStories(){
-  var wrap=document.getElementById('storyRow'); wrap.innerHTML='';
+  var wrap=document.getElementById('storyRow');
+  if(!wrap){ console.error('storyRow element not found in DOM'); return; }
+  wrap.innerHTML='<div style="padding:20px 8px;color:var(--muted);font-size:.78rem;">লোড হচ্ছে...</div>';
   var now=new Date().toISOString();
+  var hasCleared = false;
+  function clearLoadingOnce(){
+    if(!hasCleared){ hasCleared = true; wrap.innerHTML=''; }
+  }
 
   // ── Every story tap redirects to index.html, where the FULL story viewer
   // already lives (tap/swipe navigation, hold-to-pause, Commerce Card, cross-
@@ -717,6 +723,7 @@ function loadStories(){
   }
 
   var renderRealStories = function(list, isDemo){
+    clearLoadingOnce();
     list.forEach(function(entry){
       var d = entry.data;
       var thumb = d.authorAvatarUrl || '';
@@ -737,6 +744,7 @@ function loadStories(){
     // same demo pin as the homepage (exact clone, not a different fallback).
     if(officialUid){
       db.collection('cities').doc(CITY).collection('mediaProfiles').doc(officialUid).get().then(function(pDoc){
+        clearLoadingOnce();
         var pinItem=document.createElement('div'); pinItem.className='story-item';
         pinItem.innerHTML =
           '<div class="story-ring story-ring-official">'+
@@ -745,8 +753,9 @@ function loadStories(){
           '</div><div class="story-label">DELTA Official</div>';
         pinItem.onclick=function(){ goToHomepageStory(officialUid); };
         wrap.insertBefore(pinItem, wrap.firstChild);
-      });
+      }).catch(function(e){ console.error('Pinned official profile fetch failed', e); });
     } else {
+      clearLoadingOnce();
       var pd = DEMO_MF_PINNED_OFFICIAL.data;
       var pinItem=document.createElement('div'); pinItem.className='story-item';
       pinItem.innerHTML =
@@ -757,7 +766,7 @@ function loadStories(){
       pinItem.onclick=function(){ goToHomepageStory(pd.authorUid); };
       wrap.insertBefore(pinItem, wrap.firstChild);
     }
-  });
+  }).catch(function(e){ console.error('getMhOfficialUid failed', e); });
 
   db.collection('cities').doc(CITY).collection('mediaContent')
     .where('type','==','story').where('status','==','published')
@@ -771,7 +780,7 @@ function loadStories(){
       if(real.length){ renderRealStories(real, false); }
       else { renderRealStories(DEMO_MF_STORIES, true); }
     }).catch(function(e){
-      console.error(e);
+      console.error('Story query failed — showing demo. Reason:', e);
       renderRealStories(DEMO_MF_STORIES, true);
     });
 }
