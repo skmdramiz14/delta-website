@@ -13,9 +13,9 @@
 :root{
   --navy:#10392D;--navy2:#1a4a3a;
   --orange:#C7A15A;--orange-dark:#b8925a;
-  --green:#2da86a;--green2:#3fc97e;
-  --white:#fff;--sand:#152A1E;--cream:#0D1F16;
-  --border:#20392A;--muted:#8FA79A;--charcoal:#EAF2EC;
+  --green:#2da86a;--green2:#1a7a4c;
+  --white:#fff;--sand:#ffffff;--cream:#F7F8FA;
+  --border:#E7E9EC;--muted:#8A8F98;--charcoal:#1A1A1A;
 }
 body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charcoal);padding-bottom:76px;}
 .nav{background:var(--sand);padding:0 16px;height:64px;display:flex;align-items:center;justify-content:space-between;
@@ -191,13 +191,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 .empty-state-icon{font-size:2.4rem;margin-bottom:10px;}
 .loading-state{padding:40px;text-align:center;color:var(--muted);font-size:.85rem;}
 
-.bottom-nav{position:fixed;left:0;right:0;bottom:0;height:66px;background:linear-gradient(180deg,#081B18,#051311);display:flex;border-top:1px solid rgba(212,175,55,.18);z-index:900;padding-bottom:env(safe-area-inset-bottom,0px);}
+.bottom-nav{position:fixed;left:0;right:0;bottom:0;height:66px;background:#fff;display:flex;
+  border-top:1px solid var(--border);box-shadow:0 -4px 16px rgba(0,0,0,.06);z-index:900;padding-bottom:env(safe-area-inset-bottom,0px);}
 .bn-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:.63rem;font-weight:600;color:#A8A8A8;cursor:pointer;position:relative;padding-top:4px;}
-.bn-item.active{color:#3b82f6;}
-.bn-item.active::after{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:28px;height:2.5px;
-  background:#3b82f6;border-radius:2px;}
+.bn-item.active{color:var(--navy);}
 .bn-item svg{width:19px;height:19px;}
-.bn-item.bn-center .bn-icon-wrap{width:44px;height:44px;border-radius:50%;background:radial-gradient(circle at 32% 28%,#FCE7A0,#F0C34D 45%,#B8860B 100%);display:flex;align-items:center;justify-content:center;margin-bottom:2px;}
+.bn-item.bn-center .bn-icon-wrap{width:44px;height:44px;border-radius:50%;background:var(--navy);box-shadow:0 3px 10px rgba(16,57,45,.35);display:flex;align-items:center;justify-content:center;margin-bottom:2px;}
 
 .comment-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:flex-end;justify-content:center;}
 .comment-modal.open{display:flex;}
@@ -277,12 +276,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 .mh-creator-avatar{width:34px;height:34px;border-radius:50%;background:var(--sand);object-fit:cover;flex-shrink:0;}
 .mh-creator-meta{font-size:.68rem;color:var(--muted);}
 
-.mh-premium-card{background:linear-gradient(135deg,#1e2e22,#182720);border:1.5px solid var(--orange);border-radius:14px;
-  padding:16px;margin-bottom:16px;box-shadow:0 4px 16px rgba(199,161,90,.12);}
-.mh-premium-title{font-weight:800;font-size:.9rem;color:var(--orange);display:flex;align-items:center;gap:6px;margin-bottom:6px;}
-.mh-premium-sub{font-size:.74rem;color:var(--muted);margin-bottom:10px;}
-.mh-premium-list{font-size:.74rem;color:var(--charcoal);margin-bottom:12px;padding-left:18px;line-height:1.7;}
-.mh-premium-btn{width:100%;padding:9px;background:var(--orange);color:#1a1200;border:none;border-radius:10px;font-weight:800;font-size:.8rem;cursor:pointer;}
+.mh-premium-card{background:linear-gradient(135deg,#fff8ec,#fdf3dd);border:1.5px solid var(--orange);border-radius:14px;
+  padding:16px;margin-bottom:16px;box-shadow:0 4px 16px rgba(199,161,90,.15);}
+.mh-premium-title{font-weight:800;font-size:.9rem;color:#8a6416;display:flex;align-items:center;gap:6px;margin-bottom:6px;}
+.mh-premium-sub{font-size:.74rem;color:#8a7a5a;margin-bottom:10px;}
+.mh-premium-list{font-size:.74rem;color:#4a3d24;margin-bottom:12px;padding-left:18px;line-height:1.7;}
+.mh-premium-btn{width:100%;padding:9px;background:var(--orange);color:#fff;border:none;border-radius:10px;font-weight:800;font-size:.8rem;cursor:pointer;}
 
 .mh-crossplatform-card{background:var(--sand);border:1.5px solid var(--border);border-radius:14px;padding:16px;}
 .mh-cp-badge{display:inline-block;background:var(--sand);color:var(--orange-dark,#b8925a);font-size:.62rem;font-weight:800;padding:3px 9px;border-radius:8px;margin-bottom:8px;}
@@ -335,10 +334,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
     </button>
     <button class="nav-icon-btn" title="Messages">
       <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v12H8l-4 4V4Z"/></svg>
-      <span class="nav-icon-badge" id="navMsgBadge" style="display:none;">9+</span>
+      <span class="nav-icon-badge" id="navMsgBadge">3</span>
     </button>
     <button class="nav-icon-btn" title="Notifications">
       <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 0 1 12 0c0 4 1.5 5.5 1.5 5.5H4.5S6 13 6 9Z"/><path d="M10 18a2 2 0 0 0 4 0"/></svg>
+      <span class="nav-icon-badge">5</span>
     </button>
   </div>
 </div>
@@ -357,8 +357,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
   <button class="icon-tab" onclick="location.href='video-hub.html?city='+CITY" title="Videos">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9.5v5l4-2.5-4-2.5Z" fill="currentColor" stroke="none"/></svg>
   </button>
-  <button class="icon-tab" title="Notifications">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 9a6 6 0 0 1 12 0c0 4 1.5 5.5 1.5 5.5H4.5S6 13 6 9Z"/><path d="M10 18a2 2 0 0 0 4 0"/></svg>
+  <button class="icon-tab" onclick="location.href='shops.html'" title="Shops">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 9L5 4H19L20 9M4 9V20H20V9M4 9H20"/><path d="M9.5 20V14H14.5V20"/></svg>
   </button>
 </div>
 
@@ -491,17 +491,15 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
   <div class="bn-item" onclick="location.href='reels-player.html?city='+CITY">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10L21 7V17L16 14"/></svg>Reels
   </div>
-  <div class="bn-item" onclick="alert('Creator directory — not built yet')">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="8" cy="8" r="3"/><circle cx="17" cy="9" r="2.6"/><path d="M3 20c0-3.3 2.2-5.5 5-5.5s5 2.2 5 5.5"/><path d="M14 20c0-2.6 1.6-4.5 3.5-4.5S21 17.4 21 20"/></svg>Friends
+  <div class="bn-item bn-center" onclick="location.href='create-studio.html?city='+CITY">
+    <div class="bn-icon-wrap"><span style="color:#fff;font-weight:900;font-size:1.3rem;line-height:1;">+</span></div>Create
   </div>
-  <div class="bn-item" onclick="location.href='video-hub.html?city='+CITY">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9.5v5l4-2.5-4-2.5Z" fill="currentColor" stroke="none"/></svg>Feeds
+  <div class="bn-item" onclick="alert('Inbox — messaging not built yet')" style="position:relative;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v12H8l-4 4V4Z"/></svg>Inbox
+    <span class="nav-icon-badge" id="bnInboxBadge" style="position:absolute;top:-2px;right:20px;">2</span>
   </div>
-  <div class="bn-item" onclick="alert('Notifications — not built yet')">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 9a6 6 0 0 1 12 0c0 4 1.5 5.5 1.5 5.5H4.5S6 13 6 9Z"/><path d="M10 18a2 2 0 0 0 4 0"/></svg>Notifications
-  </div>
-  <div class="bn-item" onclick="openSideMenuFallback()">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>Menu
+  <div class="bn-item" onclick="handleNavAvatarClick()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3.3"/><path d="M4.5 20c1-4.2 4-6.5 7.5-6.5s6.5 2.3 7.5 6.5"/></svg>Profile
   </div>
 </div>
 
