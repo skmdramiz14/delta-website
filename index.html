@@ -1,5 +1,5 @@
-<!DOCTYPE html>             
-<html lang="bn">    
+<!DOCTYPE html> 
+<html lang="bn">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7757,6 +7757,20 @@ function renderStoryBubbles(){
     item.onclick = function(){ openStoryViewerAt(groupIndex); };
     wrap.appendChild(item);
   });
+
+  // ── Deep-link: DELTA Media redirects here with ?openStory=<authorUid> so
+  // tapping a story in Media opens the SAME viewer here, rather than Media
+  // building a second, separate story-playback experience.
+  if(!window._openStoryHandled){
+    window._openStoryHandled = true;
+    var wantedUid = new URLSearchParams(location.search).get('openStory');
+    if(wantedUid){
+      var targetIndex = dsAllGroups.findIndex(function(group){
+        return group.some(function(s){ return s.data.authorUid===wantedUid; });
+      });
+      if(targetIndex !== -1) openStoryViewerAt(targetIndex);
+    }
+  }
 }
 
 // ═══ STORY VIEWER ═══
