@@ -265,12 +265,20 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 .empty-state-icon{font-size:2.4rem;margin-bottom:10px;}
 .loading-state{padding:40px;text-align:center;color:var(--muted);font-size:.85rem;}
 
-.bottom-nav{position:fixed;left:0;right:0;bottom:0;height:64px;background:#fff;display:flex;
-  border-top:1px solid #F1F1F1;box-shadow:0 -1px 8px rgba(0,0,0,.05);z-index:900;padding-bottom:env(safe-area-inset-bottom,0px);}
-.bn-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:.63rem;font-weight:600;color:#A8A8A8;cursor:pointer;position:relative;padding-top:6px;}
-.bn-item.active{color:var(--navy);}
-.bn-item svg{width:24px;height:24px;}
-.bn-item.bn-center .bn-icon-wrap{width:44px;height:44px;border-radius:50%;background:var(--navy);box-shadow:0 3px 10px rgba(16,57,45,.35);display:flex;align-items:center;justify-content:center;margin-bottom:2px;}
+.bottom-nav{position:fixed;left:0;right:0;bottom:0;height:68px;background:#fff;display:flex;
+  border-top:1px solid #F1F1F1;box-shadow:0 -2px 14px rgba(0,0,0,.06);z-index:900;padding-bottom:env(safe-area-inset-bottom,0px);}
+.bn-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:.63rem;font-weight:600;color:#141414;cursor:pointer;position:relative;padding-top:6px;transition:opacity .15s;}
+.bn-item:active{opacity:.6;}
+.bn-item.active{color:#141414;}
+.bn-item svg{width:23px;height:23px;stroke-width:1.7;}
+.bn-item.bn-center{color:var(--navy);font-weight:800;}
+.bn-item.bn-center .bn-icon-wrap{width:50px;height:50px;border-radius:50%;background:var(--navy);
+  border:2.5px solid #D4AF63;
+  box-shadow:0 6px 16px rgba(16,57,45,.4),0 0 0 3px #fff;
+  display:flex;align-items:center;justify-content:center;margin-bottom:4px;margin-top:-22px;
+  transition:transform .15s;}
+.bn-item.bn-center:active .bn-icon-wrap{transform:scale(.93);}
+.bn-item.bn-center svg{width:21px;height:21px;}
 
 .comment-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:flex-end;justify-content:center;}
 .comment-modal.open{display:flex;}
@@ -560,7 +568,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
     <span class="nav-icon-badge" id="bnCartBadge" style="display:none;position:absolute;top:2px;right:20px;">0</span>
   </div>
   <div class="bn-item bn-center" onclick="location.href='create-studio.html?city='+CITY">
-    <div class="bn-icon-wrap"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div>Create
+    <div class="bn-icon-wrap"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#D4AF63" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div>Create
   </div>
   <div class="bn-item" onclick="location.href='ecosystem.html'" title="DELTA Ecosystem">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3L21 20H3L12 3Z"/></svg>DELTA
