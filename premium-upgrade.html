@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>DELTA Premium — Upgrade</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#10392D;--navy2:#1a4a3a;
+  --green:#2da86a;--green2:#1a7a4c;
+  --gold:#D4AF63;--gold-dark:#B8925A;
+  --white:#fff;--sand:#ffffff;--cream:#F7F8FA;
+  --border:#E7E9EC;--muted:#8A8F98;--charcoal:#1A1A1A;
+}
+*{box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charcoal);margin:0;padding-bottom:40px;}
+
+.pu-nav{background:#fff;padding:16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:200;}
+.pu-back{background:none;border:none;width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.pu-back:hover{background:var(--border);}
+.pu-nav-title{font-family:'Playfair Display',serif;font-weight:900;font-size:1.15rem;}
+.pu-nav-title em{color:var(--gold-dark);font-style:normal;}
+
+.pu-hero{padding:28px 20px 20px;text-align:center;background:linear-gradient(180deg,#fff,#FCF8EE 90%);}
+.pu-hero-crown{font-size:2.2rem;margin-bottom:6px;}
+.pu-hero-title{font-size:1.3rem;font-weight:800;color:var(--navy);}
+.pu-hero-sub{font-size:.85rem;color:var(--muted);margin-top:6px;max-width:420px;margin-left:auto;margin-right:auto;}
+
+.pu-wrap{max-width:980px;margin:0 auto;padding:0 16px;}
+
+.pu-plans{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin-top:20px;}
+.pu-plan{background:#fff;border:1.5px solid var(--border);border-radius:16px;padding:20px 16px;display:flex;flex-direction:column;
+  position:relative;transition:transform .15s,box-shadow .15s;}
+.pu-plan.featured{border-color:var(--gold);box-shadow:0 8px 24px rgba(184,146,90,.18);transform:translateY(-6px);}
+.pu-plan-badge{position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:var(--gold);color:var(--navy);
+  font-size:.62rem;font-weight:800;padding:4px 12px;border-radius:10px;white-space:nowrap;}
+.pu-plan-name{font-size:1.02rem;font-weight:800;color:var(--charcoal);}
+.pu-plan-tag{font-size:.68rem;color:var(--muted);margin-top:2px;margin-bottom:14px;min-height:14px;}
+.pu-plan-price{font-size:1.7rem;font-weight:900;color:var(--navy);}
+.pu-plan-price span{font-size:.75rem;font-weight:600;color:var(--muted);}
+.pu-plan-list{list-style:none;padding:0;margin:16px 0 20px;flex:1;}
+.pu-plan-list li{font-size:.78rem;color:var(--charcoal);padding:6px 0;display:flex;gap:8px;align-items:flex-start;}
+.pu-plan-list li.off{color:#C3C3C3;}
+.pu-check{color:var(--green2);font-weight:800;flex-shrink:0;}
+.pu-cross{color:#D8D8D8;font-weight:800;flex-shrink:0;}
+.pu-plan-btn{background:var(--navy);color:#fff;border:none;padding:11px;border-radius:22px;font-weight:700;font-size:.85rem;
+  cursor:pointer;width:100%;}
+.pu-plan.featured .pu-plan-btn{background:var(--gold);color:var(--navy);font-weight:800;}
+.pu-plan-btn:hover{opacity:.92;}
+.pu-plan-btn.current{background:var(--border);color:var(--muted);cursor:default;}
+
+.pu-compare-note{text-align:center;color:var(--muted);font-size:.72rem;margin:22px 0 6px;}
+
+.pu-faq{margin-top:34px;border-top:1px solid var(--border);padding-top:20px;}
+.pu-faq-title{font-weight:800;font-size:.95rem;margin-bottom:10px;}
+.pu-faq-item{border-bottom:1px solid var(--border);padding:12px 0;font-size:.8rem;color:var(--charcoal);}
+.pu-faq-q{font-weight:700;margin-bottom:4px;}
+.pu-faq-a{color:var(--muted);}
+
+/* Confirm modal */
+.pu-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;align-items:flex-end;justify-content:center;}
+.pu-modal.open{display:flex;}
+.pu-sheet{background:#fff;width:100%;max-width:480px;border-radius:20px 20px 0 0;padding:22px 20px calc(20px + env(safe-area-inset-bottom,0px));}
+.pu-sheet-title{font-weight:800;font-size:1.05rem;margin-bottom:4px;}
+.pu-sheet-plan{color:var(--gold-dark);font-weight:800;}
+.pu-sheet-sub{color:var(--muted);font-size:.8rem;margin-bottom:14px;}
+.pu-sheet-list{list-style:none;padding:0;margin:0 0 18px;}
+.pu-sheet-list li{font-size:.82rem;padding:5px 0;display:flex;gap:8px;}
+.pu-sheet-price-row{display:flex;justify-content:space-between;align-items:center;background:var(--cream);border-radius:12px;
+  padding:12px 14px;margin-bottom:16px;}
+.pu-sheet-price-row .amt{font-weight:800;font-size:1.1rem;color:var(--navy);}
+.pu-sheet-btns{display:flex;gap:10px;}
+.pu-sheet-btns button{flex:1;padding:13px;border-radius:22px;font-weight:700;font-size:.85rem;border:none;cursor:pointer;}
+.pu-sheet-cancel{background:var(--border);color:var(--charcoal);}
+.pu-sheet-confirm{background:var(--navy);color:#fff;}
+.pu-sheet-note{font-size:.68rem;color:var(--muted);text-align:center;margin-top:12px;}
+
+/* Toast */
+.pu-toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,20px);background:var(--navy);color:#fff;
+  padding:12px 20px;border-radius:24px;font-size:.82rem;font-weight:600;box-shadow:0 8px 20px rgba(0,0,0,.2);
+  z-index:600;opacity:0;pointer-events:none;transition:all .25s ease;text-align:center;max-width:88%;}
+.pu-toast.show{opacity:1;transform:translate(-50%,0);}
+
+@media(max-width:520px){
+  .pu-plan.featured{transform:none;}
+}
+</style>
+</head>
+<body>
+
+<div class="pu-nav">
+  <button class="pu-back" onclick="location.href='media-feed.html'" title="Back">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+  </button>
+  <div class="pu-nav-title">DELTA <em>Premium</em></div>
+</div>
+
+<div class="pu-hero">
+  <div class="pu-hero-crown">👑</div>
+  <div class="pu-hero-title">Grow faster with DELTA Premium</div>
+  <div class="pu-hero-sub">Compare plans below, review what's included, and upgrade only when you're ready — no auto-charge, no surprises.</div>
+</div>
+
+<div class="pu-wrap">
+  <div class="pu-plans" id="puPlans"></div>
+  <div class="pu-compare-note">Prices shown are monthly. You can cancel or switch plans anytime.</div>
+
+  <div class="pu-faq">
+    <div class="pu-faq-title">Before you upgrade</div>
+    <div class="pu-faq-item">
+      <div class="pu-faq-q">Will I be charged automatically?</div>
+      <div class="pu-faq-a">No. You'll always see a review screen with the exact plan and price before anything is confirmed.</div>
+    </div>
+    <div class="pu-faq-item">
+      <div class="pu-faq-q">Can I downgrade later?</div>
+      <div class="pu-faq-a">Yes, plan changes take effect from your next billing cycle.</div>
+    </div>
+    <div class="pu-faq-item">
+      <div class="pu-faq-q">Is payment live yet?</div>
+      <div class="pu-faq-a">Premium billing is not live yet — this page is a preview so you can review plans ahead of launch.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Review-before-confirm modal -->
+<div class="pu-modal" id="puModal">
+  <div class="pu-sheet">
+    <div class="pu-sheet-title">Upgrade to <span class="pu-sheet-plan" id="puModalPlan">Gold</span>?</div>
+    <div class="pu-sheet-sub" id="puModalSub">Please review what's included before confirming.</div>
+    <ul class="pu-sheet-list" id="puModalFeatures"></ul>
+    <div class="pu-sheet-price-row">
+      <span>Billed monthly</span>
+      <span class="amt" id="puModalPrice">₹499</span>
+    </div>
+    <div class="pu-sheet-btns">
+      <button class="pu-sheet-cancel" onclick="closePuModal()">Cancel</button>
+      <button class="pu-sheet-confirm" onclick="confirmUpgrade()">Confirm Upgrade</button>
+    </div>
+    <div class="pu-sheet-note">You can cancel anytime from Settings once billing is live.</div>
+  </div>
+</div>
+
+<div class="pu-toast" id="puToast"></div>
+
+<script>
+var PLANS = [
+  {
+    id:'basic', name:'Basic', tag:'Everyone starts here', price:'Free',
+    features:[
+      {t:'Post, Story, Reel & Video', on:true},
+      {t:'Follow / Like / Comment', on:true},
+      {t:'Basic performance stats', on:true},
+      {t:'Live Selling', on:false},
+      {t:'Cross-Platform Publishing', on:false},
+      {t:'Featured Profile placement', on:false},
+      {t:'Advanced Analytics', on:false},
+    ]
+  },
+  {
+    id:'silver', name:'Silver', tag:'For growing sellers', price:'₹199',
+    features:[
+      {t:'Everything in Basic', on:true},
+      {t:'Featured Profile placement', on:true},
+      {t:'Priority content review', on:true},
+      {t:'Live Selling', on:false},
+      {t:'Cross-Platform Publishing', on:false},
+      {t:'Advanced Analytics', on:false},
+    ]
+  },
+  {
+    id:'gold', name:'Gold', tag:'Most popular', price:'₹499', featured:true,
+    features:[
+      {t:'Everything in Silver', on:true},
+      {t:'Live Selling', on:true},
+      {t:'Cross-Platform Publishing (FB/IG/YouTube/X)', on:true},
+      {t:'Advanced Analytics & Insights', on:true},
+      {t:'Sponsored Content credits', on:false},
+    ]
+  },
+  {
+    id:'platinum', name:'Platinum', tag:'For established brands', price:'₹999',
+    features:[
+      {t:'Everything in Gold', on:true},
+      {t:'Sponsored Content credits', on:true},
+      {t:'Dedicated support', on:true},
+      {t:'Early access to new features', on:true},
+    ]
+  }
+];
+
+function renderPlans(){
+  var wrap = document.getElementById('puPlans');
+  wrap.innerHTML = PLANS.map(function(p){
+    var listHtml = p.features.map(function(f){
+      return '<li class="'+(f.on?'':'off')+'"><span class="'+(f.on?'pu-check':'pu-cross')+'">'+(f.on?'✓':'✕')+'</span>'+f.t+'</li>';
+    }).join('');
+    return ''+
+      '<div class="pu-plan'+(p.featured?' featured':'')+'">'+
+        (p.featured ? '<div class="pu-plan-badge">MOST POPULAR</div>' : '')+
+        '<div class="pu-plan-name">'+p.name+'</div>'+
+        '<div class="pu-plan-tag">'+p.tag+'</div>'+
+        '<div class="pu-plan-price">'+p.price+(p.price!=='Free' ? '<span>/mo</span>' : '')+'</div>'+
+        '<ul class="pu-plan-list">'+listHtml+'</ul>'+
+        (p.id==='basic'
+          ? '<button class="pu-plan-btn current" disabled>Your Current Plan</button>'
+          : '<button class="pu-plan-btn" onclick="openPuModal(\''+p.id+'\')">Choose '+p.name+'</button>')+
+      '</div>';
+  }).join('');
+}
+renderPlans();
+
+var activePlan = null;
+function openPuModal(planId){
+  activePlan = PLANS.find(function(p){ return p.id===planId; });
+  if(!activePlan) return;
+  document.getElementById('puModalPlan').textContent = activePlan.name;
+  document.getElementById('puModalPrice').textContent = activePlan.price + (activePlan.price!=='Free' ? '/mo' : '');
+  document.getElementById('puModalSub').textContent = 'Please review what\'s included in '+activePlan.name+' before confirming.';
+  document.getElementById('puModalFeatures').innerHTML = activePlan.features.filter(function(f){return f.on;}).map(function(f){
+    return '<li><span class="pu-check">✓</span>'+f.t+'</li>';
+  }).join('');
+  document.getElementById('puModal').classList.add('open');
+}
+function closePuModal(){
+  document.getElementById('puModal').classList.remove('open');
+}
+function confirmUpgrade(){
+  closePuModal();
+  showToast('Premium billing isn\'t live yet — you reviewed the '+ (activePlan?activePlan.name:'') +' plan. We\'ll notify you the moment it launches.');
+}
+function showToast(msg){
+  var t = document.getElementById('puToast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(window._puToastTimer);
+  window._puToastTimer = setTimeout(function(){ t.classList.remove('show'); }, 3800);
+}
+</script>
+</body>
+</html>
