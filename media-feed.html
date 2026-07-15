@@ -262,15 +262,20 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 .ilc-sub{font-size:.72rem;color:var(--muted);margin-top:2px;}
 .ilc-btn{background:var(--navy);color:#fff;border:none;padding:10px 20px;border-radius:20px;
   font-weight:700;font-size:.8rem;cursor:pointer;white-space:nowrap;flex-shrink:0;}
-.inline-premium-card{display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,#fff,#FCF8EE);
-  border:1px solid #EAD9AE;border-radius:14px;margin:10px 14px;padding:14px;box-shadow:0 1px 4px rgba(0,0,0,.04);}
+.inline-premium-card{display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#fff,#FCF8EE);
+  border:1px solid #EAD9AE;border-radius:14px;margin:10px 14px 4px;padding:14px;box-shadow:0 1px 4px rgba(0,0,0,.04);}
 .ipc-icon{width:40px;height:40px;border-radius:50%;background:var(--navy);color:#D4AF63;flex-shrink:0;
   display:flex;align-items:center;justify-content:center;font-size:1.15rem;border:1.5px solid #D4AF63;}
-.ipc-text{flex:1;min-width:0;}
-.ipc-title{font-size:.88rem;font-weight:800;color:var(--charcoal);}
-.ipc-sub{font-size:.72rem;color:var(--muted);margin-top:2px;}
+.ipc-carousel{flex:1;min-width:0;display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
+.ipc-carousel::-webkit-scrollbar{display:none;}
+.ipc-slide{flex:0 0 100%;scroll-snap-align:start;min-width:0;padding-right:8px;}
+.ipc-title{font-size:.88rem;font-weight:800;color:var(--charcoal);white-space:nowrap;}
+.ipc-sub{font-size:.72rem;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .ipc-btn{background:#D4AF63;color:#10392D;border:none;padding:10px 18px;border-radius:20px;
   font-weight:800;font-size:.8rem;cursor:pointer;white-space:nowrap;flex-shrink:0;}
+.ipc-dots{display:flex;gap:5px;justify-content:center;margin:0 14px 10px;}
+.ipc-dot{width:5px;height:5px;border-radius:50%;background:#E2D6BC;transition:background .15s,width .15s;}
+.ipc-dot.active{background:#D4AF63;width:14px;border-radius:3px;}
 .empty-state-icon{font-size:2.4rem;margin-bottom:10px;}
 .loading-state{padding:40px;text-align:center;color:var(--muted);font-size:.85rem;}
 
@@ -501,8 +506,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
       </button>
     </div>
 
-    <!-- DEMO: login card temporarily hidden to preview the logged-in Premium state -->
-    <div class="inline-login-card" id="inlineLoginCard" style="display:none !important;">
+    <!-- Inline login prompt — per Image 2 reference, shown right after Stories, before feed -->
+    <div class="inline-login-card" id="inlineLoginCard" style="display:none;">
       <div class="ilc-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></div>
       <div class="ilc-text">
         <div class="ilc-title">Create your post, story, reel or live</div>
@@ -513,31 +518,21 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 
     <!-- Same slot, logged-in state: once the user is authenticated, the login
          prompt above is no longer relevant — this Premium upsell takes its place.
-         Static preview only, matching the desktop Go Premium card (Section 14.2 deferred). -->
-    <div class="inline-premium-card" id="inlinePremiumCard" style="display:flex;">
+         One compact card, swipeable — cycles through premium features instead of
+         stacking a separate Cross-Platform Publishing card below it (saves vertical
+         space so the feed starts sooner). "Try Premium" always deep-links to the
+         dedicated upgrade page with full plan comparison. -->
+    <div class="inline-premium-card" id="inlinePremiumCard" style="display:none;">
       <div class="ipc-icon">👑</div>
-      <div class="ipc-text">
-        <div class="ipc-title">Go Premium</div>
-        <div class="ipc-sub">Live Selling, Featured Profile & more.</div>
+      <div class="ipc-carousel" id="ipcCarousel">
+        <div class="ipc-slide"><div class="ipc-title">Go Premium</div><div class="ipc-sub">Live Selling, Cross-Platform Publishing & more.</div></div>
+        <div class="ipc-slide"><div class="ipc-title">Go Premium</div><div class="ipc-sub">Publish once, reach Facebook, Instagram, YouTube & X.</div></div>
+        <div class="ipc-slide"><div class="ipc-title">Go Premium</div><div class="ipc-sub">Featured Profile — get seen first in your area.</div></div>
+        <div class="ipc-slide"><div class="ipc-title">Go Premium</div><div class="ipc-sub">Advanced Analytics — know what's actually converting.</div></div>
       </div>
-      <button class="ipc-btn" onclick="alert('Premium plans — not launched yet')">Upgrade</button>
+      <button class="ipc-btn" onclick="location.href='premium-upgrade.html?city='+CITY">Try Premium</button>
     </div>
-
-    <!-- DEMO ONLY — mobile preview of the Cross-Platform Publishing card,
-         reusing the exact desktop mh-crossplatform-card styling/markup -->
-    <div class="mh-crossplatform-card" style="margin:10px 14px;">
-      <span class="mh-cp-badge">Premium Feature</span>
-      <div style="font-weight:800;font-size:.85rem;color:var(--charcoal);margin-bottom:4px;">Cross-Platform Publishing</div>
-      <div class="mh-cp-desc">Create once and publish everywhere.</div>
-      <div class="mh-cp-icons">
-        <div class="mh-cp-icon" style="background:#1877f2;">f</div>
-        <div class="mh-cp-icon" style="background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);">📷</div>
-        <div class="mh-cp-icon" style="background:#ff0000;">▶</div>
-        <div class="mh-cp-icon" style="background:#000;">𝕏</div>
-        <div class="mh-cp-icon" style="background:#0a66c2;">in</div>
-      </div>
-      <button class="mh-cp-try-btn" disabled title="Needs per-platform OAuth approval — not built yet">Try Premium</button>
-    </div>
+    <div class="ipc-dots" id="ipcDots" style="display:none;"></div>
 
     <div class="feed-wrap" id="feedWrap">
       <div class="loading-state" id="loadingState">লোড হচ্ছে...</div>
@@ -648,9 +643,10 @@ var activeCommentContentId=null;
 
 auth.onAuthStateChanged(function(u){
   currentUser=u; loadFeed(); loadStories();
-  // DEMO: auth-based toggle disabled so the Premium/Cross-Platform preview stays visible
-  // regardless of real login state. document.getElementById('inlineLoginCard').style.display = u ? 'none' : 'flex';
-  // document.getElementById('inlinePremiumCard').style.display = u ? 'flex' : 'none';
+  document.getElementById('inlineLoginCard').style.display = u ? 'none' : 'flex';
+  document.getElementById('inlinePremiumCard').style.display = u ? 'flex' : 'none';
+  document.getElementById('ipcDots').style.display = u ? 'flex' : 'none';
+  if(u) initPremiumCarousel();
   loadMhOfficialCard();
   loadMhWhoToFollow();
   loadMhTrendingReels();
@@ -679,6 +675,26 @@ function loadNavAvatar(){
     if(doc.exists && doc.data().avatarUrl){ img.src = doc.data().avatarUrl; img.style.display='block'; fallback.style.display='none'; }
     else { img.style.display='none'; fallback.style.display='flex'; }
   }).catch(function(){ img.style.display='none'; fallback.style.display='flex'; });
+}
+var _ipcInitDone = false;
+function initPremiumCarousel(){
+  if(_ipcInitDone) return; // dots + listener only need to be set up once
+  _ipcInitDone = true;
+  var carousel = document.getElementById('ipcCarousel');
+  var dotsWrap = document.getElementById('ipcDots');
+  var slides = carousel.querySelectorAll('.ipc-slide');
+  dotsWrap.innerHTML = '';
+  slides.forEach(function(_, i){
+    var d = document.createElement('div');
+    d.className = 'ipc-dot' + (i===0 ? ' active' : '');
+    dotsWrap.appendChild(d);
+  });
+  carousel.addEventListener('scroll', function(){
+    var idx = Math.round(carousel.scrollLeft / carousel.clientWidth);
+    dotsWrap.querySelectorAll('.ipc-dot').forEach(function(d, i){
+      d.classList.toggle('active', i===idx);
+    });
+  }, { passive:true });
 }
 function openSideMenuFallback(){
   // This page doesn't have its own side-menu system yet — the full account/settings
