@@ -1,5 +1,5 @@
-<!DOCTYPE html>           
-<html lang="bn">   
+<!DOCTYPE html> 
+<html lang="bn">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -3718,26 +3718,17 @@ var fbcfg={apiKey:"AIzaSyA6TrrnCMwv1aa1WPqGvTVWlnieB2pVOEU",authDomain:"delta-pl
 var auth,db,currentUser=null,cart=[],wishlist=[],allShops=[],allProducts=[],selectedPay='cod';
 var _shopModalAutoOpened=false;
 
-// Flash sale থেকে আসা cart items merge করো
+// Cart persistence — genuinely shared with media-feed.html via the delta_cart
+// localStorage key. Previously this only did a one-time flash-sale handoff and
+// then deleted the key; now it hydrates on every load and stays in sync
+// (see saveCartToStorage(), called from updateCartBadge()).
 (function(){
   try{
-    var flashCart = JSON.parse(localStorage.getItem('delta_cart')||'[]');
-    if(flashCart.length){
-      // sale price preserve করো — allProducts এর price দিয়ে override করো না
-      cart = flashCart.map(function(item){
-        return {
-          id: item.id,
-          shopId: item.shopId,
-          name: item.name,
-          nameBn: item.name,
-          price: item.price, // flash sale price (already discounted)
-          qty: item.qty||1,
-          imageUrl: item.imageUrl||'',
-          _fromFlashSale: true
-        };
-      });
-      localStorage.removeItem('delta_cart');
-    }
+    var saved = JSON.parse(localStorage.getItem('delta_cart')||'[]');
+    if(saved.length) cart = saved.map(function(item){
+      if(item.selected===undefined) item.selected = true;
+      return item;
+    });
   }catch(e){}
 })();
 var CITY='manteswar'; // Multi-tenant city
@@ -3774,8 +3765,24 @@ function initFB(){
   auth.onAuthStateChanged(function(u){
     currentUser=u;
     var lbl=document.getElementById('userLabel');
-    if(u){lbl.textContent=u.displayName||'আমার';document.getElementById('userChip').style.color='#a5d6ff';}
-    else{lbl.textContent='লগইন';}
+    if(u){
+      lbl.textContent=u.displayName||'আমার';document.getElementById('userChip').style.color='#a5d6ff';
+      // Arrived here via media-feed.html's Cart drawer with items already
+      // ticked for checkout — jump straight into the checkout modal instead of
+      // making the user re-open the cart and press Place Order again.
+      var params = new URLSearchParams(location.search);
+      if(params.get('openCheckout')==='1' && cart.length){
+        setTimeout(function(){ openCheckout(); }, 400);
+      }
+    }
+    else{
+      lbl.textContent='লগইন';
+      // Arrived here via a returnTo link (e.g. from media-feed.html) and not
+      // logged in yet — open the login modal directly instead of making them
+      // hunt for the login button themselves.
+      var params = new URLSearchParams(location.search);
+      if(params.get('returnTo')){ openAuth(); }
+    }
     loadDeltaStories();
   });
   detectCity();
@@ -7101,14 +7108,18 @@ function prodQtyChange(pid,sid,d){
 function addToCartById(pid,sid){
   var p=allProducts.find(function(x){return x.id===pid&&x.shopId===sid;});if(!p)return;
   var ex=cart.find(function(c){return c.id===pid&&c.shopId===sid;});
-  if(ex)ex.qty++;else cart.push(Object.assign({qty:1},p));
+  if(ex)ex.qty++;else cart.push(Object.assign({qty:1,selected:true},p));
   updateCartBadge();
+}
+function saveCartToStorage(){
+  try{ localStorage.setItem('delta_cart', JSON.stringify(cart)); }catch(e){}
 }
 function updateCartBadge(){
   var t=cart.reduce(function(s,c){return s+c.qty;},0);
   var b=document.getElementById('cartBadge');
   if(t>0){b.style.display='flex';b.textContent=t;}else b.style.display='none';
   updateBnCartBadge();
+  saveCartToStorage();
 }
 function openCart(){document.getElementById('cartOverlay').classList.add('open');document.getElementById('cartDrawer').classList.add('open');renderCart();}
 function closeCart(){document.getElementById('cartOverlay').classList.remove('open');document.getElementById('cartDrawer').classList.remove('open');}
@@ -7118,7 +7129,9 @@ function renderCart(){
   ft.style.display='block';
   w.innerHTML=cart.map(function(c,i){
     var img=c.imageUrl||(c.images&&c.images[0])||'';var name=c.nameBn||c.nameEn||c.name||'পণ্য';var price=c.price||c.sellPrice||0;
-    return '<div class="cart-item">'+
+    var isSel = c.selected!==false;
+    return '<div class="cart-item" style="opacity:'+(isSel?'1':'.5')+';">'+
+      '<input type="checkbox" '+(isSel?'checked':'')+' onchange="toggleCartItemSelected('+i+')" style="width:19px;height:19px;margin-right:8px;flex-shrink:0;accent-color:var(--navy);">'+
       '<div class="ci-thumb">'+(img?'<img src="'+img+'">':prodEmoji(c.category))+'</div>'+
       '<div style="flex:1"><div class="ci-name">'+name+'</div><div class="ci-shop">🏪 '+(c.shopName||'')+'</div>'+
       '<div class="ci-price">₹'+(price*c.qty)+'</div>'+
@@ -7131,13 +7144,16 @@ function renderCart(){
         '<button class="ci-del" onclick="removeCart('+i+')">🗑️</button>'+
       '</div></div></div>';
   }).join('');
-  var sub=cart.reduce(function(s,c){return s+(c.price||c.sellPrice||0)*c.qty;},0);
+  var selectedItems = cart.filter(function(c){ return c.selected!==false; });
+  var sub=selectedItems.reduce(function(s,c){return s+(c.price||c.sellPrice||0)*c.qty;},0);
   var FREE_DELIVERY_MIN = 399;
   var MIN_ORDER = 50;
   var deliveryCharge = sub >= FREE_DELIVERY_MIN ? 0 : 30;
   var total = sub + deliveryCharge;
   document.getElementById('cartSubtotal').textContent='₹'+sub;
   document.getElementById('cartTotal').textContent='₹'+total;
+  var checkoutBtn = document.querySelector('.cart-checkout-btn');
+  if(checkoutBtn) checkoutBtn.innerHTML = '<span class="lang-bn">অর্ডার করুন ('+selectedItems.length+' আইটেম) →</span><span class="lang-en">Place Order ('+selectedItems.length+' items) →</span>';
   var delivEl = document.getElementById('cartDeliveryInfo');
   var progEl = document.getElementById('freeDeliveryProgress');
   if(delivEl){
@@ -7163,14 +7179,21 @@ function renderCart(){
     }
   }
 }
+function toggleCartItemSelected(i){
+  cart[i].selected = cart[i].selected===false ? true : false;
+  saveCartToStorage();
+  renderCart();
+}
 function changeQty(i,d){cart[i].qty+=d;if(cart[i].qty<=0)cart.splice(i,1);updateCartBadge();renderCart();}
 function removeCart(i){cart.splice(i,1);updateCartBadge();renderCart();}
 
 // ── CHECKOUT ──
 function openCheckout(){
+  var selectedItems = cart.filter(function(c){ return c.selected!==false; });
   if(!cart.length){showToast('কার্ট খালি আছে ⚠️');return;}
+  if(!selectedItems.length){showToast('অন্তত একটি আইটেম বেছে নিন ⚠️');return;}
   if(!currentUser){closeCart();openAuth();showToast('অর্ডার করতে আগে লগইন করুন');return;}
-  var sub = cart.reduce(function(s,c){return s+(c.price||c.sellPrice||0)*c.qty;},0);
+  var sub = selectedItems.reduce(function(s,c){return s+(c.price||c.sellPrice||0)*c.qty;},0);
   var MIN_ORDER = 50;
   var FREE_DELIVERY_MIN = 399;
   if(sub < MIN_ORDER){
@@ -7202,8 +7225,9 @@ async function placeOrder(){
   if(!addr||!mobile){showToast('ঠিকানা ও মোবাইল নম্বর দিন ⚠️');return;}
   var btn=document.getElementById('placeOrderBtn');btn.disabled=true;btn.textContent='অর্ডার হচ্ছে...';
   var FREE_DELIVERY_MIN = 399;
+  var selectedItems = cart.filter(function(c){ return c.selected!==false; });
   var byShop={};
-  cart.forEach(function(c){
+  selectedItems.forEach(function(c){
     if(!byShop[c.shopId])byShop[c.shopId]={shopId:c.shopId,shopName:c.shopName,items:[],total:0,orderSource:'normal',commissionRate:0};
     var itemPrice = c.price||c.sellPrice||0;
     byShop[c.shopId].items.push({
@@ -7252,7 +7276,10 @@ async function placeOrder(){
       '<div class="order-id-pill">অর্ডার ID: <strong>#'+oids[0].slice(-6).toUpperCase()+'</strong></div>'+
       '<button class="ok-btn" onclick="closeCheckout();location.reload();">ঠিক আছে / OK</button>'+
       '</div>';
-    cart=[];updateCartBadge();showToast('অর্ডার সফল! ✅','green');
+    // Only remove the items that were actually ordered — anything left unticked
+    // stays safely in the cart (and in localStorage) for later.
+    cart = cart.filter(function(c){ return c.selected===false; });
+    updateCartBadge();showToast('অর্ডার সফল! ✅','green');
   }catch(e){showToast('অর্ডার ব্যর্থ: '+e.message);btn.disabled=false;btn.textContent='✅ অর্ডার দিন';}
 }
 
@@ -7271,10 +7298,20 @@ function authTab(t,el){
   document.getElementById('authErr').style.display='none';
 }
 function showAuthErr(m){var e=document.getElementById('authErr');e.textContent=m;e.style.display='block';}
+// If the user was sent here from another DELTA page (e.g. media-feed.html) to
+// log in, this sends them back there once auth succeeds — otherwise they'd be
+// stuck on the homepage with no idea how they got here.
+function redirectAfterAuthIfNeeded(){
+  var params = new URLSearchParams(location.search);
+  var returnTo = params.get('returnTo');
+  if(returnTo){
+    setTimeout(function(){ location.href = returnTo + '?city=' + (params.get('city')||CITY); }, 900);
+  }
+}
 async function doCustomerLogin(){
   var e=document.getElementById('cEmail').value,p=document.getElementById('cPass').value;
   if(!e||!p){showAuthErr('Email ও Password দিন');return;}
-  try{await auth.signInWithEmailAndPassword(e,p);closeAuth();showToast('লগইন সফল! স্বাগতম 🎉','green');}
+  try{await auth.signInWithEmailAndPassword(e,p);closeAuth();showToast('লগইন সফল! স্বাগতম 🎉','green');redirectAfterAuthIfNeeded();}
   catch(er){showAuthErr('ইমেইল বা পাসওয়ার্ড ভুল');}
 }
 async function doCustomerRegister(){
@@ -7286,7 +7323,7 @@ async function doCustomerRegister(){
     var cr=await auth.createUserWithEmailAndPassword(e,p);
     await cr.user.updateProfile({displayName:name});
     await db.collection('cities').doc(CITY).collection('customers').doc(cr.user.uid).set({name,mobile,email:e,city:CITY,createdAt:new Date().toISOString()});
-    closeAuth();showToast('নিবন্ধন সফল! স্বাগতম '+name+' 🎉','green');
+    closeAuth();showToast('নিবন্ধন সফল! স্বাগতম '+name+' 🎉','green');redirectAfterAuthIfNeeded();
   }catch(er){showAuthErr(er.code==='auth/email-already-in-use'?'এই ইমেইল আগেই ব্যবহৃত':er.message);}
 }
 
