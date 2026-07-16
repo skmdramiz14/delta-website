@@ -1046,8 +1046,8 @@ function loadStories(){
   };
 
   getMhOfficialUid().then(function(officialUid){
-    // Slot #1 — Pinned DELTA Official. Real profile if it exists, else the
-    // same demo pin as the homepage (exact clone, not a different fallback).
+    // DELTA Official — no longer pinned ahead of everything; sits right next to
+    // "Add Story" as a normal (still visually verified) story item.
     if(officialUid){
       db.collection('cities').doc(CITY).collection('mediaProfiles').doc(officialUid).get().then(function(pDoc){
         clearLoadingOnce();
@@ -1055,12 +1055,11 @@ function loadStories(){
         pinItem.innerHTML =
           '<div class="story-ring story-ring-official">'+
             (pDoc.exists && pDoc.data().avatarUrl ? '<img src="'+pDoc.data().avatarUrl+'">' : '<div style="width:100%;height:100%;border-radius:50%;background:var(--sand);display:flex;align-items:center;justify-content:center;">🔷</div>')+
-            '<span class="story-pinned-badge">📌</span>'+
           '</div><div class="story-label">DELTA Official</div>';
         var pinGroupIndex = window.mfAllGroups.length;
         window.mfAllGroups.push([{id:'official-'+officialUid, data:{authorUid:officialUid, authorDisplayName:'DELTA Official', authorAvatarUrl:(pDoc.exists?pDoc.data().avatarUrl:''), ctaType:'none', tags:{}, createdAt:new Date().toISOString()}}]);
         pinItem.onclick=function(){ openStoryViewerAt(pinGroupIndex); };
-        wrap.insertBefore(pinItem, wrap.firstChild);
+        wrap.insertBefore(pinItem, wrap.children[1] || null); // right after Add Story (slot #0)
       }).catch(function(e){ console.error('Pinned official profile fetch failed', e); });
     } else {
       clearLoadingOnce();
@@ -1069,12 +1068,11 @@ function loadStories(){
       pinItem.innerHTML =
         '<div class="story-ring story-ring-official">'+
           '<div style="width:100%;height:100%;border-radius:50%;background:var(--sand);display:flex;align-items:center;justify-content:center;">🔷</div>'+
-          '<span class="story-pinned-badge">📌</span>'+
         '</div><div class="story-label">DELTA Official</div>';
       var pinGroupIndex = window.mfAllGroups.length;
       window.mfAllGroups.push([DEMO_MF_PINNED_OFFICIAL]);
       pinItem.onclick=function(){ openStoryViewerAt(pinGroupIndex); };
-      wrap.insertBefore(pinItem, wrap.firstChild);
+      wrap.insertBefore(pinItem, wrap.children[1] || null); // right after Add Story (slot #0)
     }
   }).catch(function(e){ console.error('getMhOfficialUid failed', e); });
 
