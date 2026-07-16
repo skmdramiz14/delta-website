@@ -12,11 +12,11 @@
 *{margin:0;padding:0;box-sizing:border-box;}
 html,body{overflow-x:hidden;max-width:100vw;}
 :root{
-  --navy:#10392D;--navy2:#1a4a3a;
-  --gold:#D4AF63;--gold-dark:#B8925A;
-  --green:#2da86a;--green2:#1a7a4c;
-  --white:#fff;--sand:#ffffff;--cream:#F7F8FA;
-  --border:#E7E9EC;--muted:#8A8F98;--charcoal:#1A1A1A;
+  --navy:#141414;--navy2:#1f1f1f;
+  --gold:#C9971F;--gold-dark:#8B6F1F;
+  --green:#2da86a;--green2:#7A6420;
+  --white:#fff;--sand:#ffffff;--cream:#F7F2E7;
+  --border:#E8E0CE;--muted:#8A8478;--charcoal:#1A1712;
 }
 body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charcoal);padding-bottom:40px;}
 
@@ -28,7 +28,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 .pp-nav-right{display:flex;gap:8px;}
 
 /* ── Cover ── */
-.pp-cover{width:100%;height:180px;background:linear-gradient(135deg,var(--navy),#1e5a45);position:relative;overflow:hidden;}
+.pp-cover{width:100%;height:180px;background:linear-gradient(135deg,#0d0d0d,#2b2210 55%,#0d0d0d);position:relative;overflow:hidden;}
 .pp-cover img{width:100%;height:100%;object-fit:cover;display:block;}
 .pp-cover-edit{position:absolute;bottom:10px;right:10px;background:rgba(0,0,0,.45);color:#fff;border:none;border-radius:16px;
   padding:6px 12px;font-size:.7rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;}
@@ -47,7 +47,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 .pp-name{font-family:'Playfair Display',serif;font-weight:800;font-size:1.3rem;color:var(--charcoal);}
 .pp-badge{display:inline-flex;align-items:center;gap:4px;font-size:.62rem;font-weight:800;padding:3px 9px;border-radius:9px;
   text-transform:uppercase;letter-spacing:.3px;}
-.pp-badge.seller{background:#EAF3EE;color:var(--green2);}
+.pp-badge.seller{background:#F1EBD8;color:var(--green2);}
 .pp-badge.creator{background:#F3EEE3;color:var(--gold-dark);}
 .pp-badge.official{background:linear-gradient(135deg,#4a90d9,#8b5cf6,#e0245e);color:#fff;}
 .pp-badge.verified{background:var(--navy);color:var(--gold);}
@@ -64,9 +64,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 
 .pp-actions{display:flex;gap:8px;margin:16px 0 6px;}
 .pp-btn{flex:1;padding:11px;border-radius:20px;font-weight:700;font-size:.82rem;cursor:pointer;border:none;text-align:center;}
-.pp-btn-primary{background:var(--navy);color:#fff;}
+.pp-btn-primary{background:linear-gradient(135deg,var(--gold),var(--gold-dark));color:#fff;}
 .pp-btn-primary.following{background:var(--border);color:var(--charcoal);}
-.pp-btn-secondary{background:var(--sand);color:var(--charcoal);border:1.5px solid var(--border);}
+.pp-btn-secondary{background:var(--sand);color:var(--charcoal);border:1.5px solid var(--gold);}
 .pp-btn-icon{flex:0 0 auto;width:42px;background:var(--sand);border:1.5px solid var(--border);border-radius:20px;
   display:flex;align-items:center;justify-content:center;cursor:pointer;}
 
@@ -75,7 +75,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 .pp-tabs::-webkit-scrollbar{display:none;}
 .pp-tab{padding:12px 14px;font-size:.78rem;font-weight:700;color:var(--muted);cursor:pointer;white-space:nowrap;
   border-bottom:2.5px solid transparent;flex-shrink:0;}
-.pp-tab.active{color:var(--navy);border-color:var(--navy);}
+.pp-tab.active{color:var(--gold-dark);border-color:var(--gold);}
 
 /* ── Content grid ── */
 .pp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;padding:2px;}
@@ -95,7 +95,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 .pp-review{padding:14px 18px;border-bottom:1px solid var(--border);}
 .pp-review-stars{color:var(--gold-dark);font-size:.85rem;}
 .pp-review-verified{display:inline-flex;align-items:center;gap:3px;font-size:.68rem;font-weight:700;color:var(--green2);
-  background:#EAF3EE;padding:2px 8px;border-radius:8px;margin-left:6px;}
+  background:#F1EBD8;padding:2px 8px;border-radius:8px;margin-left:6px;}
 .pp-review-text{font-size:.82rem;color:var(--charcoal);margin-top:6px;line-height:1.5;}
 .pp-review-meta{font-size:.7rem;color:var(--muted);margin-top:6px;}
 
