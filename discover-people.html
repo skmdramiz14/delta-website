@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>DELTA Media — Discover People</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{overflow-x:hidden;max-width:100vw;}
+:root{
+  --navy:#10392D;--navy2:#1a4a3a;
+  --gold:#D4AF63;--gold-dark:#B8925A;
+  --green:#2da86a;--green2:#1a7a4c;
+  --white:#fff;--sand:#ffffff;--cream:#F7F8FA;
+  --border:#E7E9EC;--muted:#8A8F98;--charcoal:#1A1A1A;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charcoal);}
+
+.dp-nav{background:#fff;padding:16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:200;}
+.dp-back{background:none;border:none;width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.dp-back:hover{background:var(--border);}
+.dp-nav-title{font-family:'Playfair Display',serif;font-weight:900;font-size:1.1rem;}
+.dp-nav-title em{color:var(--gold-dark);font-style:normal;}
+
+.dp-tabs{display:flex;gap:8px;background:#fff;padding:10px 16px;border-bottom:1px solid var(--border);
+  position:sticky;top:65px;z-index:190;overflow-x:auto;}
+.dp-tab{background:var(--cream);border:none;padding:9px 18px;border-radius:20px;font-weight:700;font-size:.82rem;
+  color:var(--muted);cursor:pointer;white-space:nowrap;}
+.dp-tab.active{background:var(--navy);color:#fff;}
+
+.dp-wrap{max-width:640px;margin:0 auto;padding:16px;}
+.dp-list{display:flex;flex-direction:column;gap:10px;}
+
+.dp-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px;display:flex;align-items:center;gap:12px;}
+.dp-avatar-wrap{position:relative;width:52px;height:52px;flex-shrink:0;}
+.dp-avatar{width:52px;height:52px;border-radius:50%;object-fit:cover;background:var(--cream);border:1px solid var(--border);display:block;}
+.dp-rank{position:absolute;top:-4px;left:-4px;width:20px;height:20px;border-radius:50%;background:var(--gold);
+  color:var(--navy);font-size:.65rem;font-weight:800;display:flex;align-items:center;justify-content:center;border:1.5px solid #fff;}
+.dp-info{flex:1;min-width:0;cursor:pointer;}
+.dp-name{font-size:.9rem;font-weight:800;color:var(--charcoal);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.dp-sub{font-size:.75rem;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.dp-follow-btn{background:var(--navy);color:#fff;border:none;padding:9px 18px;border-radius:18px;font-weight:700;
+  font-size:.78rem;cursor:pointer;flex-shrink:0;}
+.dp-follow-btn.following{background:var(--border);color:var(--muted);}
+
+.dp-empty{text-align:center;color:var(--muted);font-size:.85rem;padding:60px 20px;}
+.dp-loading{text-align:center;color:var(--muted);font-size:.85rem;padding:40px 20px;}
+.dp-load-more{display:block;margin:18px auto 0;background:#fff;border:1px solid var(--border);color:var(--charcoal);
+  padding:10px 24px;border-radius:20px;font-weight:700;font-size:.82rem;cursor:pointer;}
+</style>
+</head>
+<body>
+
+<div class="dp-nav">
+  <button class="dp-back" onclick="location.href='media-feed.html?city='+CITY" title="Back">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+  </button>
+  <div class="dp-nav-title">Discover <em>People</em></div>
+</div>
+
+<div class="dp-tabs">
+  <button class="dp-tab" id="tabFollow" onclick="switchTab('follow')">Who to Follow</button>
+  <button class="dp-tab" id="tabTop" onclick="switchTab('top')">Top Creators</button>
+</div>
+
+<div class="dp-wrap">
+  <div class="dp-list" id="dpList">
+    <div class="dp-loading">লোড হচ্ছে...</div>
+  </div>
+  <button class="dp-load-more" id="dpLoadMore" style="display:none;" onclick="loadMore()">আরও দেখুন</button>
+</div>
+
+<script>
+var fbcfg={apiKey:"AIzaSyA6TrrnCMwv1aa1WPqGvTVWlnieB2pVOEU",authDomain:"delta-platform-82fc0.firebaseapp.com",projectId:"delta-platform-82fc0",storageBucket:"delta-platform-82fc0.firebasestorage.app",messagingSenderId:"444904180433",appId:"1:444904180433:web:6706eba4d73a30cd67d3f0"};
+firebase.initializeApp(fbcfg);
+var auth=firebase.auth();
+var db=firebase.firestore();
+var CITY = new URLSearchParams(location.search).get('city') || 'manteswar';
+var currentUser=null;
+var activeTab = new URLSearchParams(location.search).get('tab')==='top' ? 'top' : 'follow';
+var PAGE_SIZE = 15;
+var lastDoc = null;
+var followSet = [];
+
+var DEMO_FOLLOW = [
+  {id:'demo-greenpharmacy', displayName:'Green Pharmacy', username:'greenpharmacy', avatarUrl:'https://images.unsplash.com/photo-1587854692152-cbe660dbde88?w=200&q=60'},
+  {id:'demo-techzone', displayName:'Tech Zone', username:'techzone', avatarUrl:'https://images.unsplash.com/photo-1518770660439-4636190af475?w=200&q=60'},
+  {id:'demo-cakehouse', displayName:'Cake House', username:'cakehouse', avatarUrl:''},
+];
+var DEMO_TOP = [
+  {displayName:'Fresh Mart', avatarUrl:'https://images.unsplash.com/photo-1542838132-92c53300491e?w=200&q=60', count:'12.4K'},
+  {displayName:'Fish Corner', avatarUrl:'https://images.unsplash.com/photo-1544943910-4c1dc44aab44?w=200&q=60', count:'8.7K'},
+  {displayName:'Salon XYZ', avatarUrl:'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=200&q=60', count:'6.1K'},
+];
+
+function requireLogin(){
+  alert('Login to engage, share and grow.\n\n☰ মেনু থেকে লগইন করুন।');
+}
+
+function switchTab(tab){
+  activeTab = tab;
+  lastDoc = null;
+  var url = new URL(location.href);
+  url.searchParams.set('tab', tab);
+  history.replaceState(null, '', url);
+  document.getElementById('tabFollow').classList.toggle('active', tab==='follow');
+  document.getElementById('tabTop').classList.toggle('active', tab==='top');
+  document.getElementById('dpList').innerHTML = '<div class="dp-loading">লোড হচ্ছে...</div>';
+  document.getElementById('dpLoadMore').style.display='none';
+  if(tab==='follow') loadFollowList(true); else loadTopList(true);
+}
+
+async function loadFollowList(reset){
+  var list = document.getElementById('dpList');
+  var loadMoreBtn = document.getElementById('dpLoadMore');
+  try{
+    if(currentUser && !followSet.length){
+      var fs = await db.collection('cities').doc(CITY).collection('mediaProfiles').doc(currentUser.uid).collection('following').get();
+      followSet = fs.docs.map(function(d){return d.id;});
+    }
+    var q = db.collection('cities').doc(CITY).collection('mediaProfiles').limit(PAGE_SIZE);
+    if(!reset && lastDoc) q = q.startAfter(lastDoc);
+    var snap = await q.get();
+    var docs = snap.docs.filter(function(d){ return d.id!==(currentUser&&currentUser.uid) && followSet.indexOf(d.id)===-1; });
+    if(reset) list.innerHTML='';
+    if(!docs.length && reset){
+      renderFollowCards(DEMO_FOLLOW, true, list);
+      loadMoreBtn.style.display='none';
+      return;
+    }
+    lastDoc = snap.docs[snap.docs.length-1] || null;
+    renderFollowCards(docs.map(function(d){ var p=d.data(); p.id=d.id; return p; }), false, list);
+    loadMoreBtn.style.display = snap.docs.length===PAGE_SIZE ? 'block' : 'none';
+  }catch(e){
+    console.warn('Discover People — follow list error', e);
+    list.innerHTML='';
+    renderFollowCards(DEMO_FOLLOW, true, list);
+    loadMoreBtn.style.display='none';
+  }
+}
+
+function renderFollowCards(items, isDemo, list){
+  if(!items.length){ list.innerHTML='<div class="dp-empty">আপাতত নতুন কেউ নেই follow করার জন্য।</div>'; return; }
+  items.forEach(function(p){
+    var card = document.createElement('div'); card.className='dp-card';
+    card.innerHTML =
+      '<div class="dp-avatar-wrap"><img class="dp-avatar" src="'+(p.avatarUrl||'')+'" onerror="this.style.background=\'var(--cream)\'"></div>'+
+      '<div class="dp-info"><div class="dp-name">'+(p.displayName||'Unknown')+'</div><div class="dp-sub">@'+(p.username||'user')+'</div></div>'+
+      '<button class="dp-follow-btn">Follow</button>';
+    var btn = card.querySelector('.dp-follow-btn');
+    var info = card.querySelector('.dp-info');
+    if(isDemo){
+      card.onclick = function(){ alert('Demo suggestion — becomes real once actual creators sign up'); };
+    } else {
+      info.onclick = function(){ location.href='media-profile.html?uid='+p.id+'&city='+CITY; };
+      btn.onclick = function(e){
+        e.stopPropagation();
+        if(!currentUser){ requireLogin(); return; }
+        toggleFollow(p.id, btn);
+      };
+    }
+    list.appendChild(card);
+  });
+}
+
+async function loadTopList(reset){
+  var list = document.getElementById('dpList');
+  var loadMoreBtn = document.getElementById('dpLoadMore');
+  try{
+    var q = db.collection('cities').doc(CITY).collection('mediaProfiles').limit(PAGE_SIZE);
+    if(!reset && lastDoc) q = q.startAfter(lastDoc);
+    var snap = await q.get();
+    var withCounts = await Promise.all(snap.docs.map(async function(doc){
+      var followers = await doc.ref.collection('followers').get();
+      return {id:doc.id, data:doc.data(), count:followers.size};
+    }));
+    withCounts.sort(function(a,b){ return b.count - a.count; });
+    if(reset) list.innerHTML='';
+    var useDemo = reset && (!withCounts.length || withCounts[0].count===0);
+    if(useDemo){
+      renderTopCards(DEMO_TOP, true, list, 0);
+      loadMoreBtn.style.display='none';
+      return;
+    }
+    lastDoc = snap.docs[snap.docs.length-1] || null;
+    renderTopCards(withCounts, false, list, list.children.length);
+    loadMoreBtn.style.display = snap.docs.length===PAGE_SIZE ? 'block' : 'none';
+  }catch(e){
+    console.warn('Discover People — top list error', e);
+    list.innerHTML='';
+    renderTopCards(DEMO_TOP, true, list, 0);
+    loadMoreBtn.style.display='none';
+  }
+}
+
+function renderTopCards(items, isDemo, list, startRank){
+  if(!items.length){ list.innerHTML='<div class="dp-empty">এখনও কোনো ranked creator নেই।</div>'; return; }
+  items.forEach(function(item, i){
+    var name = isDemo ? item.displayName : (item.data.displayName||'Unknown');
+    var avatar = isDemo ? item.avatarUrl : (item.data.avatarUrl||'');
+    var count = isDemo ? item.count : (item.count+'');
+    var card = document.createElement('div'); card.className='dp-card';
+    card.innerHTML =
+      '<div class="dp-avatar-wrap"><div class="dp-rank">'+(startRank+i+1)+'</div><img class="dp-avatar" src="'+avatar+'" onerror="this.style.background=\'var(--cream)\'"></div>'+
+      '<div class="dp-info"><div class="dp-name">'+name+'</div><div class="dp-sub">'+count+' Followers</div></div>'+
+      '<button class="dp-follow-btn">Follow</button>';
+    var btn = card.querySelector('.dp-follow-btn');
+    var info = card.querySelector('.dp-info');
+    if(isDemo){
+      card.onclick = function(){ alert('Demo entry — becomes real once creators build a real following'); };
+    } else {
+      info.onclick = function(){ location.href='media-profile.html?uid='+item.id+'&city='+CITY; };
+      btn.onclick = function(e){
+        e.stopPropagation();
+        if(!currentUser){ requireLogin(); return; }
+        toggleFollow(item.id, btn);
+      };
+    }
+    list.appendChild(card);
+  });
+}
+
+function toggleFollow(targetUid, btn){
+  var myRef = db.collection('cities').doc(CITY).collection('mediaProfiles').doc(currentUser.uid).collection('following').doc(targetUid);
+  var theirRef = db.collection('cities').doc(CITY).collection('mediaProfiles').doc(targetUid).collection('followers').doc(currentUser.uid);
+  var isFollowing = btn.classList.contains('following');
+  if(isFollowing){
+    myRef.delete(); theirRef.delete();
+    btn.textContent='Follow'; btn.classList.remove('following');
+  } else {
+    myRef.set({followedAt:new Date().toISOString()});
+    theirRef.set({followedAt:new Date().toISOString()});
+    btn.textContent='Following'; btn.classList.add('following');
+  }
+}
+
+function loadMore(){
+  if(activeTab==='follow') loadFollowList(false); else loadTopList(false);
+}
+
+auth.onAuthStateChanged(function(u){
+  currentUser = u;
+  followSet = [];
+  document.getElementById('tabFollow').classList.toggle('active', activeTab==='follow');
+  document.getElementById('tabTop').classList.toggle('active', activeTab==='top');
+  if(activeTab==='follow') loadFollowList(true); else loadTopList(true);
+});
+</script>
+</body>
+</html>
