@@ -50,8 +50,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 .nav-avatar-inner{position:relative;width:42px;height:42px;}
 .nav-avatar{width:42px;height:42px;border-radius:50%;background:var(--sand);object-fit:cover;
   border:1.5px solid #fff;box-shadow:0 0 0 1.2px rgba(199,161,90,.6),0 2px 6px rgba(0,0,0,.1);}
-.nav-avatar-fallback{width:42px;height:42px;border-radius:50%;background:var(--sand);display:flex;align-items:center;justify-content:center;
-  font-size:1.15rem;color:var(--charcoal);border:1.5px solid #fff;box-shadow:0 0 0 1.2px rgba(199,161,90,.6),0 2px 6px rgba(0,0,0,.1);}
+.nav-avatar-fallback{width:42px;height:42px;border-radius:50%;background:var(--navy);display:flex;align-items:center;justify-content:center;
+  font-size:1.1rem;font-weight:800;color:var(--gold);border:1.5px solid #fff;box-shadow:0 0 0 1.2px rgba(199,161,90,.6),0 2px 6px rgba(0,0,0,.1);}
 .nav-online-dot{position:absolute;bottom:0;right:0;width:11px;height:11px;border-radius:50%;
   background:#3fc97e;border:2px solid #fff;}
 .nav-avatar-chevron{color:var(--muted);font-size:.68rem;display:none;}
@@ -1012,6 +1012,7 @@ var auth=firebase.auth();
 var db=firebase.firestore();
 var CITY = new URLSearchParams(location.search).get('city') || 'manteswar';
 var currentUser=null;
+var NAV_AVATAR_GENERIC_ICON = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3.3"/><path d="M4.5 20c1-4.2 4-6.5 7.5-6.5s6.5 2.3 7.5 6.5" stroke-linecap="round"/></svg>';
 
 // ── Shared icon set — custom SVG, not emoji, kept consistent across the whole page ──
 var ICON_HEART='<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20.5s-7.5-4.8-10-9.5C.3 7.7 2 4 5.7 4c2 0 3.4 1 4.3 2.4C11 5 12.4 4 14.3 4 18 4 19.7 7.7 18 11c-2.5 4.7-10 9.5-10 9.5Z"/></svg>';
@@ -1223,11 +1224,15 @@ function loadNavAvatar(){
   var fallback = document.getElementById('navAvatarFallback');
   var dot = document.getElementById('navOnlineDot');
   dot.style.display = currentUser ? 'block' : 'none'; // "online" = currently logged in
-  if(!currentUser){ img.style.display='none'; fallback.style.display='flex'; return; }
+  if(!currentUser){ img.style.display='none'; fallback.style.display='flex'; fallback.innerHTML=NAV_AVATAR_GENERIC_ICON; return; }
   db.collection('cities').doc(CITY).collection('mediaProfiles').doc(currentUser.uid).get().then(function(doc){
-    if(doc.exists && doc.data().avatarUrl){ img.src = doc.data().avatarUrl; img.style.display='block'; fallback.style.display='none'; }
-    else { img.style.display='none'; fallback.style.display='flex'; }
-  }).catch(function(){ img.style.display='none'; fallback.style.display='flex'; });
+    var p = doc.exists ? doc.data() : {};
+    if(p.avatarUrl){ img.src = p.avatarUrl; img.style.display='block'; fallback.style.display='none'; return; }
+    img.style.display='none'; fallback.style.display='flex';
+    var name = p.displayName || currentUser.displayName || '';
+    fallback.textContent = name ? name.charAt(0).toUpperCase() : '';
+    if(!name) fallback.innerHTML = NAV_AVATAR_GENERIC_ICON;
+  }).catch(function(){ img.style.display='none'; fallback.style.display='flex'; fallback.innerHTML=NAV_AVATAR_GENERIC_ICON; });
 }
 // ═══ SIDE MENU (hamburger drawer) ═══
 // Role-conditional per Part A Section 10.1 — "Switch to Seller Dashboard" and
