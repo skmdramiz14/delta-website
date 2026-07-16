@@ -64,6 +64,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 
 /* ═══ 3. RIGHT ICONS — equal spacing, equal size, vertically centered ═══ */
 .nav-icons{display:flex;gap:14px;align-items:center;flex-shrink:0;}
+.nav-icons-left{display:flex;gap:10px;align-items:center;flex-shrink:0;margin-left:4px;}
 /* Compact tier for narrow phones (<380px) — same proportions, tighter fit, still spacious relative to old design */
 @media(max-width:379px){
   .nav{padding:18px 14px;gap:6px;}
@@ -73,6 +74,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
   .nav-hamburger{width:26px;height:26px;}
   .nav-hamburger svg{width:20px;height:20px;}
   .nav-icons{gap:10px;}
+  .nav-icons-left{gap:6px;}
   .nav-icon-btn{width:26px;height:26px;}
   .nav-icon-btn svg{width:20px;height:20px;}
   .nav-avatar,.nav-avatar-fallback,.nav-avatar-inner{width:38px;height:38px;}
@@ -82,6 +84,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
   .nav-brand{gap:3px;}
   .nav-logo-delta{font-size:.98rem;}
   .nav-icons{gap:8px;}
+  .nav-icons-left{gap:4px;}
 }
 .nav-icon-btn{background:none;border:none;color:var(--charcoal);cursor:pointer;position:relative;
   width:29px;height:29px;display:flex;align-items:center;justify-content:center;transition:opacity .15s;
@@ -318,6 +321,31 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 .bn-item.bn-center svg{width:21px;height:21px;}
 
 .comment-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:flex-end;justify-content:center;}
+
+/* ── Media Cart Drawer — reads/writes the SAME delta_cart localStorage key
+     that index.html uses, so it's genuinely one shared cart, not a copy. ── */
+.mc-sheet{background:var(--sand);width:100%;max-width:520px;border-radius:18px 18px 0 0;max-height:82vh;display:flex;flex-direction:column;}
+.mc-head{padding:16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-weight:800;}
+.mc-list{flex:1;overflow-y:auto;padding:6px 16px;}
+.mc-empty{text-align:center;color:var(--muted);font-size:.85rem;padding:50px 20px;}
+.mc-item{display:flex;gap:10px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--border);}
+.mc-item.deselected{opacity:.45;}
+.mc-check{width:19px;height:19px;margin-top:4px;flex-shrink:0;accent-color:var(--navy);cursor:pointer;}
+.mc-thumb{width:52px;height:52px;border-radius:10px;object-fit:cover;background:var(--cream);flex-shrink:0;}
+.mc-info{flex:1;min-width:0;}
+.mc-name{font-size:.85rem;font-weight:700;color:var(--charcoal);}
+.mc-shop{font-size:.7rem;color:var(--muted);margin-top:1px;}
+.mc-price{font-size:.82rem;font-weight:800;color:var(--green2);margin-top:4px;}
+.mc-qty-row{display:flex;align-items:center;gap:8px;margin-top:6px;}
+.mc-qty-btn{width:24px;height:24px;border-radius:50%;border:1px solid var(--border);background:#fff;cursor:pointer;font-weight:800;color:var(--charcoal);}
+.mc-qty-num{font-size:.82rem;font-weight:700;min-width:16px;text-align:center;}
+.mc-del{background:none;border:none;cursor:pointer;font-size:.9rem;margin-left:auto;flex-shrink:0;}
+.mc-footer{padding:14px 16px;border-top:1px solid var(--border);}
+.mc-row{display:flex;justify-content:space-between;font-size:.82rem;color:var(--muted);margin-bottom:4px;}
+.mc-row.total{font-weight:800;color:var(--charcoal);font-size:.95rem;margin-bottom:10px;}
+.mc-checkout-btn{width:100%;background:var(--navy);color:#fff;border:none;padding:13px;border-radius:22px;font-weight:800;font-size:.85rem;cursor:pointer;}
+.mc-checkout-btn:disabled{background:var(--border);color:var(--muted);cursor:not-allowed;}
+.mc-hint{font-size:.68rem;color:var(--muted);text-align:center;margin-top:8px;}
 .comment-modal.open{display:flex;}
 .comment-sheet{background:var(--sand);width:100%;max-width:520px;border-radius:18px 18px 0 0;max-height:75vh;display:flex;flex-direction:column;}
 .comment-sheet-head{padding:14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;font-weight:800;}
@@ -431,6 +459,31 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 .sm-item.sm-logout{color:#c0392b;}
 .sm-item.sm-logout svg{color:#c0392b;}
 .sm-divider{height:1px;background:var(--border);margin:8px 0;}
+.sm-item-soon{opacity:.6;}
+.sm-soon-badge{margin-left:auto;font-size:.6rem;font-weight:800;color:var(--muted);background:var(--cream);
+  padding:2px 8px;border-radius:8px;text-transform:uppercase;letter-spacing:.3px;}
+.sm-toggle-row{display:flex;align-items:center;gap:14px;padding:12px 18px;font-size:.85rem;font-weight:600;color:var(--charcoal);}
+.sm-toggle-row svg{width:20px;height:20px;flex-shrink:0;}
+.sm-toggle{margin-left:auto;width:38px;height:22px;border-radius:12px;background:var(--border);position:relative;
+  cursor:pointer;flex-shrink:0;transition:background .15s;}
+.sm-toggle.on{background:var(--navy);}
+.sm-toggle-knob{position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;
+  transition:transform .15s;box-shadow:0 1px 3px rgba(0,0,0,.25);}
+.sm-toggle.on .sm-toggle-knob{transform:translateX(16px);}
+
+/* ── Lightweight Dark Mode (toggle from Settings & Privacy) ──
+   Overrides the core CSS variables plus the handful of surfaces that use a
+   hardcoded #fff instead of var(--sand), so the main reading surfaces (nav,
+   feed, sidebar, drawer, modals) switch convincingly. Deeper/rarer corners of
+   the UI may not be perfectly tuned yet — flagged honestly, not silently. */
+body.dark-mode{ --cream:#121815; --sand:#1b2420; --charcoal:#EDEDEA; --border:#2b3630; --muted:#8f9891; background:var(--cream); }
+body.dark-mode .nav, body.dark-mode .bottom-nav, body.dark-mode .sort-row-outer,
+body.dark-mode .mh-widget, body.dark-mode .post-card, body.dark-mode .comment-sheet,
+body.dark-mode .sm-drawer, body.dark-mode .sm-head, body.dark-mode .dp-card,
+body.dark-mode .mh-d-card, body.dark-mode .mh-official-card, body.dark-mode .inline-premium-card,
+body.dark-mode .pu-plan, body.dark-mode .pu-sheet{ background:var(--sand); color:var(--charcoal); }
+body.dark-mode .filter-row, body.dark-mode #sortRow .filter-chip{ background:var(--sand); }
+body.dark-mode .mh-nav-item .mhi{ background:var(--border); }
 .sm-foot{padding:14px 18px;font-size:.65rem;color:var(--muted);text-align:center;border-top:1px solid var(--border);}
 </style>
 </head>
@@ -455,19 +508,24 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
     </div>
   </div>
 
+  <!-- Create + Search — right next to the logo. Messages is intentionally NOT
+       here (see nav-icons below) — direct buyer/seller chat risks off-platform
+       deals that bypass DELTA's checkout and commission entirely. -->
+  <div class="nav-icons-left">
+    <button class="nav-icon-btn" onclick="location.href='create-studio.html?city='+CITY" title="Create">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+    </button>
+    <button class="nav-icon-btn" onclick="toggleMobileSearch()" title="Search">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L20 20"/></svg>
+    </button>
+  </div>
+
   <div class="nav-search-desktop">
     <input type="text" id="navSearchDesktop" placeholder="Search creators, shops, posts...">
     <span class="nsd-icon">🔍</span>
   </div>
 
   <div class="nav-icons">
-    <button class="nav-icon-btn" onclick="toggleMobileSearch()" title="Search">
-      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L20 20"/></svg>
-    </button>
-    <button class="nav-icon-btn" title="Messages">
-      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4C7 4 3 7.3 3 11.5c0 2.3 1.2 4.4 3.2 5.8-.1 1-.5 2.1-1.2 3 1.4-.2 2.7-.8 3.7-1.6.9.3 1.9.4 3 .4 5 0 9-3.3 9-7.5S17 4 12 4Z"/><circle cx="9" cy="11.5" r=".9" fill="#000" stroke="none"/><circle cx="12" cy="11.5" r=".9" fill="#000" stroke="none"/><circle cx="15" cy="11.5" r=".9" fill="#000" stroke="none"/></svg>
-      <span class="nav-icon-badge" id="navMsgBadge">3</span>
-    </button>
     <button class="nav-icon-btn" title="Notifications">
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 0 1 12 0c0 4 1.5 5.5 1.5 5.5H4.5S6 13 6 9Z"/><path d="M10 18a2 2 0 0 0 4 0"/></svg>
       <span class="nav-icon-badge">5</span>
@@ -494,7 +552,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
       <div class="sm-head-name" id="smHeadName">Guest</div>
       <div class="sm-head-sub" id="smHeadSub">Login to access your profile</div>
     </div>
-    <button class="sm-head-login-btn" id="smHeadLoginBtn" onclick="location.href='index.html'" style="display:none;">Login</button>
+    <button class="sm-head-login-btn" id="smHeadLoginBtn" onclick="goToLogin()" style="display:none;">Login</button>
   </div>
   <div class="sm-list" id="smList">
     <div class="sm-section-label">Profile &amp; Content</div>
@@ -528,17 +586,150 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
     </div>
 
     <div class="sm-divider"></div>
+    <div class="sm-section-label">Growth</div>
+    <div class="sm-item sm-item-soon" onclick="smGo('adCenter')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11v2a2 2 0 0 0 2 2h2l5 4V5L7 9H5a2 2 0 0 0-2 2Z"/><path d="M16 8a5 5 0 0 1 0 8"/></svg>
+      Boost My Content <span class="sm-soon-badge">Soon</span>
+    </div>
+    <div class="sm-item sm-item-soon" onclick="smGo('verifiedBadge')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
+      Verified Local Badge <span class="sm-soon-badge">Soon</span>
+    </div>
+
+    <div class="sm-divider"></div>
     <div class="sm-item" onclick="smGo('deltaAccount')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M12 3L21 20H3L12 3Z"/></svg>
       My DELTA Account
+    </div>
+
+    <div class="sm-divider"></div>
+    <div class="sm-section-label">Settings &amp; Privacy</div>
+    <div class="sm-toggle-row">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"/></svg>
+      Dark Mode
+      <div class="sm-toggle" id="smDarkToggle" onclick="toggleDarkMode()"><div class="sm-toggle-knob"></div></div>
+    </div>
+    <div class="sm-item" onclick="smGo('language')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a13 13 0 0 1 0 18a13 13 0 0 1 0-18Z"/></svg>
+      Language — বাংলা / English
+    </div>
+    <div class="sm-item" onclick="smGo('privacyCenter')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3Z"/></svg>
+      Privacy Center
     </div>
     <div class="sm-item" onclick="smGo('notifSettings')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 0 1 12 0c0 4 1.5 5.5 1.5 5.5H4.5S6 13 6 9Z"/><path d="M10 18a2 2 0 0 0 4 0"/></svg>
       Notification Settings
     </div>
+
+    <div class="sm-divider"></div>
+    <div class="sm-section-label">More</div>
+    <div class="sm-item" onclick="smGo('marketplace')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5Z"/><path d="M9 21v-7h6v7"/></svg>
+      Marketplace
+    </div>
+    <div class="sm-item" onclick="smGo('friends')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="8.5" cy="8" r="3"/><path d="M2 20c.7-3.4 3-5.5 6.5-5.5S14.3 16.6 15 20"/><circle cx="17" cy="8.5" r="2.4"/><path d="M15.5 14.3c2.6.3 4.2 2 4.7 4.2"/></svg>
+      Friends <span class="sm-soon-badge">Soon</span>
+    </div>
+    <div class="sm-item" id="smMoreExtra1" style="display:none;" onclick="smGo('dashboard')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="5" rx="1.5"/><rect x="13" y="11" width="8" height="10" rx="1.5"/><rect x="3" y="14" width="8" height="7" rx="1.5"/></svg>
+      Dashboard <span class="sm-soon-badge">Soon</span>
+    </div>
+    <div class="sm-item" id="smMoreExtra2" style="display:none;" onclick="smGo('deltaAI')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.5"/><path d="M12 3v2.5M12 18.5V21M3 12h2.5M18.5 12H21M5.6 5.6l1.8 1.8M16.6 16.6l1.8 1.8M18.4 5.6l-1.8 1.8M7.4 16.6l-1.8 1.8"/></svg>
+      DELTA AI <span class="sm-soon-badge">Soon</span>
+    </div>
+    <div class="sm-item" id="smMoreExtra3" style="display:none;" onclick="smGo('memories')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v4.5H7.5"/><path d="M12 8v4l3 2"/></svg>
+      Memories <span class="sm-soon-badge">Soon</span>
+    </div>
+    <div class="sm-item" id="smMoreExtra4" style="display:none;" onclick="smGo('events')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+      Events <span class="sm-soon-badge">Soon</span>
+    </div>
+    <div class="sm-item" id="smMoreExtra5" style="display:none;" onclick="smGo('feeds')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4a16 16 0 0 1 16 16M4 4v4a12 12 0 0 1 12 12h4"/><circle cx="6" cy="18" r="2"/></svg>
+      Feeds <span class="sm-soon-badge">Soon</span>
+    </div>
+    <div class="sm-item" id="smMoreExtra6" style="display:none;" onclick="smGo('finds')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 12.5 12.5 20.5a2 2 0 0 1-2.8 0L3 13.8a2 2 0 0 1 0-2.8L11 3h6a3 3 0 0 1 3 3v6.5Z"/><circle cx="16" cy="8" r="1.3" fill="currentColor" stroke="none"/></svg>
+      Finds <span class="sm-soon-badge">Soon</span>
+    </div>
+    <div class="sm-item" id="smMoreExtra7" style="display:none;" onclick="smGo('games')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="11" rx="4"/><path d="M7 10v4M5 12h4"/><circle cx="16" cy="11" r="1" fill="currentColor" stroke="none"/><circle cx="18.5" cy="13.5" r="1" fill="currentColor" stroke="none"/></svg>
+      Games <span class="sm-soon-badge">Soon</span>
+    </div>
+    <div class="sm-item" id="smMoreExtra8" style="display:none;" onclick="smGo('groups')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="9" r="3"/><circle cx="16" cy="9" r="3"/><path d="M2 20c.6-3.3 2.8-5.3 6-5.3S15.4 16.7 16 20"/><path d="M8 20c.6-3.3 2.8-5.3 6-5.3s5.4 2 6 5.3"/></svg>
+      Groups <span class="sm-soon-badge">Soon</span>
+    </div>
+    <div class="sm-item" id="smMoreExtra9" style="display:none;" onclick="smGo('pages')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 3h13l3 3v15H4Z"/><path d="M17 3v3h3"/><path d="M8 11h8M8 15h5"/></svg>
+      Pages <span class="sm-soon-badge">Soon</span>
+    </div>
+    <button class="sm-item" id="smMoreToggleBtn" onclick="toggleSmSection('smMoreExtra', 9, this)" style="color:var(--muted);font-weight:700;">See more</button>
+
+    <div class="sm-divider"></div>
+    <div class="sm-section-label">Also from DELTA</div>
+    <div class="sm-item" onclick="location.href='bazaar.html?city='+CITY">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none"><path d="M12 3L20.8 19.5H3.2L12 3Z" fill="var(--navy)"/></svg>
+      DELTA Bazaar
+    </div>
+    <div class="sm-item" onclick="location.href='fresh.html?city='+CITY">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none"><path d="M12 3L20.8 19.5H3.2L12 3Z" fill="var(--navy)"/></svg>
+      DELTA Fresh
+    </div>
+    <div class="sm-item" onclick="location.href='hampers.html?city='+CITY">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none"><path d="M12 3L20.8 19.5H3.2L12 3Z" fill="var(--navy)"/></svg>
+      DELTA Hampers
+    </div>
+    <div class="sm-item" id="smAlsoExtra1" style="display:none;" onclick="location.href='shops.html?city='+CITY">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none"><path d="M12 3L20.8 19.5H3.2L12 3Z" fill="var(--navy)"/></svg>
+      Shops Directory
+    </div>
+    <div class="sm-item" id="smAlsoExtra2" style="display:none;" onclick="location.href='entrepreneurs.html?city='+CITY">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none"><path d="M12 3L20.8 19.5H3.2L12 3Z" fill="var(--navy)"/></svg>
+      Entrepreneurs
+    </div>
+    <div class="sm-item sm-item-soon" id="smAlsoExtra3" style="display:none;" onclick="smGo('deltaStore')">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none"><path d="M12 3L20.8 19.5H3.2L12 3Z" fill="var(--gold)"/></svg>
+      DELTA Store <span class="sm-soon-badge">Sep 2026</span>
+    </div>
+    <div class="sm-item sm-item-soon" id="smAlsoExtra4" style="display:none;" onclick="smGo('remarket')">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none"><path d="M12 3L20.8 19.5H3.2L12 3Z" fill="var(--gold)"/></svg>
+      DELTA ReMarket <span class="sm-soon-badge">Dec 2026</span>
+    </div>
+    <div class="sm-item sm-item-soon" id="smAlsoExtra5" style="display:none;" onclick="smGo('giftStudio')">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none"><path d="M12 3L20.8 19.5H3.2L12 3Z" fill="var(--gold)"/></svg>
+      DELTA Gift Studio <span class="sm-soon-badge">Feb 2027</span>
+    </div>
+    <div class="sm-item sm-item-soon" id="smAlsoExtra6" style="display:none;" onclick="smGo('rentalClub')">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none"><path d="M12 3L20.8 19.5H3.2L12 3Z" fill="var(--gold)"/></svg>
+      DELTA Rental Club <span class="sm-soon-badge">Soon</span>
+    </div>
+    <div class="sm-item sm-item-soon" id="smAlsoExtra7" style="display:none;" onclick="smGo('deltaPay')">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none"><path d="M12 3L20.8 19.5H3.2L12 3Z" fill="var(--gold)"/></svg>
+      DELTA Pay <span class="sm-soon-badge">Soon</span>
+    </div>
+    <div class="sm-item sm-item-soon" id="smAlsoExtra8" style="display:none;" onclick="smGo('deltaGreen')">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none"><path d="M12 3L20.8 19.5H3.2L12 3Z" fill="var(--gold)"/></svg>
+      Delta Green <span class="sm-soon-badge">Soon</span>
+    </div>
+    <div class="sm-item sm-item-soon" id="smAlsoExtra9" style="display:none;" onclick="smGo('deltaPods')">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none"><path d="M12 3L20.8 19.5H3.2L12 3Z" fill="var(--gold)"/></svg>
+      Delta Pods <span class="sm-soon-badge">Soon</span>
+    </div>
+    <button class="sm-item" id="smAlsoToggleBtn" onclick="toggleSmSection('smAlsoExtra', 9, this)" style="color:var(--muted);font-weight:700;">See more</button>
+
+    <div class="sm-divider"></div>
     <div class="sm-item" onclick="smGo('help')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 1.7-2.2 2-2.4 3.5" stroke-linecap="round"/><circle cx="12" cy="17" r=".4" fill="currentColor"/></svg>
       Help &amp; Support
+    </div>
+    <div class="sm-item" onclick="smGo('reportProblem')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><circle cx="12" cy="16" r=".4" fill="currentColor"/></svg>
+      Report a Problem
     </div>
     <div class="sm-item" onclick="smGo('share')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12L20 4L14 20L11 13L4 12Z"/></svg>
@@ -552,6 +743,19 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
     </div>
   </div>
   <div class="sm-foot">DELTA Media · v1.0</div>
+</div>
+
+<!-- Report a Problem — writes to the existing supportTickets collection
+     (already covered by Firestore rules: cities/{city}/supportTickets/{id}) -->
+<div class="comment-modal" id="rpModal">
+  <div class="comment-sheet" style="max-height:none;padding:18px;">
+    <div class="comment-sheet-head" style="border-bottom:none;padding:0 0 12px;">Report a Problem
+      <button onclick="closeReportProblem()" style="background:none;border:none;font-size:1.1rem;cursor:pointer;">✕</button>
+    </div>
+    <div style="font-size:.78rem;color:var(--muted);margin-bottom:10px;">যা সমস্যা হচ্ছে সংক্ষেপে লিখুন — Admin/City Manager দেখবে।</div>
+    <textarea id="rpText" rows="4" placeholder="যেমন: Reel আপলোড হচ্ছে না, ছবি লোড হচ্ছে না..." style="width:100%;border:1px solid var(--border);border-radius:12px;padding:12px;font-family:inherit;font-size:.85rem;resize:vertical;margin-bottom:14px;background:var(--sand);color:var(--charcoal);"></textarea>
+    <button onclick="submitReportProblem()" style="width:100%;background:var(--navy);color:#fff;border:none;padding:12px;border-radius:22px;font-weight:700;font-size:.85rem;cursor:pointer;">Submit</button>
+  </div>
 </div>
 
 <!-- ═══ ICON TAB ROW (per Image 1 reference) — quick nav, all screen sizes ═══ -->
@@ -644,7 +848,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
         <div class="ilc-title">Create your post, story, reel or live</div>
         <div class="ilc-sub">Login to engage, share and grow.</div>
       </div>
-      <button class="ilc-btn" onclick="location.href='index.html'">Login / Sign Up</button>
+      <button class="ilc-btn" onclick="goToLogin()">Login / Sign Up</button>
     </div>
 
     <div class="feed-wrap" id="feedWrap">
@@ -659,7 +863,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
   <!-- ═══ RIGHT SIDEBAR (desktop only) ═══ -->
   <div class="mh-right-sidebar">
     <div class="mh-widget">
-      <div class="mh-widget-head"><div class="mh-widget-title">Who to Follow</div><div class="mh-widget-seeall">See All</div></div>
+      <div class="mh-widget-head"><div class="mh-widget-title">Who to Follow</div><div class="mh-widget-seeall" onclick="location.href='discover-people.html?tab=follow&city='+CITY">See All</div></div>
       <div id="mhWhoToFollow"><div style="color:var(--muted);font-size:.78rem;">লোড হচ্ছে...</div></div>
     </div>
 
@@ -669,7 +873,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
     </div>
 
     <div class="mh-widget">
-      <div class="mh-widget-head"><div class="mh-widget-title">Top Creators</div><div class="mh-widget-seeall">See All</div></div>
+      <div class="mh-widget-head"><div class="mh-widget-title">Top Creators</div><div class="mh-widget-seeall" onclick="location.href='discover-people.html?tab=top&city='+CITY">See All</div></div>
       <div id="mhTopCreators"><div style="color:var(--muted);font-size:.78rem;">লোড হচ্ছে...</div></div>
     </div>
 
@@ -708,7 +912,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
   <div class="bn-item active" onclick="location.href='index.html'">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 10.5L12 4L20 10.5V20C20 20.55 19.55 21 19 21H15V15H9V21H5C4.45 21 4 20.55 4 20V10.5Z"/></svg>Home
   </div>
-  <div class="bn-item" onclick="location.href='index.html'" style="position:relative;" title="Cart (shared with DELTA homepage)">
+  <div class="bn-item" onclick="openMediaCart()" style="position:relative;" title="Cart (shared with DELTA homepage)">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h2l2.2 11.2a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.6L21 8H6.2"/><circle cx="10" cy="20" r="1.1" fill="currentColor" stroke="none"/><circle cx="17" cy="20" r="1.1" fill="currentColor" stroke="none"/></svg>Cart
     <span class="nav-icon-badge" id="bnCartBadge" style="display:none;position:absolute;top:2px;right:20px;">0</span>
   </div>
@@ -735,6 +939,20 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
   </div>
 </div>
 
+<!-- Cart Drawer — same delta_cart localStorage as index.html, genuinely shared -->
+<div class="comment-modal" id="mediaCartModal">
+  <div class="mc-sheet">
+    <div class="mc-head">🛒 Cart <button onclick="closeMediaCart()" style="background:none;border:none;font-size:1.1rem;cursor:pointer;">✕</button></div>
+    <div class="mc-list" id="mediaCartList"></div>
+    <div class="mc-footer" id="mediaCartFooter" style="display:none;">
+      <div class="mc-row"><span>Subtotal (selected)</span><span id="mcSubtotal">₹0</span></div>
+      <div class="mc-row total"><span>Total</span><span id="mcTotal">₹0</span></div>
+      <button class="mc-checkout-btn" id="mcCheckoutBtn" onclick="checkoutMediaCartSelected()">Checkout Selected (0)</button>
+      <div class="mc-hint">যা বেছে নেওনি, সেগুলো cart-এ থেকে যাবে পরের জন্য।</div>
+    </div>
+  </div>
+</div>
+
 <script>
 var fbcfg={apiKey:"AIzaSyA6TrrnCMwv1aa1WPqGvTVWlnieB2pVOEU",authDomain:"delta-platform-82fc0.firebaseapp.com",projectId:"delta-platform-82fc0",storageBucket:"delta-platform-82fc0.firebasestorage.app",messagingSenderId:"444904180433",appId:"1:444904180433:web:6706eba4d73a30cd67d3f0"};
 firebase.initializeApp(fbcfg);
@@ -756,7 +974,14 @@ var activeCommentContentId=null;
 
 auth.onAuthStateChanged(function(u){
   currentUser=u; loadFeed(); loadStories();
-  document.getElementById('inlineLoginCard').style.display = u ? 'none' : 'flex';
+  if(u){
+    // Once someone has ever completed login/signup on this device, remember it —
+    // the inline "Create your post..." card is meant for brand-new visitors only,
+    // not for a returning user who is simply logged out right now.
+    localStorage.setItem('delta_known_user','1');
+  }
+  var isKnownUser = localStorage.getItem('delta_known_user')==='1';
+  document.getElementById('inlineLoginCard').style.display = (!u && !isKnownUser) ? 'flex' : 'none';
   loadMhOfficialCard();
   loadMhWhoToFollow();
   loadMhTrendingReels();
@@ -766,6 +991,21 @@ auth.onAuthStateChanged(function(u){
   updateSharedCartBadge();
 });
 
+// Shown when a returning (already-registered) user is currently logged out and
+// taps something that needs login — points them to the hamburger menu rather
+// than yanking them straight to index.html, since they already have an account
+// and may just want to look around a bit more first.
+function requireLogin(){
+  alert('Login to engage, share and grow.\n\n☰ মেনু থেকে লগইন করুন।');
+}
+// index.html's login is a modal, not a page — it has no idea the user came from
+// media-feed.html unless we tell it. Appending returnTo means index.html can
+// send the user straight back here after a successful login/signup instead of
+// leaving them stranded on the homepage.
+function goToLogin(){
+  location.href = 'index.html?returnTo=media-feed.html&city=' + CITY;
+}
+
 function updateSharedCartBadge(){
   try{
     var cartItems = JSON.parse(localStorage.getItem('delta_cart')||'[]');
@@ -774,6 +1014,97 @@ function updateSharedCartBadge(){
     if(count > 0){ badge.textContent = count; badge.style.display = 'flex'; }
     else { badge.style.display = 'none'; }
   }catch(e){ console.warn('Cart badge error', e); }
+}
+
+// ═══ MEDIA CART DRAWER ═══
+// Reads/writes the exact same 'delta_cart' localStorage key index.html uses —
+// genuinely one shared cart, not a separate copy. Each item can be individually
+// ticked; unticked items simply stay in the cart when checking out.
+function getMediaCart(){
+  try{ return JSON.parse(localStorage.getItem('delta_cart')||'[]'); }catch(e){ return []; }
+}
+function saveMediaCart(items){
+  localStorage.setItem('delta_cart', JSON.stringify(items));
+  updateSharedCartBadge();
+}
+function openMediaCart(){
+  document.getElementById('mediaCartModal').classList.add('open');
+  renderMediaCart();
+}
+function closeMediaCart(){
+  document.getElementById('mediaCartModal').classList.remove('open');
+}
+function renderMediaCart(){
+  var items = getMediaCart();
+  var list = document.getElementById('mediaCartList');
+  var footer = document.getElementById('mediaCartFooter');
+  if(!items.length){
+    list.innerHTML = '<div class="mc-empty">🛒<br>কার্ট খালি আছে</div>';
+    footer.style.display = 'none';
+    return;
+  }
+  footer.style.display = 'block';
+  list.innerHTML = items.map(function(item, i){
+    var isSel = item.selected !== false;
+    var lineTotal = (item.price||0) * (item.qty||1);
+    return '<div class="mc-item'+(isSel?'':' deselected')+'">'+
+      '<input type="checkbox" class="mc-check" '+(isSel?'checked':'')+' onchange="toggleMediaCartItemSelected('+i+')">'+
+      '<img class="mc-thumb" src="'+(item.imageUrl||'')+'" onerror="this.style.background=\'var(--cream)\'">'+
+      '<div class="mc-info">'+
+        '<div class="mc-name">'+(item.name||'পণ্য')+'</div>'+
+        '<div class="mc-shop">🏪 '+(item.shopName||'')+'</div>'+
+        '<div class="mc-price">₹'+lineTotal+'</div>'+
+        '<div class="mc-qty-row">'+
+          '<button class="mc-qty-btn" onclick="changeMediaCartQty('+i+',-1)">−</button>'+
+          '<span class="mc-qty-num">'+(item.qty||1)+'</span>'+
+          '<button class="mc-qty-btn" onclick="changeMediaCartQty('+i+',1)">+</button>'+
+          '<button class="mc-del" onclick="removeMediaCartItem('+i+')">🗑️</button>'+
+        '</div>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+
+  var selectedItems = items.filter(function(c){ return c.selected!==false; });
+  var sub = selectedItems.reduce(function(s,c){ return s+(c.price||0)*(c.qty||1); }, 0);
+  var FREE_DELIVERY_MIN = 399;
+  var deliveryCharge = sub>0 && sub < FREE_DELIVERY_MIN ? 30 : 0;
+  document.getElementById('mcSubtotal').textContent = '₹'+sub;
+  document.getElementById('mcTotal').textContent = '₹'+(sub+deliveryCharge);
+  var btn = document.getElementById('mcCheckoutBtn');
+  btn.textContent = 'Checkout Selected ('+selectedItems.length+')';
+  btn.disabled = selectedItems.length===0;
+}
+function toggleMediaCartItemSelected(i){
+  var items = getMediaCart();
+  if(!items[i]) return;
+  items[i].selected = items[i].selected===false ? true : false;
+  saveMediaCart(items);
+  renderMediaCart();
+}
+function changeMediaCartQty(i, delta){
+  var items = getMediaCart();
+  if(!items[i]) return;
+  items[i].qty = (items[i].qty||1) + delta;
+  if(items[i].qty <= 0) items.splice(i,1);
+  saveMediaCart(items);
+  renderMediaCart();
+}
+function removeMediaCartItem(i){
+  var items = getMediaCart();
+  items.splice(i,1);
+  saveMediaCart(items);
+  renderMediaCart();
+}
+function checkoutMediaCartSelected(){
+  var items = getMediaCart();
+  var selectedItems = items.filter(function(c){ return c.selected!==false; });
+  if(!selectedItems.length){ alert('অন্তত একটি আইটেম বেছে নিন'); return; }
+  if(!currentUser){ closeMediaCart(); goToLogin(); return; }
+  // Selection state (item.selected) is already persisted in delta_cart above —
+  // index.html reads the same key on load and opens checkout for just the
+  // ticked items, leaving unticked ones untouched in the shared cart.
+  closeMediaCart();
+  location.href = 'index.html?openCheckout=1&city='+CITY;
 }
 
 function loadNavAvatar(){
@@ -792,6 +1123,17 @@ function loadNavAvatar(){
 // Logout only show once we know the viewer's actual state; menu items route
 // to existing pages/tabs where they exist, and give an honest "not built yet"
 // alert for anything genuinely not implemented, rather than a dead link.
+// Collapsible "See more" for the More / Also-from-DELTA sections — mirrors the
+// pattern used by big platforms so the menu doesn't feel overwhelming by default.
+function toggleSmSection(idPrefix, count, btn){
+  var expanded = btn.dataset.expanded === '1';
+  for(var i=1;i<=count;i++){
+    var el = document.getElementById(idPrefix+i);
+    if(el) el.style.display = expanded ? 'none' : 'flex';
+  }
+  btn.dataset.expanded = expanded ? '0' : '1';
+  btn.textContent = expanded ? 'See more' : 'See less';
+}
 function openSideMenu(){
   document.getElementById('smOverlay').classList.add('open');
   document.getElementById('smDrawer').classList.add('open');
@@ -842,32 +1184,101 @@ function smGo(dest){
   closeSideMenu();
   switch(dest){
     case 'profile':
-      if(!currentUser){ location.href='index.html'; return; }
+      if(!currentUser){ goToLogin(); return; }
       location.href='media-profile.html?uid='+currentUser.uid+'&city='+CITY;
       break;
     case 'content':
-      if(!currentUser){ location.href='index.html'; return; }
+      if(!currentUser){ goToLogin(); return; }
       location.href='media-profile.html?uid='+currentUser.uid+'&city='+CITY+'&tab=content';
       break;
     case 'saved':
-      if(!currentUser){ location.href='index.html'; return; }
+      if(!currentUser){ goToLogin(); return; }
       location.href='media-profile.html?uid='+currentUser.uid+'&city='+CITY+'&tab=saved';
       break;
     case 'analytics':
-      if(!currentUser){ location.href='index.html'; return; }
+      if(!currentUser){ goToLogin(); return; }
       location.href='media-profile.html?uid='+currentUser.uid+'&city='+CITY+'&tab=analytics';
       break;
     case 'sellerDashboard':
       location.href='seller-dashboard.html?city='+CITY;
       break;
+    case 'adCenter':
+      alert('Boost My Content — coming soon.\n\nThis will let you promote posts/reels to reach more people in your area (Section 14.2 of the DELTA Media plan).');
+      break;
+    case 'verifiedBadge':
+      alert('Verified Local Badge — coming soon.\n\nA paid verification badge to boost trust in Discover/Search, once DELTA-Shorts monetization goes live.');
+      break;
     case 'deltaAccount':
       location.href='index.html';
+      break;
+    case 'language':
+      alert('ভাষা পরিবর্তন (Language switch) — coming soon.\n\nDELTA will stay Bengali-first, with a full English toggle added here.');
+      break;
+    case 'privacyCenter':
+      alert('Privacy Center — coming soon.\n\nWill show exactly what data DELTA stores about you (profile, orders, follows) and let you manage or delete it.');
       break;
     case 'notifSettings':
       alert('Notification Settings — not built yet');
       break;
     case 'help':
       alert('Help & Support — not built yet. For now, reach out via the Support Tickets option on the DELTA homepage.');
+      break;
+    case 'reportProblem':
+      openReportProblem();
+      break;
+    case 'marketplace':
+      location.href='index.html';
+      break;
+    case 'friends':
+      alert('Friends — not designed yet.\n\nDELTA Media currently uses one-way Follow (like Instagram). A mutual "Friends" concept would need its own design pass.');
+      break;
+    case 'dashboard':
+      alert('Dashboard — not designed yet.\n\nLikely a unified overview across Media + Seller performance. Design TBD.');
+      break;
+    case 'deltaAI':
+      alert('DELTA AI — coming in a future phase.\n\nBengali conversational commerce assistant (Master Doc Step 43, Phase 6).');
+      break;
+    case 'memories':
+      alert('Memories — not designed yet.\n\nNeeds real historical content/order data to be meaningful — revisit once DELTA has real usage history.');
+      break;
+    case 'events':
+      alert('Events — not designed yet.\n\nLikely ties into the future DELTA Events AI module (Phase 7).');
+      break;
+    case 'feeds':
+      alert('Feeds — not designed yet.\n\nLikely feed customization/source management, once the main feed has enough real content sources.');
+      break;
+    case 'finds':
+      alert('Finds — not designed yet.\n\nLikely a personalized deals/discovery layer connected to DELTA Bazaar.');
+      break;
+    case 'games':
+      alert('Games — not designed yet.\n\nNo concrete DELTA use-case defined yet — placeholder for a future decision.');
+      break;
+    case 'groups':
+      alert('Groups — not designed yet.\n\nLikely local community/interest groups tied to mediaProfiles — design TBD.');
+      break;
+    case 'pages':
+      alert('Pages — not designed yet.\n\nMay overlap with Seller Dashboard/Business Profile — needs a clear decision on how it differs before building.');
+      break;
+    case 'deltaStore':
+      alert('DELTA Store — planned for September 2026.\n\nDELTA Direct + Marketplace (Master Doc Section 9.1).');
+      break;
+    case 'remarket':
+      alert('DELTA ReMarket — planned for December 2026.\n\nSecond-hand marketplace, 5-8% commission model.');
+      break;
+    case 'giftStudio':
+      alert('DELTA Gift Studio — planned for February 2027.\n\nCustomized gifting + NRI gifts.');
+      break;
+    case 'rentalClub':
+      alert('DELTA Rental Club — coming in a future phase.\n\nAsset rental, 5-8% commission model.');
+      break;
+    case 'deltaPay':
+      alert('DELTA Pay — phased rollout 2026-2028.\n\nCOD → Razorpay → Wallet → Fintech.');
+      break;
+    case 'deltaGreen':
+      alert('Delta Green — coming in a future phase.\n\nWaste-to-value reverse logistics (Master Doc Step 42, Phase 6).');
+      break;
+    case 'deltaPods':
+      alert('Delta Pods — coming in a future phase.\n\nMicro-lending + NRI equity (Master Doc Step 54, Phase 8).');
       break;
     case 'share':
       var shareUrl = location.origin + location.pathname + '?city='+CITY;
@@ -884,9 +1295,52 @@ function smGo(dest){
   }
 }
 function handleNavAvatarClick(){
-  if(!currentUser){ location.href='index.html'; return; }
+  if(!currentUser){ goToLogin(); return; }
   location.href='media-profile.html?uid='+currentUser.uid+'&city='+CITY;
 }
+
+// ═══ Report a Problem — writes a real doc to the existing supportTickets
+// collection (cities/{city}/supportTickets/{id}), already covered by the
+// deployed Firestore rules. Requires login since the rules require request.auth.
+function openReportProblem(){
+  if(!currentUser){ requireLogin(); return; }
+  document.getElementById('rpModal').classList.add('open');
+}
+function closeReportProblem(){
+  document.getElementById('rpModal').classList.remove('open');
+}
+function submitReportProblem(){
+  var text = document.getElementById('rpText').value.trim();
+  if(!text){ alert('সমস্যাটা লিখুন প্রথমে'); return; }
+  db.collection('cities').doc(CITY).collection('supportTickets').add({
+    customerId: currentUser.uid,
+    source: 'media-feed',
+    message: text,
+    status: 'open',
+    createdAt: new Date().toISOString()
+  }).then(function(){
+    document.getElementById('rpText').value = '';
+    closeReportProblem();
+    alert('ধন্যবাদ! আপনার রিপোর্ট পাঠানো হয়েছে।');
+  }).catch(function(e){
+    console.error('Report submit failed', e);
+    alert('পাঠাতে সমস্যা হয়েছে, আবার চেষ্টা করুন।');
+  });
+}
+
+// ═══ Dark Mode — lightweight CSS-variable-driven theme, persisted per device.
+// Covers the main surfaces (nav, feed, sidebar, drawer, modals); some rarer
+// corners of the UI may not be perfectly tuned yet.
+function applyDarkMode(on){
+  document.body.classList.toggle('dark-mode', on);
+  var toggle = document.getElementById('smDarkToggle');
+  if(toggle) toggle.classList.toggle('on', on);
+  localStorage.setItem('delta_dark_mode', on ? '1' : '0');
+}
+function toggleDarkMode(){
+  applyDarkMode(!document.body.classList.contains('dark-mode'));
+}
+applyDarkMode(localStorage.getItem('delta_dark_mode')==='1');
 function toggleMobileSearch(){
   var wrapper = document.querySelector('.nav-search-desktop');
   var input = document.getElementById('navSearchDesktop');
@@ -943,14 +1397,6 @@ var DEMO_MF_STORIES = [
       ctaType:'visit_shop', tags:{shopId:null, productId:null, offerId:'demo', categoryId:'আম (Mango)'},
       createdAt:new Date(Date.now()-90*60000).toISOString(), expiresAt:new Date(Date.now()+22*3600000).toISOString()
   }},
-  { id:'demo3', data:{
-      authorUid:'demo-official', authorDisplayName:'DELTA Official',
-      authorAvatarUrl:'',
-      mediaUrls:['https://images.unsplash.com/photo-1607083206869-4c7672e72a8a?w=800&q=70'],
-      videoUrl:null, caption:'দুর্গাপূজা স্পেশাল লঞ্চ আসছে ২০ অক্টোবর! প্রথম ২০টি দোকান এখনই যোগ দিন 🎉', postSubType:'business_update', storyRingType:'official',
-      ctaType:'none', tags:{shopId:null,productId:null,categoryId:null},
-      createdAt:new Date(Date.now()-150*60000).toISOString(), expiresAt:new Date(Date.now()+20*3600000).toISOString()
-  }},
   { id:'demo4', data:{
       authorUid:'demo-salon', authorDisplayName:'Salon XYZ',
       authorAvatarUrl:'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=200&q=60',
@@ -998,7 +1444,7 @@ function loadStories(){
           '<div class="story-add-plus">+</div>'+
         '</div><div class="story-label">Add Story</div>';
       addItem.onclick = function(){
-        if(!currentUser){ alert('লগইন করুন প্রথমে'); location.href='index.html'; return; }
+        if(!currentUser){ requireLogin(); return; }
         location.href='create-studio.html?type=story&city='+CITY;
       };
       wrap.appendChild(addItem);
@@ -1264,7 +1710,7 @@ function svVisitShop(shopId, productId){
   location.href='shop.html?id='+shopId+'&city='+CITY+(productId?('&product='+productId):'');
 }
 function svReact(id, type){
-  if(!currentUser){ alert('লগইন করুন প্রথমে'); return; }
+  if(!currentUser){ requireLogin(); return; }
   var ref = db.collection('cities').doc(CITY).collection('mediaContent').doc(id).collection('likes').doc(currentUser.uid);
   ref.get().then(function(d){
     if(d.exists && d.data().reaction===type){ ref.delete(); }
@@ -1295,7 +1741,7 @@ function checkSvFollow(authorUid){
   });
 }
 function toggleSvFollow(targetUid){
-  if(!currentUser){ alert('লগইন করুন প্রথমে'); return; }
+  if(!currentUser){ requireLogin(); return; }
   var followerDoc=db.collection('cities').doc(CITY).collection('mediaProfiles').doc(targetUid).collection('followers').doc(currentUser.uid);
   var followingDoc=db.collection('cities').doc(CITY).collection('mediaProfiles').doc(currentUser.uid).collection('following').doc(targetUid);
   followerDoc.get().then(function(d){
@@ -1308,7 +1754,7 @@ var svReplyTargetId = null;
 function openSvReply(id){ svPaused=true; svReplyTargetId=id; document.getElementById('svReplyModal').classList.add('open'); }
 function closeSvReply(){ svPaused=false; document.getElementById('svReplyModal').classList.remove('open'); }
 function sendSvReply(){
-  if(!currentUser){ alert('লগইন করুন প্রথমে'); return; }
+  if(!currentUser){ requireLogin(); return; }
   var input=document.getElementById('svReplyInput');
   var text=input.value.trim(); if(!text) return;
   db.collection('cities').doc(CITY).collection('mediaContent').doc(svReplyTargetId).collection('comments').add({
@@ -1481,7 +1927,7 @@ async function loadMhOfficialCard(){
   }
 }
 function toggleMhFollow(targetUid, btn){
-  if(!currentUser){ alert('লগইন করুন প্রথমে'); return; }
+  if(!currentUser){ requireLogin(); return; }
   var followerDoc = db.collection('cities').doc(CITY).collection('mediaProfiles').doc(targetUid).collection('followers').doc(currentUser.uid);
   var followingDoc = db.collection('cities').doc(CITY).collection('mediaProfiles').doc(currentUser.uid).collection('following').doc(targetUid);
   followerDoc.get().then(function(d){
@@ -1694,7 +2140,7 @@ async function loadMhDiscoverRow(){
         card.querySelector('.mh-d-avatar').onclick = function(e){ e.stopPropagation(); location.href='media-profile.html?uid='+p.id+'&city='+CITY; };
         btn.onclick = function(e){
           e.stopPropagation();
-          if(!currentUser){ alert('লগইন করুন প্রথমে'); return; }
+          if(!currentUser){ requireLogin(); return; }
           toggleMhFollow(p.id, btn);
           btn.textContent = btn.textContent==='Follow' ? 'Following' : 'Follow';
           btn.classList.toggle('following');
@@ -1727,10 +2173,22 @@ async function loadMhDiscoverRow(){
       card.innerHTML =
         '<div class="mh-d-avatar-wrap"><div class="mh-d-rank">'+(i+1)+'</div><img class="mh-d-avatar" src="'+avatar+'" onerror="this.style.background=\'var(--sand)\'"></div>'+
         '<div class="mh-d-name">'+name+'</div>'+
-        '<div class="mh-d-sub">'+count+' Followers</div>';
-      card.onclick = useDemo
-        ? function(){ alert('Demo entry — becomes real once creators build a real following'); }
-        : function(){ location.href='media-profile.html?uid='+item.id+'&city='+CITY; };
+        '<div class="mh-d-sub">'+count+' Followers</div>'+
+        '<button class="mh-d-btn">Follow</button>';
+      var followBtn = card.querySelector('.mh-d-btn');
+      if(useDemo){
+        card.onclick = function(){ alert('Demo entry — becomes real once creators build a real following'); };
+      } else {
+        card.querySelector('.mh-d-avatar').onclick = function(e){ e.stopPropagation(); location.href='media-profile.html?uid='+item.id+'&city='+CITY; };
+        card.querySelector('.mh-d-name').onclick = function(e){ e.stopPropagation(); location.href='media-profile.html?uid='+item.id+'&city='+CITY; };
+        followBtn.onclick = function(e){
+          e.stopPropagation();
+          if(!currentUser){ requireLogin(); return; }
+          toggleMhFollow(item.id, followBtn);
+          followBtn.textContent = followBtn.textContent==='Follow' ? 'Following' : 'Follow';
+          followBtn.classList.toggle('following');
+        };
+      }
       scroll.appendChild(card);
     });
   }catch(e){ console.warn('Discover row — Top Creators error', e); }
@@ -1934,7 +2392,7 @@ async function addToSharedCart(shopId, productId, btnEl){
 
 // ── LIKE (subcollection write — matches rules; count read live, not from stats field) ──
 function toggleLike(contentId, btn){
-  if(!currentUser){ alert('লগইন করুন প্রথমে'); return; }
+  if(!currentUser){ requireLogin(); return; }
   var ref = db.collection('cities').doc(CITY).collection('mediaContent').doc(contentId).collection('likes').doc(currentUser.uid);
   ref.get().then(function(d){
     var countText = btn.querySelector('span').textContent;
@@ -1968,7 +2426,7 @@ function openComments(contentId){
 }
 function closeComments(){ document.getElementById('commentModal').classList.remove('open'); activeCommentContentId=null; }
 function postComment(){
-  if(!currentUser){ alert('লগইন করুন প্রথমে'); return; }
+  if(!currentUser){ requireLogin(); return; }
   var input=document.getElementById('commentInput');
   var text=input.value.trim(); if(!text) return;
   db.collection('cities').doc(CITY).collection('mediaContent').doc(activeCommentContentId).collection('comments').add({
@@ -1978,7 +2436,7 @@ function postComment(){
 
 // ── POLL VOTE (write-once, matches rules exactly) ──
 function votePoll(contentId, optionId){
-  if(!currentUser){ alert('লগইন করুন প্রথমে'); return; }
+  if(!currentUser){ requireLogin(); return; }
   db.collection('cities').doc(CITY).collection('mediaContent').doc(contentId).collection('pollVotes').doc(currentUser.uid).get().then(function(d){
     if(d.exists){ alert('আপনি ইতিমধ্যে ভোট দিয়েছেন'); return; }
     db.collection('cities').doc(CITY).collection('mediaContent').doc(contentId).collection('pollVotes').doc(currentUser.uid)
@@ -1989,7 +2447,7 @@ function votePoll(contentId, optionId){
 
 // ── FOLLOW FROM FEED (same subcollection pattern as media-profile.html) ──
 function toggleFollowFromFeed(targetUid, btn){
-  if(!currentUser){ alert('লগইন করুন প্রথমে'); return; }
+  if(!currentUser){ requireLogin(); return; }
   var followerDoc = db.collection('cities').doc(CITY).collection('mediaProfiles').doc(targetUid).collection('followers').doc(currentUser.uid);
   var followingDoc = db.collection('cities').doc(CITY).collection('mediaProfiles').doc(currentUser.uid).collection('following').doc(targetUid);
   followerDoc.get().then(function(d){
