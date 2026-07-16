@@ -2,829 +2,332 @@
 <html lang="bn">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DELTA — Delivery Panel</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600;700&family=Tiro+Bangla&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>DELTA Media — Discover People</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
+html,body{overflow-x:hidden;max-width:100vw;}
 :root{
-  --navy:#0a1f35;--navy2:#122840;--navy3:#061526;
-  --orange:#f07018;--orange2:#ff8c3a;--orange-light:#fff4ec;
-  --white:#fff;--cream:#f7f9fc;--sand:#eef2f7;
-  --border:#dde5ef;--muted:#6b7b8d;--charcoal:#1a2535;
-  --green:#1a8a4a;--green2:#e8f7ef;--red:#c0392b;--red2:#ffeaea;
-  --yellow:#f39c12;--yellow2:#fff8e8;--blue:#0984e3;--blue2:#e8f4ff;
+  --navy:#10392D;--navy2:#1a4a3a;
+  --gold:#D4AF63;--gold-dark:#B8925A;
+  --green:#2da86a;--green2:#1a7a4c;
+  --white:#fff;--sand:#ffffff;--cream:#F7F8FA;
+  --border:#E7E9EC;--muted:#8A8F98;--charcoal:#1A1A1A;
 }
 body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charcoal);}
-button,input,select{font-family:'DM Sans',sans-serif;}
-::-webkit-scrollbar{width:5px;}
-::-webkit-scrollbar-thumb{background:#c0cdd8;border-radius:3px;}
 
-/* ── AUTH ── */
-#authScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;
-  background:linear-gradient(135deg,var(--navy3),var(--navy),#1a3050);padding:20px;}
-.auth-box{background:#fff;border-radius:22px;padding:36px;width:100%;max-width:400px;
-  box-shadow:0 24px 70px rgba(0,0,0,.3);}
-.auth-logo{text-align:center;margin-bottom:24px;}
-.auth-logo h1{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:900;
-  color:var(--navy);letter-spacing:2px;}
-.auth-logo h1 em{color:var(--orange);font-style:normal;}
-.auth-logo p{font-size:.78rem;color:var(--muted);margin-top:4px;}
-.form-group{margin-bottom:13px;}
-.form-group label{display:block;font-size:.72rem;font-weight:700;color:var(--muted);
-  margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px;}
-.form-input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:9px;
-  font-size:.875rem;outline:none;transition:border-color .2s;background:var(--cream);}
-.form-input:focus{border-color:var(--orange);background:#fff;}
-.btn-primary{width:100%;padding:13px;background:var(--orange);color:#fff;border:none;
-  border-radius:10px;font-size:.92rem;font-weight:700;cursor:pointer;transition:all .2s;margin-top:4px;}
-.btn-primary:hover{background:var(--orange2);}
-.btn-primary:disabled{opacity:.6;cursor:not-allowed;}
-.auth-err{background:var(--red2);color:var(--red);padding:9px 13px;border-radius:8px;
-  font-size:.8rem;margin-bottom:12px;display:none;}
+.dp-nav{background:#fff;padding:16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:200;}
+.dp-back{background:none;border:none;width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.dp-back:hover{background:var(--border);}
+.dp-nav-title{font-family:'Playfair Display',serif;font-weight:900;font-size:1.1rem;}
+.dp-nav-title em{color:var(--gold-dark);font-style:normal;}
 
-/* ── APP ── */
-#appScreen{display:none;min-height:100vh;}
-.topbar{background:var(--navy);padding:0 20px;height:60px;display:flex;
-  align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;
-  box-shadow:0 2px 12px rgba(0,0,0,.15);}
-.tb-logo{display:flex;align-items:center;gap:10px;}
-.tb-logo-mark{width:34px;height:34px;background:var(--orange);border-radius:9px;
-  display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;
-  font-weight:900;color:#fff;font-size:.9rem;flex-shrink:0;}
-.tb-logo-text{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:900;
-  color:#fff;letter-spacing:1px;}
-.tb-logo-text em{color:var(--orange);font-style:normal;}
-.tb-badge{background:rgba(26,138,74,.2);border:1px solid rgba(26,138,74,.4);
-  color:#55efc4;font-size:.68rem;font-weight:700;padding:3px 10px;border-radius:20px;
-  margin-left:10px;}
-.tb-right{display:flex;align-items:center;gap:12px;}
-.tb-name{font-size:.78rem;color:rgba(255,255,255,.6);}
-.logout-btn{background:rgba(192,57,43,.18);border:none;color:#ff8a80;padding:7px 14px;
-  border-radius:8px;font-size:.78rem;font-weight:600;cursor:pointer;}
-.logout-btn:hover{background:rgba(192,57,43,.32);}
+.dp-tabs{display:flex;gap:8px;background:#fff;padding:10px 16px;border-bottom:1px solid var(--border);
+  position:sticky;top:65px;z-index:190;overflow-x:auto;}
+.dp-tab{background:var(--cream);border:none;padding:9px 18px;border-radius:20px;font-weight:700;font-size:.82rem;
+  color:var(--muted);cursor:pointer;white-space:nowrap;}
+.dp-tab.active{background:var(--navy);color:#fff;}
 
-.tabs{display:flex;gap:4px;padding:0 20px;background:#fff;
-  border-bottom:1px solid var(--border);overflow-x:auto;}
-.tab-btn{padding:14px 16px;border:none;background:transparent;cursor:pointer;
-  font-size:.85rem;font-weight:600;color:var(--muted);border-bottom:3px solid transparent;
-  transition:all .2s;white-space:nowrap;display:flex;align-items:center;gap:7px;}
-.tab-btn.active{color:var(--orange);border-bottom-color:var(--orange);}
-.tab-count{background:var(--orange);color:#fff;font-size:.65rem;font-weight:800;
-  padding:1px 7px;border-radius:10px;}
-.tab-count.zero{background:var(--border);color:var(--muted);}
+.dp-wrap{max-width:640px;margin:0 auto;padding:16px;}
+.dp-list{display:flex;flex-direction:column;gap:10px;}
+.dp-reel-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
+.dp-reel-card{position:relative;border-radius:14px;overflow:hidden;aspect-ratio:9/14;background:var(--cream);cursor:pointer;border:1px solid var(--border);}
+.dp-reel-card img{width:100%;height:100%;object-fit:cover;display:block;}
+.dp-reel-views{position:absolute;bottom:8px;left:8px;color:#fff;font-size:.72rem;font-weight:700;background:rgba(0,0,0,.5);padding:3px 9px;border-radius:9px;}
 
-.content{padding:20px;max-width:700px;margin:0 auto;}
-.page{display:none;}
-.page.active{display:block;}
+.dp-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px;display:flex;align-items:center;gap:12px;}
+.dp-avatar-wrap{position:relative;width:52px;height:52px;flex-shrink:0;}
+.dp-avatar{width:52px;height:52px;border-radius:50%;object-fit:cover;background:var(--cream);border:1px solid var(--border);display:block;}
+.dp-avatar-letter{width:52px;height:52px;border-radius:50%;background:var(--navy);color:var(--gold-dark,#D4AF63);
+  display:flex;align-items:center;justify-content:center;font-size:1.3rem;font-weight:800;border:1px solid var(--border);}
+.dp-rank{position:absolute;top:-4px;left:-4px;width:20px;height:20px;border-radius:50%;background:var(--gold);
+  color:var(--navy);font-size:.65rem;font-weight:800;display:flex;align-items:center;justify-content:center;border:1.5px solid #fff;}
+.dp-info{flex:1;min-width:0;cursor:pointer;}
+.dp-name{font-size:.9rem;font-weight:800;color:var(--charcoal);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.dp-sub{font-size:.75rem;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.dp-follow-btn{background:var(--navy);color:#fff;border:none;padding:9px 18px;border-radius:18px;font-weight:700;
+  font-size:.78rem;cursor:pointer;flex-shrink:0;}
+.dp-follow-btn.following{background:var(--border);color:var(--muted);}
 
-/* ── STATS ── */
-.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;}
-.stat-box{background:#fff;border-radius:14px;padding:16px;border:1px solid var(--border);
-  text-align:center;}
-.stat-box strong{display:block;font-size:1.5rem;font-weight:800;color:var(--navy);
-  font-family:'Playfair Display',serif;}
-.stat-box span{font-size:.72rem;color:var(--muted);margin-top:2px;display:block;}
-
-/* ── ORDER CARDS ── */
-.order-card{background:#fff;border-radius:16px;border:1px solid var(--border);
-  padding:18px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,.04);}
-.order-card.oc-assigned{border-left:4px solid var(--blue);}
-.order-card.oc-picked{border-left:4px solid var(--yellow);}
-.order-card.oc-on-way{border-left:4px solid var(--orange);}
-.order-card.oc-delivered{border-left:4px solid var(--green);}
-.oc-top{display:flex;justify-content:space-between;align-items:flex-start;
-  margin-bottom:12px;flex-wrap:wrap;gap:8px;}
-.oc-id{font-size:.78rem;font-weight:700;color:var(--orange);}
-.oc-shop{font-size:.92rem;font-weight:700;color:var(--charcoal);margin-top:2px;}
-.oc-status-pill{font-size:.68rem;font-weight:700;padding:3px 10px;border-radius:20px;white-space:nowrap;}
-.pill-assigned{background:var(--blue2);color:var(--blue);}
-.pill-picked{background:var(--yellow2);color:#7d5a00;}
-.pill-on-way{background:var(--orange-light);color:var(--orange);}
-.pill-delivered{background:var(--green2);color:var(--green);}
-
-.addr-block{background:var(--sand);border-radius:10px;padding:12px 14px;margin-bottom:10px;}
-.addr-row{display:flex;gap:10px;align-items:flex-start;font-size:.82rem;margin-bottom:6px;}
-.addr-row:last-child{margin-bottom:0;}
-.addr-icon{font-size:1rem;flex-shrink:0;margin-top:1px;}
-.addr-label{font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;
-  letter-spacing:.5px;display:block;margin-bottom:2px;}
-.addr-text{color:var(--charcoal);font-weight:500;}
-.addr-phone{color:var(--blue);font-weight:700;text-decoration:none;}
-.addr-phone:hover{text-decoration:underline;}
-
-.amount-row{display:flex;justify-content:space-between;align-items:center;
-  padding:8px 0;border-top:1px solid var(--border);margin-top:8px;}
-.amount-val{font-size:1rem;font-weight:800;color:var(--navy);}
-.payment-tag{font-size:.72rem;font-weight:600;padding:3px 8px;border-radius:8px;
-  background:var(--sand);color:var(--muted);}
-
-.oc-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;}
-.btn-sm{padding:9px 18px;border-radius:9px;font-size:.82rem;font-weight:700;cursor:pointer;
-  border:none;transition:all .2s;display:inline-flex;align-items:center;gap:6px;}
-.btn-blue{background:var(--blue2);color:var(--blue);}
-.btn-blue:hover{background:var(--blue);color:#fff;}
-.btn-orange{background:var(--orange-light);color:var(--orange);}
-.btn-orange:hover{background:var(--orange);color:#fff;}
-.btn-green{background:var(--green2);color:var(--green);}
-.btn-green:hover{background:var(--green);color:#fff;}
-
-.empty-state{text-align:center;padding:52px 20px;background:#fff;
-  border-radius:16px;border:2px dashed var(--border);}
-.empty-icon{font-size:2.6rem;margin-bottom:12px;}
-.empty-state p{color:var(--muted);font-size:.88rem;}
-
-/* ── EARNINGS ── */
-.earnings-card{background:linear-gradient(135deg,var(--navy3),var(--navy));
-  border-radius:18px;padding:22px;color:#fff;margin-bottom:16px;}
-.ec-label{font-size:.72rem;color:rgba(255,255,255,.45);text-transform:uppercase;
-  letter-spacing:1.5px;margin-bottom:4px;}
-.ec-value{font-family:'Playfair Display',serif;font-size:2rem;font-weight:900;color:var(--orange2);}
-.ec-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px;}
-.ec-box{background:rgba(255,255,255,.07);border-radius:10px;padding:12px;}
-.ec-box-label{font-size:.68rem;color:rgba(255,255,255,.4);margin-bottom:4px;}
-.ec-box-val{font-size:1.1rem;font-weight:700;color:#fff;}
-
-.delivery-row{display:flex;justify-content:space-between;align-items:center;
-  padding:12px 0;border-bottom:1px solid var(--border);font-size:.82rem;}
-.delivery-row:last-child{border-bottom:none;}
-
-.loading-screen{position:fixed;inset:0;background:var(--navy3);display:flex;
-  align-items:center;justify-content:center;z-index:1000;}
-
-/* ── COD CASH MODAL ── */
-.cod-modal-overlay{position:fixed;inset:0;background:rgba(6,21,38,.65);z-index:600;
-  display:none;align-items:center;justify-content:center;padding:20px;}
-.cod-modal-overlay.open{display:flex;}
-.cod-modal{background:#fff;border-radius:20px;width:min(400px,100%);padding:28px 24px;}
-.cod-modal h3{font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--navy);
-  margin-bottom:6px;}
-.cod-modal p{font-size:.84rem;color:var(--muted);margin-bottom:18px;line-height:1.55;}
-.cod-amount-display{background:var(--green2);border-radius:12px;padding:16px;
-  text-align:center;margin-bottom:18px;}
-.cod-amount-display .label{font-size:.74rem;color:var(--green);font-weight:700;margin-bottom:4px;}
-.cod-amount-display .amount{font-size:2rem;font-weight:900;color:var(--green);}
-.cod-modal-btns{display:flex;gap:10px;}
-.cod-confirm-btn{flex:1;padding:13px;background:var(--green);color:#fff;border:none;
-  border-radius:10px;font-size:.92rem;font-weight:700;cursor:pointer;}
-.cod-cancel-btn{padding:13px 18px;background:var(--sand);color:var(--muted);border:none;
-  border-radius:10px;font-size:.88rem;cursor:pointer;}
-
-/* ── CASH SUMMARY STRIP ── */
-.cash-summary{background:linear-gradient(135deg,var(--navy),#1a3050);border-radius:14px;
-  padding:16px 18px;margin:0 0 16px;display:flex;justify-content:space-between;
-  align-items:center;flex-wrap:wrap;gap:10px;}
-.cash-summary-item{text-align:center;}
-.cash-summary-item .cs-label{font-size:.68rem;color:rgba(255,255,255,.55);font-weight:600;
-  text-transform:uppercase;letter-spacing:.3px;}
-.cash-summary-item .cs-value{font-size:1.1rem;font-weight:800;color:#fff;margin-top:2px;}
-.cash-summary-item .cs-value.green{color:#81c784;}
-.cash-summary-item .cs-value.orange{color:#ffb74d;}
-.loading-spinner{width:40px;height:40px;border:3px solid rgba(255,255,255,.15);
-  border-top-color:var(--orange);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px;}
-@keyframes spin{to{transform:rotate(360deg)}}
-.loading-text{color:rgba(255,255,255,.5);font-size:.78rem;text-align:center;}
-
-.toast{position:fixed;bottom:24px;right:24px;background:var(--navy);color:#fff;
-  padding:12px 18px;border-radius:12px;font-size:.82rem;font-weight:500;
-  box-shadow:0 6px 24px rgba(0,0,0,.2);z-index:999;display:none;align-items:center;
-  gap:10px;border-left:3px solid var(--orange);max-width:300px;}
-.toast.show{display:flex;animation:toastIn .3s ease;}
-.toast.green{border-left-color:var(--green);}
-.toast.red{border-left-color:var(--red);}
-@keyframes toastIn{from{transform:translateX(80px);opacity:0}to{transform:translateX(0);opacity:1}}
-
-@media(max-width:480px){
-  .stats-row{grid-template-columns:1fr 1fr;}
-  .content{padding:14px;}
-}
+.dp-empty{text-align:center;color:var(--muted);font-size:.85rem;padding:60px 20px;}
+.dp-loading{text-align:center;color:var(--muted);font-size:.85rem;padding:40px 20px;}
+.dp-load-more{display:block;margin:18px auto 0;background:#fff;border:1px solid var(--border);color:var(--charcoal);
+  padding:10px 24px;border-radius:20px;font-weight:700;font-size:.82rem;cursor:pointer;}
 </style>
 </head>
 <body>
 
-<div class="toast" id="toastEl"></div>
-
-<!-- ═══ COD CASH CONFIRMATION MODAL ═══ -->
-<div class="cod-modal-overlay" id="codModal">
-  <div class="cod-modal">
-    <h3>💵 Cash সংগ্রহ নিশ্চিত করুন</h3>
-    <p>Delivery সম্পন্ন করার আগে নিশ্চিত করুন যে গ্রাহকের কাছ থেকে সঠিক পরিমাণ Cash সংগ্রহ করা হয়েছে।</p>
-    <div class="cod-amount-display">
-      <div class="label">সংগৃহীত Cash</div>
-      <div class="amount" id="codModalAmount">₹0</div>
-    </div>
-    <div class="cod-modal-btns">
-      <button class="cod-confirm-btn" onclick="confirmCodAndDeliver()">✅ Cash পেয়েছি, Deliver করলাম</button>
-      <button class="cod-cancel-btn" onclick="closeCodModal()">বাতিল</button>
-    </div>
-  </div>
+<div class="dp-nav">
+  <button class="dp-back" onclick="location.href='media-feed.html?city='+CITY" title="Back">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+  </button>
+  <div class="dp-nav-title">Discover <em>People</em></div>
 </div>
 
-<div class="loading-screen" id="loadingScreen">
-  <div>
-    <div class="loading-spinner"></div>
-    <div class="loading-text">DELTA Delivery Panel লোড হচ্ছে...</div>
-  </div>
+<div class="dp-tabs">
+  <button class="dp-tab" id="tabFollow" onclick="switchTab('follow')">Who to Follow</button>
+  <button class="dp-tab" id="tabTop" onclick="switchTab('top')">Top Creators</button>
+  <button class="dp-tab" id="tabReels" onclick="switchTab('reels')">Trending Reels</button>
 </div>
 
-<!-- ═══ AUTH ═══ -->
-<div id="authScreen" style="display:none">
-  <div class="auth-box">
-    <div class="auth-logo">
-      <h1>△ DELT<em>A</em></h1>
-      <p>Delivery Panel — শুধুমাত্র নিবন্ধিত Delivery Boy দের জন্য</p>
-    </div>
-    <div class="auth-err" id="loginErr"></div>
-    <div class="form-group">
-      <label>Email</label>
-      <input type="email" class="form-input" id="aEmail" placeholder="delivery@example.com">
-    </div>
-    <div class="form-group">
-      <label>Password</label>
-      <input type="password" class="form-input" id="aPass" placeholder="••••••••">
-    </div>
-    <button class="btn-primary" id="loginBtn" onclick="doLogin()">🛵 লগইন করুন</button>
+<div class="dp-wrap">
+  <div class="dp-list" id="dpList">
+    <div class="dp-loading">লোড হচ্ছে...</div>
   </div>
-</div>
-
-<!-- ═══ APP ═══ -->
-<div id="appScreen">
-  <header class="topbar">
-    <div class="tb-logo">
-      <div class="tb-logo-mark">D</div>
-      <div class="tb-logo-text">DELT<em>A</em></div>
-      <span class="tb-badge">🛵 DELIVERY</span>
-    </div>
-    <div class="tb-right">
-      <span class="tb-name" id="dbNameLabel"></span>
-      <button class="logout-btn" onclick="doLogout()">লগআউট</button>
-    </div>
-  </header>
-
-  <nav class="tabs">
-    <button class="tab-btn active" id="tab-active" onclick="goTab('active',this)">
-      🛵 সক্রিয় অর্ডার <span class="tab-count zero" id="countActive">0</span>
-    </button>
-    <button class="tab-btn" id="tab-history" onclick="goTab('history',this)">
-      📦 ইতিহাস
-    </button>
-    <button class="tab-btn" id="tab-earnings" onclick="goTab('earnings',this)">
-      💰 আয়
-    </button>
-  </nav>
-
-  <div class="content">
-
-    <!-- ═══ ACTIVE ORDERS ═══ -->
-    <div class="page active" id="page-active">
-      <div id="activeOrdersWrap"></div>
-    </div>
-
-    <!-- ═══ HISTORY ═══ -->
-    <div class="page" id="page-history">
-      <div class="stats-row">
-        <div class="stat-box"><strong id="statTotal">0</strong><span>মোট ডেলিভারি</span></div>
-        <div class="stat-box"><strong id="statToday">0</strong><span>আজকে</span></div>
-        <div class="stat-box"><strong id="statEarned">₹0</strong><span>মোট আয়</span></div>
-      </div>
-      <!-- COD Cash Summary -->
-      <div class="cash-summary" id="cashSummaryStrip">
-        <div class="cash-summary-item">
-          <div class="cs-label">আজকের COD Cash</div>
-          <div class="cs-value orange" id="csTodayCash">₹0</div>
-        </div>
-        <div class="cash-summary-item">
-          <div class="cs-label">মোট COD Cash</div>
-          <div class="cs-value" id="csTotalCash">₹0</div>
-        </div>
-        <div class="cash-summary-item">
-          <div class="cs-label">Admin-কে জমা দিন</div>
-          <div class="cs-value green" id="csUnsettled">₹0</div>
-        </div>
-      </div>
-      <div id="historyWrap"></div>
-    </div>
-
-    <!-- ═══ EARNINGS ═══ -->
-    <div class="page" id="page-earnings">
-      <div class="earnings-card">
-        <div class="ec-label">এই মাসের আয়</div>
-        <div class="ec-value" id="earningsMonth">₹0</div>
-        <div class="ec-grid">
-          <div class="ec-box">
-            <div class="ec-box-label">মোট ডেলিভারি</div>
-            <div class="ec-box-val" id="earningsTotalDel">0</div>
-          </div>
-          <div class="ec-box">
-            <div class="ec-box-label">গড় প্রতি ডেলিভারি</div>
-            <div class="ec-box-val" id="earningsAvg">₹0</div>
-          </div>
-        </div>
-      </div>
-      <div style="background:#fff;border-radius:14px;border:1px solid var(--border);padding:16px">
-        <div style="font-size:.88rem;font-weight:700;color:var(--navy);margin-bottom:14px">
-          📋 সাম্প্রতিক ডেলিভারি
-        </div>
-        <div id="earningsListWrap"></div>
-      </div>
-    </div>
-
-  </div>
+  <button class="dp-load-more" id="dpLoadMore" style="display:none;" onclick="loadMore()">আরও দেখুন</button>
 </div>
 
 <script>
-var FB_CFG = {
-  apiKey:"AIzaSyA6TrrnCMwv1aa1WPqGvTVWlnieB2pVOEU",
-  authDomain:"delta-platform-82fc0.firebaseapp.com",
-  projectId:"delta-platform-82fc0",
-  storageBucket:"delta-platform-82fc0.firebasestorage.app",
-  messagingSenderId:"444904180433",
-  appId:"1:444904180433:web:6706eba4d73a30cd67d3f0"
-};
-var CITY = 'manteswar';
-var DELIVERY_FEE_PER_ORDER = 30; // ৳30 per delivery as default earnings
-var auth, db, CU = null, DBProfile = null;
-var myOrders = [];
+var fbcfg={apiKey:"AIzaSyA6TrrnCMwv1aa1WPqGvTVWlnieB2pVOEU",authDomain:"delta-platform-82fc0.firebaseapp.com",projectId:"delta-platform-82fc0",storageBucket:"delta-platform-82fc0.firebasestorage.app",messagingSenderId:"444904180433",appId:"1:444904180433:web:6706eba4d73a30cd67d3f0"};
+firebase.initializeApp(fbcfg);
+var auth=firebase.auth();
+var db=firebase.firestore();
+var CITY = new URLSearchParams(location.search).get('city') || 'manteswar';
+var currentUser=null;
+var _tabParam = new URLSearchParams(location.search).get('tab');
+var activeTab = (_tabParam==='top' || _tabParam==='reels') ? _tabParam : 'follow';
+var PAGE_SIZE = 15;
+var lastDoc = null;
+var followSet = [];
 
-(function(){
-  var scripts=[
-    'https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js',
-    'https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js',
-    'https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js'
-  ];
-  var n=0, done=false, hadErr=false;
-  function tryInit(){
-    if(done)return; done=true;
-    if(hadErr||typeof firebase==='undefined'){
-      hideLoading(); showAuth();
-      showToast('Internet সংযোগ সমস্যা — Page reload করুন','red');
+var DEMO_FOLLOW = [
+  {id:'demo-greenpharmacy', displayName:'Green Pharmacy', username:'greenpharmacy', avatarUrl:'https://images.unsplash.com/photo-1587854692152-cbe660dbde88?w=200&q=60'},
+  {id:'demo-techzone', displayName:'Tech Zone', username:'techzone', avatarUrl:'https://images.unsplash.com/photo-1518770660439-4636190af475?w=200&q=60'},
+  {id:'demo-cakehouse', displayName:'Cake House', username:'cakehouse', avatarUrl:''},
+];
+var DEMO_TOP = [
+  {displayName:'Fresh Mart', avatarUrl:'https://images.unsplash.com/photo-1542838132-92c53300491e?w=200&q=60', count:'12.4K'},
+  {displayName:'Fish Corner', avatarUrl:'https://images.unsplash.com/photo-1544943910-4c1dc44aab44?w=200&q=60', count:'8.7K'},
+  {displayName:'Salon XYZ', avatarUrl:'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=200&q=60', count:'6.1K'},
+];
+
+function requireLogin(){
+  alert('Login to engage, share and grow.\n\n☰ মেনু থেকে লগইন করুন।');
+}
+function dpAvatarOnError(imgEl, name){
+  var div = document.createElement('div');
+  div.className = 'dp-avatar-letter';
+  div.textContent = (name||'?').charAt(0).toUpperCase();
+  imgEl.replaceWith(div);
+}
+function dpAvatarOrLetter(avatarUrl, name){
+  if(avatarUrl){
+    var safeName = (name||'?').replace(/'/g,"\\'");
+    return '<img class="dp-avatar" src="'+avatarUrl+'" onerror="dpAvatarOnError(this,\''+safeName+'\')">';
+  }
+  return '<div class="dp-avatar-letter">'+((name||'?').charAt(0).toUpperCase())+'</div>';
+}
+
+function switchTab(tab){
+  activeTab = tab;
+  lastDoc = null;
+  var url = new URL(location.href);
+  url.searchParams.set('tab', tab);
+  history.replaceState(null, '', url);
+  document.getElementById('tabFollow').classList.toggle('active', tab==='follow');
+  document.getElementById('tabTop').classList.toggle('active', tab==='top');
+  document.getElementById('tabReels').classList.toggle('active', tab==='reels');
+  document.getElementById('dpList').className = tab==='reels' ? 'dp-reel-grid' : 'dp-list';
+  document.getElementById('dpList').innerHTML = '<div class="dp-loading">লোড হচ্ছে...</div>';
+  document.getElementById('dpLoadMore').style.display='none';
+  if(tab==='follow') loadFollowList(true);
+  else if(tab==='top') loadTopList(true);
+  else loadReelsList(true);
+}
+
+async function loadFollowList(reset){
+  var list = document.getElementById('dpList');
+  var loadMoreBtn = document.getElementById('dpLoadMore');
+  try{
+    if(currentUser && !followSet.length){
+      var fs = await db.collection('cities').doc(CITY).collection('mediaProfiles').doc(currentUser.uid).collection('following').get();
+      followSet = fs.docs.map(function(d){return d.id;});
+    }
+    var q = db.collection('cities').doc(CITY).collection('mediaProfiles').limit(PAGE_SIZE);
+    if(!reset && lastDoc) q = q.startAfter(lastDoc);
+    var snap = await q.get();
+    var docs = snap.docs.filter(function(d){ return d.id!==(currentUser&&currentUser.uid) && followSet.indexOf(d.id)===-1; });
+    if(reset) list.innerHTML='';
+    if(!docs.length && reset){
+      renderFollowCards(DEMO_FOLLOW, true, list);
+      loadMoreBtn.style.display='none';
       return;
     }
-    initFirebase();
+    lastDoc = snap.docs[snap.docs.length-1] || null;
+    renderFollowCards(docs.map(function(d){ var p=d.data(); p.id=d.id; return p; }), false, list);
+    loadMoreBtn.style.display = snap.docs.length===PAGE_SIZE ? 'block' : 'none';
+  }catch(e){
+    console.warn('Discover People — follow list error', e);
+    list.innerHTML='';
+    renderFollowCards(DEMO_FOLLOW, true, list);
+    loadMoreBtn.style.display='none';
   }
-  scripts.forEach(function(src){
-    var s=document.createElement('script'); s.src=src;
-    s.onload=function(){ if(++n===scripts.length) tryInit(); };
-    s.onerror=function(){ hadErr=true; if(++n===scripts.length) tryInit(); };
-    document.head.appendChild(s);
-  });
-  setTimeout(tryInit, 8000);
-})();
+}
 
-function initFirebase(){
+function renderFollowCards(items, isDemo, list){
+  if(!items.length){ list.innerHTML='<div class="dp-empty">আপাতত নতুন কেউ নেই follow করার জন্য।</div>'; return; }
+  items.forEach(function(p){
+    var card = document.createElement('div'); card.className='dp-card';
+    card.innerHTML =
+      '<div class="dp-avatar-wrap">'+dpAvatarOrLetter(p.avatarUrl, p.displayName)+'</div>'+
+      '<div class="dp-info"><div class="dp-name">'+(p.displayName||'Unknown')+'</div><div class="dp-sub">@'+(p.username||'user')+'</div></div>'+
+      '<button class="dp-follow-btn">Follow</button>';
+    var btn = card.querySelector('.dp-follow-btn');
+    var info = card.querySelector('.dp-info');
+    if(isDemo){
+      card.onclick = function(){ alert('Demo suggestion — becomes real once actual creators sign up'); };
+    } else {
+      info.onclick = function(){ location.href='media-profile.html?uid='+p.id+'&city='+CITY; };
+      btn.onclick = function(e){
+        e.stopPropagation();
+        if(!currentUser){ requireLogin(); return; }
+        toggleFollow(p.id, btn);
+      };
+    }
+    list.appendChild(card);
+  });
+}
+
+async function loadTopList(reset){
+  var list = document.getElementById('dpList');
+  var loadMoreBtn = document.getElementById('dpLoadMore');
   try{
-    firebase.initializeApp(FB_CFG);
-    auth=firebase.auth(); db=firebase.firestore();
-    auth.onAuthStateChanged(function(u){
-      if(u){
-        console.log('DELTA DEBUG: User logged in, UID =', u.uid);
-        CU = u;
-        // Load profile from deliveryBoys if exists, otherwise use email
-        db.collection('deliveryBoys').doc(u.uid).get().then(function(doc){
-          console.log('DELTA DEBUG: doc.exists =', doc.exists);
-          if(doc.exists){
-            DBProfile = doc.data();
-          } else {
-            // Fallback — allow login anyway, use email as name
-            DBProfile = {name: u.email, phone: '', city: CITY};
-          }
-          document.getElementById('dbNameLabel').textContent = DBProfile.name||u.email;
-          hideLoading(); showApp();
-          loadAllOrders();
-        }).catch(function(e){
-          console.log('DELTA DEBUG: Firestore error =', e.code, e.message);
-          // Even if Firestore fails, allow login
-          DBProfile = {name: u.email, phone: '', city: CITY};
-          document.getElementById('dbNameLabel').textContent = u.email;
-          hideLoading(); showApp();
-          loadAllOrders();
-        });
-      } else {
-        hideLoading(); showAuth();
-      }
-    });
-  }catch(e){ hideLoading(); showAuth(); }
-}
-
-function hideLoading(){ document.getElementById('loadingScreen').style.display='none'; }
-function showAuth(){ document.getElementById('authScreen').style.display='flex'; document.getElementById('appScreen').style.display='none'; }
-function showApp(){ document.getElementById('authScreen').style.display='none'; document.getElementById('appScreen').style.display='block'; }
-function showToast(msg,type){
-  var e=document.getElementById('toastEl'); e.textContent=msg;
-  e.className='toast show '+(type||''); clearTimeout(e._t);
-  e._t=setTimeout(function(){e.className='toast';},3200);
-}
-
-function doLogin(){
-  var e=document.getElementById('aEmail').value.trim();
-  var p=document.getElementById('aPass').value;
-  var err=document.getElementById('loginErr'); err.style.display='none';
-  if(!e||!p){err.textContent='Email ও Password দিন।';err.style.display='block';return;}
-  var btn=document.getElementById('loginBtn'); btn.disabled=true; btn.textContent='লগইন হচ্ছে...';
-  auth.signInWithEmailAndPassword(e,p).catch(function(er){
-    var msgs={
-      'auth/user-not-found':'Account পাওয়া যায়নি',
-      'auth/wrong-password':'পাসওয়ার্ড ভুল',
-      'auth/invalid-credential':'Email বা পাসওয়ার্ড ভুল'
-    };
-    err.textContent=msgs[er.code]||er.message; err.style.display='block';
-    btn.disabled=false; btn.textContent='🛵 লগইন করুন';
-  }).then(function(){
-    btn.disabled=false; btn.textContent='🛵 লগইন করুন';
-  });
-}
-
-function doLogout(){
-  if(!confirm('লগআউট করবেন?'))return;
-  auth.signOut();
-}
-
-function goTab(tab, btn){
-  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
-  document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});
-  document.getElementById('page-'+tab).classList.add('active');
-  btn.classList.add('active');
-  if(tab==='earnings') renderEarnings();
-}
-
-// ═══ LOAD ALL ASSIGNED ORDERS (across all sellers in the city) ═══
-function loadAllOrders(){
-  myOrders = [];
-  db.collection('cities').doc(CITY).collection('sellers').get().then(function(snap){
-    var sellers = [];
-    snap.forEach(function(d){ sellers.push(d.id); });
-    var proms = sellers.map(function(sid){
-      return db.collection('cities').doc(CITY).collection('sellers').doc(sid)
-        .collection('orders')
-        .where('deliveryBoyId','==',CU.uid)
-        .get().then(function(oSnap){
-          oSnap.forEach(function(d){
-            myOrders.push(Object.assign({id:d.id, shopId:sid}, d.data()));
-          });
-        }).catch(function(){});
-    });
-    Promise.all(proms).then(function(){
-      myOrders.sort(function(a,b){ return new Date(b.createdAt||0)-new Date(a.createdAt||0); });
-      renderActiveOrders();
-      renderHistory();
-      renderEarnings();
-      updateCounts();
-      startOrderListener(sellers);
-    });
-  }).catch(function(e){ showToast('লোড সমস্যা: '+e.message,'red'); });
-}
-
-// Real-time listener for newly assigned orders
-function startOrderListener(sellerIds){
-  sellerIds.forEach(function(sid){
-    db.collection('cities').doc(CITY).collection('sellers').doc(sid)
-      .collection('orders')
-      .where('deliveryBoyId','==',CU.uid)
-      .onSnapshot(function(snap){
-        snap.docChanges().forEach(function(change){
-          var o = Object.assign({id:change.doc.id, shopId:sid}, change.doc.data());
-          if(change.type==='added'){
-            var exists = myOrders.some(function(x){return x.id===o.id&&x.shopId===sid;});
-            if(!exists){
-              myOrders.unshift(o);
-              showToast('🛵 নতুন ডেলিভারি assign হয়েছে!','green');
-            }
-          } else if(change.type==='modified'){
-            var idx=myOrders.findIndex(function(x){return x.id===o.id&&x.shopId===sid;});
-            if(idx>=0) myOrders[idx]=o; else myOrders.unshift(o);
-          } else if(change.type==='removed'){
-            myOrders=myOrders.filter(function(x){return !(x.id===o.id&&x.shopId===sid);});
-          }
-          renderActiveOrders(); renderHistory(); updateCounts();
-        });
-      });
-  });
-}
-
-function updateCounts(){
-  var active = myOrders.filter(function(o){
-    return o.deliveryStatus!=='delivered' && o.deliveryStatus!=='cancelled';
-  });
-  document.getElementById('countActive').textContent = active.length;
-  document.getElementById('countActive').classList.toggle('zero', active.length===0);
-}
-
-var DB_STATUS_MAP = {
-  assigned:  {label:'📋 Assigned',    pill:'pill-assigned', cls:'oc-assigned'},
-  picked_up: {label:'📦 Picked Up',   pill:'pill-picked',   cls:'oc-picked'},
-  on_the_way:{label:'🛵 On the Way',  pill:'pill-on-way',   cls:'oc-on-way'},
-  delivered: {label:'✅ Delivered',   pill:'pill-delivered', cls:'oc-delivered'}
-};
-
-function orderCardHTML(o, showActions){
-  var ds = o.deliveryStatus||'assigned';
-  var sm = DB_STATUS_MAP[ds]||DB_STATUS_MAP.assigned;
-  var time = o.createdAt ? new Date(o.createdAt).toLocaleDateString('bn-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) : '—';
-  var actionBtns = '';
-  if(showActions){
-    if(ds==='assigned'){
-      if(o.pickupVerified){
-        actionBtns='<button class="btn-sm btn-blue" onclick="updateDeliveryStatus(\''+o.shopId+'\',\''+o.id+'\',\'picked_up\')">📦 Picked Up করুন</button>';
-      } else {
-        actionBtns='<div style="font-size:.74rem;color:var(--muted);text-align:center;padding:8px;background:var(--sand);border-radius:8px;">⏳ Seller এখনো verify করেননি — OTP দিন</div>';
-      }
+    var q = db.collection('cities').doc(CITY).collection('mediaProfiles').limit(PAGE_SIZE);
+    if(!reset && lastDoc) q = q.startAfter(lastDoc);
+    var snap = await q.get();
+    var withCounts = await Promise.all(snap.docs.map(async function(doc){
+      var followers = await doc.ref.collection('followers').get();
+      return {id:doc.id, data:doc.data(), count:followers.size};
+    }));
+    withCounts.sort(function(a,b){ return b.count - a.count; });
+    if(reset) list.innerHTML='';
+    var useDemo = reset && (!withCounts.length || withCounts[0].count===0);
+    if(useDemo){
+      renderTopCards(DEMO_TOP, true, list, 0);
+      loadMoreBtn.style.display='none';
+      return;
     }
-    else if(ds==='picked_up')
-      actionBtns='<button class="btn-sm btn-orange" onclick="updateDeliveryStatus(\''+o.shopId+'\',\''+o.id+'\',\'on_the_way\')">🛵 On the Way</button>';
-    else if(ds==='on_the_way')
-      actionBtns='<button class="btn-sm btn-green" onclick="updateDeliveryStatus(\''+o.shopId+'\',\''+o.id+'\',\'delivered\')">✅ Delivered করুন</button>';
+    lastDoc = snap.docs[snap.docs.length-1] || null;
+    renderTopCards(withCounts, false, list, list.children.length);
+    loadMoreBtn.style.display = snap.docs.length===PAGE_SIZE ? 'block' : 'none';
+  }catch(e){
+    console.warn('Discover People — top list error', e);
+    list.innerHTML='';
+    renderTopCards(DEMO_TOP, true, list, 0);
+    loadMoreBtn.style.display='none';
   }
-  return '<div class="order-card '+sm.cls+'">'+
-    '<div class="oc-top">'+
-      '<div><div class="oc-id">#'+o.id.slice(-6).toUpperCase()+'</div>'+
-      '<div class="oc-shop">🏪 '+(o.shopName||'—')+'</div></div>'+
-      '<span class="oc-status-pill '+sm.pill+'">'+sm.label+'</span>'+
-    '</div>'+
-    '<div class="addr-block">'+
-      '<div class="addr-row">'+
-        '<span class="addr-icon">📍</span>'+
-        '<div><span class="addr-label">Pickup (দোকান)</span>'+
-        '<span class="addr-text">'+(o.shopAddress ? o.shopAddress : (o.shopName||'ঠিকানা নেই'))+'</span>'+
-        (o.shopPhone?'<br><a class="addr-phone" href="tel:'+o.shopPhone+'">📞 '+o.shopPhone+'</a>':'')+
-        '</div>'+
-      '</div>'+
-      '<div class="addr-row">'+
-        '<span class="addr-icon">🏠</span>'+
-        '<div><span class="addr-label">Delivery (গ্রাহক)</span>'+
-        '<span class="addr-text">'+(o.deliveryAddress||'ঠিকানা নেই')+'</span></div>'+
-      '</div>'+
-      '<div class="addr-row">'+
-        '<span class="addr-icon">📞</span>'+
-        '<div><span class="addr-label">গ্রাহকের Phone</span>'+
-        '<a class="addr-phone" href="tel:'+(o.customerMobile||o.customerPhone||'')+'">'+(o.customerMobile||o.customerPhone||o.customerName||'—')+'</a></div>'+
-      '</div>'+
-    '</div>'+
-    '<div class="amount-row">'+
-      '<span class="payment-tag">'+(o.paymentMethod==='cod'?'💵 Cash on Delivery':'💳 UPI')+'</span>'+
-      '<span class="amount-val">₹'+(o.total||0)+'</span>'+
-    '</div>'+
-    (ds==='assigned' && o.pickupOtp ?
-      '<div style="background:#fff4ec;border:1.5px dashed var(--orange);border-radius:8px;padding:10px 12px;margin-top:8px;text-align:center;">'+
-      '<div style="font-size:.78rem;color:var(--muted);">🔐 দোকানে গিয়ে Seller এর কাছে OTP চাইতে হবে</div>'+
-      '<div style="font-size:.75rem;color:var(--muted);margin-top:2px;">Seller এর screen এ OTP দেখাবে — সেটা বলুন</div>'+
-      '</div>'
-      : '')+
-    (o.riderPayout ?
-      '<div style="background:var(--green2);border-radius:8px;padding:8px 12px;margin-top:8px;'+
-      'font-size:.82rem;display:flex;justify-content:space-between;align-items:center;">'+
-      '<span style="color:var(--muted)">🛵 আপনার Payout</span>'+
-      '<strong style="color:var(--green)">₹'+o.riderPayout+'</strong></div>'
-      : '<div style="background:var(--yellow2);border-radius:8px;padding:8px 12px;margin-top:8px;'+
-        'font-size:.78rem;color:#7d5a00;">⏳ Payout এখনো নির্ধারণ করা হয়নি</div>')+
-    (actionBtns?'<div class="oc-actions">'+actionBtns+'</div>':'')+
-    (ds==='delivered' ?
-      '<button onclick="downloadOrderPDF(\''+o.id+'\')" '+
-        'style="width:100%;margin-top:8px;background:var(--navy);color:#fff;border:none;padding:10px;'+
-        'border-radius:10px;font-weight:700;font-size:.8rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">'+
-        '📄 Order Receipt Download করুন</button>'
-      : '')+
-  '</div>';
 }
 
-function renderActiveOrders(){
-  var wrap = document.getElementById('activeOrdersWrap');
-  var active = myOrders.filter(function(o){
-    return o.deliveryStatus!=='delivered';
-  });
-  if(!active.length){
-    wrap.innerHTML='<div class="empty-state"><div class="empty-icon">🛵</div>'+
-      '<p>এখন কোনো active ডেলিভারি নেই</p></div>';
-    return;
-  }
-  wrap.innerHTML = active.map(function(o){return orderCardHTML(o,true);}).join('');
-}
-
-function renderHistory(){
-  var wrap = document.getElementById('historyWrap');
-  var delivered = myOrders.filter(function(o){ return o.deliveryStatus==='delivered'; });
-  var todayStr = new Date().toDateString();
-  var todayCount = delivered.filter(function(o){
-    return o.deliveryCompletedAt && new Date(o.deliveryCompletedAt).toDateString()===todayStr;
-  }).length;
-  var totalEarned = delivered.reduce(function(sum,o){ return sum + (o.riderPayout||0); }, 0);
-  document.getElementById('statTotal').textContent = delivered.length;
-  document.getElementById('statToday').textContent = todayCount;
-  document.getElementById('statEarned').textContent = '₹'+totalEarned;
-
-  // COD Cash Summary
-  var codOrders = delivered.filter(function(o){ return o.paymentMethod==='cod' && o.codCashCollected; });
-  var todayCodCash = codOrders.filter(function(o){
-    return o.codCashCollectedAt && new Date(o.codCashCollectedAt).toDateString()===todayStr;
-  }).reduce(function(s,o){ return s+(o.codCashAmount||0); }, 0);
-  var totalCodCash = codOrders.reduce(function(s,o){ return s+(o.codCashAmount||0); }, 0);
-  var unsettledCash = codOrders.filter(function(o){ return !o.codSettled; })
-    .reduce(function(s,o){ return s+(o.codCashAmount||0); }, 0);
-  document.getElementById('csTodayCash').textContent = '₹'+todayCodCash.toLocaleString('en-IN');
-  document.getElementById('csTotalCash').textContent = '₹'+totalCodCash.toLocaleString('en-IN');
-  document.getElementById('csUnsettled').textContent = '₹'+unsettledCash.toLocaleString('en-IN');
-  // Hide cash summary if no COD orders
-  var strip = document.getElementById('cashSummaryStrip');
-  if(strip) strip.style.display = codOrders.length ? 'flex' : 'none';
-
-  if(!delivered.length){
-    wrap.innerHTML='<div class="empty-state"><div class="empty-icon">📦</div>'+
-      '<p>এখনো কোনো ডেলিভারি সম্পন্ন হয়নি</p></div>';
-    return;
-  }
-  wrap.innerHTML = delivered.map(function(o){
-    var isCod = o.paymentMethod==='cod';
-    var codBlock = '';
-    if(isCod){
-      var collected = o.codCashCollected;
-      var settled = o.codSettled;
-      codBlock = '<div style="background:'+(collected?'var(--green2)':'var(--orange-light)')+
-        ';border-radius:8px;padding:8px 12px;margin-top:6px;font-size:.78rem;'+
-        'display:flex;justify-content:space-between;align-items:center;">'+
-        '<span>💵 COD Cash</span>'+
-        '<strong style="color:'+(collected?'var(--green)':'var(--orange)')+'">'+
-          (collected
-            ? '₹'+(o.codCashAmount||0).toLocaleString('en-IN')+' সংগৃহীত'+(settled?' · ✅ Settled':' · ⏳ Admin-কে জমা দিন')
-            : 'Cash সংগ্রহ নিশ্চিত হয়নি')+
-        '</strong>'+
-      '</div>';
+function renderTopCards(items, isDemo, list, startRank){
+  if(!items.length){ list.innerHTML='<div class="dp-empty">এখনও কোনো ranked creator নেই।</div>'; return; }
+  items.forEach(function(item, i){
+    var name = isDemo ? item.displayName : (item.data.displayName||'Unknown');
+    var avatar = isDemo ? item.avatarUrl : (item.data.avatarUrl||'');
+    var count = isDemo ? item.count : (item.count+'');
+    var card = document.createElement('div'); card.className='dp-card';
+    card.innerHTML =
+      '<div class="dp-avatar-wrap"><div class="dp-rank">'+(startRank+i+1)+'</div>'+dpAvatarOrLetter(avatar, name)+'</div>'+
+      '<div class="dp-info"><div class="dp-name">'+name+'</div><div class="dp-sub">'+count+' Followers</div></div>'+
+      '<button class="dp-follow-btn">Follow</button>';
+    var btn = card.querySelector('.dp-follow-btn');
+    var info = card.querySelector('.dp-info');
+    if(isDemo){
+      card.onclick = function(){ alert('Demo entry — becomes real once creators build a real following'); };
+    } else {
+      info.onclick = function(){ location.href='media-profile.html?uid='+item.id+'&city='+CITY; };
+      btn.onclick = function(e){
+        e.stopPropagation();
+        if(!currentUser){ requireLogin(); return; }
+        toggleFollow(item.id, btn);
+      };
     }
-    return '<div>'+orderCardHTML(o,false)+codBlock+'</div>';
-  }).join('');
-}
-
-function renderEarnings(){
-  var delivered = myOrders.filter(function(o){return o.deliveryStatus==='delivered';});
-  var now = new Date();
-  var thisMonth = delivered.filter(function(o){
-    if(!o.deliveryCompletedAt) return false;
-    var d = new Date(o.deliveryCompletedAt);
-    return d.getMonth()===now.getMonth() && d.getFullYear()===now.getFullYear();
+    list.appendChild(card);
   });
-  var monthEarnings = thisMonth.reduce(function(sum,o){ return sum + (o.riderPayout||0); }, 0);
-  var totalEarnedAll = delivered.reduce(function(sum,o){ return sum + (o.riderPayout||0); }, 0);
-  var avg = delivered.length ? Math.round(totalEarnedAll/delivered.length) : 0;
-  document.getElementById('earningsMonth').textContent = '₹'+monthEarnings;
-  document.getElementById('earningsTotalDel').textContent = delivered.length;
-  document.getElementById('earningsAvg').textContent = '₹'+avg;
-  var listWrap = document.getElementById('earningsListWrap');
-  var recent = delivered.slice(0,10);
-  if(!recent.length){
-    listWrap.innerHTML='<div style="text-align:center;padding:20px;color:var(--muted);font-size:.85rem">এখনো কোনো আয় নেই</div>';
-    return;
+}
+
+function toggleFollow(targetUid, btn){
+  var myRef = db.collection('cities').doc(CITY).collection('mediaProfiles').doc(currentUser.uid).collection('following').doc(targetUid);
+  var theirRef = db.collection('cities').doc(CITY).collection('mediaProfiles').doc(targetUid).collection('followers').doc(currentUser.uid);
+  var isFollowing = btn.classList.contains('following');
+  if(isFollowing){
+    myRef.delete(); theirRef.delete();
+    btn.textContent='Follow'; btn.classList.remove('following');
+  } else {
+    myRef.set({followedAt:new Date().toISOString()});
+    theirRef.set({followedAt:new Date().toISOString()});
+    btn.textContent='Following'; btn.classList.add('following');
   }
-  listWrap.innerHTML = recent.map(function(o){
-    var t = o.deliveryCompletedAt ? new Date(o.deliveryCompletedAt).toLocaleDateString('bn-IN',{day:'numeric',month:'short'}) : '—';
-    var codTag = o.paymentMethod==='cod'
-      ? '<span style="font-size:.68rem;background:'+(o.codSettled?'var(--green2)':'var(--orange-light)')+
-          ';color:'+(o.codSettled?'var(--green)':'var(--orange)')+
-          ';padding:2px 7px;border-radius:10px;margin-left:4px">'+
-          '💵 '+(o.codSettled?'Settled':'Cash জমা বাকি')+'</span>'
-      : '';
-    return '<div class="delivery-row">'+
-      '<div>'+
-        '<strong>#'+o.id.slice(-6).toUpperCase()+'</strong> — '+(o.shopName||'—')+codTag+'<br>'+
-        '<span style="font-size:.72rem;color:var(--muted)">'+t+
-          (o.paymentMethod==='cod'&&o.codCashAmount?' · Cash: ₹'+o.codCashAmount:'')+
-        '</span>'+
-      '</div>'+
-      '<strong style="color:var(--green)">₹'+(o.riderPayout||0)+'</strong>'+
-    '</div>';
-  }).join('');
 }
 
-// COD modal state
-var pendingCodUpdate = null;
-
-function updateDeliveryStatus(shopId, orderId, newStatus){
-  var o = myOrders.find(function(x){return x.id===orderId&&x.shopId===shopId;});
-  // If COD order being delivered — show cash confirmation modal first
-  if(newStatus==='delivered' && o && o.paymentMethod==='cod'){
-    pendingCodUpdate = {shopId:shopId, orderId:orderId, order:o};
-    document.getElementById('codModalAmount').textContent = '₹'+(o.total||0).toLocaleString('en-IN');
-    document.getElementById('codModal').classList.add('open');
-    document.body.style.overflow = 'hidden';
-    return;
-  }
-  // Non-COD or non-delivered status — proceed directly
-  doUpdateStatus(shopId, orderId, newStatus, false);
-}
-
-function confirmCodAndDeliver(){
-  if(!pendingCodUpdate) return;
-  // আগে data save করো, তারপর modal বন্ধ করো
-  var shopId = pendingCodUpdate.shopId;
-  var orderId = pendingCodUpdate.orderId;
-  pendingCodUpdate = null;
-  document.getElementById('codModal').classList.remove('open');
-  document.body.style.overflow = '';
-  doUpdateStatus(shopId, orderId, 'delivered', true);
-}
-
-function closeCodModal(){
-  document.getElementById('codModal').classList.remove('open');
-  document.body.style.overflow = '';
-  pendingCodUpdate = null;
-}
-
-function doUpdateStatus(shopId, orderId, newStatus, codCashCollected){
-  var statusLabels = {
-    picked_up:'Picked Up', on_the_way:'On the Way', delivered:'Delivered'
-  };
-  var updates = {
-    deliveryStatus: newStatus,
-    deliveryUpdatedAt: new Date().toISOString()
-  };
-  // Rider যখন pickup করে বা রওনা দেয়, main order status ও "Out for Delivery" এ
-  // auto-sync হয়ে যাবে — Seller কে আলাদা করে আবার click করতে হবে না।
-  // Rider এর physical action-ই আসল সত্য, Seller এর সাথে data mismatch এড়াতে এই sync জরুরি।
-  if(newStatus==='picked_up' || newStatus==='on_the_way'){
-    updates.status = 'out';
-    updates.statusChangedByRider = true;
-  }
-  if(newStatus==='delivered'){
-    updates.status = 'delivered';
-    updates.deliveryCompletedAt = new Date().toISOString();
-    if(codCashCollected){
-      var o = myOrders.find(function(x){return x.id===orderId&&x.shopId===shopId;});
-      updates.codCashCollected = true;
-      updates.codCashAmount = o ? (o.total||0) : 0;
-      updates.codCashCollectedAt = new Date().toISOString();
+var DEMO_REELS = [
+  {thumb:'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=300&q=60', views:'12.5K'},
+  {thumb:'https://images.unsplash.com/photo-1567337710282-00832b415979?w=300&q=60', views:'9.8K'},
+  {thumb:'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=300&q=60', views:'8.1K'},
+  {thumb:'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=300&q=60', views:'6.4K'},
+];
+async function loadReelsList(reset){
+  var list = document.getElementById('dpList');
+  var loadMoreBtn = document.getElementById('dpLoadMore');
+  try{
+    var q = db.collection('cities').doc(CITY).collection('mediaContent')
+      .where('type','==','reel').where('status','==','published').orderBy('createdAt','desc').limit(PAGE_SIZE);
+    if(!reset && lastDoc) q = q.startAfter(lastDoc);
+    var snap = await q.get();
+    if(reset) list.innerHTML='';
+    if(!snap.docs.length && reset){
+      renderReelCards(DEMO_REELS, true, list);
+      loadMoreBtn.style.display='none';
+      return;
     }
+    lastDoc = snap.docs[snap.docs.length-1] || null;
+    var items = snap.docs.map(function(d){ return d.data(); });
+    renderReelCards(items, false, list);
+    loadMoreBtn.style.display = snap.docs.length===PAGE_SIZE ? 'block' : 'none';
+  }catch(e){
+    // Likely missing Firestore composite index (type + status + orderBy) —
+    // same known gap as the Discover row. Fall back to demo cards.
+    console.warn('Discover People — reels list error (likely missing composite index)', e);
+    list.innerHTML='';
+    renderReelCards(DEMO_REELS, true, list);
+    loadMoreBtn.style.display='none';
   }
-  db.collection('cities').doc(CITY).collection('sellers').doc(shopId)
-    .collection('orders').doc(orderId).update(updates)
-    .then(function(){
-      var o = myOrders.find(function(x){return x.id===orderId&&x.shopId===shopId;});
-      if(o){ Object.assign(o, updates); }
-      renderActiveOrders(); renderHistory(); updateCounts();
-      showToast(
-        codCashCollected
-          ? 'Delivered ✅ · COD Cash ₹'+(updates.codCashAmount||0)+' সংগ্রহ করা হয়েছে'
-          : 'Status আপডেট হয়েছে: '+statusLabels[newStatus]+' ✅',
-        'green'
-      );
-    }).catch(function(e){
-      showToast('আপডেট ব্যর্থ: '+e.message,'red');
-    });
-}// ── ORDER RECEIPT PDF ──
-function downloadOrderPDF(orderId){
-  var o = myOrders.find(function(x){ return x.id===orderId; });
-  if(!o){ showToast('Order পাওয়া যায়নি','red'); return; }
-
-  var time = o.createdAt ? new Date(o.createdAt).toLocaleString('en-IN',{
-    day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'
-  }) : '—';
-
-  var items = (o.itemsDetail||[]).map(function(i){
-    return '<tr><td style="padding:6px 8px;border-bottom:1px solid #eee;">'+i.name+'</td>'+
-      '<td style="padding:6px 8px;border-bottom:1px solid #eee;text-align:center;">'+i.qty+'</td>'+
-      '<td style="padding:6px 8px;border-bottom:1px solid #eee;text-align:right;">₹'+i.price+'</td>'+
-      '<td style="padding:6px 8px;border-bottom:1px solid #eee;text-align:right;">₹'+(i.price*i.qty)+'</td></tr>';
-  }).join('');
-
-  var html = '<!DOCTYPE html><html><head><meta charset="UTF-8">'+
-    '<title>DELTA Order Receipt</title>'+
-    '<style>body{font-family:Arial,sans-serif;max-width:400px;margin:0 auto;padding:20px;color:#333;}'+
-    'h1{color:#f07018;font-size:1.4rem;margin:0;}'+
-    '.header{border-bottom:2px solid #f07018;padding-bottom:12px;margin-bottom:16px;}'+
-    '.info-row{display:flex;justify-content:space-between;margin-bottom:6px;font-size:.85rem;}'+
-    'table{width:100%;border-collapse:collapse;margin:16px 0;font-size:.85rem;}'+
-    'th{background:#f07018;color:#fff;padding:8px;text-align:left;}'+
-    '.total-row{font-weight:700;font-size:.95rem;border-top:2px solid #333;}'+
-    '.footer{text-align:center;margin-top:20px;font-size:.75rem;color:#999;}'+
-    '@media print{button{display:none!important;}}</style></head><body>'+
-    '<div class="header">'+
-      '<h1>∆ DELTA</h1>'+
-      '<div style="font-size:.75rem;color:#666;">deltaapp.in · পরিবর্তনের ব-দ্বীপ</div>'+
-    '</div>'+
-    '<div class="info-row"><span>Order ID</span><strong>#'+o.id.slice(-6).toUpperCase()+'</strong></div>'+
-    '<div class="info-row"><span>তারিখ</span><span>'+time+'</span></div>'+
-    '<div class="info-row"><span>দোকান</span><span>'+(o.shopName||'—')+'</span></div>'+
-    (o.shopAddress?'<div class="info-row"><span>দোকানের ঠিকানা</span><span>'+o.shopAddress+'</span></div>':'')+
-    '<div class="info-row"><span>গ্রাহক</span><span>'+(o.customerName||'Customer')+'</span></div>'+
-    '<div class="info-row"><span>ডেলিভারি ঠিকানা</span><span>'+(o.deliveryAddress||'—')+'</span></div>'+
-    '<div class="info-row"><span>Payment</span><span>'+(o.paymentMethod==='cod'?'Cash on Delivery':'UPI')+'</span></div>'+
-    '<table><thead><tr>'+
-      '<th>পণ্য</th><th style="text-align:center">পরিমাণ</th><th style="text-align:right">দাম</th><th style="text-align:right">মোট</th>'+
-    '</tr></thead><tbody>'+items+'</tbody>'+
-    '<tfoot><tr class="total-row">'+
-      '<td colspan="3" style="padding:8px;">উপমোট</td>'+
-      '<td style="padding:8px;text-align:right;">₹'+(o.total||0)+'</td></tr>'+
-    (o.deliveryCharge>0?'<tr><td colspan="3" style="padding:4px 8px;font-size:.8rem;">ডেলিভারি চার্জ</td>'+
-      '<td style="padding:4px 8px;text-align:right;font-size:.8rem;">₹'+o.deliveryCharge+'</td></tr>':'')+
-    '<tr class="total-row"><td colspan="3" style="padding:8px;background:#fff8f0;">সর্বমোট</td>'+
-      '<td style="padding:8px;text-align:right;background:#fff8f0;color:#f07018;">₹'+(o.grandTotal||o.total||0)+'</td></tr>'+
-    '</tfoot></table>'+
-    (o.riderPayout?'<div class="info-row"><span>🛵 আপনার Payout</span><strong style="color:green">₹'+o.riderPayout+'</strong></div>':'')+
-    (o.codCashCollected?'<div class="info-row"><span>💵 COD Cash সংগ্রহ</span><strong>₹'+(o.codCashAmount||o.total||0)+'</strong></div>':'')+
-    '<div class="footer">DELTA — Local Roots. Global Wings.<br>ধন্যবাদ আপনার সেবা করতে পেরে!</div>'+
-    '<br><button onclick="window.print()" style="width:100%;padding:10px;background:#f07018;color:#fff;border:none;border-radius:8px;font-size:1rem;cursor:pointer;">🖨️ Print / Save PDF</button>'+
-    '</body></html>';
-
-  var win = window.open('', '_blank');
-  win.document.write(html);
-  win.document.close();
 }
+function renderReelCards(items, isDemo, list){
+  if(!items.length){ list.innerHTML='<div class="dp-empty">এখনও কোনো Reel নেই।</div>'; return; }
+  items.forEach(function(d){
+    var thumb = isDemo ? d.thumb : (d.thumbnailUrl||'');
+    var views = isDemo ? d.views : ((d.stats&&d.stats.views)||0);
+    var card = document.createElement('div'); card.className='dp-reel-card';
+    card.innerHTML = '<img src="'+thumb+'" onerror="this.style.background=\'var(--cream)\'"><div class="dp-reel-views">▶ '+views+'</div>';
+    card.onclick = isDemo
+      ? function(){ alert('Demo thumbnail — becomes a real reel once creators start posting'); }
+      : function(){ location.href='reels-player.html?city='+CITY; };
+    list.appendChild(card);
+  });
+}
+
+function loadMore(){
+  if(activeTab==='follow') loadFollowList(false);
+  else if(activeTab==='top') loadTopList(false);
+  else loadReelsList(false);
+}
+
+auth.onAuthStateChanged(function(u){
+  currentUser = u;
+  followSet = [];
+  document.getElementById('tabFollow').classList.toggle('active', activeTab==='follow');
+  document.getElementById('tabTop').classList.toggle('active', activeTab==='top');
+  document.getElementById('tabReels').classList.toggle('active', activeTab==='reels');
+  document.getElementById('dpList').className = activeTab==='reels' ? 'dp-reel-grid' : 'dp-list';
+  if(activeTab==='follow') loadFollowList(true);
+  else if(activeTab==='top') loadTopList(true);
+  else loadReelsList(true);
+});
 </script>
 </body>
 </html>
