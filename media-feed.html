@@ -294,6 +294,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 .mh-d-card{flex:0 0 auto;width:100px;background:#fff;border:1px solid var(--border);border-radius:14px;padding:10px 7px;text-align:center;cursor:pointer;}
 .mh-d-avatar-wrap{position:relative;width:52px;height:52px;margin:0 auto 6px;}
 .mh-d-avatar{width:52px;height:52px;border-radius:50%;object-fit:cover;background:var(--cream);display:block;border:1px solid var(--border);}
+.mh-d-avatar-letter{width:52px;height:52px;border-radius:50%;background:var(--navy);color:var(--gold,#D4AF63);
+  display:flex;align-items:center;justify-content:center;font-size:1.3rem;font-weight:800;border:1px solid var(--border);}
 .mh-d-rank{position:absolute;top:-4px;left:-4px;width:18px;height:18px;border-radius:50%;background:var(--gold,#D4AF63);
   color:var(--navy);font-size:.6rem;font-weight:800;display:flex;align-items:center;justify-content:center;border:1.5px solid #fff;}
 .mh-d-name{font-size:.66rem;font-weight:700;color:var(--charcoal);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -427,6 +429,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 .mh-follow-row{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
 .mh-follow-row:last-child{margin-bottom:0;}
 .mh-follow-avatar{width:36px;height:36px;border-radius:50%;background:var(--sand);object-fit:cover;flex-shrink:0;}
+.mh-follow-avatar-letter{width:36px;height:36px;border-radius:50%;background:var(--navy);color:var(--gold,#D4AF63);
+  display:flex;align-items:center;justify-content:center;font-size:.95rem;font-weight:800;flex-shrink:0;}
 .mh-follow-info{flex:1;min-width:0;}
 .mh-follow-name{font-size:.8rem;font-weight:700;color:var(--charcoal);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .mh-follow-handle{font-size:.68rem;color:var(--muted);}
@@ -443,6 +447,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 .mh-creator-row:last-child{margin-bottom:0;}
 .mh-creator-rank{width:18px;font-size:.75rem;font-weight:800;color:var(--orange-dark,#b8925a);}
 .mh-creator-avatar{width:34px;height:34px;border-radius:50%;background:var(--sand);object-fit:cover;flex-shrink:0;}
+.mh-creator-avatar-letter{width:34px;height:34px;border-radius:50%;background:var(--navy);color:var(--gold,#D4AF63);
+  display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:800;flex-shrink:0;}
 .mh-creator-meta{font-size:.68rem;color:var(--muted);}
 
 .mh-premium-card{background:linear-gradient(135deg,#fff8ec,#fdf3dd);border:1.5px solid var(--orange);border-radius:14px;
@@ -1013,6 +1019,26 @@ var db=firebase.firestore();
 var CITY = new URLSearchParams(location.search).get('city') || 'manteswar';
 var currentUser=null;
 var NAV_AVATAR_GENERIC_ICON = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3.3"/><path d="M4.5 20c1-4.2 4-6.5 7.5-6.5s6.5 2.3 7.5 6.5" stroke-linecap="round"/></svg>';
+// Discover row cards (Who to Follow / Top Creators / Official) — shows the
+// real avatar image if there is one, otherwise the name's first letter,
+// never a blank circle. Uses a real onerror function (not inline HTML
+// strings) to avoid quote-escaping issues.
+function mhAvatarOnError(imgEl, name, letterClass){
+  var letter = (name||'?').charAt(0).toUpperCase();
+  var div = document.createElement('div');
+  div.className = letterClass || 'mh-d-avatar-letter';
+  div.textContent = letter;
+  imgEl.replaceWith(div);
+}
+function mhAvatarOrLetter(avatarUrl, name, imgClass, letterClass){
+  imgClass = imgClass || 'mh-d-avatar';
+  letterClass = letterClass || 'mh-d-avatar-letter';
+  if(avatarUrl){
+    var safeName = (name||'?').replace(/'/g,"\\'");
+    return '<img class="'+imgClass+'" src="'+avatarUrl+'" onerror="mhAvatarOnError(this,\''+safeName+'\',\''+letterClass+'\')">';
+  }
+  return '<div class="'+letterClass+'">'+((name||'?').charAt(0).toUpperCase())+'</div>';
+}
 
 // ── Shared icon set — custom SVG, not emoji, kept consistent across the whole page ──
 var ICON_HEART='<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20.5s-7.5-4.8-10-9.5C.3 7.7 2 4 5.7 4c2 0 3.4 1 4.3 2.4C11 5 12.4 4 14.3 4 18 4 19.7 7.7 18 11c-2.5 4.7-10 9.5-10 9.5Z"/></svg>';
@@ -2069,7 +2095,7 @@ async function loadMhWhoToFollow(){
     list.forEach(function(p){
       var row = document.createElement('div'); row.className='mh-follow-row';
       row.innerHTML =
-        '<img class="mh-follow-avatar" src="'+(p.avatarUrl||'')+'" onerror="this.style.background=\'var(--sand)\'">'+
+        mhAvatarOrLetter(p.avatarUrl, p.displayName, 'mh-follow-avatar', 'mh-follow-avatar-letter')+
         '<div class="mh-follow-info"><div class="mh-follow-name">'+(p.displayName||'Unknown')+'</div>'+
         '<div class="mh-follow-handle">@'+(p.username||'user')+'</div></div>'+
         '<button class="mh-follow-btn-sm">Follow</button>';
@@ -2175,7 +2201,7 @@ async function loadMhTopCreators(){
         var row = document.createElement('div'); row.className='mh-creator-row';
         row.innerHTML =
           '<div class="mh-creator-rank">'+(i+1)+'</div>'+
-          '<img class="mh-creator-avatar" src="'+item.avatarUrl+'">'+
+          mhAvatarOrLetter(item.avatarUrl, item.displayName, 'mh-creator-avatar', 'mh-creator-avatar-letter')+
           '<div class="mh-follow-info"><div class="mh-follow-name">'+item.displayName+'</div>'+
           '<div class="mh-creator-meta">'+item.count+' Followers</div></div>';
         row.onclick = function(){ alert('Demo entry — becomes real once creators build a real following'); };
@@ -2188,7 +2214,7 @@ async function loadMhTopCreators(){
       var row = document.createElement('div'); row.className='mh-creator-row';
       row.innerHTML =
         '<div class="mh-creator-rank">'+(i+1)+'</div>'+
-        '<img class="mh-creator-avatar" src="'+(item.data.avatarUrl||'')+'" onerror="this.style.background=\'var(--sand)\'">'+
+        mhAvatarOrLetter(item.data.avatarUrl, item.data.displayName, 'mh-creator-avatar', 'mh-creator-avatar-letter')+
         '<div class="mh-follow-info"><div class="mh-follow-name">'+(item.data.displayName||'Unknown')+'</div>'+
         '<div class="mh-creator-meta">'+item.count+' Followers</div></div>';
       row.onclick = function(){ location.href='media-profile.html?uid='+item.id+'&city='+CITY; };
@@ -2224,7 +2250,7 @@ async function loadMhDiscoverRow(){
       var avatarUrl = pDoc.exists ? (pDoc.data().avatarUrl||'') : '';
       officialCard.innerHTML =
         '<div class="mh-d-avatar-wrap"><div class="mh-d-rank" style="background:linear-gradient(135deg,#4a90d9,#8b5cf6,#e0245e);color:#fff;">✓</div>'+
-        '<img class="mh-d-avatar" src="'+avatarUrl+'" onerror="this.style.background=\'var(--sand)\'"></div>'+
+        mhAvatarOrLetter(avatarUrl, 'DELTA Official')+'</div>'+
         '<div class="mh-d-name">DELTA Official</div>'+
         '<div class="mh-d-sub">Pinned</div>';
       officialCard.onclick = function(){ location.href='media-profile.html?uid='+officialUid+'&city='+CITY; };
@@ -2266,7 +2292,7 @@ async function loadMhDiscoverRow(){
       var card = document.createElement('div'); card.className='mh-d-card';
       var subText = isDemoFollow ? (p.followers+' Followers') : ((p.followerCount||0)+' Followers');
       card.innerHTML =
-        '<div class="mh-d-avatar-wrap"><img class="mh-d-avatar" src="'+(p.avatarUrl||'')+'" onerror="this.style.background=\'var(--sand)\'"></div>'+
+        '<div class="mh-d-avatar-wrap">'+mhAvatarOrLetter(p.avatarUrl, p.displayName)+'</div>'+
         '<div class="mh-d-name">'+(p.displayName||'Unknown')+'</div>'+
         '<div class="mh-d-sub">'+subText+'</div>'+
         '<button class="mh-d-btn">Follow</button>';
@@ -2274,7 +2300,7 @@ async function loadMhDiscoverRow(){
       if(isDemoFollow){
         card.onclick = function(){ alert('Demo suggestion — becomes real once actual creators sign up'); };
       } else {
-        card.querySelector('.mh-d-avatar').onclick = function(e){ e.stopPropagation(); location.href='media-profile.html?uid='+p.id+'&city='+CITY; };
+        card.querySelector('.mh-d-avatar-wrap').onclick = function(e){ e.stopPropagation(); location.href='media-profile.html?uid='+p.id+'&city='+CITY; };
         btn.onclick = function(e){
           e.stopPropagation();
           if(!currentUser){ requireLogin(); return; }
@@ -2308,7 +2334,7 @@ async function loadMhDiscoverRow(){
       var count = useDemo ? item.count : (item.count+'');
       var card = document.createElement('div'); card.className='mh-d-card';
       card.innerHTML =
-        '<div class="mh-d-avatar-wrap"><div class="mh-d-rank">'+(i+1)+'</div><img class="mh-d-avatar" src="'+avatar+'" onerror="this.style.background=\'var(--sand)\'"></div>'+
+        '<div class="mh-d-avatar-wrap"><div class="mh-d-rank">'+(i+1)+'</div>'+mhAvatarOrLetter(avatar, name)+'</div>'+
         '<div class="mh-d-name">'+name+'</div>'+
         '<div class="mh-d-sub">'+count+' Followers</div>'+
         '<button class="mh-d-btn">Follow</button>';
@@ -2316,7 +2342,7 @@ async function loadMhDiscoverRow(){
       if(useDemo){
         card.onclick = function(){ alert('Demo entry — becomes real once creators build a real following'); };
       } else {
-        card.querySelector('.mh-d-avatar').onclick = function(e){ e.stopPropagation(); location.href='media-profile.html?uid='+item.id+'&city='+CITY; };
+        card.querySelector('.mh-d-avatar-wrap').onclick = function(e){ e.stopPropagation(); location.href='media-profile.html?uid='+item.id+'&city='+CITY; };
         card.querySelector('.mh-d-name').onclick = function(e){ e.stopPropagation(); location.href='media-profile.html?uid='+item.id+'&city='+CITY; };
         followBtn.onclick = function(e){
           e.stopPropagation();
