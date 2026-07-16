@@ -166,7 +166,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
   <div class="pp-username" id="ppUsername"></div>
 
   <div class="pp-stats">
-    <div class="pp-stat" onclick="openFollowList('following')"><b id="ppPostCount">0</b><span>Posts</span></div>
+    <div class="pp-stat" onclick="switchTab('post')"><b id="ppPostCount">0</b><span>Posts</span></div>
     <div class="pp-stat" onclick="openFollowList('followers')"><b id="ppFollowerCount">0</b><span>Followers</span></div>
     <div class="pp-stat" onclick="openFollowList('following')"><b id="ppFollowingCount">0</b><span>Following</span></div>
   </div>
@@ -237,8 +237,23 @@ async function loadProfile(){
   }
   try{
     var doc = await db.collection('cities').doc(CITY).collection('mediaProfiles').doc(PROFILE_UID).get();
-    profileData = doc.exists ? doc.data() : {};
     isOwner = !!(currentUser && currentUser.uid === PROFILE_UID);
+    if(!doc.exists && isOwner){
+      // Self-heal for accounts created before mediaProfiles auto-creation was
+      // added to the sign-up flow — build a basic profile now rather than
+      // showing "Profile not found" forever on someone's own page.
+      var basicProfile = {
+        uid: currentUser.uid, displayName: currentUser.displayName || 'DELTA User',
+        bio:'', avatarUrl:'', coverUrl:'', roles:['customer','creator'],
+        linkedCustomerId: currentUser.uid, followerCount:0, followingCount:0, postCount:0,
+        primaryBadge:'customer_creator', isVerified:false,
+        createdAt:new Date().toISOString(), updatedAt:new Date().toISOString()
+      };
+      await db.collection('cities').doc(CITY).collection('mediaProfiles').doc(PROFILE_UID).set(basicProfile);
+      profileData = basicProfile;
+    } else {
+      profileData = doc.exists ? doc.data() : {};
+    }
 
     // ── Cover & Avatar ──
     if(profileData.coverUrl){
