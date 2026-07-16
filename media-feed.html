@@ -1101,6 +1101,16 @@ async function doMediaRegister(){
     await db.collection('cities').doc(CITY).collection('customers').doc(cr.user.uid).set({
       name:name, mobile:mobile, email:email, city:CITY, createdAt:new Date().toISOString()
     });
+    // Identity Bridge (Part A Section 3.2) — every account also gets a basic
+    // mediaProfiles doc, so DELTA Media's profile page actually finds them
+    // instead of showing "Profile not found".
+    await db.collection('cities').doc(CITY).collection('mediaProfiles').doc(cr.user.uid).set({
+      uid: cr.user.uid, displayName: name, bio:'', avatarUrl:'', coverUrl:'',
+      roles:['customer','creator'], linkedCustomerId: cr.user.uid,
+      followerCount:0, followingCount:0, postCount:0,
+      primaryBadge:'customer_creator', isVerified:false,
+      createdAt:new Date().toISOString(), updatedAt:new Date().toISOString()
+    });
     closeMediaAuth();
   }catch(err){
     showMfAuthErr(err.code==='auth/email-already-in-use' ? 'এই ইমেইল আগেই ব্যবহৃত' : err.message);
