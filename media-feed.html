@@ -1017,6 +1017,13 @@ firebase.initializeApp(fbcfg);
 var auth=firebase.auth();
 var db=firebase.firestore();
 var CITY = new URLSearchParams(location.search).get('city') || 'manteswar';
+// City → District/State/Country lookup, for hyperlocal-to-global scope
+// filtering (Discover People "All Creators" tab). Extend this as DELTA
+// expands to new cities per the Master Doc Section 11 roadmap.
+var CITY_GEO_MAP = {
+  manteswar: {district:'Purba Bardhaman', state:'West Bengal', country:'India'}
+};
+function getCityGeo(city){ return CITY_GEO_MAP[city] || CITY_GEO_MAP.manteswar; }
 var currentUser=null;
 var NAV_AVATAR_GENERIC_ICON = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3.3"/><path d="M4.5 20c1-4.2 4-6.5 7.5-6.5s6.5 2.3 7.5 6.5" stroke-linecap="round"/></svg>';
 // Discover row cards (Who to Follow / Top Creators / Official) and desktop
@@ -1141,11 +1148,13 @@ async function doMediaRegister(){
     // Identity Bridge (Part A Section 3.2) — every account also gets a basic
     // mediaProfiles doc, so DELTA Media's profile page actually finds them
     // instead of showing "Profile not found".
+    var geo = getCityGeo(CITY);
     await db.collection('cities').doc(CITY).collection('mediaProfiles').doc(cr.user.uid).set({
       uid: cr.user.uid, displayName: name, bio:'', avatarUrl:'', coverUrl:'',
       roles:['customer','creator'], linkedCustomerId: cr.user.uid,
       followerCount:0, followingCount:0, postCount:0,
       primaryBadge:'customer_creator', isVerified:false,
+      city:CITY, district:geo.district, state:geo.state, country:geo.country,
       createdAt:new Date().toISOString(), updatedAt:new Date().toISOString()
     });
     closeMediaAuth();
