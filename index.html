@@ -1,4 +1,4 @@
-<!DOCTYPE html>      
+<!DOCTYPE html> 
 <html lang="bn">
 <head>
 <meta charset="UTF-8">
@@ -7323,6 +7323,15 @@ async function doCustomerRegister(){
     var cr=await auth.createUserWithEmailAndPassword(e,p);
     await cr.user.updateProfile({displayName:name});
     await db.collection('cities').doc(CITY).collection('customers').doc(cr.user.uid).set({name,mobile,email:e,city:CITY,createdAt:new Date().toISOString()});
+    // Identity Bridge — same account also needs a mediaProfiles doc so DELTA
+    // Media's profile page finds them, whether they signed up here or there.
+    await db.collection('cities').doc(CITY).collection('mediaProfiles').doc(cr.user.uid).set({
+      uid: cr.user.uid, displayName: name, bio:'', avatarUrl:'', coverUrl:'',
+      roles:['customer','creator'], linkedCustomerId: cr.user.uid,
+      followerCount:0, followingCount:0, postCount:0,
+      primaryBadge:'customer_creator', isVerified:false,
+      createdAt:new Date().toISOString(), updatedAt:new Date().toISOString()
+    });
     closeAuth();showToast('নিবন্ধন সফল! স্বাগতম '+name+' 🎉','green');redirectAfterAuthIfNeeded();
   }catch(er){showAuthErr(er.code==='auth/email-already-in-use'?'এই ইমেইল আগেই ব্যবহৃত':er.message);}
 }
