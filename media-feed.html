@@ -286,7 +286,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 .ipc-dot.active{background:#D4AF63;width:14px;border-radius:3px;}
 .empty-state-icon{font-size:2.4rem;margin-bottom:10px;}
 .mh-discover-row{margin:4px 0 2px;}
-.mh-discover-title{font-weight:800;font-size:.85rem;color:var(--charcoal);padding:0 14px;margin-bottom:8px;}
+.mh-discover-title{font-weight:800;font-size:.85rem;color:var(--charcoal);padding:0 14px;margin-bottom:8px;
+  display:flex;justify-content:space-between;align-items:center;}
+.mh-discover-seeall{font-size:.72rem;font-weight:700;color:var(--muted);cursor:pointer;}
 .mh-discover-scroll{display:flex;gap:10px;overflow-x:auto;padding:0 14px 10px;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
 .mh-discover-scroll::-webkit-scrollbar{display:none;}
 .mh-d-card{flex:0 0 auto;width:100px;background:#fff;border:1px solid var(--border);border-radius:14px;padding:10px 7px;text-align:center;cursor:pointer;}
@@ -818,7 +820,7 @@ body.dark-mode .mh-nav-item .mhi{ background:var(--border); }
          widgets). Visible to anonymous viewers too — only the Follow action itself
          prompts login, consistent with the rest of the feed. -->
     <div class="mh-discover-row" id="mhDiscoverRow" style="display:none;">
-      <div class="mh-discover-title">Discover</div>
+      <div class="mh-discover-title">Discover <span class="mh-discover-seeall" onclick="location.href='discover-people.html?tab=follow&city='+CITY">See All</span></div>
       <div class="mh-discover-scroll" id="mhDiscoverScroll">
         <div style="color:var(--muted);font-size:.72rem;padding:0 4px;">লোড হচ্ছে...</div>
       </div>
