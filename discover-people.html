@@ -35,6 +35,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 
 .dp-wrap{max-width:640px;margin:0 auto;padding:16px;}
 .dp-list{display:flex;flex-direction:column;gap:10px;}
+.dp-reel-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
+.dp-reel-card{position:relative;border-radius:14px;overflow:hidden;aspect-ratio:9/14;background:var(--cream);cursor:pointer;border:1px solid var(--border);}
+.dp-reel-card img{width:100%;height:100%;object-fit:cover;display:block;}
+.dp-reel-views{position:absolute;bottom:8px;left:8px;color:#fff;font-size:.72rem;font-weight:700;background:rgba(0,0,0,.5);padding:3px 9px;border-radius:9px;}
 
 .dp-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px;display:flex;align-items:center;gap:12px;}
 .dp-avatar-wrap{position:relative;width:52px;height:52px;flex-shrink:0;}
@@ -66,6 +70,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 <div class="dp-tabs">
   <button class="dp-tab" id="tabFollow" onclick="switchTab('follow')">Who to Follow</button>
   <button class="dp-tab" id="tabTop" onclick="switchTab('top')">Top Creators</button>
+  <button class="dp-tab" id="tabReels" onclick="switchTab('reels')">Trending Reels</button>
 </div>
 
 <div class="dp-wrap">
@@ -82,7 +87,8 @@ var auth=firebase.auth();
 var db=firebase.firestore();
 var CITY = new URLSearchParams(location.search).get('city') || 'manteswar';
 var currentUser=null;
-var activeTab = new URLSearchParams(location.search).get('tab')==='top' ? 'top' : 'follow';
+var _tabParam = new URLSearchParams(location.search).get('tab');
+var activeTab = (_tabParam==='top' || _tabParam==='reels') ? _tabParam : 'follow';
 var PAGE_SIZE = 15;
 var lastDoc = null;
 var followSet = [];
@@ -110,9 +116,13 @@ function switchTab(tab){
   history.replaceState(null, '', url);
   document.getElementById('tabFollow').classList.toggle('active', tab==='follow');
   document.getElementById('tabTop').classList.toggle('active', tab==='top');
+  document.getElementById('tabReels').classList.toggle('active', tab==='reels');
+  document.getElementById('dpList').className = tab==='reels' ? 'dp-reel-grid' : 'dp-list';
   document.getElementById('dpList').innerHTML = '<div class="dp-loading">লোড হচ্ছে...</div>';
   document.getElementById('dpLoadMore').style.display='none';
-  if(tab==='follow') loadFollowList(true); else loadTopList(true);
+  if(tab==='follow') loadFollowList(true);
+  else if(tab==='top') loadTopList(true);
+  else loadReelsList(true);
 }
 
 async function loadFollowList(reset){
@@ -239,8 +249,57 @@ function toggleFollow(targetUid, btn){
   }
 }
 
+var DEMO_REELS = [
+  {thumb:'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=300&q=60', views:'12.5K'},
+  {thumb:'https://images.unsplash.com/photo-1567337710282-00832b415979?w=300&q=60', views:'9.8K'},
+  {thumb:'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=300&q=60', views:'8.1K'},
+  {thumb:'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=300&q=60', views:'6.4K'},
+];
+async function loadReelsList(reset){
+  var list = document.getElementById('dpList');
+  var loadMoreBtn = document.getElementById('dpLoadMore');
+  try{
+    var q = db.collection('cities').doc(CITY).collection('mediaContent')
+      .where('type','==','reel').where('status','==','published').orderBy('createdAt','desc').limit(PAGE_SIZE);
+    if(!reset && lastDoc) q = q.startAfter(lastDoc);
+    var snap = await q.get();
+    if(reset) list.innerHTML='';
+    if(!snap.docs.length && reset){
+      renderReelCards(DEMO_REELS, true, list);
+      loadMoreBtn.style.display='none';
+      return;
+    }
+    lastDoc = snap.docs[snap.docs.length-1] || null;
+    var items = snap.docs.map(function(d){ return d.data(); });
+    renderReelCards(items, false, list);
+    loadMoreBtn.style.display = snap.docs.length===PAGE_SIZE ? 'block' : 'none';
+  }catch(e){
+    // Likely missing Firestore composite index (type + status + orderBy) —
+    // same known gap as the Discover row. Fall back to demo cards.
+    console.warn('Discover People — reels list error (likely missing composite index)', e);
+    list.innerHTML='';
+    renderReelCards(DEMO_REELS, true, list);
+    loadMoreBtn.style.display='none';
+  }
+}
+function renderReelCards(items, isDemo, list){
+  if(!items.length){ list.innerHTML='<div class="dp-empty">এখনও কোনো Reel নেই।</div>'; return; }
+  items.forEach(function(d){
+    var thumb = isDemo ? d.thumb : (d.thumbnailUrl||'');
+    var views = isDemo ? d.views : ((d.stats&&d.stats.views)||0);
+    var card = document.createElement('div'); card.className='dp-reel-card';
+    card.innerHTML = '<img src="'+thumb+'" onerror="this.style.background=\'var(--cream)\'"><div class="dp-reel-views">▶ '+views+'</div>';
+    card.onclick = isDemo
+      ? function(){ alert('Demo thumbnail — becomes a real reel once creators start posting'); }
+      : function(){ location.href='reels-player.html?city='+CITY; };
+    list.appendChild(card);
+  });
+}
+
 function loadMore(){
-  if(activeTab==='follow') loadFollowList(false); else loadTopList(false);
+  if(activeTab==='follow') loadFollowList(false);
+  else if(activeTab==='top') loadTopList(false);
+  else loadReelsList(false);
 }
 
 auth.onAuthStateChanged(function(u){
@@ -248,7 +307,11 @@ auth.onAuthStateChanged(function(u){
   followSet = [];
   document.getElementById('tabFollow').classList.toggle('active', activeTab==='follow');
   document.getElementById('tabTop').classList.toggle('active', activeTab==='top');
-  if(activeTab==='follow') loadFollowList(true); else loadTopList(true);
+  document.getElementById('tabReels').classList.toggle('active', activeTab==='reels');
+  document.getElementById('dpList').className = activeTab==='reels' ? 'dp-reel-grid' : 'dp-list';
+  if(activeTab==='follow') loadFollowList(true);
+  else if(activeTab==='top') loadTopList(true);
+  else loadReelsList(true);
 });
 </script>
 </body>
