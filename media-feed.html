@@ -288,7 +288,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 .mh-discover-row{margin:4px 0 2px;}
 .mh-discover-title{font-weight:800;font-size:.85rem;color:var(--charcoal);padding:0 14px;margin-bottom:8px;
   display:flex;justify-content:space-between;align-items:center;}
-.mh-discover-seeall{font-size:.72rem;font-weight:700;color:var(--muted);cursor:pointer;}
+.mh-discover-seeall{font-size:.74rem;font-weight:800;color:var(--green2);cursor:pointer;text-decoration:underline;text-underline-offset:2px;}
 .mh-discover-scroll{display:flex;gap:10px;overflow-x:auto;padding:0 14px 10px;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
 .mh-discover-scroll::-webkit-scrollbar{display:none;}
 .mh-d-card{flex:0 0 auto;width:100px;background:#fff;border:1px solid var(--border);border-radius:14px;padding:10px 7px;text-align:center;cursor:pointer;}
@@ -1990,6 +1990,20 @@ async function loadMhWhoToFollow(){
 // ═══ RIGHT SIDEBAR: Trending Reels ═══
 async function loadMhTrendingReels(){
   var wrap = document.getElementById('mhTrendingReels');
+  var DEMO_TRENDING = [
+    {thumb:'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=200&q=60', views:'12.5K'},
+    {thumb:'https://images.unsplash.com/photo-1567337710282-00832b415979?w=200&q=60', views:'9.8K'},
+    {thumb:'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=200&q=60', views:'8.1K'}
+  ];
+  function renderDemoTrending(){
+    wrap.innerHTML='';
+    DEMO_TRENDING.forEach(function(t){
+      var card = document.createElement('div'); card.className='mh-trending-card';
+      card.innerHTML = '<img class="mh-trending-thumb" src="'+t.thumb+'"><div class="mh-trending-views">▶ '+t.views+'</div>';
+      card.onclick = function(){ alert('Demo thumbnail — becomes a real reel once creators start posting'); };
+      wrap.appendChild(card);
+    });
+  }
   try{
     var snap = await db.collection('cities').doc(CITY).collection('mediaContent')
       .where('type','==','reel').where('status','==','published').orderBy('createdAt','desc').limit(20).get();
@@ -1998,18 +2012,7 @@ async function loadMhTrendingReels(){
     docs = docs.slice(0,3);
     if(!docs.length){
       console.info('No real reels yet — showing demo trending thumbnails.');
-      wrap.innerHTML='';
-      var DEMO_TRENDING = [
-        {thumb:'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=200&q=60', views:'12.5K'},
-        {thumb:'https://images.unsplash.com/photo-1567337710282-00832b415979?w=200&q=60', views:'9.8K'},
-        {thumb:'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=200&q=60', views:'8.1K'}
-      ];
-      DEMO_TRENDING.forEach(function(t){
-        var card = document.createElement('div'); card.className='mh-trending-card';
-        card.innerHTML = '<img class="mh-trending-thumb" src="'+t.thumb+'"><div class="mh-trending-views">▶ '+t.views+'</div>';
-        card.onclick = function(){ alert('Demo thumbnail — becomes a real reel once creators start posting'); };
-        wrap.appendChild(card);
-      });
+      renderDemoTrending();
       return;
     }
     wrap.innerHTML='';
@@ -2022,7 +2025,13 @@ async function loadMhTrendingReels(){
       card.onclick = function(){ location.href='reels-player.html?city='+CITY; };
       wrap.appendChild(card);
     });
-  }catch(e){ console.warn('Trending Reels load error', e); wrap.innerHTML='<div style="color:var(--muted);font-size:.78rem;">লোড করতে সমস্যা হয়েছে</div>'; }
+  }catch(e){
+    // Most likely cause: missing Firestore composite index for this compound
+    // query (type + status + orderBy) — a known gap (Part B5 of the DELTA
+    // Media doc). Fall back to demo cards instead of showing an error message.
+    console.warn('Trending Reels load error (likely missing composite index)', e);
+    renderDemoTrending();
+  }
 }
 
 // ═══ RIGHT SIDEBAR: Top Creators ═══
@@ -2200,6 +2209,14 @@ async function loadMhDiscoverRow(){
     {thumb:'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=200&q=60', views:'12.5K'},
     {thumb:'https://images.unsplash.com/photo-1567337710282-00832b415979?w=200&q=60', views:'9.8K'},
   ];
+  function renderDemoReels(){
+    DEMO_REELS.forEach(function(t){
+      var card = document.createElement('div'); card.className='mh-d-reel';
+      card.innerHTML = '<img src="'+t.thumb+'"><div class="mh-d-reel-tag">Reel</div><div class="mh-d-reel-views">▶ '+t.views+'</div>';
+      card.onclick = function(){ alert('Demo thumbnail — becomes a real reel once creators start posting'); };
+      scroll.appendChild(card);
+    });
+  }
   try{
     var snap3 = await db.collection('cities').doc(CITY).collection('mediaContent')
       .where('type','==','reel').where('status','==','published').orderBy('createdAt','desc').limit(20).get();
@@ -2207,12 +2224,7 @@ async function loadMhDiscoverRow(){
     docs.sort(function(a,b){ return ((b.data.stats&&b.data.stats.views)||0) - ((a.data.stats&&a.data.stats.views)||0); });
     docs = docs.slice(0,2);
     if(!docs.length){
-      DEMO_REELS.forEach(function(t){
-        var card = document.createElement('div'); card.className='mh-d-reel';
-        card.innerHTML = '<img src="'+t.thumb+'"><div class="mh-d-reel-tag">Reel</div><div class="mh-d-reel-views">▶ '+t.views+'</div>';
-        card.onclick = function(){ alert('Demo thumbnail — becomes a real reel once creators start posting'); };
-        scroll.appendChild(card);
-      });
+      renderDemoReels();
     } else {
       docs.forEach(function(item){
         var d = item.data;
@@ -2222,7 +2234,13 @@ async function loadMhDiscoverRow(){
         scroll.appendChild(card);
       });
     }
-  }catch(e){ console.warn('Discover row — Trending Reels error', e); }
+  }catch(e){
+    // Most likely cause: missing Firestore composite index for this compound
+    // query (type + status + orderBy) — a known gap (Part B5 of the DELTA
+    // Media doc). Fall back to demo cards instead of silently showing nothing.
+    console.warn('Discover row — Trending Reels error (likely missing composite index)', e);
+    renderDemoReels();
+  }
 
   if(!scroll.children.length){ row.style.display='none'; }
 }
