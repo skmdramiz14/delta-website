@@ -1,5 +1,5 @@
-<!DOCTYPE html>      
-<html lang="bn"> 
+<!DOCTYPE html> 
+<html lang="bn">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -3732,6 +3732,10 @@ var _shopModalAutoOpened=false;
   }catch(e){}
 })();
 var CITY='manteswar'; // Multi-tenant city
+var CITY_GEO_MAP = {
+  manteswar: {district:'Purba Bardhaman', state:'West Bengal', country:'India'}
+};
+function getCityGeo(city){ return CITY_GEO_MAP[city] || CITY_GEO_MAP.manteswar; }
 
 // Dynamic Firebase loader — robust version with error handling + timeout fallback
 (function(){
@@ -7325,11 +7329,13 @@ async function doCustomerRegister(){
     await db.collection('cities').doc(CITY).collection('customers').doc(cr.user.uid).set({name,mobile,email:e,city:CITY,createdAt:new Date().toISOString()});
     // Identity Bridge — same account also needs a mediaProfiles doc so DELTA
     // Media's profile page finds them, whether they signed up here or there.
+    var geo = getCityGeo(CITY);
     await db.collection('cities').doc(CITY).collection('mediaProfiles').doc(cr.user.uid).set({
       uid: cr.user.uid, displayName: name, bio:'', avatarUrl:'', coverUrl:'',
       roles:['customer','creator'], linkedCustomerId: cr.user.uid,
       followerCount:0, followingCount:0, postCount:0,
       primaryBadge:'customer_creator', isVerified:false,
+      city:CITY, district:geo.district, state:geo.state, country:geo.country,
       createdAt:new Date().toISOString(), updatedAt:new Date().toISOString()
     });
     closeAuth();showToast('নিবন্ধন সফল! স্বাগতম '+name+' 🎉','green');redirectAfterAuthIfNeeded();
