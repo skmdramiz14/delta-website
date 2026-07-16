@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>DELTA Media — Profile</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{overflow-x:hidden;max-width:100vw;}
+:root{
+  --navy:#10392D;--navy2:#1a4a3a;
+  --gold:#D4AF63;--gold-dark:#B8925A;
+  --green:#2da86a;--green2:#1a7a4c;
+  --white:#fff;--sand:#ffffff;--cream:#F7F8FA;
+  --border:#E7E9EC;--muted:#8A8F98;--charcoal:#1A1A1A;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charcoal);padding-bottom:40px;}
+
+/* ── Top bar ── */
+.pp-nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;justify-content:space-between;align-items:center;padding:14px 16px;}
+.pp-nav-btn{width:34px;height:34px;border-radius:50%;background:rgba(0,0,0,.35);backdrop-filter:blur(4px);border:none;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;}
+.pp-nav-btn.solid{background:#fff;color:var(--charcoal);box-shadow:0 1px 4px rgba(0,0,0,.15);}
+.pp-nav-right{display:flex;gap:8px;}
+
+/* ── Cover ── */
+.pp-cover{width:100%;height:180px;background:linear-gradient(135deg,var(--navy),#1e5a45);position:relative;overflow:hidden;}
+.pp-cover img{width:100%;height:100%;object-fit:cover;display:block;}
+.pp-cover-edit{position:absolute;bottom:10px;right:10px;background:rgba(0,0,0,.45);color:#fff;border:none;border-radius:16px;
+  padding:6px 12px;font-size:.7rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;}
+
+/* ── Header block ── */
+.pp-header{padding:0 18px;position:relative;}
+.pp-avatar-wrap{width:92px;height:92px;border-radius:50%;border:4px solid #fff;background:var(--cream);
+  position:relative;top:-46px;margin-bottom:-36px;box-shadow:0 2px 8px rgba(0,0,0,.12);}
+.pp-avatar{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;}
+.pp-avatar-fallback{width:100%;height:100%;border-radius:50%;background:var(--navy);color:var(--gold);
+  display:flex;align-items:center;justify-content:center;font-size:1.8rem;font-weight:800;}
+.pp-avatar-edit{position:absolute;bottom:2px;right:2px;width:26px;height:26px;border-radius:50%;background:var(--navy);
+  border:2px solid #fff;color:var(--gold);display:flex;align-items:center;justify-content:center;cursor:pointer;}
+
+.pp-name-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.pp-name{font-family:'Playfair Display',serif;font-weight:800;font-size:1.3rem;color:var(--charcoal);}
+.pp-badge{display:inline-flex;align-items:center;gap:4px;font-size:.62rem;font-weight:800;padding:3px 9px;border-radius:9px;
+  text-transform:uppercase;letter-spacing:.3px;}
+.pp-badge.seller{background:#EAF3EE;color:var(--green2);}
+.pp-badge.creator{background:#F3EEE3;color:var(--gold-dark);}
+.pp-badge.official{background:linear-gradient(135deg,#4a90d9,#8b5cf6,#e0245e);color:#fff;}
+.pp-badge.verified{background:var(--navy);color:var(--gold);}
+.pp-username{color:var(--muted);font-size:.82rem;margin-top:2px;}
+
+.pp-stats{display:flex;gap:22px;margin:14px 0 4px;}
+.pp-stat{cursor:pointer;}
+.pp-stat b{display:block;font-size:1.02rem;font-weight:800;color:var(--charcoal);}
+.pp-stat span{font-size:.72rem;color:var(--muted);}
+
+.pp-bio{font-size:.85rem;color:var(--charcoal);line-height:1.5;margin-top:10px;white-space:pre-wrap;}
+.pp-meta-row{display:flex;flex-wrap:wrap;gap:12px;margin-top:8px;font-size:.76rem;color:var(--muted);}
+.pp-meta-row span{display:flex;align-items:center;gap:4px;}
+
+.pp-actions{display:flex;gap:8px;margin:16px 0 6px;}
+.pp-btn{flex:1;padding:11px;border-radius:20px;font-weight:700;font-size:.82rem;cursor:pointer;border:none;text-align:center;}
+.pp-btn-primary{background:var(--navy);color:#fff;}
+.pp-btn-primary.following{background:var(--border);color:var(--charcoal);}
+.pp-btn-secondary{background:var(--sand);color:var(--charcoal);border:1.5px solid var(--border);}
+.pp-btn-icon{flex:0 0 auto;width:42px;background:var(--sand);border:1.5px solid var(--border);border-radius:20px;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;}
+
+/* ── Tabs ── */
+.pp-tabs{display:flex;gap:4px;overflow-x:auto;border-bottom:1px solid var(--border);margin-top:14px;padding:0 14px;scrollbar-width:none;}
+.pp-tabs::-webkit-scrollbar{display:none;}
+.pp-tab{padding:12px 14px;font-size:.78rem;font-weight:700;color:var(--muted);cursor:pointer;white-space:nowrap;
+  border-bottom:2.5px solid transparent;flex-shrink:0;}
+.pp-tab.active{color:var(--navy);border-color:var(--navy);}
+
+/* ── Content grid ── */
+.pp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;padding:2px;}
+.pp-grid-item{position:relative;aspect-ratio:1/1;background:var(--border);cursor:pointer;overflow:hidden;}
+.pp-grid-item.tall{aspect-ratio:9/14;}
+.pp-grid-item img,.pp-grid-item video{width:100%;height:100%;object-fit:cover;display:block;}
+.pp-grid-badge{position:absolute;top:6px;right:6px;color:#fff;font-size:.85rem;filter:drop-shadow(0 1px 2px rgba(0,0,0,.5));}
+.pp-grid-stat{position:absolute;bottom:6px;left:6px;color:#fff;font-size:.66rem;font-weight:700;background:rgba(0,0,0,.4);
+  padding:2px 7px;border-radius:8px;}
+.pp-grid-status{position:absolute;top:6px;left:6px;font-size:.6rem;font-weight:800;padding:2px 7px;border-radius:7px;
+  background:var(--gold);color:var(--navy);text-transform:uppercase;}
+
+.pp-empty{text-align:center;color:var(--muted);font-size:.85rem;padding:60px 20px;}
+.pp-loading{text-align:center;color:var(--muted);font-size:.85rem;padding:60px 20px;}
+
+/* ── Reviews list ── */
+.pp-review{padding:14px 18px;border-bottom:1px solid var(--border);}
+.pp-review-stars{color:var(--gold-dark);font-size:.85rem;}
+.pp-review-verified{display:inline-flex;align-items:center;gap:3px;font-size:.68rem;font-weight:700;color:var(--green2);
+  background:#EAF3EE;padding:2px 8px;border-radius:8px;margin-left:6px;}
+.pp-review-text{font-size:.82rem;color:var(--charcoal);margin-top:6px;line-height:1.5;}
+.pp-review-meta{font-size:.7rem;color:var(--muted);margin-top:6px;}
+
+/* ── Analytics (owner only) ── */
+.pp-analytics-wrap{padding:16px 18px;}
+.pp-analytics-note{font-size:.76rem;color:var(--muted);margin-bottom:14px;}
+.pp-funnel{display:flex;flex-direction:column;gap:10px;}
+.pp-funnel-row{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px;}
+.pp-funnel-num{font-size:1.2rem;font-weight:800;color:var(--navy);min-width:64px;}
+.pp-funnel-label{font-size:.8rem;color:var(--charcoal);font-weight:600;}
+.pp-funnel-sub{font-size:.7rem;color:var(--muted);}
+
+/* ── Modal (Edit Profile / Followers list) ── */
+.pp-modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:900;align-items:flex-end;justify-content:center;}
+.pp-modal-overlay.open{display:flex;}
+.pp-modal{background:#fff;width:100%;max-width:480px;border-radius:18px 18px 0 0;max-height:85vh;overflow-y:auto;padding:20px;}
+.pp-modal-head{display:flex;justify-content:space-between;align-items:center;font-weight:800;margin-bottom:14px;}
+.pp-form-group{margin-bottom:12px;}
+.pp-form-group label{font-size:.75rem;font-weight:700;display:block;margin-bottom:5px;}
+.pp-form-input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:.85rem;font-family:inherit;}
+.pp-form-textarea{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:.85rem;font-family:inherit;resize:vertical;}
+.pp-modal-save{width:100%;background:var(--navy);color:#fff;border:none;padding:13px;border-radius:22px;font-weight:800;font-size:.85rem;cursor:pointer;margin-top:6px;}
+.pp-follow-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);}
+.pp-follow-avatar{width:44px;height:44px;border-radius:50%;object-fit:cover;background:var(--cream);flex-shrink:0;}
+.pp-follow-name{font-weight:700;font-size:.85rem;cursor:pointer;flex:1;}
+
+@media(min-width:768px){
+  .pp-cover{height:240px;}
+  .pp-avatar-wrap{width:120px;height:120px;top:-60px;margin-bottom:-48px;}
+  .pp-header,.pp-tabs{max-width:640px;margin:0 auto;}
+  .pp-grid{max-width:640px;margin:0 auto;}
+}
+</style>
+</head>
+<body>
+
+<div class="pp-nav">
+  <button class="pp-nav-btn" onclick="history.length>1?history.back():location.href='media-feed.html?city='+CITY">
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+  </button>
+  <div class="pp-nav-right">
+    <button class="pp-nav-btn" onclick="shareProfile()">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12L20 4L14 20L11 13L4 12Z"/></svg>
+    </button>
+    <button class="pp-nav-btn" onclick="location.href='media-feed.html?city='+CITY" title="DELTA Media Home">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M12 3L21 20H3L12 3Z"/></svg>
+    </button>
+  </div>
+</div>
+
+<div class="pp-cover" id="ppCover">
+  <button class="pp-cover-edit" id="ppCoverEditBtn" style="display:none;" onclick="openEditProfile()">✎ Edit cover</button>
+</div>
+
+<div class="pp-header">
+  <div class="pp-avatar-wrap">
+    <img class="pp-avatar" id="ppAvatarImg" src="" style="display:none;" onerror="this.style.display='none'">
+    <div class="pp-avatar-fallback" id="ppAvatarFallback">?</div>
+    <div class="pp-avatar-edit" id="ppAvatarEditBtn" style="display:none;" onclick="openEditProfile()">
+      <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4.5a2 2 0 0 1 3 3L7 18l-4 1 1-4Z"/></svg>
+    </div>
+  </div>
+
+  <div class="pp-name-row">
+    <div class="pp-name" id="ppName">লোড হচ্ছে...</div>
+    <span class="pp-badge" id="ppBadge" style="display:none;"></span>
+  </div>
+  <div class="pp-username" id="ppUsername"></div>
+
+  <div class="pp-stats">
+    <div class="pp-stat" onclick="openFollowList('following')"><b id="ppPostCount">0</b><span>Posts</span></div>
+    <div class="pp-stat" onclick="openFollowList('followers')"><b id="ppFollowerCount">0</b><span>Followers</span></div>
+    <div class="pp-stat" onclick="openFollowList('following')"><b id="ppFollowingCount">0</b><span>Following</span></div>
+  </div>
+
+  <div class="pp-bio" id="ppBio" style="display:none;"></div>
+  <div class="pp-meta-row" id="ppMetaRow"></div>
+
+  <div class="pp-actions" id="ppActions"></div>
+
+  <div class="pp-tabs" id="ppTabs"></div>
+</div>
+
+<div id="ppContentArea">
+  <div class="pp-loading">লোড হচ্ছে...</div>
+</div>
+
+<!-- Edit Profile modal (owner only) -->
+<div class="pp-modal-overlay" id="editModal">
+  <div class="pp-modal">
+    <div class="pp-modal-head">Edit Profile <button onclick="closeEditProfile()" style="background:none;border:none;font-size:1.1rem;cursor:pointer;">✕</button></div>
+    <div class="pp-form-group"><label>Display Name</label><input type="text" class="pp-form-input" id="editDisplayName"></div>
+    <div class="pp-form-group"><label>Username</label><input type="text" class="pp-form-input" id="editUsername" placeholder="username"></div>
+    <div class="pp-form-group"><label>Bio</label><textarea class="pp-form-textarea" id="editBio" rows="3"></textarea></div>
+    <div class="pp-form-group"><label>Location</label><input type="text" class="pp-form-input" id="editLocation"></div>
+    <div class="pp-form-group"><label>Avatar Image URL</label><input type="text" class="pp-form-input" id="editAvatarUrl" placeholder="https://..."></div>
+    <div class="pp-form-group"><label>Cover Image URL</label><input type="text" class="pp-form-input" id="editCoverUrl" placeholder="https://..."></div>
+    <button class="pp-modal-save" onclick="saveProfileEdit()">Save Changes</button>
+  </div>
+</div>
+
+<!-- Followers/Following list modal -->
+<div class="pp-modal-overlay" id="followListModal">
+  <div class="pp-modal">
+    <div class="pp-modal-head"><span id="followListTitle">Followers</span> <button onclick="closeFollowList()" style="background:none;border:none;font-size:1.1rem;cursor:pointer;">✕</button></div>
+    <div id="followListBody"><div class="pp-loading">লোড হচ্ছে...</div></div>
+  </div>
+</div>
+
+<script>
+var fbcfg={apiKey:"AIzaSyA6TrrnCMwv1aa1WPqGvTVWlnieB2pVOEU",authDomain:"delta-platform-82fc0.firebaseapp.com",projectId:"delta-platform-82fc0",storageBucket:"delta-platform-82fc0.firebasestorage.app",messagingSenderId:"444904180433",appId:"1:444904180433:web:6706eba4d73a30cd67d3f0"};
+firebase.initializeApp(fbcfg);
+var auth=firebase.auth();
+var db=firebase.firestore();
+var CITY = new URLSearchParams(location.search).get('city') || 'manteswar';
+var PROFILE_UID = new URLSearchParams(location.search).get('uid');
+var INITIAL_TAB = new URLSearchParams(location.search).get('tab');
+var currentUser = null;
+var profileData = null;
+var isOwner = false;
+var activeTab = 'post';
+
+function requireLogin(){ alert('Login to engage, share and grow.\n\n☰ মেনু থেকে লগইন করুন।'); }
+
+function badgeInfo(p){
+  if(p.primaryBadge==='delta_official') return {cls:'official', text:'✓ DELTA Official'};
+  if(p.isVerified) return {cls:'verified', text:'✓ Verified'};
+  if(p.primaryBadge==='seller' || (p.roles||[]).indexOf('seller')>=0) return {cls:'seller', text:'Seller'};
+  if(p.primaryBadge==='service_provider') return {cls:'seller', text:'Service Provider'};
+  if(p.primaryBadge==='customer_creator') return {cls:'creator', text:'Creator'};
+  return null;
+}
+
+async function loadProfile(){
+  if(!PROFILE_UID){
+    document.getElementById('ppName').textContent = 'কোনো profile পাওয়া যায়নি';
+    document.getElementById('ppContentArea').innerHTML = '<div class="pp-empty">এই লিংকে কোনো uid দেওয়া নেই।</div>';
+    return;
+  }
+  try{
+    var doc = await db.collection('cities').doc(CITY).collection('mediaProfiles').doc(PROFILE_UID).get();
+    profileData = doc.exists ? doc.data() : {};
+    isOwner = !!(currentUser && currentUser.uid === PROFILE_UID);
+
+    // ── Cover & Avatar ──
+    if(profileData.coverUrl){
+      document.getElementById('ppCover').style.backgroundImage = 'none';
+      var img = document.createElement('img'); img.src = profileData.coverUrl;
+      document.getElementById('ppCover').prepend(img);
+    }
+    var avatarImg = document.getElementById('ppAvatarImg'), avatarFallback = document.getElementById('ppAvatarFallback');
+    if(profileData.avatarUrl){ avatarImg.src = profileData.avatarUrl; avatarImg.style.display='block'; avatarFallback.style.display='none'; }
+    else { avatarFallback.textContent = (profileData.displayName||'?').charAt(0).toUpperCase(); }
+
+    // ── Name, badge, username ──
+    document.getElementById('ppName').textContent = profileData.displayName || (doc.exists ? 'Unnamed' : 'প্রোফাইল পাওয়া যায়নি');
+    var b = badgeInfo(profileData);
+    var badgeEl = document.getElementById('ppBadge');
+    if(b){ badgeEl.textContent = b.text; badgeEl.className = 'pp-badge '+b.cls; badgeEl.style.display='inline-flex'; }
+    if(profileData.username){ document.getElementById('ppUsername').textContent = '@'+profileData.username; }
+
+    // ── Bio & meta ──
+    if(profileData.bio){ document.getElementById('ppBio').textContent = profileData.bio; document.getElementById('ppBio').style.display='block'; }
+    var metaParts = [];
+    if(profileData.location) metaParts.push('📍 '+profileData.location);
+    if(profileData.businessCategory) metaParts.push('🏷️ '+profileData.businessCategory);
+    document.getElementById('ppMetaRow').innerHTML = metaParts.map(function(m){ return '<span>'+m+'</span>'; }).join('');
+
+    // ── Stats ──
+    document.getElementById('ppFollowerCount').textContent = (profileData.followerCount||0);
+    document.getElementById('ppFollowingCount').textContent = (profileData.followingCount||0);
+    loadRealCounts();
+
+    // ── Edit buttons (owner only) ──
+    if(isOwner){
+      document.getElementById('ppCoverEditBtn').style.display='flex';
+      document.getElementById('ppAvatarEditBtn').style.display='flex';
+    }
+
+    renderActions();
+    renderTabs();
+
+    // Honor ?tab= from hamburger menu links
+    if(INITIAL_TAB==='analytics' && isOwner) switchTab('analytics');
+    else if(INITIAL_TAB==='saved' && isOwner) switchTab('saved');
+    else switchTab('post');
+
+  }catch(e){
+    console.error('Profile load error', e);
+    document.getElementById('ppContentArea').innerHTML = '<div class="pp-empty">প্রোফাইল লোড করতে সমস্যা হয়েছে।</div>';
+  }
+}
+
+async function loadRealCounts(){
+  try{
+    var base = db.collection('cities').doc(CITY).collection('mediaProfiles').doc(PROFILE_UID);
+    var followers = await base.collection('followers').get();
+    var following = await base.collection('following').get();
+    document.getElementById('ppFollowerCount').textContent = followers.size;
+    document.getElementById('ppFollowingCount').textContent = following.size;
+    var content = await db.collection('cities').doc(CITY).collection('mediaContent')
+      .where('authorUid','==',PROFILE_UID).where('status','==','published').get();
+    document.getElementById('ppPostCount').textContent = content.size;
+  }catch(e){ console.warn('Count load error', e); }
+}
+
+function renderActions(){
+  var wrap = document.getElementById('ppActions');
+  wrap.innerHTML = '';
+  if(isOwner){
+    wrap.innerHTML =
+      '<button class="pp-btn pp-btn-primary" onclick="openEditProfile()">Edit Profile</button>'+
+      '<button class="pp-btn pp-btn-secondary" onclick="switchTab(\'analytics\')">📊 Analytics</button>';
+    return;
+  }
+  var isSeller = profileData.primaryBadge==='seller' || (profileData.roles||[]).indexOf('seller')>=0;
+  var followBtn = document.createElement('button');
+  followBtn.className = 'pp-btn pp-btn-primary'; followBtn.id = 'ppFollowBtn'; followBtn.textContent = 'Follow';
+  followBtn.onclick = toggleFollowProfile;
+  wrap.appendChild(followBtn);
+  if(isSeller && profileData.linkedSellerId){
+    var shopBtn = document.createElement('button');
+    shopBtn.className = 'pp-btn pp-btn-secondary'; shopBtn.textContent = '🏪 Visit Shop';
+    shopBtn.onclick = function(){ location.href='shop.html?id='+profileData.linkedSellerId+'&city='+CITY; };
+    wrap.appendChild(shopBtn);
+  }
+  var shareBtn = document.createElement('div');
+  shareBtn.className = 'pp-btn-icon'; shareBtn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12L20 4L14 20L11 13L4 12Z"/></svg>';
+  shareBtn.onclick = shareProfile;
+  wrap.appendChild(shareBtn);
+  refreshFollowBtnState();
+}
+
+async function refreshFollowBtnState(){
+  if(!currentUser || isOwner) return;
+  try{
+    var d = await db.collection('cities').doc(CITY).collection('mediaProfiles').doc(currentUser.uid).collection('following').doc(PROFILE_UID).get();
+    var btn = document.getElementById('ppFollowBtn');
+    if(btn && d.exists){ btn.textContent = 'Following'; btn.classList.add('following'); }
+  }catch(e){}
+}
+function toggleFollowProfile(){
+  if(!currentUser){ requireLogin(); return; }
+  var btn = document.getElementById('ppFollowBtn');
+  var myRef = db.collection('cities').doc(CITY).collection('mediaProfiles').doc(currentUser.uid).collection('following').doc(PROFILE_UID);
+  var theirRef = db.collection('cities').doc(CITY).collection('mediaProfiles').doc(PROFILE_UID).collection('followers').doc(currentUser.uid);
+  var isFollowing = btn.classList.contains('following');
+  if(isFollowing){
+    myRef.delete(); theirRef.delete();
+    btn.textContent='Follow'; btn.classList.remove('following');
+  } else {
+    myRef.set({followedAt:new Date().toISOString()});
+    theirRef.set({followedAt:new Date().toISOString()});
+    btn.textContent='Following'; btn.classList.add('following');
+  }
+  loadRealCounts();
+}
+
+function renderTabs(){
+  var tabs = [
+    {id:'post', label:'Posts'},
+    {id:'reel', label:'Reels'},
+    {id:'story', label:'Stories'},
+    {id:'video', label:'Videos'},
+    {id:'reviews', label:'Reviews'}
+  ];
+  if(isOwner) tabs.push({id:'saved', label:'Saved'});
+  var wrap = document.getElementById('ppTabs');
+  wrap.innerHTML = tabs.map(function(t){
+    return '<div class="pp-tab" id="ppTab-'+t.id+'" onclick="switchTab(\''+t.id+'\')">'+t.label+'</div>';
+  }).join('');
+}
+
+function switchTab(tab){
+  activeTab = tab;
+  document.querySelectorAll('.pp-tab').forEach(function(el){ el.classList.remove('active'); });
+  var activeEl = document.getElementById('ppTab-'+tab);
+  if(activeEl) activeEl.classList.add('active');
+  var area = document.getElementById('ppContentArea');
+  area.innerHTML = '<div class="pp-loading">লোড হচ্ছে...</div>';
+
+  if(tab==='analytics') return renderAnalytics();
+  if(tab==='saved') return renderSavedPlaceholder();
+  if(tab==='reviews') return loadReviews();
+  loadContentGrid(tab);
+}
+
+async function loadContentGrid(type){
+  var area = document.getElementById('ppContentArea');
+  try{
+    var q = db.collection('cities').doc(CITY).collection('mediaContent')
+      .where('authorUid','==',PROFILE_UID).where('type','==',type);
+    var snap = await q.get();
+    var docs = snap.docs.map(function(d){ return {id:d.id, data:d.data()}; })
+      .filter(function(item){
+        if(item.data.status==='published') return true;
+        return isOwner; // owner also sees their own draft/pending
+      })
+      .sort(function(a,b){ return new Date(b.data.createdAt) - new Date(a.data.createdAt); });
+
+    if(!docs.length){
+      area.innerHTML = '<div class="pp-empty">এখানে এখনও কোনো '+type+' নেই।'+(isOwner?'<br>Create Studio থেকে প্রথমটা বানিয়ে ফেলো।':'')+'</div>';
+      return;
+    }
+    var grid = document.createElement('div'); grid.className = 'pp-grid';
+    docs.forEach(function(item){
+      var d = item.data;
+      var cell = document.createElement('div');
+      cell.className = 'pp-grid-item' + ((type==='reel'||type==='story') ? ' tall' : '');
+      var thumb = d.thumbnailUrl || (d.mediaUrls && d.mediaUrls[0]) || '';
+      cell.innerHTML =
+        (thumb ? '<img src="'+thumb+'" onerror="this.style.display=\'none\'">' : '')+
+        (type==='reel' ? '<span class="pp-grid-badge">▶</span>' : (type==='video' ? '<span class="pp-grid-badge">▶</span>' : ''))+
+        (d.stats ? '<span class="pp-grid-stat">👁 '+(d.stats.views||0)+'</span>' : '')+
+        (isOwner && d.status!=='published' ? '<span class="pp-grid-status">'+d.status+'</span>' : '');
+      cell.onclick = function(){
+        if(type==='reel') location.href='reels-player.html?city='+CITY;
+        else if(type==='video') location.href='video-hub.html?city='+CITY;
+        else location.href='media-feed.html?city='+CITY;
+      };
+      grid.appendChild(cell);
+    });
+    area.innerHTML = ''; area.appendChild(grid);
+  }catch(e){
+    console.warn('Content grid load error (likely missing composite index)', e);
+    area.innerHTML = '<div class="pp-empty">লোড করতে সমস্যা হয়েছে — সম্ভবত Firestore index তৈরি করা লাগবে।</div>';
+  }
+}
+
+async function loadReviews(){
+  var area = document.getElementById('ppContentArea');
+  try{
+    var snap = await db.collection('cities').doc(CITY).collection('mediaContent')
+      .where('authorUid','==',PROFILE_UID).where('isReview','==',true).where('status','==','published').get();
+    if(!snap.docs.length){ area.innerHTML = '<div class="pp-empty">এখনও কোনো review নেই।</div>'; return; }
+    area.innerHTML = '';
+    snap.docs.sort(function(a,b){ return new Date(b.data().createdAt)-new Date(a.data().createdAt); }).forEach(function(doc){
+      var d = doc.data();
+      var el = document.createElement('div'); el.className = 'pp-review';
+      el.innerHTML =
+        '<span class="pp-review-stars">'+'★'.repeat(d.rating||0)+'☆'.repeat(5-(d.rating||0))+'</span>'+
+        (d.linkedOrderId ? '<span class="pp-review-verified">✅ Verified Purchase</span>' : '')+
+        '<div class="pp-review-text">'+(d.caption||'')+'</div>'+
+        '<div class="pp-review-meta">'+timeAgo(d.createdAt)+'</div>';
+      area.appendChild(el);
+    });
+  }catch(e){
+    console.warn('Reviews load error', e);
+    area.innerHTML = '<div class="pp-empty">লোড করতে সমস্যা হয়েছে।</div>';
+  }
+}
+
+async function renderAnalytics(){
+  var area = document.getElementById('ppContentArea');
+  if(!isOwner){ area.innerHTML = '<div class="pp-empty">এটা শুধু নিজের profile-এই দেখা যায়।</div>'; return; }
+  try{
+    var snap = await db.collection('cities').doc(CITY).collection('mediaContent').where('authorUid','==',PROFILE_UID).get();
+    var totals = {views:0, clickThroughs:0, cartAdds:0, orders:0};
+    snap.docs.forEach(function(doc){
+      var s = doc.data().stats || {};
+      totals.views += s.views||0; totals.clickThroughs += s.clickThroughs||0;
+      totals.cartAdds += s.cartAdds||0; totals.orders += s.orders||0;
+    });
+    area.innerHTML =
+      '<div class="pp-analytics-wrap">'+
+        '<div class="pp-analytics-note">সব published content মিলিয়ে সামগ্রিক performance — real ROI proof, vanity metrics না।</div>'+
+        '<div class="pp-funnel">'+
+          '<div class="pp-funnel-row"><div class="pp-funnel-num">'+totals.views+'</div><div><div class="pp-funnel-label">Views</div><div class="pp-funnel-sub">মোট কতবার দেখা হয়েছে</div></div></div>'+
+          '<div class="pp-funnel-row"><div class="pp-funnel-num">'+totals.clickThroughs+'</div><div><div class="pp-funnel-label">Clicks</div><div class="pp-funnel-sub">CTA বাটনে ক্লিক</div></div></div>'+
+          '<div class="pp-funnel-row"><div class="pp-funnel-num">'+totals.cartAdds+'</div><div><div class="pp-funnel-label">Added to Cart</div><div class="pp-funnel-sub">কার্টে যোগ হয়েছে</div></div></div>'+
+          '<div class="pp-funnel-row"><div class="pp-funnel-num">'+totals.orders+'</div><div><div class="pp-funnel-label">Orders</div><div class="pp-funnel-sub">সরাসরি অর্ডারে পরিণত হয়েছে</div></div></div>'+
+        '</div>'+
+      '</div>';
+  }catch(e){
+    console.warn('Analytics load error', e);
+    area.innerHTML = '<div class="pp-empty">Analytics লোড করতে সমস্যা হয়েছে।</div>';
+  }
+}
+
+function renderSavedPlaceholder(){
+  // Honest gap: no savedItems/bookmarks collection exists in the deployed
+  // Firestore rules yet — showing a real "not built yet" state rather than
+  // faking data.
+  document.getElementById('ppContentArea').innerHTML =
+    '<div class="pp-empty">Saved / Bookmarked — এখনও build করা হয়নি।<br>কোনো item-এর 🔖 বাটনে চাপলে সেটা এখানে জমা হবে, feature আসার পর।</div>';
+}
+
+function timeAgo(iso){
+  if(!iso) return '';
+  var diff = (Date.now() - new Date(iso).getTime())/1000;
+  if(diff<60) return 'এইমাত্র';
+  if(diff<3600) return Math.floor(diff/60)+' মিনিট আগে';
+  if(diff<86400) return Math.floor(diff/3600)+' ঘণ্টা আগে';
+  return Math.floor(diff/86400)+' দিন আগে';
+}
+
+function shareProfile(){
+  var url = location.origin + location.pathname + '?uid='+PROFILE_UID+'&city='+CITY;
+  if(navigator.share){ navigator.share({title:profileData.displayName||'DELTA Media Profile', url:url}).catch(function(){}); }
+  else { navigator.clipboard.writeText(url).then(function(){ alert('Link copied!'); }).catch(function(){ alert(url); }); }
+}
+
+// ── Edit Profile ──
+function openEditProfile(){
+  document.getElementById('editDisplayName').value = profileData.displayName || '';
+  document.getElementById('editUsername').value = profileData.username || '';
+  document.getElementById('editBio').value = profileData.bio || '';
+  document.getElementById('editLocation').value = profileData.location || '';
+  document.getElementById('editAvatarUrl').value = profileData.avatarUrl || '';
+  document.getElementById('editCoverUrl').value = profileData.coverUrl || '';
+  document.getElementById('editModal').classList.add('open');
+}
+function closeEditProfile(){ document.getElementById('editModal').classList.remove('open'); }
+async function saveProfileEdit(){
+  if(!currentUser){ requireLogin(); return; }
+  var updates = {
+    displayName: document.getElementById('editDisplayName').value.trim(),
+    username: document.getElementById('editUsername').value.trim().replace(/^@/,''),
+    bio: document.getElementById('editBio').value.trim(),
+    location: document.getElementById('editLocation').value.trim(),
+    avatarUrl: document.getElementById('editAvatarUrl').value.trim(),
+    coverUrl: document.getElementById('editCoverUrl').value.trim(),
+    updatedAt: new Date().toISOString()
+  };
+  try{
+    await db.collection('cities').doc(CITY).collection('mediaProfiles').doc(currentUser.uid).set(updates, {merge:true});
+    closeEditProfile();
+    profileData = Object.assign({}, profileData, updates);
+    loadProfile();
+  }catch(e){
+    alert('Save করতে সমস্যা হয়েছে: '+e.message);
+  }
+}
+
+// ── Followers/Following list ──
+function openFollowList(kind){
+  document.getElementById('followListTitle').textContent = kind==='followers' ? 'Followers' : 'Following';
+  document.getElementById('followListModal').classList.add('open');
+  document.getElementById('followListBody').innerHTML = '<div class="pp-loading">লোড হচ্ছে...</div>';
+  db.collection('cities').doc(CITY).collection('mediaProfiles').doc(PROFILE_UID).collection(kind).limit(50).get()
+    .then(async function(snap){
+      if(!snap.docs.length){ document.getElementById('followListBody').innerHTML = '<div class="pp-empty">কেউ নেই এখনো।</div>'; return; }
+      var rows = await Promise.all(snap.docs.map(async function(d){
+        var pDoc = await db.collection('cities').doc(CITY).collection('mediaProfiles').doc(d.id).get();
+        var p = pDoc.exists ? pDoc.data() : {};
+        return '<div class="pp-follow-row"><img class="pp-follow-avatar" src="'+(p.avatarUrl||'')+'" onerror="this.style.background=\'var(--cream)\'">'+
+          '<div class="pp-follow-name" onclick="location.href=\'media-profile.html?uid='+d.id+'&city='+CITY+'\'">'+(p.displayName||'Unknown')+'</div></div>';
+      }));
+      document.getElementById('followListBody').innerHTML = rows.join('');
+    }).catch(function(e){
+      console.warn('Follow list error', e);
+      document.getElementById('followListBody').innerHTML = '<div class="pp-empty">লোড করতে সমস্যা হয়েছে।</div>';
+    });
+}
+function closeFollowList(){ document.getElementById('followListModal').classList.remove('open'); }
+
+auth.onAuthStateChanged(function(u){
+  currentUser = u;
+  loadProfile();
+});
+</script>
+</body>
+</html>
