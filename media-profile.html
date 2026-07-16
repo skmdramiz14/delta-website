@@ -211,6 +211,10 @@ firebase.initializeApp(fbcfg);
 var auth=firebase.auth();
 var db=firebase.firestore();
 var CITY = new URLSearchParams(location.search).get('city') || 'manteswar';
+var CITY_GEO_MAP = {
+  manteswar: {district:'Purba Bardhaman', state:'West Bengal', country:'India'}
+};
+function getCityGeo(city){ return CITY_GEO_MAP[city] || CITY_GEO_MAP.manteswar; }
 var PROFILE_UID = new URLSearchParams(location.search).get('uid');
 var INITIAL_TAB = new URLSearchParams(location.search).get('tab');
 var currentUser = null;
@@ -242,11 +246,13 @@ async function loadProfile(){
       // Self-heal for accounts created before mediaProfiles auto-creation was
       // added to the sign-up flow — build a basic profile now rather than
       // showing "Profile not found" forever on someone's own page.
+      var geo = getCityGeo(CITY);
       var basicProfile = {
         uid: currentUser.uid, displayName: currentUser.displayName || 'DELTA User',
         bio:'', avatarUrl:'', coverUrl:'', roles:['customer','creator'],
         linkedCustomerId: currentUser.uid, followerCount:0, followingCount:0, postCount:0,
         primaryBadge:'customer_creator', isVerified:false,
+        city:CITY, district:geo.district, state:geo.state, country:geo.country,
         createdAt:new Date().toISOString(), updatedAt:new Date().toISOString()
       };
       await db.collection('cities').doc(CITY).collection('mediaProfiles').doc(PROFILE_UID).set(basicProfile);
