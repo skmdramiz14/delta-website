@@ -1019,25 +1019,35 @@ var db=firebase.firestore();
 var CITY = new URLSearchParams(location.search).get('city') || 'manteswar';
 var currentUser=null;
 var NAV_AVATAR_GENERIC_ICON = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3.3"/><path d="M4.5 20c1-4.2 4-6.5 7.5-6.5s6.5 2.3 7.5 6.5" stroke-linecap="round"/></svg>';
-// Discover row cards (Who to Follow / Top Creators / Official) — shows the
-// real avatar image if there is one, otherwise the name's first letter,
-// never a blank circle. Uses a real onerror function (not inline HTML
-// strings) to avoid quote-escaping issues.
-function mhAvatarOnError(imgEl, name, letterClass){
-  var letter = (name||'?').charAt(0).toUpperCase();
-  var div = document.createElement('div');
-  div.className = letterClass || 'mh-d-avatar-letter';
-  div.textContent = letter;
-  imgEl.replaceWith(div);
+// Discover row cards (Who to Follow / Top Creators / Official) and desktop
+// sidebar widgets — shows the real avatar image if there is one, otherwise
+// the name's first letter, never a blank circle. Inline onerror="" attributes
+// are fragile once names/URLs contain quotes or special characters — this
+// binds real error listeners after the images are in the DOM instead.
+function mhEscapeAttr(s){
+  return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
 }
 function mhAvatarOrLetter(avatarUrl, name, imgClass, letterClass){
   imgClass = imgClass || 'mh-d-avatar';
   letterClass = letterClass || 'mh-d-avatar-letter';
   if(avatarUrl){
-    var safeName = (name||'?').replace(/'/g,"\\'");
-    return '<img class="'+imgClass+'" src="'+avatarUrl+'" onerror="mhAvatarOnError(this,\''+safeName+'\',\''+letterClass+'\')">';
+    return '<img class="'+imgClass+' mh-avatar-img" src="'+avatarUrl+'" data-fallback-name="'+mhEscapeAttr(name)+'" data-letter-class="'+letterClass+'">';
   }
   return '<div class="'+letterClass+'">'+((name||'?').charAt(0).toUpperCase())+'</div>';
+}
+function mhBindAvatarFallbacks(container){
+  (container||document).querySelectorAll('.mh-avatar-img').forEach(function(img){
+    if(img.dataset.fallbackBound) return; // avoid double-binding on repeat loads
+    img.dataset.fallbackBound = '1';
+    img.addEventListener('error', function(){
+      var name = img.getAttribute('data-fallback-name') || '?';
+      var letterClass = img.getAttribute('data-letter-class') || 'mh-d-avatar-letter';
+      var div = document.createElement('div');
+      div.className = letterClass;
+      div.textContent = name.charAt(0).toUpperCase();
+      img.replaceWith(div);
+    });
+  });
 }
 
 // ── Shared icon set — custom SVG, not emoji, kept consistent across the whole page ──
@@ -2100,13 +2110,14 @@ async function loadMhWhoToFollow(){
         '<div class="mh-follow-handle">@'+(p.username||'user')+'</div></div>'+
         '<button class="mh-follow-btn-sm">Follow</button>';
       if(!isDemo){
-        row.querySelector('.mh-follow-avatar').onclick = function(){ location.href='media-profile.html?uid='+p.id+'&city='+CITY; };
+        row.querySelector('.mh-follow-avatar, .mh-follow-avatar-letter').onclick = function(){ location.href='media-profile.html?uid='+p.id+'&city='+CITY; };
         row.querySelector('.mh-follow-btn-sm').onclick = function(e){ toggleMhFollow(p.id, e.target); };
       } else {
         row.querySelector('.mh-follow-btn-sm').onclick = function(){ alert('Demo suggestion — becomes real once actual creators sign up'); };
       }
       wrap.appendChild(row);
     });
+    mhBindAvatarFallbacks(wrap);
   }
   try{
     var followSet = [];
@@ -2207,6 +2218,7 @@ async function loadMhTopCreators(){
         row.onclick = function(){ alert('Demo entry — becomes real once creators build a real following'); };
         wrap.appendChild(row);
       });
+      mhBindAvatarFallbacks(wrap);
       return;
     }
     wrap.innerHTML='';
@@ -2220,6 +2232,7 @@ async function loadMhTopCreators(){
       row.onclick = function(){ location.href='media-profile.html?uid='+item.id+'&city='+CITY; };
       wrap.appendChild(row);
     });
+    mhBindAvatarFallbacks(wrap);
   }catch(e){ console.warn('Top Creators load error', e); wrap.innerHTML='<div style="color:var(--muted);font-size:.78rem;">লোড করতে সমস্যা হয়েছে</div>'; }
 }
 
@@ -2408,6 +2421,7 @@ async function loadMhDiscoverRow(){
   followCards.slice(2).concat(topCards.slice(2)).concat(reelCards.slice(2)).forEach(function(c){ scroll.appendChild(c); });
 
   if(!scroll.children.length){ row.style.display='none'; }
+  mhBindAvatarFallbacks(scroll);
 }
 
 function badgeLabel(profile){
