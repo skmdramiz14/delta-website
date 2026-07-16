@@ -33,6 +33,16 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
   color:var(--muted);cursor:pointer;white-space:nowrap;}
 .dp-tab.active{background:var(--navy);color:#fff;}
 
+.dp-scope-row{background:var(--cream);padding:10px 16px;display:flex;flex-direction:column;gap:8px;border-bottom:1px solid var(--border);}
+.dp-scope-pills{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;}
+.dp-scope-pills::-webkit-scrollbar{display:none;}
+.dp-scope-pill{background:#fff;border:1.5px solid var(--border);padding:6px 13px;border-radius:16px;font-size:.72rem;
+  font-weight:700;color:var(--muted);cursor:pointer;white-space:nowrap;flex-shrink:0;}
+.dp-scope-pill.active{background:var(--green2);color:#fff;border-color:var(--green2);}
+.dp-scope-select{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:.8rem;
+  font-family:inherit;background:#fff;color:var(--charcoal);}
+.dp-scope-note{font-size:.68rem;color:var(--muted);padding:0 16px;}
+
 .dp-wrap{max-width:640px;margin:0 auto;padding:16px;}
 .dp-list{display:flex;flex-direction:column;gap:10px;}
 .dp-reel-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
@@ -73,6 +83,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
   <button class="dp-tab" id="tabFollow" onclick="switchTab('follow')">Who to Follow</button>
   <button class="dp-tab" id="tabTop" onclick="switchTab('top')">Top Creators</button>
   <button class="dp-tab" id="tabReels" onclick="switchTab('reels')">Trending Reels</button>
+  <button class="dp-tab" id="tabAll" onclick="switchTab('all')">All Creators</button>
+</div>
+
+<div class="dp-scope-row" id="dpScopeRow" style="display:none;">
+  <div class="dp-scope-pills" id="dpScopePills"></div>
+  <select class="dp-scope-select" id="dpScopeValueSelect" onchange="onScopeValueChange()"></select>
 </div>
 
 <div class="dp-wrap">
@@ -90,10 +106,21 @@ var db=firebase.firestore();
 var CITY = new URLSearchParams(location.search).get('city') || 'manteswar';
 var currentUser=null;
 var _tabParam = new URLSearchParams(location.search).get('tab');
-var activeTab = (_tabParam==='top' || _tabParam==='reels') ? _tabParam : 'follow';
+var activeTab = (['top','reels','all'].indexOf(_tabParam)>=0) ? _tabParam : 'follow';
 var PAGE_SIZE = 15;
 var lastDoc = null;
 var followSet = [];
+
+// ── Hyperlocal-to-global scope config for "All Creators" ──
+// City → District/State/Country lookup. Extend this as DELTA expands to new
+// cities per the Master Doc Section 11 roadmap. Right now DELTA is live in
+// exactly one city, so most tiers will show a single option — that's honest,
+// not a bug, and the structure is ready to grow without rework.
+var CITY_GEO_MAP = {
+  manteswar: {label:'Manteswar', district:'Purba Bardhaman', state:'West Bengal', country:'India'}
+};
+var scopeLevel = 'city';   // city | district | state | country | all
+var scopeValue = CITY;     // the specific value within that level
 
 var DEMO_FOLLOW = [
   {id:'demo-greenpharmacy', displayName:'Green Pharmacy', username:'greenpharmacy', avatarUrl:'https://images.unsplash.com/photo-1587854692152-cbe660dbde88?w=200&q=60'},
@@ -142,12 +169,128 @@ function switchTab(tab){
   document.getElementById('tabFollow').classList.toggle('active', tab==='follow');
   document.getElementById('tabTop').classList.toggle('active', tab==='top');
   document.getElementById('tabReels').classList.toggle('active', tab==='reels');
+  document.getElementById('tabAll').classList.toggle('active', tab==='all');
+  document.getElementById('dpScopeRow').style.display = tab==='all' ? 'flex' : 'none';
   document.getElementById('dpList').className = tab==='reels' ? 'dp-reel-grid' : 'dp-list';
   document.getElementById('dpList').innerHTML = '<div class="dp-loading">লোড হচ্ছে...</div>';
   document.getElementById('dpLoadMore').style.display='none';
   if(tab==='follow') loadFollowList(true);
   else if(tab==='top') loadTopList(true);
-  else loadReelsList(true);
+  else if(tab==='reels') loadReelsList(true);
+  else { renderScopePills(); renderScopeValueSelect(); loadAllCreators(true); }
+}
+
+// ── Scope pills: City / District / State / Country / All ──
+var SCOPE_LEVELS = [
+  {id:'city', label:'City'},
+  {id:'district', label:'District'},
+  {id:'state', label:'State'},
+  {id:'country', label:'Country'},
+  {id:'all', label:'All'}
+];
+function renderScopePills(){
+  var wrap = document.getElementById('dpScopePills');
+  wrap.innerHTML = SCOPE_LEVELS.map(function(s){
+    return '<button class="dp-scope-pill'+(s.id===scopeLevel?' active':'')+'" onclick="onScopeLevelChange(\''+s.id+'\')">'+s.label+'</button>';
+  }).join('');
+}
+function onScopeLevelChange(level){
+  scopeLevel = level;
+  // Reset scopeValue to a sensible default whenever the level changes —
+  // defaults to whatever the current city belongs to at that level.
+  var geo = CITY_GEO_MAP[CITY] || {};
+  if(level==='city') scopeValue = CITY;
+  else if(level==='district') scopeValue = geo.district;
+  else if(level==='state') scopeValue = geo.state;
+  else if(level==='country') scopeValue = geo.country;
+  else scopeValue = null; // 'all' has no specific value
+  renderScopePills();
+  renderScopeValueSelect();
+  loadAllCreators(true);
+}
+function renderScopeValueSelect(){
+  var sel = document.getElementById('dpScopeValueSelect');
+  if(scopeLevel==='all'){ sel.style.display='none'; return; }
+  sel.style.display='block';
+  var options = [];
+  if(scopeLevel==='city'){
+    options = Object.keys(CITY_GEO_MAP).map(function(id){ return {value:id, label:CITY_GEO_MAP[id].label}; });
+  } else {
+    // Distinct values at this level across every known city — right now
+    // that's just one city's worth, but this list grows automatically as
+    // CITY_GEO_MAP gets new entries when DELTA expands (Master Doc Section 11).
+    var seen = {};
+    Object.keys(CITY_GEO_MAP).forEach(function(id){
+      var v = CITY_GEO_MAP[id][scopeLevel];
+      if(v && !seen[v]){ seen[v]=true; options.push({value:v, label:v}); }
+    });
+  }
+  sel.innerHTML = options.map(function(o){
+    return '<option value="'+o.value+'"'+(o.value===scopeValue?' selected':'')+'>'+o.label+'</option>';
+  }).join('');
+}
+function onScopeValueChange(){
+  scopeValue = document.getElementById('dpScopeValueSelect').value;
+  loadAllCreators(true);
+}
+
+async function loadAllCreators(reset){
+  var list = document.getElementById('dpList');
+  var loadMoreBtn = document.getElementById('dpLoadMore');
+  try{
+    var q;
+    if(scopeLevel==='city'){
+      q = db.collection('cities').doc(scopeValue).collection('mediaProfiles').limit(PAGE_SIZE);
+    } else if(scopeLevel==='all'){
+      q = db.collectionGroup('mediaProfiles').limit(PAGE_SIZE);
+    } else {
+      // district / state / country — searches across every city's
+      // mediaProfiles subcollection at once via collectionGroup.
+      q = db.collectionGroup('mediaProfiles').where(scopeLevel,'==',scopeValue).limit(PAGE_SIZE);
+    }
+    if(!reset && lastDoc) q = q.startAfter(lastDoc);
+    var snap = await q.get();
+    if(reset) list.innerHTML='';
+    if(!snap.docs.length && reset){
+      list.innerHTML = '<div class="dp-empty">এই scope-এ এখনও কোনো creator/seller নেই।<br>DELTA যত নতুন city/district-এ ছড়াবে, এখানে তত বেশি দেখা যাবে।</div>';
+      loadMoreBtn.style.display='none';
+      return;
+    }
+    lastDoc = snap.docs[snap.docs.length-1] || null;
+    var items = snap.docs.map(function(d){ var p=d.data(); p.id=d.id; return p; });
+    renderAllCreatorCards(items, list);
+    loadMoreBtn.style.display = snap.docs.length===PAGE_SIZE ? 'block' : 'none';
+  }catch(e){
+    // Broad-scope queries (district/state/country/all) need a Firestore
+    // composite index the first time they run — same known pattern as the
+    // Trending Reels gap. Give an honest, actionable message instead of a
+    // silent blank list.
+    console.warn('All Creators load error (likely missing composite index for collectionGroup query)', e);
+    list.innerHTML = '<div class="dp-empty">এই scope-এর জন্য এখনও Firestore index তৈরি করা হয়নি।<br>Browser console-এ থাকা লিংক দিয়ে এক ক্লিকে index বানানো যাবে।</div>';
+    loadMoreBtn.style.display='none';
+  }
+}
+function renderAllCreatorCards(items, list){
+  items.forEach(function(p){
+    var card = document.createElement('div'); card.className='dp-card';
+    var roleLabel = (p.roles||[]).indexOf('seller')>=0 ? 'Seller' : (p.primaryBadge==='service_provider' ? 'Service Provider' : 'Creator');
+    var locLabel = [p.city, p.district].filter(Boolean).join(', ');
+    card.innerHTML =
+      '<div class="dp-avatar-wrap">'+dpAvatarOrLetter(p.avatarUrl, p.displayName)+'</div>'+
+      '<div class="dp-info"><div class="dp-name">'+(p.displayName||'Unknown')+' <span style="font-size:.68rem;color:var(--muted);font-weight:600;">· '+roleLabel+'</span></div>'+
+      '<div class="dp-sub">'+(locLabel||'')+'</div></div>'+
+      '<button class="dp-follow-btn">Follow</button>';
+    var btn = card.querySelector('.dp-follow-btn');
+    var info = card.querySelector('.dp-info');
+    info.onclick = function(){ location.href='media-profile.html?uid='+p.id+'&city='+(p.city||CITY); };
+    btn.onclick = function(e){
+      e.stopPropagation();
+      if(!currentUser){ requireLogin(); return; }
+      toggleFollow(p.id, btn, p.city);
+    };
+    list.appendChild(card);
+  });
+  dpBindAvatarFallbacks(list);
 }
 
 async function loadFollowList(reset){
@@ -262,9 +405,10 @@ function renderTopCards(items, isDemo, list, startRank){
   dpBindAvatarFallbacks(list);
 }
 
-function toggleFollow(targetUid, btn){
+function toggleFollow(targetUid, btn, targetCity){
+  targetCity = targetCity || CITY;
   var myRef = db.collection('cities').doc(CITY).collection('mediaProfiles').doc(currentUser.uid).collection('following').doc(targetUid);
-  var theirRef = db.collection('cities').doc(CITY).collection('mediaProfiles').doc(targetUid).collection('followers').doc(currentUser.uid);
+  var theirRef = db.collection('cities').doc(targetCity).collection('mediaProfiles').doc(targetUid).collection('followers').doc(currentUser.uid);
   var isFollowing = btn.classList.contains('following');
   if(isFollowing){
     myRef.delete(); theirRef.delete();
@@ -326,7 +470,8 @@ function renderReelCards(items, isDemo, list){
 function loadMore(){
   if(activeTab==='follow') loadFollowList(false);
   else if(activeTab==='top') loadTopList(false);
-  else loadReelsList(false);
+  else if(activeTab==='reels') loadReelsList(false);
+  else loadAllCreators(false);
 }
 
 auth.onAuthStateChanged(function(u){
@@ -335,10 +480,13 @@ auth.onAuthStateChanged(function(u){
   document.getElementById('tabFollow').classList.toggle('active', activeTab==='follow');
   document.getElementById('tabTop').classList.toggle('active', activeTab==='top');
   document.getElementById('tabReels').classList.toggle('active', activeTab==='reels');
+  document.getElementById('tabAll').classList.toggle('active', activeTab==='all');
+  document.getElementById('dpScopeRow').style.display = activeTab==='all' ? 'flex' : 'none';
   document.getElementById('dpList').className = activeTab==='reels' ? 'dp-reel-grid' : 'dp-list';
   if(activeTab==='follow') loadFollowList(true);
   else if(activeTab==='top') loadTopList(true);
-  else loadReelsList(true);
+  else if(activeTab==='reels') loadReelsList(true);
+  else { renderScopePills(); renderScopeValueSelect(); loadAllCreators(true); }
 });
 </script>
 </body>
