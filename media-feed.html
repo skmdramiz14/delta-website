@@ -1017,13 +1017,33 @@ firebase.initializeApp(fbcfg);
 var auth=firebase.auth();
 var db=firebase.firestore();
 var CITY = new URLSearchParams(location.search).get('city') || 'manteswar';
-// City → District/State/Country lookup, for hyperlocal-to-global scope
-// filtering (Discover People "All Creators" tab). Extend this as DELTA
-// expands to new cities per the Master Doc Section 11 roadmap.
-var CITY_GEO_MAP = {
-  manteswar: {district:'Purba Bardhaman', state:'West Bengal', country:'India'}
+// City → District/State/Country lookup, now backed by Firestore's cityConfig
+// collection instead of a hardcoded map — so adding a new city as DELTA
+// expands (Master Doc Section 11) means adding one document, not editing
+// four HTML files. Self-heals: if a city's config doc doesn't exist yet, it
+// creates a sensible default (only works once the user is logged in, per the
+// Firestore rule — anonymous reads still get an in-memory fallback).
+var _cityGeoCache = {};
+var CITY_GEO_SEED_DEFAULTS = {
+  manteswar: {label:'Manteswar', district:'Purba Bardhaman', state:'West Bengal', country:'India'}
 };
-function getCityGeo(city){ return CITY_GEO_MAP[city] || CITY_GEO_MAP.manteswar; }
+async function getCityGeo(city){
+  if(_cityGeoCache[city]) return _cityGeoCache[city];
+  var fallback = CITY_GEO_SEED_DEFAULTS[city] || {label:city, district:'', state:'', country:'India'};
+  try{
+    var doc = await db.collection('cityConfig').doc(city).get();
+    if(doc.exists){ _cityGeoCache[city] = doc.data(); return doc.data(); }
+    if(auth.currentUser){
+      try{ await db.collection('cityConfig').doc(city).set(fallback); }
+      catch(e){ console.warn('cityConfig self-heal skipped', e); }
+    }
+    _cityGeoCache[city] = fallback;
+    return fallback;
+  }catch(e){
+    console.warn('cityConfig fetch failed, using in-memory default', e);
+    return fallback;
+  }
+}
 var currentUser=null;
 var NAV_AVATAR_GENERIC_ICON = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3.3"/><path d="M4.5 20c1-4.2 4-6.5 7.5-6.5s6.5 2.3 7.5 6.5" stroke-linecap="round"/></svg>';
 // Discover row cards (Who to Follow / Top Creators / Official) and desktop
@@ -1148,7 +1168,7 @@ async function doMediaRegister(){
     // Identity Bridge (Part A Section 3.2) — every account also gets a basic
     // mediaProfiles doc, so DELTA Media's profile page actually finds them
     // instead of showing "Profile not found".
-    var geo = getCityGeo(CITY);
+    var geo = await getCityGeo(CITY);
     await db.collection('cities').doc(CITY).collection('mediaProfiles').doc(cr.user.uid).set({
       uid: cr.user.uid, displayName: name, bio:'', avatarUrl:'', coverUrl:'',
       roles:['customer','creator'], linkedCustomerId: cr.user.uid,
