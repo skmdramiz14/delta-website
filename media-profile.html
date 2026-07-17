@@ -211,10 +211,29 @@ firebase.initializeApp(fbcfg);
 var auth=firebase.auth();
 var db=firebase.firestore();
 var CITY = new URLSearchParams(location.search).get('city') || 'manteswar';
-var CITY_GEO_MAP = {
-  manteswar: {district:'Purba Bardhaman', state:'West Bengal', country:'India'}
+// City → District/State/Country lookup, backed by Firestore's cityConfig
+// collection (self-healing) rather than a hardcoded map.
+var _cityGeoCache = {};
+var CITY_GEO_SEED_DEFAULTS = {
+  manteswar: {label:'Manteswar', district:'Purba Bardhaman', state:'West Bengal', country:'India'}
 };
-function getCityGeo(city){ return CITY_GEO_MAP[city] || CITY_GEO_MAP.manteswar; }
+async function getCityGeo(city){
+  if(_cityGeoCache[city]) return _cityGeoCache[city];
+  var fallback = CITY_GEO_SEED_DEFAULTS[city] || {label:city, district:'', state:'', country:'India'};
+  try{
+    var doc = await db.collection('cityConfig').doc(city).get();
+    if(doc.exists){ _cityGeoCache[city] = doc.data(); return doc.data(); }
+    if(auth.currentUser){
+      try{ await db.collection('cityConfig').doc(city).set(fallback); }
+      catch(e){ console.warn('cityConfig self-heal skipped', e); }
+    }
+    _cityGeoCache[city] = fallback;
+    return fallback;
+  }catch(e){
+    console.warn('cityConfig fetch failed, using in-memory default', e);
+    return fallback;
+  }
+}
 var PROFILE_UID = new URLSearchParams(location.search).get('uid');
 var INITIAL_TAB = new URLSearchParams(location.search).get('tab');
 var currentUser = null;
@@ -246,7 +265,7 @@ async function loadProfile(){
       // Self-heal for accounts created before mediaProfiles auto-creation was
       // added to the sign-up flow — build a basic profile now rather than
       // showing "Profile not found" forever on someone's own page.
-      var geo = getCityGeo(CITY);
+      var geo = await getCityGeo(CITY);
       var basicProfile = {
         uid: currentUser.uid, displayName: currentUser.displayName || 'DELTA User',
         bio:'', avatarUrl:'', coverUrl:'', roles:['customer','creator'],
