@@ -2219,6 +2219,10 @@ img{max-width:100%;height:auto;}
   .cat-more-wrap{display:block;}
 }
 
+/* Google Places Autocomplete dropdown — must render above every modal
+   (highest z-index elsewhere in this file is 5000 for gate-overlay), or the
+   suggestion list becomes invisible/unclickable when the location gate is open. */
+.pac-container{ z-index:9999 !important; }
 </style>
 </head>
 <body class="lang-bn">
@@ -4116,16 +4120,54 @@ function closePinModal(){
   document.getElementById('pinModalOverlay').style.display='none';
 }
 
+// ── Geocoding fallback — Location Architecture v1, Section 5 ──
+// If someone types a village/landmark name and clicks "Check" directly
+// (rather than picking a suggestion from the Autocomplete dropdown), this
+// resolves the free text to a pincode via the Geocoding API, so the button
+// still does something useful instead of just rejecting non-numeric input.
+var GOOGLE_MAPS_API_KEY = 'AIzaSyBcXYIgnOt2SOyPswg9LXRS-5OB8-9w8oY';
+async function resolveTextToPincode(text){
+  try{
+    var url = 'https://maps.googleapis.com/maps/api/geocode/json?address='
+      + encodeURIComponent(text + ', India') + '&key=' + GOOGLE_MAPS_API_KEY;
+    var res = await fetch(url);
+    var data = await res.json();
+    if(data.status === 'OK' && data.results && data.results.length){
+      var comps = data.results[0].address_components || [];
+      for(var i=0;i<comps.length;i++){
+        if(comps[i].types.indexOf('postal_code') >= 0) return comps[i].long_name;
+      }
+    }
+  }catch(e){ console.warn('Geocoding fallback failed', e); }
+  return null;
+}
+
 async function checkPincode(){
-  var pin=(document.getElementById('pinInput').value||'').trim();
+  var raw=(document.getElementById('pinInput').value||'').trim();
   var resultEl=document.getElementById('pinResult');
+  var pin = raw;
 
   if(!/^\d{6}$/.test(pin)){
-    resultEl.className='pin-result fail';
+    if(!raw){
+      resultEl.className='pin-result fail';
+      resultEl.style.display='block';
+      resultEl.innerHTML='<strong>⚠️ '+(currentLang==='bn'?'সঠিক পিনকোড দিন':'Enter a valid pincode')+'</strong>'+
+        (currentLang==='bn'?'৬ সংখ্যার পিনকোড বা এলাকার নাম লিখুন।':'Please enter a 6-digit pincode or a place name.');
+      return;
+    }
+    // Free text typed without picking an Autocomplete suggestion — try
+    // resolving it directly via Geocoding before giving up.
+    resultEl.className='pin-result';
     resultEl.style.display='block';
-    resultEl.innerHTML='<strong>⚠️ '+(currentLang==='bn'?'সঠিক পিনকোড দিন':'Enter a valid pincode')+'</strong>'+
-      (currentLang==='bn'?'৬ সংখ্যার পিনকোড লিখুন।':'Please enter a 6-digit pincode.');
-    return;
+    resultEl.innerHTML = currentLang==='bn' ? 'খোঁজা হচ্ছে...' : 'Searching...';
+    var resolved = await resolveTextToPincode(raw);
+    if(resolved){ pin = resolved; }
+    else{
+      resultEl.className='pin-result fail';
+      resultEl.innerHTML='<strong>⚠️ '+(currentLang==='bn'?'এই এলাকা খুঁজে পাওয়া যায়নি':'Could not find that place')+'</strong>'+
+        (currentLang==='bn'?'সরাসরি ৬-সংখ্যার পিনকোড লিখে চেষ্টা করুন।':'Please try entering the 6-digit pincode directly.');
+      return;
+    }
   }
 
   await loadPincodeCityMap();
@@ -4174,15 +4216,29 @@ function showWelcomeGateIfNeeded(){
 }
 
 async function checkGatePincode(){
-  var pin=(document.getElementById('gateInput').value||'').trim();
+  var raw=(document.getElementById('gateInput').value||'').trim();
   var resultEl=document.getElementById('gateResult');
+  var pin = raw;
 
   if(!/^\d{6}$/.test(pin)){
-    resultEl.className='gate-result fail';
+    if(!raw){
+      resultEl.className='gate-result fail';
+      resultEl.style.display='block';
+      resultEl.innerHTML='<strong>⚠️ '+(currentLang==='bn'?'সঠিক পিনকোড দিন':'Enter a valid pincode')+'</strong>'+
+        (currentLang==='bn'?'৬ সংখ্যার পিনকোড বা এলাকার নাম লিখুন।':'Please enter a 6-digit pincode or a place name.');
+      return;
+    }
+    resultEl.className='gate-result';
     resultEl.style.display='block';
-    resultEl.innerHTML='<strong>⚠️ '+(currentLang==='bn'?'সঠিক পিনকোড দিন':'Enter a valid pincode')+'</strong>'+
-      (currentLang==='bn'?'৬ সংখ্যার পিনকোড লিখুন।':'Please enter a 6-digit pincode.');
-    return;
+    resultEl.innerHTML = currentLang==='bn' ? 'খোঁজা হচ্ছে...' : 'Searching...';
+    var resolved = await resolveTextToPincode(raw);
+    if(resolved){ pin = resolved; }
+    else{
+      resultEl.className='gate-result fail';
+      resultEl.innerHTML='<strong>⚠️ '+(currentLang==='bn'?'এই এলাকা খুঁজে পাওয়া যায়নি':'Could not find that place')+'</strong>'+
+        (currentLang==='bn'?'সরাসরি ৬-সংখ্যার পিনকোড লিখে চেষ্টা করুন।':'Please try entering the 6-digit pincode directly.');
+      return;
+    }
   }
 
   await loadPincodeCityMap();
