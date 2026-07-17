@@ -3732,10 +3732,30 @@ var _shopModalAutoOpened=false;
   }catch(e){}
 })();
 var CITY='manteswar'; // Multi-tenant city
-var CITY_GEO_MAP = {
-  manteswar: {district:'Purba Bardhaman', state:'West Bengal', country:'India'}
+// City → District/State/Country lookup, backed by Firestore's cityConfig
+// collection (self-healing) rather than a hardcoded map — see media-feed.html
+// for the fuller explanation of this pattern.
+var _cityGeoCache = {};
+var CITY_GEO_SEED_DEFAULTS = {
+  manteswar: {label:'Manteswar', district:'Purba Bardhaman', state:'West Bengal', country:'India'}
 };
-function getCityGeo(city){ return CITY_GEO_MAP[city] || CITY_GEO_MAP.manteswar; }
+async function getCityGeo(city){
+  if(_cityGeoCache[city]) return _cityGeoCache[city];
+  var fallback = CITY_GEO_SEED_DEFAULTS[city] || {label:city, district:'', state:'', country:'India'};
+  try{
+    var doc = await db.collection('cityConfig').doc(city).get();
+    if(doc.exists){ _cityGeoCache[city] = doc.data(); return doc.data(); }
+    if(auth.currentUser){
+      try{ await db.collection('cityConfig').doc(city).set(fallback); }
+      catch(e){ console.warn('cityConfig self-heal skipped', e); }
+    }
+    _cityGeoCache[city] = fallback;
+    return fallback;
+  }catch(e){
+    console.warn('cityConfig fetch failed, using in-memory default', e);
+    return fallback;
+  }
+}
 
 // Dynamic Firebase loader — robust version with error handling + timeout fallback
 (function(){
@@ -7329,7 +7349,7 @@ async function doCustomerRegister(){
     await db.collection('cities').doc(CITY).collection('customers').doc(cr.user.uid).set({name,mobile,email:e,city:CITY,createdAt:new Date().toISOString()});
     // Identity Bridge — same account also needs a mediaProfiles doc so DELTA
     // Media's profile page finds them, whether they signed up here or there.
-    var geo = getCityGeo(CITY);
+    var geo = await getCityGeo(CITY);
     await db.collection('cities').doc(CITY).collection('mediaProfiles').doc(cr.user.uid).set({
       uid: cr.user.uid, displayName: name, bio:'', avatarUrl:'', coverUrl:'',
       roles:['customer','creator'], linkedCustomerId: cr.user.uid,
