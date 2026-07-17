@@ -80,10 +80,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 </div>
 
 <div class="dp-tabs">
-  <button class="dp-tab" id="tabFollow" onclick="switchTab('follow')">Who to Follow</button>
+  <button class="dp-tab" id="tabAll" onclick="switchTab('all')">All Creators</button>
   <button class="dp-tab" id="tabTop" onclick="switchTab('top')">Top Creators</button>
   <button class="dp-tab" id="tabReels" onclick="switchTab('reels')">Trending Reels</button>
-  <button class="dp-tab" id="tabAll" onclick="switchTab('all')">All Creators</button>
+  <button class="dp-tab" id="tabFollow" onclick="switchTab('follow')">Who to Follow</button>
 </div>
 
 <div class="dp-scope-row" id="dpScopeRow" style="display:none;">
@@ -106,19 +106,37 @@ var db=firebase.firestore();
 var CITY = new URLSearchParams(location.search).get('city') || 'manteswar';
 var currentUser=null;
 var _tabParam = new URLSearchParams(location.search).get('tab');
-var activeTab = (['top','reels','all'].indexOf(_tabParam)>=0) ? _tabParam : 'follow';
+var activeTab = (['top','reels','follow'].indexOf(_tabParam)>=0) ? _tabParam : 'all';
 var PAGE_SIZE = 15;
 var lastDoc = null;
 var followSet = [];
 
 // ── Hyperlocal-to-global scope config for "All Creators" ──
-// City → District/State/Country lookup. Extend this as DELTA expands to new
-// cities per the Master Doc Section 11 roadmap. Right now DELTA is live in
-// exactly one city, so most tiers will show a single option — that's honest,
-// not a bug, and the structure is ready to grow without rework.
-var CITY_GEO_MAP = {
+// Now backed by Firestore's cityConfig collection instead of a hardcoded map
+// — adding a new city as DELTA expands (Master Doc Section 11) means adding
+// one Firestore document, not editing four HTML files. Self-heals: if no
+// cityConfig docs exist yet at all, seeds sensible defaults (only persists
+// once the user is logged in, per the Firestore rule).
+var ALL_CITY_CONFIGS = {};
+var CITY_GEO_SEED_DEFAULTS = {
   manteswar: {label:'Manteswar', district:'Purba Bardhaman', state:'West Bengal', country:'India'}
 };
+async function loadAllCityConfigs(){
+  try{
+    var snap = await db.collection('cityConfig').get();
+    snap.docs.forEach(function(d){ ALL_CITY_CONFIGS[d.id] = d.data(); });
+  }catch(e){ console.warn('cityConfig list fetch failed', e); }
+  if(!Object.keys(ALL_CITY_CONFIGS).length){
+    ALL_CITY_CONFIGS = Object.assign({}, CITY_GEO_SEED_DEFAULTS);
+    if(auth.currentUser){
+      Object.keys(CITY_GEO_SEED_DEFAULTS).forEach(function(id){
+        db.collection('cityConfig').doc(id).set(CITY_GEO_SEED_DEFAULTS[id]).catch(function(e){
+          console.warn('cityConfig self-heal skipped', e);
+        });
+      });
+    }
+  }
+}
 var scopeLevel = 'city';   // city | district | state | country | all
 var scopeValue = CITY;     // the specific value within that level
 
@@ -160,7 +178,7 @@ function dpBindAvatarFallbacks(container){
   });
 }
 
-function switchTab(tab){
+async function switchTab(tab){
   activeTab = tab;
   lastDoc = null;
   var url = new URL(location.href);
@@ -177,7 +195,10 @@ function switchTab(tab){
   if(tab==='follow') loadFollowList(true);
   else if(tab==='top') loadTopList(true);
   else if(tab==='reels') loadReelsList(true);
-  else { renderScopePills(); renderScopeValueSelect(); loadAllCreators(true); }
+  else {
+    if(!Object.keys(ALL_CITY_CONFIGS).length) await loadAllCityConfigs();
+    renderScopePills(); renderScopeValueSelect(); loadAllCreators(true);
+  }
 }
 
 // ── Scope pills: City / District / State / Country / All ──
@@ -198,7 +219,7 @@ function onScopeLevelChange(level){
   scopeLevel = level;
   // Reset scopeValue to a sensible default whenever the level changes —
   // defaults to whatever the current city belongs to at that level.
-  var geo = CITY_GEO_MAP[CITY] || {};
+  var geo = ALL_CITY_CONFIGS[CITY] || {};
   if(level==='city') scopeValue = CITY;
   else if(level==='district') scopeValue = geo.district;
   else if(level==='state') scopeValue = geo.state;
@@ -214,14 +235,14 @@ function renderScopeValueSelect(){
   sel.style.display='block';
   var options = [];
   if(scopeLevel==='city'){
-    options = Object.keys(CITY_GEO_MAP).map(function(id){ return {value:id, label:CITY_GEO_MAP[id].label}; });
+    options = Object.keys(ALL_CITY_CONFIGS).map(function(id){ return {value:id, label:ALL_CITY_CONFIGS[id].label||id}; });
   } else {
-    // Distinct values at this level across every known city — right now
-    // that's just one city's worth, but this list grows automatically as
-    // CITY_GEO_MAP gets new entries when DELTA expands (Master Doc Section 11).
+    // Distinct values at this level across every known city — grows
+    // automatically as new cityConfig documents get added when DELTA expands
+    // (Master Doc Section 11), no code change needed.
     var seen = {};
-    Object.keys(CITY_GEO_MAP).forEach(function(id){
-      var v = CITY_GEO_MAP[id][scopeLevel];
+    Object.keys(ALL_CITY_CONFIGS).forEach(function(id){
+      var v = ALL_CITY_CONFIGS[id][scopeLevel];
       if(v && !seen[v]){ seen[v]=true; options.push({value:v, label:v}); }
     });
   }
@@ -474,7 +495,7 @@ function loadMore(){
   else loadAllCreators(false);
 }
 
-auth.onAuthStateChanged(function(u){
+auth.onAuthStateChanged(async function(u){
   currentUser = u;
   followSet = [];
   document.getElementById('tabFollow').classList.toggle('active', activeTab==='follow');
@@ -486,7 +507,10 @@ auth.onAuthStateChanged(function(u){
   if(activeTab==='follow') loadFollowList(true);
   else if(activeTab==='top') loadTopList(true);
   else if(activeTab==='reels') loadReelsList(true);
-  else { renderScopePills(); renderScopeValueSelect(); loadAllCreators(true); }
+  else {
+    await loadAllCityConfigs();
+    renderScopePills(); renderScopeValueSelect(); loadAllCreators(true);
+  }
 });
 </script>
 </body>
