@@ -1238,7 +1238,8 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 .pin-sheet{background:var(--white);width:100%;max-width:380px;border-radius:18px;overflow:hidden;animation:fmSlideUp .25s ease;}
 .pin-head{background:linear-gradient(135deg,var(--navy3),var(--navy));padding:22px 22px 18px;position:relative;text-align:center;color:#fff;}
 .pin-close{position:absolute;top:12px;right:12px;background:rgba(255,255,255,.15);border:none;color:#fff;width:30px;height:30px;border-radius:50%;font-size:1rem;cursor:pointer;}
-.pin-head-icon{font-size:1.8rem;margin-bottom:6px;}
+.pin-head-icon-badge{width:44px;height:44px;border-radius:50%;background:rgba(199,161,90,.15);border:1.5px solid rgba(199,161,90,.4);
+  display:flex;align-items:center;justify-content:center;margin:0 auto 6px;}
 .pin-head-title{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:800;margin-bottom:4px;}
 .pin-head-sub{font-size:.78rem;color:rgba(255,255,255,.7);}
 .pin-body{padding:22px;}
@@ -1259,10 +1260,11 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 /* ── WELCOME PINCODE GATE (first visit) ── */
 .gate-overlay{position:fixed;inset:0;background:linear-gradient(135deg,var(--navy3),var(--navy));z-index:5000;display:flex;align-items:center;justify-content:center;padding:24px;}
 .gate-card{background:var(--white);width:100%;max-width:400px;border-radius:20px;overflow:hidden;text-align:center;animation:fmSlideUp .3s ease;}
-.gate-top{background:linear-gradient(135deg,var(--green2,#1a7a4c),var(--green,#2da86a));padding:32px 24px 26px;color:#fff;}
-.gate-logo{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:900;margin-bottom:10px;}
+.gate-top{background:linear-gradient(135deg,var(--navy3),var(--navy));padding:32px 24px 26px;color:#fff;}
+.gate-logo{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:900;margin-bottom:14px;}
 .gate-logo em{color:#ffe5c2;font-style:normal;}
-.gate-icon{font-size:2.2rem;margin-bottom:8px;}
+.gate-icon-badge{width:52px;height:52px;border-radius:50%;background:rgba(199,161,90,.15);border:1.5px solid rgba(199,161,90,.4);
+  display:flex;align-items:center;justify-content:center;margin:0 auto 12px;}
 .gate-title{font-size:1.05rem;font-weight:800;margin-bottom:6px;}
 .gate-sub{font-size:.8rem;opacity:.9;line-height:1.5;}
 .gate-body{padding:24px;}
@@ -2232,7 +2234,12 @@ img{max-width:100%;height:auto;}
   <div class="gate-card">
     <div class="gate-top">
       <div class="gate-logo">△ DELT<em>A</em></div>
-      <div class="gate-icon">📍</div>
+      <div class="gate-icon-badge">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2C7.6 2 4 5.6 4 10c0 5.6 8 12 8 12s8-6.4 8-12c0-4.4-3.6-8-8-8Z" stroke="#C7A15A" stroke-width="1.6" stroke-linejoin="round"/>
+          <circle cx="12" cy="10" r="2.6" fill="#C7A15A"/>
+        </svg>
+      </div>
       <div class="gate-title"><span class="lang-bn">আপনার এলাকা চেক করুন</span><span class="lang-en">Check Your Area</span></div>
       <div class="gate-sub">
         <span class="lang-bn">পিনকোড দিন — দেখি আমরা পৌঁছাতে পারি কিনা</span>
@@ -3246,7 +3253,12 @@ img{max-width:100%;height:auto;}
   <div class="pin-sheet">
     <div class="pin-head">
       <button class="pin-close" onclick="closePinModal()">✕</button>
-      <div class="pin-head-icon">📍</div>
+      <div class="pin-head-icon-badge">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2C7.6 2 4 5.6 4 10c0 5.6 8 12 8 12s8-6.4 8-12c0-4.4-3.6-8-8-8Z" stroke="#C7A15A" stroke-width="1.6" stroke-linejoin="round"/>
+          <circle cx="12" cy="10" r="2.6" fill="#C7A15A"/>
+        </svg>
+      </div>
       <div class="pin-head-title"><span class="lang-bn">ডেলিভারি চেক করুন</span><span class="lang-en">Check Delivery</span></div>
       <div class="pin-head-sub"><span class="lang-bn">আপনার পিনকোড দিয়ে দেখুন আমরা পৌঁছাই কিনা</span><span class="lang-en">Enter your pincode to see if we deliver there</span></div>
     </div>
@@ -3949,14 +3961,42 @@ async function initGooglePlacesAutocomplete(){
       if(pincode){
         inputEl.value = pincode;
         if(isGate) checkGatePincode(); else checkPincode();
-      } else {
-        // Selected place has no postal code attached in Google's data —
-        // honest fallback rather than silently failing.
+      } else if(place.geometry && place.geometry.location){
+        // Broad selections (a whole city/region, common worldwide — e.g. picking
+        // "São Paulo, Brazil" itself rather than a specific street address)
+        // often have no single postal code in address_components. Fall back to
+        // reverse-geocoding the place's coordinates to find the nearest one.
         var resultEl = document.getElementById(isGate ? 'gateResult' : 'pinResult');
-        if(resultEl){
-          resultEl.className = (isGate ? 'gate-result' : 'pin-result') + ' fail';
-          resultEl.style.display = 'block';
-          resultEl.innerHTML = '<strong>⚠️ এই এলাকার pincode খুঁজে পাওয়া যায়নি</strong>সরাসরি ৬-সংখ্যার pincode লিখে চেষ্টা করুন।';
+        if(resultEl){ resultEl.className=(isGate?'gate-result':'pin-result'); resultEl.style.display='block';
+          resultEl.innerHTML = currentLang==='bn' ? 'খোঁজা হচ্ছে...' : 'Searching...'; }
+        var geocoder = new google.maps.Geocoder();
+        geocoder.geocode({ location: place.geometry.location }, function(results, status){
+          var found = null;
+          if(status==='OK' && results && results.length){
+            for(var r=0;r<results.length && !found;r++){
+              (results[r].address_components||[]).forEach(function(comp){
+                if(!found && comp.types.indexOf('postal_code')>=0) found = comp.long_name;
+              });
+            }
+          }
+          if(found){
+            inputEl.value = found;
+            if(isGate) checkGatePincode(); else checkPincode();
+          } else if(resultEl){
+            resultEl.className = (isGate ? 'gate-result' : 'pin-result') + ' fail';
+            resultEl.innerHTML = '<strong>⚠️ '+(currentLang==='bn'?'এই এলাকার সুনির্দিষ্ট pincode খুঁজে পাওয়া যায়নি':'Could not find a specific pincode for this area')+'</strong>'+
+              (currentLang==='bn'?'আরও নির্দিষ্ট একটা ঠিকানা/এলাকা লিখে চেষ্টা করুন, অথবা সরাসরি pincode লিখুন।':'Try a more specific address/area, or enter the pincode directly.');
+          }
+        });
+      } else {
+        // Selected place has no postal code and no coordinates to fall back
+        // on — honest message rather than silently failing.
+        var resultEl2 = document.getElementById(isGate ? 'gateResult' : 'pinResult');
+        if(resultEl2){
+          resultEl2.className = (isGate ? 'gate-result' : 'pin-result') + ' fail';
+          resultEl2.style.display = 'block';
+          resultEl2.innerHTML = '<strong>⚠️ '+(currentLang==='bn'?'এই এলাকার pincode খুঁজে পাওয়া যায়নি':'Could not find a pincode for this area')+'</strong>'+
+            (currentLang==='bn'?'আরও নির্দিষ্ট একটা ঠিকানা লিখে চেষ্টা করুন, অথবা সরাসরি pincode লিখুন।':'Try a more specific address, or enter the pincode directly.');
         }
       }
     });
@@ -6220,6 +6260,12 @@ function setLang(l){
   // Re-render dynamic sections
   if(allShops.length) renderShops(allShops);
   if(allProducts.length){renderProducts(allProducts);buildFarmersStrip();}
+  // Location inputs — placeholders can't use lang-bn/lang-en spans (they're
+  // an HTML attribute, not innerHTML), so update them explicitly here.
+  var gi = document.getElementById('gateInput');
+  var pi = document.getElementById('pinInput');
+  if(gi) gi.placeholder = l==='bn' ? '৭১৩১৪৫ বা এলাকার নাম (Moynampur)' : '713145 or place name (Moynampur)';
+  if(pi) pi.placeholder = l==='bn' ? '713145 বা এলাকার নাম' : '713145 or place name';
   showToast(l==='bn'?'বাংলা মোড সক্রিয় ✅':'English mode active ✅','green');
 }
 
