@@ -3885,7 +3885,7 @@ async function loadPincodeCityMap(){
 // fails to load (no functionality is lost, only the suggestion dropdown).
 (function(){
   var script = document.createElement('script');
-  script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyBcXYIgnOt2SOyPswg9LXRS-5OB8-9w8oY&libraries=places&callback=initGooglePlacesAutocomplete';
+  script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyBcXYIgnOt2SOyPswg9LXRS-5OB8-9w8oY&libraries=places&loading=async&callback=initGooglePlacesAutocomplete';
   script.async = true;
   script.defer = true;
   script.onerror = function(){ console.warn('Google Maps script failed to load — plain pincode entry still works.'); };
@@ -4123,23 +4123,26 @@ function closePinModal(){
 // ── Geocoding fallback — Location Architecture v1, Section 5 ──
 // If someone types a village/landmark name and clicks "Check" directly
 // (rather than picking a suggestion from the Autocomplete dropdown), this
-// resolves the free text to a pincode via the Geocoding API, so the button
-// still does something useful instead of just rejecting non-numeric input.
-var GOOGLE_MAPS_API_KEY = 'AIzaSyBcXYIgnOt2SOyPswg9LXRS-5OB8-9w8oY';
-async function resolveTextToPincode(text){
-  try{
-    var url = 'https://maps.googleapis.com/maps/api/geocode/json?address='
-      + encodeURIComponent(text + ', India') + '&key=' + GOOGLE_MAPS_API_KEY;
-    var res = await fetch(url);
-    var data = await res.json();
-    if(data.status === 'OK' && data.results && data.results.length){
-      var comps = data.results[0].address_components || [];
-      for(var i=0;i<comps.length;i++){
-        if(comps[i].types.indexOf('postal_code') >= 0) return comps[i].long_name;
-      }
+// resolves the free text to a pincode. Uses google.maps.Geocoder (the
+// official browser-side class from the Maps JavaScript API we already
+// loaded) rather than calling the REST endpoint directly via fetch() — the
+// REST endpoint isn't reliably callable cross-origin from browser JS, which
+// was causing silent failures.
+function resolveTextToPincode(text){
+  return new Promise(function(resolve){
+    if(typeof google==='undefined' || !google.maps || !google.maps.Geocoder){
+      resolve(null); return;
     }
-  }catch(e){ console.warn('Geocoding fallback failed', e); }
-  return null;
+    var geocoder = new google.maps.Geocoder();
+    geocoder.geocode({ address: text + ', India', componentRestrictions: {country:'IN'} }, function(results, status){
+      if(status !== 'OK' || !results || !results.length){ resolve(null); return; }
+      var comps = results[0].address_components || [];
+      for(var i=0;i<comps.length;i++){
+        if(comps[i].types.indexOf('postal_code') >= 0){ resolve(comps[i].long_name); return; }
+      }
+      resolve(null);
+    });
+  });
 }
 
 async function checkPincode(){
