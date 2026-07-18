@@ -3444,6 +3444,29 @@ img{max-width:100%;height:auto;}
 <!-- SERVICE-NOT-AVAILABLE GATE (checkout-time) — Location Architecture v1,
      Section 6. Cart is preserved; this only blocks the actual checkout step,
      never browsing/wishlist/add-to-cart. -->
+<!-- NOTIFY CONTACT MODAL — Location Architecture v1 follow-up. Logged-out
+     users clicking "Notify me" have no email/mobile on file otherwise,
+     which would make the whole notify feature silently useless for them. -->
+<div class="modal-overlay" id="notifyContactModal">
+  <div class="modal-box" style="text-align:center;">
+    <div style="font-size:2rem;margin-bottom:8px;">🔔</div>
+    <h3><span class="lang-bn">কোথায় জানাবো?</span><span class="lang-en">Where should we notify you?</span></h3>
+    <p style="font-size:.82rem;color:var(--muted);margin:6px 0 16px;">
+      <span class="lang-bn">Account লাগবে না — শুধু email বা মোবাইল দিন</span>
+      <span class="lang-en">No account needed — just an email or mobile number</span>
+    </p>
+    <div class="form-group"><label><span class="lang-bn">Email</span><span class="lang-en">Email</span></label>
+      <input type="email" class="form-input" id="notifyContactEmail" placeholder="your@email.com"></div>
+    <div class="form-group"><label><span class="lang-bn">অথবা মোবাইল নম্বর</span><span class="lang-en">Or mobile number</span></label>
+      <input type="tel" class="form-input" id="notifyContactMobile" placeholder="98XXXXXXXX"></div>
+    <button class="submit-btn" onclick="submitNotifyContact()">
+      <span class="lang-bn">🔔 জানান</span><span class="lang-en">🔔 Notify me</span></button>
+    <button onclick="closeNotifyContactModal()" style="width:100%;background:transparent;border:none;color:var(--muted);
+      padding:10px;margin-top:6px;font-size:.82rem;cursor:pointer;">
+      <span class="lang-bn">বাতিল করুন</span><span class="lang-en">Cancel</span></button>
+  </div>
+</div>
+
 <div class="modal-overlay" id="serviceGateModal">
   <div class="modal-box" style="text-align:center;">
     <div style="font-size:2rem;margin-bottom:8px;">😔</div>
@@ -4273,24 +4296,78 @@ async function checkPincode(){
     resultEl.style.display='block';
     resultEl.innerHTML='<strong>😔 '+(currentLang==='bn'?'এখনো এই এলাকায় নেই':'Not available here yet')+'</strong>'+
       (currentLang==='bn'?'আমরা এখনো মন্তেশ্বর ব্লকেই আছি। শীঘ্রই আরও এলাকায় যাচ্ছি!':'We currently only serve Manteswar Block. Expanding soon!')+
-      '<button class="pin-notify-btn" onclick="notifyPinExpansion(\''+pin+'\')">🔔 <span class="lang-bn">এই এলাকায় আসলে জানান</span><span class="lang-en">Notify me when available</span></button>';
+      '<button class="pin-notify-btn" onclick="notifyPinExpansion(\''+pin+'\',\'delivery_check_modal\')">🔔 <span class="lang-bn">এই এলাকায় আসলে জানান</span><span class="lang-en">Notify me when available</span></button>';
+    logUnservedSearch(pin, 'delivery_check_modal');
   }
 }
 
-function notifyPinExpansion(pin){
-  if(db){
-    db.collection('expansionRequests').add({
-      uid: (currentUser&&currentUser.uid) || null,
-      email: (currentUser&&currentUser.email) || null,
-      pincode: pin,
-      city: null,          // unknown city — this pincode isn't served yet, so it maps to no cityConfig doc
-      service: 'marketplaceDelivery',  // this gate is specifically about marketplace delivery availability
-      status: 'pending',
-      requestedAt: new Date().toISOString()
-    }).catch(function(e){ console.error(e); });
+var _pendingNotify = null; // {pin, source} — held while the contact modal is open
+
+function notifyPinExpansion(pin, source){
+  source = source || 'unknown';
+  if(!currentUser){
+    // No account on file — collecting email/mobile directly rather than
+    // silently submitting a request nobody can ever actually be reached at.
+    _pendingNotify = {pin:pin, source:source};
+    document.getElementById('notifyContactModal').classList.add('open');
+    return;
   }
+  writeExpansionRequest({
+    uid: currentUser.uid, email: currentUser.email || null, mobile: null,
+    pincode: pin, source: source
+  });
   showToast(currentLang==='bn'?'ধন্যবাদ! আমরা আপনাকে জানাবো 🔔':'Thanks! We will notify you 🔔');
   closePinModal();
+}
+
+function closeNotifyContactModal(){
+  document.getElementById('notifyContactModal').classList.remove('open');
+  _pendingNotify = null;
+}
+
+function submitNotifyContact(){
+  var email = document.getElementById('notifyContactEmail').value.trim();
+  var mobile = document.getElementById('notifyContactMobile').value.trim();
+  if(!email && !mobile){
+    showToast(currentLang==='bn'?'Email বা মোবাইল অন্তত একটা দিন ⚠️':'Please enter an email or mobile ⚠️');
+    return;
+  }
+  if(!_pendingNotify) return;
+  writeExpansionRequest({
+    uid: null, email: email||null, mobile: mobile||null,
+    pincode: _pendingNotify.pin, source: _pendingNotify.source
+  });
+  showToast(currentLang==='bn'?'ধন্যবাদ! আমরা আপনাকে জানাবো 🔔':'Thanks! We will notify you 🔔');
+  document.getElementById('notifyContactEmail').value='';
+  document.getElementById('notifyContactMobile').value='';
+  closeNotifyContactModal();
+  closePinModal();
+}
+
+// Shared writer — Location Architecture v1 follow-up: every request now
+// carries WHERE on the site it came from (source) so Admin can see which
+// entry point drives the most expansion interest, not just which city/pincode.
+function writeExpansionRequest(fields){
+  if(!db) return;
+  db.collection('expansionRequests').add(Object.assign({
+    city: null, service: 'marketplaceDelivery', status: 'notified_requested',
+    requestedAt: new Date().toISOString()
+  }, fields)).catch(function(e){ console.error(e); });
+}
+
+// Lightweight "searched but didn't necessarily notify" log — written every
+// time a not-served pincode/place is looked up, regardless of whether the
+// user goes on to click Notify. Lets Admin see genuine search demand versus
+// how many of those actually convert into a notify request.
+function logUnservedSearch(pin, source){
+  if(!db) return;
+  db.collection('expansionRequests').add({
+    uid: (currentUser&&currentUser.uid) || null,
+    email: (currentUser&&currentUser.email) || null,
+    mobile: null, pincode: pin, city: null, service: 'marketplaceDelivery',
+    source: source, status: 'searched',
+    requestedAt: new Date().toISOString()
+  }).catch(function(e){ console.error(e); });
 }
 
 // ── WELCOME PINCODE GATE (shown on first visit only) ──
@@ -4344,8 +4421,9 @@ async function checkGatePincode(){
     resultEl.style.display='block';
     resultEl.innerHTML='<strong>😔 '+(currentLang==='bn'?'এখনো এই এলাকায় নেই':'Not available here yet')+'</strong>'+
       (currentLang==='bn'?'আমরা এখনো মন্তেশ্বর ব্লকেই আছি। আপনি browse করতে পারেন, শীঘ্রই আরও এলাকায় যাচ্ছি!':'We currently only serve Manteswar Block. You can still browse — expanding soon!')+
-      '<button class="pin-notify-btn" style="margin-top:8px" onclick="notifyPinExpansion(\''+pin+'\');skipGate();">🔔 <span class="lang-bn">এই এলাকায় আসলে জানান</span><span class="lang-en">Notify me when available</span></button>'+
+      '<button class="pin-notify-btn" style="margin-top:8px" onclick="notifyPinExpansion(\''+pin+'\',\'homepage_gate\');skipGate();">🔔 <span class="lang-bn">এই এলাকায় আসলে জানান</span><span class="lang-en">Notify me when available</span></button>'+
       '<button class="pin-notify-btn" style="margin-top:8px;background:transparent;border:1.5px solid var(--navy);color:var(--navy);" onclick="browseUnservedLocation(\''+pin+'\')">👀 <span class="lang-bn">শুধু ঘুরে দেখতে চাই</span><span class="lang-en">Just browse for now</span></button>';
+    logUnservedSearch(pin, 'homepage_gate');
   }
 }
 
@@ -7572,17 +7650,11 @@ function closeServiceGateModal(){
   document.getElementById('serviceGateModal').classList.remove('open');
 }
 function notifyServiceExpansion(){
-  if(db){
-    db.collection('expansionRequests').add({
-      uid: (currentUser&&currentUser.uid) || null,
-      email: (currentUser&&currentUser.email) || null,
-      pincode: null,
-      city: CITY,
-      service: 'marketplaceDelivery',
-      status: 'pending',
-      requestedAt: new Date().toISOString()
-    }).catch(function(e){ console.error(e); });
-  }
+  writeExpansionRequest({
+    uid: (currentUser&&currentUser.uid) || null,
+    email: (currentUser&&currentUser.email) || null,
+    mobile: null, pincode: null, city: CITY, source: 'checkout_gate'
+  });
   showToast('ধন্যবাদ! আমরা আপনাকে জানাবো 🔔');
   closeServiceGateModal();
 }
