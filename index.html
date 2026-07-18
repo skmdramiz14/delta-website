@@ -2343,7 +2343,7 @@ img{max-width:100%;height:auto;}
 <div class="loc-deliver-strip">
   <div class="lds-item lds-loc" onclick="openPinModal()">
     <span class="lds-icon"><svg viewBox="0 0 24 24" width="15" height="15"><path class="ic-stroke" d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Z"/><circle class="ic-gold" cx="12" cy="9" r="1.6"/></svg></span>
-    <span class="lds-loc-label"><span class="lang-bn"><span id="ldsCityBn">Manteswar</span> ও আশপাশ</span><span class="lang-en"><span id="ldsCityEn">Manteswar</span> &amp; nearby</span></span>
+    <span class="lds-loc-label"><span class="lang-bn"><span id="ldsCityBn">Manteswar</span><span id="ldsNearbyBn"> ও আশপাশ</span></span><span class="lang-en"><span id="ldsCityEn">Manteswar</span><span id="ldsNearbyEn"> &amp; nearby</span></span></span>
     <span class="lds-arrow">▾</span>
   </div>
   <div class="lds-item lds-marquee">
@@ -4170,18 +4170,21 @@ function setCurrentCity(cityId){
 }
 async function updateCityUI(){
   var cityLabel;
+  var isUnassignedState = false;
   // Logged in and we know their account's real city — show THAT, not the
   // general browsing scope, so someone whose account is 'unassigned' sees
   // an honest label instead of whatever city they happen to be browsing.
   if(currentUser && MY_ACCOUNT_CITY !== null){
     if(MY_ACCOUNT_CITY === 'unassigned'){
       cityLabel = currentLang==='bn' ? 'এলাকা নির্বাচন করুন' : 'Select your area';
+      isUnassignedState = true;
     } else {
       var accGeo = await getCityGeo(MY_ACCOUNT_CITY);
       cityLabel = accGeo.label || MY_ACCOUNT_CITY;
     }
   } else if(CITY === 'unassigned'){
     cityLabel = currentLang==='bn' ? 'এলাকা নির্বাচন করুন' : 'Select your area';
+    isUnassignedState = true;
   } else {
     var geo = await getCityGeo(CITY);
     cityLabel = geo.label || CITY;
@@ -4190,6 +4193,11 @@ async function updateCityUI(){
   if(locBtn){ locBtn.querySelector('span').textContent=cityLabel; }
   var ldsBn=document.getElementById('ldsCityBn'); if(ldsBn) ldsBn.textContent=cityLabel;
   var ldsEn=document.getElementById('ldsCityEn'); if(ldsEn) ldsEn.textContent=cityLabel;
+  // "ও আশপাশ" / "& nearby" only makes sense once there's a real place name —
+  // hide it in the unassigned state so the label doesn't read as the
+  // grammatically-garbled "Select area and nearby".
+  var nearbyBn=document.getElementById('ldsNearbyBn'); if(nearbyBn) nearbyBn.style.display = isUnassignedState ? 'none' : 'inline';
+  var nearbyEn=document.getElementById('ldsNearbyEn'); if(nearbyEn) nearbyEn.style.display = isUnassignedState ? 'none' : 'inline';
 }
 
 // ── PINCODE DELIVERY CHECK ──
