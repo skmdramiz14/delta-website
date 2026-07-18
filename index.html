@@ -4038,6 +4038,10 @@ function initFB(){
     var lbl=document.getElementById('userLabel');
     if(u){
       lbl.textContent=u.displayName||'আমার';document.getElementById('userChip').style.color='#a5d6ff';
+      // Location Architecture v1 — if this account registered from an area
+      // DELTA didn't serve yet ('unassigned'), check whether that area is
+      // now served, and if so migrate them into the real city automatically.
+      checkAndMigrateUnassignedUser(u.uid);
       // Arrived here via media-feed.html's Cart drawer with items already
       // ticked for checkout — jump straight into the checkout modal instead of
       // making the user re-open the cart and press Place Order again.
@@ -4438,6 +4442,79 @@ async function checkGatePincode(){
 function browseUnservedLocation(pin){
   try{ localStorage.setItem('delta_last_unserved_pincode', pin); }catch(e){}
   skipGate();
+}
+
+// ── Automatic "unassigned" → real city migration ──
+// If this account registered from an area DELTA didn't serve yet, its
+// customer/mediaProfile documents live under cities/unassigned/... with a
+// pendingPincode field recording the real location they searched. This
+// checks whether that pincode is now served, and if so moves them into the
+// correct city automatically — so, per the desired behaviour, their header
+// location updates to the real place name and whichever services are now
+// Active for that city unlock (via the existing getServiceStatus() checks),
+// while anything still not Active stays gated, exactly as it would for any
+// other user of that city.
+//
+// KNOWN LIMITATION: the mediaProfiles "followers" subcollection (people who
+// follow THIS account) is intentionally not migrated — Firestore rules only
+// allow each follower to write their own entry in someone else's followers
+// list (by design, so nobody can fake who follows them), so the profile
+// owner can't copy those entries during migration. In practice this is very
+// unlikely to matter: an account that registered from an unserved area
+// wouldn't have accumulated real followers before DELTA even launched there.
+// The "following" subcollection (who THIS account follows) is fully
+// migrated, since the user owns those entries.
+async function checkAndMigrateUnassignedUser(uid){
+  try{
+    var custRef = db.collection('cities').doc('unassigned').collection('customers').doc(uid);
+    var profRef = db.collection('cities').doc('unassigned').collection('mediaProfiles').doc(uid);
+    var custDoc = await custRef.get();
+    var profDoc = await profRef.get();
+    if(!custDoc.exists && !profDoc.exists) return; // nothing pending — normal case for most users
+
+    var pendingPincode = (custDoc.exists && custDoc.data().pendingPincode) || (profDoc.exists && profDoc.data().pendingPincode);
+    if(!pendingPincode) return;
+
+    await loadPincodeCityMap();
+    var newCity = PINCODE_CITY_MAP[pendingPincode];
+    if(!newCity) return; // still not served yet — check again next login, nothing to do now
+
+    var geo = await getCityGeo(newCity);
+
+    if(custDoc.exists){
+      var custData = custDoc.data();
+      custData.city = newCity;
+      custData.pendingPincode = null;
+      await db.collection('cities').doc(newCity).collection('customers').doc(uid).set(custData);
+      await custRef.delete();
+    }
+
+    if(profDoc.exists){
+      var profData = profDoc.data();
+      profData.city = newCity;
+      profData.district = geo.district; profData.state = geo.state; profData.country = geo.country;
+      profData.pendingPincode = null;
+      var newProfRef = db.collection('cities').doc(newCity).collection('mediaProfiles').doc(uid);
+      await newProfRef.set(profData);
+
+      // Migrate "following" (entries this account itself owns/wrote)
+      var followingSnap = await profRef.collection('following').get();
+      for(var i=0;i<followingSnap.docs.length;i++){
+        await newProfRef.collection('following').doc(followingSnap.docs[i].id).set(followingSnap.docs[i].data());
+        await followingSnap.docs[i].ref.delete();
+      }
+      await profRef.delete();
+    }
+
+    // Reflect the change immediately in this session's UI
+    setCurrentCity(newCity);
+    updateCityUI();
+    showToast((currentLang==='bn'
+      ? '🎉 আপনার এলাকায় ('+(geo.label||newCity)+') DELTA এখন চালু হয়ে গেছে! Account আপডেট হয়েছে।'
+      : '🎉 DELTA is now live in your area ('+(geo.label||newCity)+')! Your account has been updated.'), 'green');
+  }catch(e){
+    console.warn('Unassigned-user migration check failed (non-fatal)', e);
+  }
 }
 
 function skipGate(){
@@ -7768,16 +7845,33 @@ async function doCustomerRegister(){
   try{
     var cr=await auth.createUserWithEmailAndPassword(e,p);
     await cr.user.updateProfile({displayName:name});
-    await db.collection('cities').doc(CITY).collection('customers').doc(cr.user.uid).set({name,mobile,email:e,city:CITY,createdAt:new Date().toISOString()});
+    // Only treat this as a real, servable city if the user actually verified
+    // a served location this session — otherwise CITY is just sitting at its
+    // default fallback (Manteswar), which would falsely tag someone from an
+    // unserved area (or who skipped the gate) as being a Manteswar customer.
+    // Unverified registrations go into a distinct 'unassigned' bucket instead,
+    // carrying their real searched pincode so a later automatic check can
+    // move them into the correct city once DELTA starts serving that area.
+    var isVerified = !!localStorage.getItem('delta_verified_pincode');
+    var regCityPath = isVerified ? CITY : 'unassigned';
+    var pendingPincode = isVerified ? null : (localStorage.getItem('delta_last_unserved_pincode') || null);
+    var geoFields = {city:null, district:null, state:null, country:null};
+    if(isVerified){
+      var geo = await getCityGeo(CITY);
+      geoFields = {city:CITY, district:geo.district, state:geo.state, country:geo.country};
+    }
+    await db.collection('cities').doc(regCityPath).collection('customers').doc(cr.user.uid).set({
+      name, mobile, email:e, city:geoFields.city, pendingPincode:pendingPincode, createdAt:new Date().toISOString()
+    });
     // Identity Bridge — same account also needs a mediaProfiles doc so DELTA
     // Media's profile page finds them, whether they signed up here or there.
-    var geo = await getCityGeo(CITY);
-    await db.collection('cities').doc(CITY).collection('mediaProfiles').doc(cr.user.uid).set({
+    await db.collection('cities').doc(regCityPath).collection('mediaProfiles').doc(cr.user.uid).set({
       uid: cr.user.uid, displayName: name, bio:'', avatarUrl:'', coverUrl:'',
       roles:['customer','creator'], linkedCustomerId: cr.user.uid,
       followerCount:0, followingCount:0, postCount:0,
       primaryBadge:'customer_creator', isVerified:false,
-      city:CITY, district:geo.district, state:geo.state, country:geo.country,
+      city:geoFields.city, district:geoFields.district, state:geoFields.state, country:geoFields.country,
+      pendingPincode: pendingPincode,
       createdAt:new Date().toISOString(), updatedAt:new Date().toISOString()
     });
     closeAuth();showToast('নিবন্ধন সফল! স্বাগতম '+name+' 🎉','green');redirectAfterAuthIfNeeded();
