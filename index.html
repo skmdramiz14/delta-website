@@ -3758,8 +3758,8 @@ var CM_CACHE_TTL_MS = 8 * 60 * 1000; // 8 minutes — short enough that an Admin
   // service-status change shows up quickly, long enough to meaningfully cut
   // down repeated Firestore reads across page navigations in the same session.
 var CITY_GEO_SEED_DEFAULTS = {
-  manteswar: {label:'Manteswar', district:'Purba Bardhaman', state:'West Bengal', country:'India', pincodes:['713145','713422']},
-  memari: {label:'Memari', district:'Purba Bardhaman', state:'West Bengal', country:'India', pincodes:['713146']}
+  manteswar: {label:'Manteswar', district:'Purba Bardhaman', state:'West Bengal', country:'India', pincodes:['713145','713422'], geoBoundary:{centerLat:23.4225, centerLng:88.1075, radiusKm:15}},
+  memari: {label:'Memari', district:'Purba Bardhaman', state:'West Bengal', country:'India', pincodes:['713146'], geoBoundary:{centerLat:23.176, centerLng:88.107, radiusKm:15}}
 };
 function _cmCacheRead(key){
   try{
@@ -3892,15 +3892,53 @@ async function loadPincodeCityMap(){
   document.head.appendChild(script);
 })();
 
-function initGooglePlacesAutocomplete(){
+var USER_GPS_COORDS = null;   // set once GPS resolves in detectCity()
+var _autocompleteInstances = []; // so bias can update dynamically after init
+
+function biasCircleFromCoords(lat, lng, radiusKm){
+  return new google.maps.Circle({ center:{lat:lat, lng:lng}, radius:(radiusKm||40)*1000 });
+}
+// Called from detectCity()'s GPS success callback — updates any Autocomplete
+// widgets that were already initialized before GPS resolved (race condition:
+// Google Maps script can load faster than the GPS permission prompt settles).
+function updateAutocompleteBiasToUserGPS(){
+  if(!USER_GPS_COORDS || !_autocompleteInstances.length) return;
+  var circle = biasCircleFromCoords(USER_GPS_COORDS.lat, USER_GPS_COORDS.lng, 40);
+  _autocompleteInstances.forEach(function(ac){ ac.setBounds(circle.getBounds()); });
+}
+
+async function initGooglePlacesAutocomplete(){
+  // Location bias — prefers the user's ACTUAL current GPS position (wherever
+  // they really are, in or out of DELTA's service area) over a fixed
+  // DELTA-coverage assumption. This is more correct globally: someone
+  // searching from Bihar sees Bihar places ranked first, not Purba Bardhaman
+  // ones, even though DELTA doesn't serve Bihar yet. Falls back to the
+  // current city's geoBoundary (City Management panel), then a Purba
+  // Bardhaman-wide default, only if GPS isn't available yet.
+  var bias = {centerLat: 23.35, centerLng: 88.10, radiusKm: 40};
+  if(USER_GPS_COORDS){
+    bias = {centerLat: USER_GPS_COORDS.lat, centerLng: USER_GPS_COORDS.lng, radiusKm: 40};
+  } else {
+    try{
+      if(typeof db !== 'undefined' && db){
+        var geo = await getCityGeo(CITY);
+        if(geo.geoBoundary && geo.geoBoundary.centerLat != null && geo.geoBoundary.centerLng != null){
+          bias = geo.geoBoundary;
+        }
+      }
+    }catch(e){ console.warn('Could not load city geo-boundary for autocomplete bias, using regional default', e); }
+  }
+
+  var circle = biasCircleFromCoords(bias.centerLat, bias.centerLng, bias.radiusKm);
   var options = {
-    componentRestrictions: {country: 'in'},
-    fields: ['address_components', 'geometry', 'name']
+    fields: ['address_components', 'geometry', 'name'],
+    bounds: circle.getBounds()
   };
   ['gateInput', 'pinInput'].forEach(function(inputId){
     var inputEl = document.getElementById(inputId);
     if(!inputEl || typeof google==='undefined' || !google.maps || !google.maps.places) return;
     var autocomplete = new google.maps.places.Autocomplete(inputEl, options);
+    _autocompleteInstances.push(autocomplete);
     autocomplete.addListener('place_changed', function(){
       var place = autocomplete.getPlace();
       var pincode = null;
@@ -4002,6 +4040,11 @@ async function detectCity(){
     navigator.geolocation.getCurrentPosition(function(pos){
       var lat=pos.coords.latitude;
       var lng=pos.coords.longitude;
+      // Wherever the user physically is now becomes the Autocomplete bias
+      // center — dynamic and always more correct than a fixed DELTA-coverage
+      // assumption, and works even for someone outside our service area today.
+      USER_GPS_COORDS = {lat:lat, lng:lng};
+      updateAutocompleteBiasToUserGPS();
       var matchedCity = matchCityByCoords(lat,lng);
       if(matchedCity){
         setCurrentCity(matchedCity);
@@ -4134,7 +4177,7 @@ function resolveTextToPincode(text){
       resolve(null); return;
     }
     var geocoder = new google.maps.Geocoder();
-    geocoder.geocode({ address: text + ', India', componentRestrictions: {country:'IN'} }, function(results, status){
+    geocoder.geocode({ address: text }, function(results, status){
       if(status !== 'OK' || !results || !results.length){ resolve(null); return; }
       var comps = results[0].address_components || [];
       for(var i=0;i<comps.length;i++){
@@ -4148,32 +4191,28 @@ function resolveTextToPincode(text){
 async function checkPincode(){
   var raw=(document.getElementById('pinInput').value||'').trim();
   var resultEl=document.getElementById('pinResult');
-  var pin = raw;
 
-  if(!/^\d{6}$/.test(pin)){
-    if(!raw){
-      resultEl.className='pin-result fail';
-      resultEl.style.display='block';
-      resultEl.innerHTML='<strong>⚠️ '+(currentLang==='bn'?'সঠিক পিনকোড দিন':'Enter a valid pincode')+'</strong>'+
-        (currentLang==='bn'?'৬ সংখ্যার পিনকোড বা এলাকার নাম লিখুন।':'Please enter a 6-digit pincode or a place name.');
-      return;
-    }
-    // Free text typed without picking an Autocomplete suggestion — try
-    // resolving it directly via Geocoding before giving up.
+  if(!raw){
+    resultEl.className='pin-result fail';
+    resultEl.style.display='block';
+    resultEl.innerHTML='<strong>⚠️ '+(currentLang==='bn'?'কিছু একটা লিখুন':'Enter something')+'</strong>'+
+      (currentLang==='bn'?'পিনকোড বা এলাকার নাম লিখুন।':'Please enter a pincode or a place name.');
+    return;
+  }
+
+  await loadPincodeCityMap();
+  var pin = raw;
+  if(!PINCODE_CITY_MAP[pin]){
+    // Not a direct match — resolve via Geocoding, which works for a pincode
+    // in any format (6-digit Indian, 5-digit US ZIP, alphanumeric UK
+    // postcode, etc.) or a free-text place name, from anywhere in the world.
     resultEl.className='pin-result';
     resultEl.style.display='block';
     resultEl.innerHTML = currentLang==='bn' ? 'খোঁজা হচ্ছে...' : 'Searching...';
     var resolved = await resolveTextToPincode(raw);
     if(resolved){ pin = resolved; }
-    else{
-      resultEl.className='pin-result fail';
-      resultEl.innerHTML='<strong>⚠️ '+(currentLang==='bn'?'এই এলাকা খুঁজে পাওয়া যায়নি':'Could not find that place')+'</strong>'+
-        (currentLang==='bn'?'সরাসরি ৬-সংখ্যার পিনকোড লিখে চেষ্টা করুন।':'Please try entering the 6-digit pincode directly.');
-      return;
-    }
   }
 
-  await loadPincodeCityMap();
   if(PINCODE_CITY_MAP[pin]){
     var cityKey = PINCODE_CITY_MAP[pin];
     var cityLabel = (CITY_GEO_SEED_DEFAULTS[cityKey]&&CITY_GEO_SEED_DEFAULTS[cityKey].label) || cityKey;
@@ -4221,30 +4260,28 @@ function showWelcomeGateIfNeeded(){
 async function checkGatePincode(){
   var raw=(document.getElementById('gateInput').value||'').trim();
   var resultEl=document.getElementById('gateResult');
-  var pin = raw;
 
-  if(!/^\d{6}$/.test(pin)){
-    if(!raw){
-      resultEl.className='gate-result fail';
-      resultEl.style.display='block';
-      resultEl.innerHTML='<strong>⚠️ '+(currentLang==='bn'?'সঠিক পিনকোড দিন':'Enter a valid pincode')+'</strong>'+
-        (currentLang==='bn'?'৬ সংখ্যার পিনকোড বা এলাকার নাম লিখুন।':'Please enter a 6-digit pincode or a place name.');
-      return;
-    }
+  if(!raw){
+    resultEl.className='gate-result fail';
+    resultEl.style.display='block';
+    resultEl.innerHTML='<strong>⚠️ '+(currentLang==='bn'?'কিছু একটা লিখুন':'Enter something')+'</strong>'+
+      (currentLang==='bn'?'পিনকোড বা এলাকার নাম লিখুন।':'Please enter a pincode or a place name.');
+    return;
+  }
+
+  await loadPincodeCityMap();
+  var pin = raw;
+  if(!PINCODE_CITY_MAP[pin]){
+    // Not a direct match — resolve via Geocoding, which works for a pincode
+    // in any format (6-digit Indian, 5-digit US ZIP, alphanumeric UK
+    // postcode, etc.) or a free-text place name, from anywhere in the world.
     resultEl.className='gate-result';
     resultEl.style.display='block';
     resultEl.innerHTML = currentLang==='bn' ? 'খোঁজা হচ্ছে...' : 'Searching...';
     var resolved = await resolveTextToPincode(raw);
     if(resolved){ pin = resolved; }
-    else{
-      resultEl.className='gate-result fail';
-      resultEl.innerHTML='<strong>⚠️ '+(currentLang==='bn'?'এই এলাকা খুঁজে পাওয়া যায়নি':'Could not find that place')+'</strong>'+
-        (currentLang==='bn'?'সরাসরি ৬-সংখ্যার পিনকোড লিখে চেষ্টা করুন।':'Please try entering the 6-digit pincode directly.');
-      return;
-    }
   }
 
-  await loadPincodeCityMap();
   if(PINCODE_CITY_MAP[pin]){
     var cityKey = PINCODE_CITY_MAP[pin];
     var cityLabel = (CITY_GEO_SEED_DEFAULTS[cityKey]&&CITY_GEO_SEED_DEFAULTS[cityKey].label) || cityKey;
@@ -4263,8 +4300,22 @@ async function checkGatePincode(){
     resultEl.style.display='block';
     resultEl.innerHTML='<strong>😔 '+(currentLang==='bn'?'এখনো এই এলাকায় নেই':'Not available here yet')+'</strong>'+
       (currentLang==='bn'?'আমরা এখনো মন্তেশ্বর ব্লকেই আছি। আপনি browse করতে পারেন, শীঘ্রই আরও এলাকায় যাচ্ছি!':'We currently only serve Manteswar Block. You can still browse — expanding soon!')+
-      '<button class="pin-notify-btn" style="margin-top:8px" onclick="notifyPinExpansion(\''+pin+'\');skipGate();">🔔 <span class="lang-bn">এই এলাকায় আসলে জানান</span><span class="lang-en">Notify me when available</span></button>';
+      '<button class="pin-notify-btn" style="margin-top:8px" onclick="notifyPinExpansion(\''+pin+'\');skipGate();">🔔 <span class="lang-bn">এই এলাকায় আসলে জানান</span><span class="lang-en">Notify me when available</span></button>'+
+      '<button class="pin-notify-btn" style="margin-top:8px;background:transparent;border:1.5px solid var(--navy);color:var(--navy);" onclick="browseUnservedLocation(\''+pin+'\')">👀 <span class="lang-bn">শুধু ঘুরে দেখতে চাই</span><span class="lang-en">Just browse for now</span></button>';
   }
+}
+
+// Location Architecture v1 — "recognize but don't serve" path. The searched
+// pincode is real and understood (not an error), it's just outside DELTA's
+// current delivery coverage. Media/Discovery stay fully open regardless
+// (Section 6 principle: browsing/engagement is never location-gated) — only
+// checkout stays gated, via the existing isServiceActive() check. CITY is
+// deliberately left at its current default rather than switching to the
+// unserved pincode, since there's no cityConfig doc (and therefore no real
+// content) for a location DELTA doesn't operate in yet.
+function browseUnservedLocation(pin){
+  try{ localStorage.setItem('delta_last_unserved_pincode', pin); }catch(e){}
+  skipGate();
 }
 
 function skipGate(){
