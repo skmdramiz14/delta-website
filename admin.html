@@ -391,6 +391,12 @@ button,input,select{font-family:'DM Sans',sans-serif;}
     <button class="tab-btn" id="tab-media" onclick="goTab('media',this)">
       <span>🎬 DELTA Media Moderation</span>
     </button>
+    <button class="tab-btn" id="tab-citymgmt" onclick="goTab('citymgmt',this)">
+      <span>🏙️ City Management</span>
+    </button>
+    <button class="tab-btn" id="tab-expansion" onclick="goTab('expansion',this)">
+      <span>📊 Expansion Demand</span>
+    </button>
     </nav>
 
     <div class="sb-footer">
@@ -591,6 +597,10 @@ button,input,select{font-family:'DM Sans',sans-serif;}
           <div class="form-group" style="margin-bottom:0">
             <label>Email</label>
             <input type="email" class="form-input" id="dbEmail" placeholder="rider@deltaapp.in">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>City * <span style="font-weight:400;color:var(--muted);">(কোন city-তে delivery করবে)</span></label>
+            <select class="form-input" id="dbCity"><option value="">লোড হচ্ছে...</option></select>
           </div>
         </div>
         <button class="btn-sm btn-orange" onclick="addDeliveryBoy()">➕ যুক্ত করুন</button>
@@ -2346,6 +2356,92 @@ button,input,select{font-family:'DM Sans',sans-serif;}
       </div>
     </div>
 
+    <!-- ═══ CITY MANAGEMENT (District/State/Country/Pincode config for
+         DELTA Media's Discover People "All Creators" hyperlocal-to-global
+         scope selector) ═══ -->
+    <div class="page" id="page-citymgmt">
+      <div class="sec-head">
+        <div class="sec-title">🏙️ City Management
+          <small>City/District/Pincode/Service/Geo-boundary যোগ করুন — কোনো code change বা Firebase Console লাগবে না</small>
+        </div>
+      </div>
+
+      <!-- Platform-level global overrides — one flag OFF here means every city
+           inherits that as OFF, regardless of its own per-city status -->
+      <div class="add-zone-card" style="margin-bottom:20px;border:1.5px solid var(--navy);">
+        <div style="font-size:.82rem;font-weight:700;color:var(--navy);margin-bottom:4px">🌐 Platform-wide Service Status</div>
+        <div style="font-size:.72rem;color:var(--muted);margin-bottom:12px;">
+          এখানে কোনো service OFF করলে — সব city-তেই সেটা বন্ধ হয়ে যাবে, city-র নিজস্ব status যাই থাকুক না কেন। Maintenance-এর জন্য।
+        </div>
+        <div id="cmPlatformServicesWrap"><div style="color:var(--muted);padding:10px;text-align:center;">লোড হচ্ছে...</div></div>
+      </div>
+
+      <div class="add-zone-card" style="margin-bottom:20px">
+        <div style="font-size:.82rem;font-weight:700;color:var(--navy);margin-bottom:12px">➕ নতুন City যোগ করুন</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+          <div class="form-group" style="margin-bottom:0">
+            <label>City ID * <span style="font-weight:400;color:var(--muted);">(lowercase, space নেই — যেমন katwa)</span></label>
+            <input type="text" class="form-input" id="cmCityId" placeholder="katwa">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>Display Name *</label>
+            <input type="text" class="form-input" id="cmCityLabel" placeholder="Katwa">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>District</label>
+            <input type="text" class="form-input" id="cmCityDistrict" placeholder="Purba Bardhaman">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>State</label>
+            <input type="text" class="form-input" id="cmCityState" placeholder="West Bengal">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>Country</label>
+            <input type="text" class="form-input" id="cmCityCountry" value="India">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>Pincodes <span style="font-weight:400;color:var(--muted);">(কমা দিয়ে আলাদা করো)</span></label>
+            <input type="text" class="form-input" id="cmCityPincodes" placeholder="713XXX, 713YYY">
+          </div>
+        </div>
+        <div style="font-size:.74rem;font-weight:700;color:var(--navy);margin:12px 0 8px;">📍 Geo-boundary (ঐচ্ছিক — radius-based zone)</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px">
+          <div class="form-group" style="margin-bottom:0">
+            <label>Center Latitude</label>
+            <input type="text" class="form-input" id="cmCityLat" placeholder="23.35">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>Center Longitude</label>
+            <input type="text" class="form-input" id="cmCityLng" placeholder="87.85">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>Radius (km)</label>
+            <input type="text" class="form-input" id="cmCityRadius" placeholder="5">
+          </div>
+        </div>
+        <button class="btn-sm btn-orange" onclick="cmAddCity()">➕ City তৈরি করো</button>
+      </div>
+
+      <div style="font-size:.85rem;font-weight:800;margin-bottom:10px;">বিদ্যমান City-গুলো</div>
+      <div id="cmCityListWrap"><div style="color:var(--muted);padding:20px;text-align:center;">Tab click করলে লোড হবে</div></div>
+    </div>
+
+    <!-- ═══ EXPANSION DEMAND DASHBOARD ═══
+         Reads the expansionRequests collection (searched/notified_requested
+         events from the location gates) and groups by city+pincode+service,
+         so Admin can see genuine demand — and how much of it actually
+         converts into a notify-request — before deciding where to expand. -->
+    <div class="page" id="page-expansion">
+      <div class="sec-head">
+        <div class="sec-title">📊 Expansion Demand
+          <small>কোন এলাকায় কত মানুষ delivery চাইছে — search vs actual notify-request</small>
+        </div>
+      </div>
+      <div id="expSummaryRow" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;"></div>
+      <div style="font-size:.85rem;font-weight:800;margin-bottom:10px;">Pincode/City অনুযায়ী Demand</div>
+      <div id="expDemandListWrap"><div style="color:var(--muted);padding:20px;text-align:center;">Tab click করলে লোড হবে</div></div>
+    </div>
+
   </div>
     </div>
   </div>
@@ -2375,7 +2471,8 @@ var editingHamperId = null;
   var scripts=[
     'https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js',
     'https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js',
-    'https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js'
+    'https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js',
+    'https://www.gstatic.com/firebasejs/8.10.1/firebase-functions.js'
   ];
   var n=0, fbInitDone=false, hadError=false;
   function tryInit(){
@@ -2487,6 +2584,8 @@ function goTab(tab, btn){
   if(tab==='whatsapp'){ loadWhatsAppConfig(); loadTaglineSettings(); }
   if(tab==='ecosystem') loadEcosystemBranches();
   if(tab==='media') medLoadStats();
+  if(tab==='citymgmt') cmLoadCities();
+  if(tab==='expansion') expLoadDemand();
 }
 
 // ═══ DELTA MEDIA MODERATION (Section 12) ═══
@@ -2647,6 +2746,379 @@ function medAddAudioTrack(){
     document.getElementById('medAudioDur').value='';
     medLoadAudio();
   });
+}
+
+// ═══ CITY MANAGEMENT ═══
+// Self-service city/district/state/country/pincode/service/geo-boundary
+// config, backing DELTA Media's Discover People "All Creators" scope
+// selector AND the checkout-time delivery-availability gate. Adding a
+// city/pincode/service here needs no code change or redeploy — every page
+// reads cityConfig/platformConfig at runtime.
+var CM_SCHEMA_VERSION = 2;
+
+// Every service DELTA offers, and which OTHER services it structurally
+// depends on. This is advisory (a confirm() warning), not a hard block —
+// Admin can always override with a real reason, since exceptions do happen.
+var SERVICE_DEFS = [
+  {key:'marketplaceDelivery', label:'Marketplace Delivery'},
+  {key:'bazaarDelivery', label:'DELTA Bazaar'},
+  {key:'freshDelivery', label:'DELTA Fresh'},
+  {key:'riderService', label:'Rider Service (future)'},
+  {key:'giftStudio', label:'Gift Studio (future)'},
+  {key:'media', label:'DELTA Media'}
+];
+var SERVICE_DEPENDENCIES = {
+  freshDelivery: ['marketplaceDelivery'],   // Fresh reads from the seller/product database
+  giftStudio: ['marketplaceDelivery']
+  // bazaarDelivery, riderService, media are intentionally independent
+};
+var SERVICE_STATUSES = [
+  {key:'active', label:'✅ Active', color:'#1a7a4c'},
+  {key:'coming_soon', label:'🕓 Coming Soon', color:'#B8925A'},
+  {key:'maintenance', label:'🔧 Maintenance', color:'#c77d1e'},
+  {key:'paused', label:'⏸ Paused', color:'#8A8F98'},
+  {key:'disabled', label:'⛔ Disabled', color:'#c0392b'}
+];
+function cmStatusMeta(key){ return SERVICE_STATUSES.find(function(s){return s.key===key;}) || SERVICE_STATUSES[4]; }
+
+var cmCityCache = {};
+var cmPlatformCache = {};
+
+function cmLoadCities(){
+  var wrap = document.getElementById('cmCityListWrap');
+  Promise.all([
+    db.collection('cityConfig').get(),
+    db.collection('platformConfig').doc('global').get()
+  ]).then(function(results){
+    var citySnap = results[0], platformDoc = results[1];
+    cmCityCache = {};
+    citySnap.docs.forEach(function(d){ cmCityCache[d.id] = d.data(); });
+    cmPlatformCache = platformDoc.exists ? (platformDoc.data().services||{}) : {};
+    cmRenderPlatformServices();
+    if(!Object.keys(cmCityCache).length){
+      wrap.innerHTML = '<div style="color:var(--muted);padding:20px;text-align:center;">এখনো কোনো city তৈরি হয়নি — উপরে ফর্ম দিয়ে প্রথমটা বানান।</div>';
+      return;
+    }
+    cmRenderCityList();
+  }).catch(function(e){
+    console.error(e);
+    wrap.innerHTML = '<div style="color:var(--muted);padding:20px;text-align:center;">লোড করতে সমস্যা হয়েছে।</div>';
+  });
+}
+
+// ── Platform-wide overrides ──
+function cmRenderPlatformServices(){
+  var wrap = document.getElementById('cmPlatformServicesWrap');
+  wrap.innerHTML = SERVICE_DEFS.map(function(svc){
+    var cur = cmPlatformCache[svc.key] || {status:'active'};
+    var meta = cmStatusMeta(cur.status);
+    return '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);">'+
+      '<div style="flex:1;font-size:.8rem;font-weight:700;">'+svc.label+'</div>'+
+      '<select class="form-input" style="width:auto;padding:6px 10px;font-size:.75rem;color:'+meta.color+';font-weight:700;" '+
+        'onchange="cmSetPlatformServiceStatus(\''+svc.key+'\', this.value)">'+
+        SERVICE_STATUSES.map(function(s){ return '<option value="'+s.key+'"'+(s.key===cur.status?' selected':'')+'>'+s.label+'</option>'; }).join('')+
+      '</select>'+
+    '</div>';
+  }).join('');
+}
+function cmSetPlatformServiceStatus(serviceKey, newStatus){
+  var oldEntry = cmPlatformCache[serviceKey] || {status:'active'};
+  if(oldEntry.status === newStatus) return;
+  var reason = prompt('কেন এই change করছেন? (audit log-এ save হবে, ফাঁকা রাখলেও চলবে)') || '';
+  var newEntry = {status:newStatus, reason:reason, changedAt:new Date().toISOString()};
+  db.collection('platformConfig').doc('global').set({
+    services: Object.assign({}, cmPlatformCache, {}),
+    schemaVersion: CM_SCHEMA_VERSION
+  }, {merge:true}).then(function(){
+    return db.collection('platformConfig').doc('global').update({
+      ['services.'+serviceKey]: newEntry
+    });
+  }).then(function(){
+    cmPlatformCache[serviceKey] = newEntry;
+    cmLogAudit('__platform__', 'services.'+serviceKey, oldEntry.status, newStatus, reason);
+    cmRenderPlatformServices();
+  }).catch(function(e){ console.error(e); alert('Platform service update করতে সমস্যা হয়েছে'); cmRenderPlatformServices(); });
+}
+
+// ── Per-city list ──
+function cmRenderCityList(){
+  var wrap = document.getElementById('cmCityListWrap');
+  var ids = Object.keys(cmCityCache).sort();
+  wrap.innerHTML = ids.map(function(id){
+    var c = cmCityCache[id];
+    var pins = c.pincodes || [];
+    var meta = [c.district, c.state, c.country].filter(Boolean).join(' · ');
+    var services = c.services || {};
+    var geo = c.geoBoundary || {};
+    var pinChips = pins.length ? pins.map(function(p){
+      return '<span style="display:inline-flex;align-items:center;gap:6px;background:var(--cream);border:1px solid var(--border);'+
+        'padding:4px 10px;border-radius:12px;font-size:.72rem;margin:2px 4px 2px 0;">'+p+
+        ' <button onclick="cmRemovePincode(\''+id+'\',\''+p+'\')" style="background:none;border:none;color:#c0392b;cursor:pointer;font-size:.8rem;line-height:1;padding:0;">✕</button></span>';
+    }).join('') : '<span style="color:var(--muted);font-size:.72rem;">কোনো pincode নেই</span>';
+
+    var serviceRows = SERVICE_DEFS.map(function(svc){
+      var cur = services[svc.key] || {status:'disabled'};
+      var smeta = cmStatusMeta(cur.status);
+      return '<div style="display:flex;align-items:center;gap:8px;padding:5px 0;">'+
+        '<div style="flex:1;font-size:.74rem;">'+svc.label+
+          (cur.reason ? '<div style="font-size:.64rem;color:var(--muted);">'+cur.reason+'</div>' : '')+
+        '</div>'+
+        '<select class="form-input" style="width:auto;padding:5px 8px;font-size:.7rem;color:'+smeta.color+';font-weight:700;" '+
+          'onchange="cmSetServiceStatus(\''+id+'\',\''+svc.key+'\', this.value)">'+
+          SERVICE_STATUSES.map(function(s){ return '<option value="'+s.key+'"'+(s.key===cur.status?' selected':'')+'>'+s.label+'</option>'; }).join('')+
+        '</select>'+
+        (cur.status==='active' ? '<button class="btn-sm" style="background:var(--navy);color:#fff;font-size:.65rem;padding:5px 8px;" '+
+          'onclick="cmManualNotify(\''+id+'\',\''+svc.key+'\')" title="Cloud Function-এর মাধ্যমে pending notify-request-গুলো আবার পাঠাও">📤</button>' : '')+
+      '</div>';
+    }).join('');
+
+    return '<div class="add-zone-card" style="margin-bottom:12px;">'+
+      '<div style="display:flex;justify-content:space-between;align-items:baseline;">'+
+        '<div style="font-weight:800;font-size:.9rem;">'+(c.label||id)+'</div>'+
+        '<div style="font-size:.68rem;color:var(--muted);font-family:monospace;">'+id+'</div>'+
+      '</div>'+
+      '<div style="font-size:.75rem;color:var(--muted);margin:4px 0 10px;">'+meta+'</div>'+
+
+      '<div style="font-size:.7rem;font-weight:700;color:var(--navy);margin-bottom:4px;">Pincodes</div>'+
+      '<div style="margin-bottom:8px;">'+pinChips+'</div>'+
+      '<div style="display:flex;gap:8px;margin-bottom:14px;">'+
+        '<input type="text" id="cmAddPin-'+id+'" placeholder="নতুন pincode" class="form-input" style="flex:1;">'+
+        '<button class="btn-sm" style="background:var(--green,#1a7a4c);color:#fff;" onclick="cmAddPincode(\''+id+'\')">Add</button>'+
+      '</div>'+
+
+      '<div style="font-size:.7rem;font-weight:700;color:var(--navy);margin-bottom:4px;">Services</div>'+
+      serviceRows+
+
+      '<div style="font-size:.7rem;font-weight:700;color:var(--navy);margin:12px 0 6px;">📍 Geo-boundary (radius zone)</div>'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px;">'+
+        '<input type="text" class="form-input" id="cmGeoLat-'+id+'" value="'+(geo.centerLat!=null?geo.centerLat:'')+'" placeholder="Lat">'+
+        '<input type="text" class="form-input" id="cmGeoLng-'+id+'" value="'+(geo.centerLng!=null?geo.centerLng:'')+'" placeholder="Lng">'+
+        '<input type="text" class="form-input" id="cmGeoRadius-'+id+'" value="'+(geo.radiusKm!=null?geo.radiusKm:'')+'" placeholder="Radius km">'+
+      '</div>'+
+      '<button class="btn-sm" style="background:var(--navy);color:#fff;" onclick="cmSaveGeoBoundary(\''+id+'\')">Geo-boundary Save করো</button>'+
+    '</div>';
+  }).join('');
+}
+
+function cmAddCity(){
+  var id = document.getElementById('cmCityId').value.trim().toLowerCase().replace(/\s+/g,'');
+  var label = document.getElementById('cmCityLabel').value.trim();
+  var district = document.getElementById('cmCityDistrict').value.trim();
+  var state = document.getElementById('cmCityState').value.trim();
+  var country = document.getElementById('cmCityCountry').value.trim() || 'India';
+  var pinRaw = document.getElementById('cmCityPincodes').value.trim();
+  var pincodes = pinRaw ? pinRaw.split(',').map(function(p){return p.trim();}).filter(Boolean) : [];
+  var lat = parseFloat(document.getElementById('cmCityLat').value);
+  var lng = parseFloat(document.getElementById('cmCityLng').value);
+  var radius = parseFloat(document.getElementById('cmCityRadius').value);
+
+  if(!id || !label){ alert('City ID আর Display Name আবশ্যক'); return; }
+  if(cmCityCache[id]){ alert('এই City ID আগে থেকেই আছে'); return; }
+
+  var defaultServices = {};
+  SERVICE_DEFS.forEach(function(svc){
+    defaultServices[svc.key] = { status: svc.key==='media' ? 'active' : 'disabled' };
+  });
+
+  db.collection('cityConfig').doc(id).set({
+    schemaVersion: CM_SCHEMA_VERSION,
+    label:label, district:district, state:state, country:country, pincodes:pincodes,
+    services: defaultServices,
+    geoBoundary: {
+      centerLat: isNaN(lat)?null:lat, centerLng: isNaN(lng)?null:lng, radiusKm: isNaN(radius)?null:radius
+    }
+  }).then(function(){
+    document.getElementById('cmCityId').value='';
+    document.getElementById('cmCityLabel').value='';
+    document.getElementById('cmCityDistrict').value='';
+    document.getElementById('cmCityState').value='';
+    document.getElementById('cmCityPincodes').value='';
+    document.getElementById('cmCityLat').value='';
+    document.getElementById('cmCityLng').value='';
+    document.getElementById('cmCityRadius').value='';
+    cmLogAudit(id, 'city_created', null, label, 'নতুন city তৈরি');
+    cmLoadCities();
+  }).catch(function(e){ console.error(e); alert('তৈরি করতে সমস্যা হয়েছে'); });
+}
+
+function cmAddPincode(cityId){
+  var input = document.getElementById('cmAddPin-'+cityId);
+  var pin = input.value.trim();
+  if(!/^\d{6}$/.test(pin)){ alert('৬ সংখ্যার সঠিক pincode দিন'); return; }
+  var current = cmCityCache[cityId].pincodes || [];
+  if(current.indexOf(pin)>=0){ alert('এই pincode আগে থেকেই আছে'); return; }
+  current.push(pin);
+  db.collection('cityConfig').doc(cityId).update({pincodes:current}).then(function(){
+    cmCityCache[cityId].pincodes = current;
+    cmLogAudit(cityId, 'pincodes', null, pin, 'pincode যোগ করা হয়েছে');
+    cmRenderCityList();
+  }).catch(function(e){ console.error(e); alert('যোগ করতে সমস্যা হয়েছে'); });
+}
+
+function cmRemovePincode(cityId, pin){
+  var current = (cmCityCache[cityId].pincodes||[]).filter(function(p){ return p!==pin; });
+  db.collection('cityConfig').doc(cityId).update({pincodes:current}).then(function(){
+    cmCityCache[cityId].pincodes = current;
+    cmLogAudit(cityId, 'pincodes', pin, null, 'pincode সরানো হয়েছে');
+    cmRenderCityList();
+  }).catch(function(e){ console.error(e); alert('সরাতে সমস্যা হয়েছে'); });
+}
+
+// ── Service status change, with dependency-aware warning (advisory, not a hard block) ──
+function cmSetServiceStatus(cityId, serviceKey, newStatus){
+  var city = cmCityCache[cityId];
+  var services = city.services || {};
+  var oldEntry = services[serviceKey] || {status:'disabled'};
+  if(oldEntry.status === newStatus){ cmRenderCityList(); return; }
+
+  if(newStatus === 'active' && SERVICE_DEPENDENCIES[serviceKey]){
+    var unmetDeps = SERVICE_DEPENDENCIES[serviceKey].filter(function(depKey){
+      var depStatus = (services[depKey]||{}).status;
+      return depStatus !== 'active';
+    });
+    if(unmetDeps.length){
+      var depLabels = unmetDeps.map(function(k){ var d=SERVICE_DEFS.find(function(s){return s.key===k;}); return d?d.label:k; }).join(', ');
+      var proceed = confirm('⚠️ '+(SERVICE_DEFS.find(function(s){return s.key===serviceKey;})||{}).label+' চালু করতে '+depLabels+' active থাকা দরকার, কিন্তু এখন তা না। তবুও চালু করবেন?');
+      if(!proceed) { cmRenderCityList(); return; }
+    }
+  }
+
+  var reason = prompt('কেন এই change করছেন? (audit log-এ save হবে, ফাঁকা রাখলেও চলবে)') || '';
+  var newEntry = {status:newStatus, reason:reason, changedAt:new Date().toISOString()};
+
+  db.collection('cityConfig').doc(cityId).update({
+    ['services.'+serviceKey]: newEntry
+  }).then(function(){
+    cmCityCache[cityId].services = cmCityCache[cityId].services || {};
+    cmCityCache[cityId].services[serviceKey] = newEntry;
+    cmLogAudit(cityId, 'services.'+serviceKey, oldEntry.status, newStatus, reason);
+    cmRenderCityList();
+  }).catch(function(e){ console.error(e); alert('Service status বদলাতে সমস্যা হয়েছে'); cmRenderCityList(); });
+}
+
+function cmSaveGeoBoundary(cityId){
+  var lat = parseFloat(document.getElementById('cmGeoLat-'+cityId).value);
+  var lng = parseFloat(document.getElementById('cmGeoLng-'+cityId).value);
+  var radius = parseFloat(document.getElementById('cmGeoRadius-'+cityId).value);
+  var geoBoundary = { centerLat: isNaN(lat)?null:lat, centerLng: isNaN(lng)?null:lng, radiusKm: isNaN(radius)?null:radius };
+  db.collection('cityConfig').doc(cityId).update({geoBoundary:geoBoundary}).then(function(){
+    cmCityCache[cityId].geoBoundary = geoBoundary;
+    cmLogAudit(cityId, 'geoBoundary', JSON.stringify(cmCityCache[cityId].geoBoundary||{}), JSON.stringify(geoBoundary), 'Geo-boundary আপডেট');
+    alert('✅ Geo-boundary সেভ হয়েছে');
+  }).catch(function(e){ console.error(e); alert('সেভ করতে সমস্যা হয়েছে'); });
+}
+
+// ── Audit trail — every service/config change gets a permanent record ──
+function cmManualNotify(cityId, serviceKey){
+  if(!confirm('এই city+service-এর জন্য pending সব notify-request-এ এখনই email পাঠাতে চান?')) return;
+  if(typeof firebase.functions !== 'function'){
+    alert('firebase-functions SDK লোড হয়নি — page reload করে আবার চেষ্টা করুন।');
+    return;
+  }
+  var fn = firebase.functions().httpsCallable('manuallyNotifyExpansion');
+  fn({cityId: cityId, serviceKey: serviceKey}).then(function(result){
+    alert('✅ '+result.data.notified+' জনকে notify করা হয়েছে ('+result.data.failed+' ব্যর্থ হয়েছে)');
+  }).catch(function(e){
+    console.error(e);
+    alert('Notify পাঠাতে সমস্যা হয়েছে: '+e.message+'\n\n(Cloud Function deploy করা আছে কিনা check করুন)');
+  });
+}
+
+function cmLogAudit(cityId, field, oldValue, newValue, reason){
+  db.collection('cityConfigAuditLog').add({
+    cityId: cityId, field: field,
+    oldValue: oldValue===undefined?null:oldValue,
+    newValue: newValue===undefined?null:newValue,
+    changedBy: (auth.currentUser&&auth.currentUser.uid) || 'unknown',
+    changedByEmail: (auth.currentUser&&auth.currentUser.email) || '',
+    reason: reason||'',
+    changedAt: new Date().toISOString()
+  }).catch(function(e){ console.warn('Audit log write failed (non-fatal)', e); });
+}
+
+// ═══ EXPANSION DEMAND DASHBOARD ═══
+// Reads expansionRequests (written by the location gates in index.html —
+// see Location Architecture v1) and groups them by location, distinguishing
+// "just searched" from "actually asked to be notified", broken down by
+// which part of the site the search came from.
+var SOURCE_LABELS = {
+  homepage_gate: '🏠 Homepage Gate',
+  delivery_check_modal: '📍 Header Delivery-check',
+  checkout_gate: '🛒 Checkout Gate',
+  unknown: '❓ Unknown'
+};
+
+function expLoadDemand(){
+  var listWrap = document.getElementById('expDemandListWrap');
+  var summaryWrap = document.getElementById('expSummaryRow');
+  listWrap.innerHTML = '<div style="color:var(--muted);padding:20px;text-align:center;">লোড হচ্ছে...</div>';
+  db.collection('expansionRequests').get().then(function(snap){
+    var rows = snap.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); });
+    if(!rows.length){
+      summaryWrap.innerHTML = '';
+      listWrap.innerHTML = '<div style="color:var(--muted);padding:20px;text-align:center;">এখনো কোনো demand-data নেই।</div>';
+      return;
+    }
+
+    // ── Summary cards ──
+    var totalSearched = rows.filter(function(r){ return r.status==='searched'; }).length;
+    var totalNotified = rows.filter(function(r){ return r.status==='notified_requested'; }).length;
+    var uniqueLocations = {};
+    rows.forEach(function(r){ uniqueLocations[r.pincode || r.city || 'unknown'] = true; });
+    summaryWrap.innerHTML =
+      expSummaryCard('📍', Object.keys(uniqueLocations).length, 'Unique এলাকা') +
+      expSummaryCard('👀', totalSearched, 'শুধু Search করেছে') +
+      expSummaryCard('🔔', totalNotified, 'Notify করেছে');
+
+    // ── Group by location (pincode preferred, else city) ──
+    var groups = {};
+    rows.forEach(function(r){
+      var key = r.pincode || r.city || 'unknown';
+      if(!groups[key]) groups[key] = [];
+      groups[key].push(r);
+    });
+    var sortedKeys = Object.keys(groups).sort(function(a,b){ return groups[b].length - groups[a].length; });
+
+    listWrap.innerHTML = sortedKeys.map(function(key){
+      var items = groups[key];
+      var searched = items.filter(function(r){ return r.status==='searched'; }).length;
+      var notified = items.filter(function(r){ return r.status==='notified_requested'; }).length;
+      var conversionPct = searched ? Math.round((notified/(searched+notified))*100) : (notified?100:0);
+
+      var sourceCounts = {};
+      items.forEach(function(r){ var s=r.source||'unknown'; sourceCounts[s]=(sourceCounts[s]||0)+1; });
+      var sourceHtml = Object.keys(sourceCounts).map(function(s){
+        return '<span style="font-size:.68rem;color:var(--muted);margin-right:10px;">'+(SOURCE_LABELS[s]||s)+': '+sourceCounts[s]+'</span>';
+      }).join('');
+
+      var contactRows = items.filter(function(r){ return r.status==='notified_requested'; }).map(function(r){
+        var contact = r.email || r.mobile || (r.uid ? ('uid: '+r.uid) : 'অজানা');
+        var when = r.requestedAt ? new Date(r.requestedAt).toLocaleDateString('bn-BD') : '';
+        return '<div style="display:flex;justify-content:space-between;font-size:.72rem;padding:5px 0;border-top:1px solid var(--border);">'+
+          '<span>'+contact+'</span><span style="color:var(--muted);">'+(SOURCE_LABELS[r.source]||r.source||'')+' · '+when+'</span></div>';
+      }).join('');
+
+      return '<div class="add-zone-card" style="margin-bottom:12px;">'+
+        '<div style="display:flex;justify-content:space-between;align-items:baseline;">'+
+          '<div style="font-weight:800;font-size:.95rem;">📍 '+key+'</div>'+
+          '<div style="font-size:.72rem;color:var(--muted);">'+conversionPct+'% conversion</div>'+
+        '</div>'+
+        '<div style="font-size:.78rem;margin:6px 0;">👀 '+searched+' search &nbsp; 🔔 '+notified+' notify-request</div>'+
+        '<div style="margin-bottom:8px;">'+sourceHtml+'</div>'+
+        (contactRows ? '<div style="margin-top:8px;">'+contactRows+'</div>' : '')+
+      '</div>';
+    }).join('');
+  }).catch(function(e){
+    console.error(e);
+    listWrap.innerHTML = '<div style="color:var(--muted);padding:20px;text-align:center;">লোড করতে সমস্যা হয়েছে।</div>';
+  });
+}
+function expSummaryCard(icon, num, label){
+  return '<div class="add-zone-card" style="text-align:center;">'+
+    '<div style="font-size:1.6rem;">'+icon+'</div>'+
+    '<div style="font-size:1.3rem;font-weight:800;color:var(--navy);">'+num+'</div>'+
+    '<div style="font-size:.72rem;color:var(--muted);">'+label+'</div>'+
+  '</div>';
 }
 
 // ═══ DATA LOADING ═══
@@ -3393,6 +3865,16 @@ function deleteZone(id){
 
 // ═══ DELIVERY BOYS MANAGEMENT ═══
 function loadDeliveryBoysAdmin(){
+  db.collection('cityConfig').get().then(function(citySnap){
+    var sel = document.getElementById('dbCity');
+    if(sel){
+      var ids = citySnap.docs.map(function(d){ return {id:d.id, label:(d.data().label||d.id)}; }).sort(function(a,b){ return a.label.localeCompare(b.label); });
+      sel.innerHTML = ids.length
+        ? ids.map(function(c){ return '<option value="'+c.id+'"'+(c.id===CITY?' selected':'')+'>'+c.label+'</option>'; }).join('')
+        : '<option value="'+CITY+'">'+CITY+' (default)</option>';
+    }
+  }).catch(function(e){ console.warn('City dropdown load failed', e); });
+
   db.collection('deliveryBoys').get().then(function(snap){
     allDeliveryBoys = [];
     snap.forEach(function(d){
@@ -3444,6 +3926,7 @@ function addDeliveryBoy(){
   var name = document.getElementById('dbName').value.trim();
   var phone = document.getElementById('dbPhone').value.trim();
   var email = document.getElementById('dbEmail').value.trim();
+  var dbCity = document.getElementById('dbCity').value || CITY;
   if(!uid){ showToast('Firebase Auth UID দিন','red'); return; }
   if(!name){ showToast('নাম দিন','red'); return; }
   if(!phone){ showToast('Phone number দিন','red'); return; }
@@ -3452,16 +3935,16 @@ function addDeliveryBoy(){
   if(exists){ showToast('এই UID ইতিমধ্যে যুক্ত আছে','red'); return; }
   db.collection('deliveryBoys').doc(uid).set({
     name: name, phone: phone, email: email,
-    city: CITY, isActive: true,
+    city: dbCity, isActive: true,
     createdAt: new Date().toISOString()
   }).then(function(){
-    allDeliveryBoys.push({id:uid, name:name, phone:phone, email:email, city:CITY, isActive:true});
+    allDeliveryBoys.push({id:uid, name:name, phone:phone, email:email, city:dbCity, isActive:true});
     renderDeliveryBoys(); updateCounts();
     document.getElementById('dbUid').value='';
     document.getElementById('dbName').value='';
     document.getElementById('dbPhone').value='';
     document.getElementById('dbEmail').value='';
-    showToast(name+' যুক্ত হয়েছে ✅','green');
+    showToast(name+' যুক্ত হয়েছে ✅ ('+dbCity+')','green');
   }).catch(function(e){ showToast('যুক্ত করতে সমস্যা: '+e.message,'red'); });
 }
 
