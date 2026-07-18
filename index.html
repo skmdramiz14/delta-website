@@ -1258,13 +1258,17 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 .pin-served-list{margin-top:14px;font-size:.74rem;color:var(--muted);text-align:center;}
 
 /* ── WELCOME PINCODE GATE (first visit) ── */
-.gate-overlay{position:fixed;inset:0;background:linear-gradient(135deg,var(--navy3),var(--navy));z-index:5000;display:flex;align-items:center;justify-content:center;padding:24px;}
-.gate-card{background:var(--white);width:100%;max-width:400px;border-radius:20px;overflow:hidden;text-align:center;animation:fmSlideUp .3s ease;}
-.gate-top{background:linear-gradient(135deg,var(--navy3),var(--navy));padding:32px 24px 26px;color:#fff;}
+.gate-overlay{position:fixed;inset:0;background:radial-gradient(ellipse at 50% 20%,var(--navy2) 0%,var(--navy3) 55%,#080f0c 100%);z-index:5000;display:flex;align-items:center;justify-content:center;padding:24px;}
+.gate-card{background:var(--white);width:100%;max-width:400px;border-radius:20px;overflow:hidden;text-align:center;animation:fmSlideUp .3s ease;
+  border:1px solid rgba(199,161,90,.35);box-shadow:0 24px 60px rgba(0,0,0,.45), 0 0 0 1px rgba(199,161,90,.08);}
+.gate-top{background:linear-gradient(160deg,var(--navy3) 0%,var(--navy) 55%,var(--navy2) 100%);padding:32px 24px 24px;color:#fff;position:relative;overflow:hidden;}
+.gate-top::after{content:'';position:absolute;left:0;right:0;bottom:0;height:3px;
+  background:linear-gradient(90deg,transparent,var(--orange2,#d6bd8a),var(--orange,#C7A15A),var(--orange2,#d6bd8a),transparent);}
 .gate-logo{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:900;margin-bottom:14px;}
 .gate-logo em{color:#ffe5c2;font-style:normal;}
-.gate-icon-badge{width:52px;height:52px;border-radius:50%;background:rgba(199,161,90,.15);border:1.5px solid rgba(199,161,90,.4);
-  display:flex;align-items:center;justify-content:center;margin:0 auto 12px;}
+.gate-icon-badge{width:56px;height:56px;border-radius:50%;background:radial-gradient(circle,rgba(199,161,90,.22) 0%,rgba(199,161,90,.08) 70%);
+  border:1.5px solid rgba(199,161,90,.55);box-shadow:0 0 18px rgba(199,161,90,.25);
+  display:flex;align-items:center;justify-content:center;margin:0 auto 14px;}
 .gate-title{font-size:1.05rem;font-weight:800;margin-bottom:6px;}
 .gate-sub{font-size:.8rem;opacity:.9;line-height:1.5;}
 .gate-body{padding:24px;}
