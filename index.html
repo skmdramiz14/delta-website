@@ -4145,9 +4145,14 @@ function setCurrentCity(cityId){
   CITY = cityId;
   try{ localStorage.setItem('delta_city', cityId); }catch(e){}
 }
-function updateCityUI(){
-  var cityNames={manteswar:'Manteswar',katwa:'Katwa',ausgram:'Ausgram',memari:'Memari'};
-  var cityLabel = cityNames[CITY]||'Manteswar';
+async function updateCityUI(){
+  var cityLabel;
+  if(CITY === 'unassigned'){
+    cityLabel = currentLang==='bn' ? 'এলাকা নির্বাচন করুন' : 'Select your area';
+  } else {
+    var geo = await getCityGeo(CITY);
+    cityLabel = geo.label || CITY;
+  }
   var locBtn=document.getElementById('navLocBtn');
   if(locBtn){ locBtn.querySelector('span').textContent=cityLabel; }
   var ldsBn=document.getElementById('ldsCityBn'); if(ldsBn) ldsBn.textContent=cityLabel;
