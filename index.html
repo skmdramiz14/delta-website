@@ -4211,6 +4211,7 @@ function setCurrentCity(cityId){
 async function updateCityUI(){
   var cityLabel;
   var isUnassignedState = false;
+  var hasVerifiedLocation = !!localStorage.getItem('delta_verified_pincode');
   // Logged in and we know their account's real city — show THAT, not the
   // general browsing scope, so someone whose account is 'unassigned' sees
   // an honest label instead of whatever city they happen to be browsing.
@@ -4223,6 +4224,14 @@ async function updateCityUI(){
       cityLabel = accGeo.label || MY_ACCOUNT_CITY;
     }
   } else if(CITY === 'unassigned'){
+    cityLabel = currentLang==='bn' ? 'এলাকা নির্বাচন করুন' : 'Select your area';
+    isUnassignedState = true;
+  } else if(!currentUser && !hasVerifiedLocation){
+    // Logged out AND never actually verified a location this session/device —
+    // CITY is just sitting at its fallback default (e.g. 'manteswar'), which
+    // is NOT the same as a confirmed location. Showing that fallback as if
+    // it were real would be misleading, especially right after someone
+    // skips the gate without entering anything.
     cityLabel = currentLang==='bn' ? 'এলাকা নির্বাচন করুন' : 'Select your area';
     isUnassignedState = true;
   } else {
