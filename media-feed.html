@@ -1087,6 +1087,18 @@ async function isServiceActive(cityId, serviceKey){
   return (await getServiceStatus(cityId, serviceKey)) === 'active';
 }
 var currentUser=null;
+// Where THIS logged-in account's own profile actually lives — 'unassigned',
+// a real city, or null (logged out / not yet checked). Separate from CITY
+// (the general feed-browsing scope for this page).
+var MY_ACCOUNT_CITY = null;
+async function loadMyAccountCity(uid){
+  try{
+    var unassignedDoc = await db.collection('cities').doc('unassigned').collection('mediaProfiles').doc(uid).get();
+    if(unassignedDoc.exists){ MY_ACCOUNT_CITY = 'unassigned'; return; }
+    var homeDoc = await db.collection('cities').doc(CITY).collection('mediaProfiles').doc(uid).get();
+    MY_ACCOUNT_CITY = homeDoc.exists ? CITY : null;
+  }catch(e){ console.warn('loadMyAccountCity failed (non-fatal)', e); MY_ACCOUNT_CITY = null; }
+}
 var NAV_AVATAR_GENERIC_ICON = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3.3"/><path d="M4.5 20c1-4.2 4-6.5 7.5-6.5s6.5 2.3 7.5 6.5" stroke-linecap="round"/></svg>';
 // Discover row cards (Who to Follow / Top Creators / Official) and desktop
 // sidebar widgets — shows the real avatar image if there is one, otherwise
@@ -1137,6 +1149,9 @@ auth.onAuthStateChanged(function(u){
     // the inline "Create your post..." card is meant for brand-new visitors only,
     // not for a returning user who is simply logged out right now.
     localStorage.setItem('delta_known_user','1');
+    loadMyAccountCity(u.uid);
+  } else {
+    MY_ACCOUNT_CITY = null;
   }
   var isKnownUser = localStorage.getItem('delta_known_user')==='1';
   document.getElementById('inlineLoginCard').style.display = (!u && !isKnownUser) ? 'flex' : 'none';
@@ -1530,7 +1545,7 @@ function smGo(dest){
 }
 function handleNavAvatarClick(){
   if(!currentUser){ goToLogin(); return; }
-  location.href='media-profile.html?uid='+currentUser.uid+'&city='+CITY;
+  location.href='media-profile.html?uid='+currentUser.uid+'&city='+(MY_ACCOUNT_CITY || CITY);
 }
 
 // ═══ Report a Problem — writes a real doc to the existing supportTickets
