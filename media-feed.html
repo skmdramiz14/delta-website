@@ -1016,7 +1016,7 @@ var fbcfg={apiKey:"AIzaSyA6TrrnCMwv1aa1WPqGvTVWlnieB2pVOEU",authDomain:"delta-pl
 firebase.initializeApp(fbcfg);
 var auth=firebase.auth();
 var db=firebase.firestore();
-var CITY = new URLSearchParams(location.search).get('city') || 'manteswar';
+var CITY = new URLSearchParams(location.search).get('city') || (function(){ try{ return localStorage.getItem('delta_city'); }catch(e){ return null; } })() || 'manteswar'; // Location Architecture v1 Section 3
 // City → District/State/Country lookup, now backed by Firestore's cityConfig
 // collection instead of a hardcoded map — so adding a new city as DELTA
 // expands (Master Doc Section 11) means adding one document, not editing
@@ -1024,25 +1024,67 @@ var CITY = new URLSearchParams(location.search).get('city') || 'manteswar';
 // creates a sensible default (only works once the user is logged in, per the
 // Firestore rule — anonymous reads still get an in-memory fallback).
 var _cityGeoCache = {};
+var CM_CACHE_TTL_MS = 8 * 60 * 1000; // matches index.html's cache window
 var CITY_GEO_SEED_DEFAULTS = {
-  manteswar: {label:'Manteswar', district:'Purba Bardhaman', state:'West Bengal', country:'India'}
+  manteswar: {label:'Manteswar', district:'Purba Bardhaman', state:'West Bengal', country:'India'},
+  memari: {label:'Memari', district:'Purba Bardhaman', state:'West Bengal', country:'India'}
 };
+function _cmCacheRead(key){
+  try{
+    var raw = sessionStorage.getItem(key);
+    if(!raw) return null;
+    var parsed = JSON.parse(raw);
+    if(Date.now() - parsed.t > CM_CACHE_TTL_MS) return null;
+    return parsed.v;
+  }catch(e){ return null; }
+}
+function _cmCacheWrite(key, value){
+  try{ sessionStorage.setItem(key, JSON.stringify({v:value, t:Date.now()})); }catch(e){}
+}
 async function getCityGeo(city){
   if(_cityGeoCache[city]) return _cityGeoCache[city];
+  var cached = _cmCacheRead('cm_city_'+city);
+  if(cached){ _cityGeoCache[city] = cached; return cached; }
   var fallback = CITY_GEO_SEED_DEFAULTS[city] || {label:city, district:'', state:'', country:'India'};
   try{
     var doc = await db.collection('cityConfig').doc(city).get();
-    if(doc.exists){ _cityGeoCache[city] = doc.data(); return doc.data(); }
+    if(doc.exists){ _cityGeoCache[city] = doc.data(); _cmCacheWrite('cm_city_'+city, doc.data()); return doc.data(); }
     if(auth.currentUser){
       try{ await db.collection('cityConfig').doc(city).set(fallback); }
       catch(e){ console.warn('cityConfig self-heal skipped', e); }
     }
     _cityGeoCache[city] = fallback;
+    _cmCacheWrite('cm_city_'+city, fallback);
     return fallback;
   }catch(e){
     console.warn('cityConfig fetch failed, using in-memory default', e);
     return fallback;
   }
+}
+// Service-availability resolver (platform override wins over city-level status)
+// — see index.html for the fuller explanation. Kept in sync here so any
+// future Media feature that needs a delivery-dependent check can call it.
+var _platformConfigCache = null;
+async function getServiceStatus(cityId, serviceKey){
+  if(_platformConfigCache === null){
+    var cachedPlatform = _cmCacheRead('cm_platform');
+    if(cachedPlatform){ _platformConfigCache = cachedPlatform; }
+    else{
+      try{
+        var pDoc = await db.collection('platformConfig').doc('global').get();
+        _platformConfigCache = pDoc.exists ? (pDoc.data().services||{}) : {};
+        _cmCacheWrite('cm_platform', _platformConfigCache);
+      }catch(e){ console.warn('platformConfig fetch failed', e); _platformConfigCache = {}; }
+    }
+  }
+  var platformEntry = _platformConfigCache[serviceKey];
+  if(platformEntry && platformEntry.status !== 'active') return platformEntry.status;
+  var geo = await getCityGeo(cityId);
+  var cityEntry = (geo.services && geo.services[serviceKey]) || {status:'disabled'};
+  return cityEntry.status;
+}
+async function isServiceActive(cityId, serviceKey){
+  return (await getServiceStatus(cityId, serviceKey)) === 'active';
 }
 var currentUser=null;
 var NAV_AVATAR_GENERIC_ICON = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3.3"/><path d="M4.5 20c1-4.2 4-6.5 7.5-6.5s6.5 2.3 7.5 6.5" stroke-linecap="round"/></svg>';
@@ -1161,20 +1203,31 @@ async function doMediaRegister(){
   try{
     var cr = await auth.createUserWithEmailAndPassword(email, pass);
     await cr.user.updateProfile({displayName:name});
+    // Only treat this as a real, servable city if the location was actually
+    // verified this session — otherwise it goes into 'unassigned', carrying
+    // the real searched pincode so it can auto-migrate once that area is served.
+    var isVerified = !!localStorage.getItem('delta_verified_pincode');
+    var regCityPath = isVerified ? CITY : 'unassigned';
+    var pendingPincode = isVerified ? null : (localStorage.getItem('delta_last_unserved_pincode') || null);
     // Same write path as index.html's doCustomerRegister — one shared account.
-    await db.collection('cities').doc(CITY).collection('customers').doc(cr.user.uid).set({
-      name:name, mobile:mobile, email:email, city:CITY, createdAt:new Date().toISOString()
+    await db.collection('cities').doc(regCityPath).collection('customers').doc(cr.user.uid).set({
+      name:name, mobile:mobile, email:email, city: isVerified?CITY:null, pendingPincode:pendingPincode, createdAt:new Date().toISOString()
     });
     // Identity Bridge (Part A Section 3.2) — every account also gets a basic
     // mediaProfiles doc, so DELTA Media's profile page actually finds them
     // instead of showing "Profile not found".
-    var geo = await getCityGeo(CITY);
-    await db.collection('cities').doc(CITY).collection('mediaProfiles').doc(cr.user.uid).set({
+    var geoFields = {city:null, district:null, state:null, country:null};
+    if(isVerified){
+      var geo = await getCityGeo(CITY);
+      geoFields = {city:CITY, district:geo.district, state:geo.state, country:geo.country};
+    }
+    await db.collection('cities').doc(regCityPath).collection('mediaProfiles').doc(cr.user.uid).set({
       uid: cr.user.uid, displayName: name, bio:'', avatarUrl:'', coverUrl:'',
       roles:['customer','creator'], linkedCustomerId: cr.user.uid,
       followerCount:0, followingCount:0, postCount:0,
       primaryBadge:'customer_creator', isVerified:false,
-      city:CITY, district:geo.district, state:geo.state, country:geo.country,
+      city:geoFields.city, district:geoFields.district, state:geoFields.state, country:geoFields.country,
+      pendingPincode: pendingPincode,
       createdAt:new Date().toISOString(), updatedAt:new Date().toISOString()
     });
     closeMediaAuth();
