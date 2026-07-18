@@ -3448,18 +3448,48 @@ img{max-width:100%;height:auto;}
      users clicking "Notify me" have no email/mobile on file otherwise,
      which would make the whole notify feature silently useless for them. -->
 <div class="modal-overlay" id="notifyContactModal">
-  <div class="modal-box" style="text-align:center;">
+  <div class="modal-box" style="text-align:center;max-height:88vh;overflow-y:auto;">
     <div style="font-size:2rem;margin-bottom:8px;">🔔</div>
     <h3><span class="lang-bn">কোথায় জানাবো?</span><span class="lang-en">Where should we notify you?</span></h3>
-    <p style="font-size:.82rem;color:var(--muted);margin:6px 0 16px;">
+    <p style="font-size:.82rem;color:var(--muted);margin:6px 0 16px;" id="notifyContactSubtext">
       <span class="lang-bn">Account লাগবে না — শুধু email বা মোবাইল দিন</span>
       <span class="lang-en">No account needed — just an email or mobile number</span>
     </p>
-    <div class="form-group"><label><span class="lang-bn">Email</span><span class="lang-en">Email</span></label>
-      <input type="email" class="form-input" id="notifyContactEmail" placeholder="your@email.com"></div>
-    <div class="form-group"><label><span class="lang-bn">অথবা মোবাইল নম্বর</span><span class="lang-en">Or mobile number</span></label>
-      <input type="tel" class="form-input" id="notifyContactMobile" placeholder="98XXXXXXXX"></div>
-    <button class="submit-btn" onclick="submitNotifyContact()">
+    <div id="notifyContactFields">
+      <div class="form-group"><label><span class="lang-bn">Email</span><span class="lang-en">Email</span></label>
+        <input type="email" class="form-input" id="notifyContactEmail" placeholder="your@email.com"></div>
+      <div class="form-group"><label><span class="lang-bn">অথবা মোবাইল নম্বর</span><span class="lang-en">Or mobile number</span></label>
+        <input type="tel" class="form-input" id="notifyContactMobile" placeholder="98XXXXXXXX"></div>
+    </div>
+
+    <!-- Optional DELTA Area Needs Survey — deliberately de-emphasized and
+         fully skippable. The Notify button below works with or without
+         touching any of this, so answering never becomes a precondition
+         for signing up to be notified. -->
+    <div style="text-align:left;margin-top:8px;padding-top:14px;border-top:1px solid var(--border);">
+      <div style="font-size:.78rem;font-weight:700;color:var(--navy);">
+        <span class="lang-bn">🙋 আপনার এলাকায় সবচেয়ে বেশি কী দরকার?</span>
+        <span class="lang-en">🙋 What does your area need most?</span>
+      </div>
+      <div style="font-size:.68rem;color:var(--muted);margin:3px 0 10px;">
+        <span class="lang-bn">সম্পূর্ণ ঐচ্ছিক — skip করে সরাসরি নিচের Notify বাটনে চাপতে পারেন</span>
+        <span class="lang-en">Completely optional — skip straight to the Notify button below if you like</span>
+      </div>
+      <div id="needsSurveyChecks" style="display:grid;grid-template-columns:1fr 1fr;gap:5px;max-height:190px;overflow-y:auto;padding:2px;"></div>
+      <div style="margin-top:8px;display:none;" id="needsOtherWrap">
+        <input type="text" class="form-input" id="needsOtherText" placeholder="যেমন: Cyber cafe, Salon...">
+      </div>
+      <div style="margin-top:12px;">
+        <label style="font-size:.72rem;font-weight:700;">
+          <span class="lang-bn">সবচেয়ে জরুরি একটা বেছে নিন</span><span class="lang-en">Pick your single top priority</span>
+        </label>
+        <select class="form-input" id="needsTopPriority" style="margin-top:5px;">
+          <option value="">-- ঐচ্ছিক / Optional --</option>
+        </select>
+      </div>
+    </div>
+
+    <button class="submit-btn" style="margin-top:16px;" onclick="submitNotifyContact()">
       <span class="lang-bn">🔔 জানান</span><span class="lang-en">🔔 Notify me</span></button>
     <button onclick="closeNotifyContactModal()" style="width:100%;background:transparent;border:none;color:var(--muted);
       padding:10px;margin-top:6px;font-size:.82rem;cursor:pointer;">
@@ -3469,12 +3499,22 @@ img{max-width:100%;height:auto;}
 
 <div class="modal-overlay" id="serviceGateModal">
   <div class="modal-box" style="text-align:center;">
-    <div style="font-size:2rem;margin-bottom:8px;">😔</div>
+    <div style="font-size:2rem;margin-bottom:8px;" id="sgIcon">😔</div>
     <h3 id="sgTitle">এখনো এই এলাকায় Delivery নেই</h3>
-    <p style="font-size:.85rem;color:var(--muted);margin:8px 0 18px;" id="sgMessage"></p>
+    <p style="font-size:.85rem;color:var(--muted);margin:8px 0 14px;" id="sgMessage"></p>
+
+    <div id="sgNearbyWrap" style="display:none;margin-bottom:14px;text-align:left;">
+      <div style="font-size:.72rem;font-weight:700;color:var(--navy);margin-bottom:6px;">
+        🏙️ কাছের এলাকায় delivery চালু আছে:</div>
+      <div id="sgNearbyList" style="display:flex;flex-direction:column;gap:6px;"></div>
+    </div>
+
     <button class="submit-btn" onclick="notifyServiceExpansion()">🔔 Notify me when available</button>
-    <button onclick="closeServiceGateModal()" style="width:100%;background:transparent;border:none;color:var(--muted);
-      padding:10px;margin-top:6px;font-size:.82rem;cursor:pointer;">বন্ধ করুন (Cart-এ item থেকেই যাবে)</button>
+    <button onclick="closeServiceGateModal()" style="width:100%;background:var(--cream);border:1.5px solid var(--border);color:var(--charcoal);
+      padding:11px;margin-top:8px;border-radius:20px;font-size:.82rem;font-weight:700;cursor:pointer;">
+      👀 <span class="lang-bn">Browse চালিয়ে যান</span><span class="lang-en">Continue Browsing</span></button>
+    <p style="font-size:.68rem;color:var(--muted);margin-top:8px;">
+      🛒 <span class="lang-bn">আপনার Cart সেভ করা আছে — item হারাবে না</span><span class="lang-en">Your cart is saved — nothing will be lost</span></p>
   </div>
 </div>
 
@@ -4353,21 +4393,65 @@ async function checkPincode(){
 
 var _pendingNotify = null; // {pin, source} — held while the contact modal is open
 
+// DELTA Area Needs Survey — optional, multi-select. Same list is used to
+// build both the checkbox grid and the single "top priority" dropdown, so
+// there's only one place to edit this list.
+var NEEDS_CATEGORIES = [
+  'Grocery & Daily Essentials','Food Delivery','Medicine Delivery',
+  'Fresh Vegetables/Fish/Meat','Local Marketplace Delivery','Rider / Transport Booking',
+  'Healthcare Services','Doctor Appointment','Diagnostic / Lab Services',
+  'Skill Development','Jobs & Employability','Education & Tutoring',
+  'Home Services','Agriculture Services','Financial Services',
+  'Local Business Support','Parcel / Courier','Event & Gift Services','Other'
+];
+async function populateNeedsSurvey(){
+  var checksWrap = document.getElementById('needsSurveyChecks');
+  checksWrap.innerHTML = '<span style="font-size:.7rem;color:var(--muted);">লোড হচ্ছে...</span>';
+
+  // Merge the city's REAL, live shop categories (so "more Grocery options
+  // here" demand can be measured too, not just entirely-new services) with
+  // the static forward-looking list. Falls back to the static list alone if
+  // this fetch fails — never blocks the survey from showing.
+  var mergedList = NEEDS_CATEGORIES.slice(0, -1); // everything except trailing 'Other'
+  try{
+    if(db){
+      var doc = await db.collection('cities').doc(CITY).collection('settings').doc('categoryConfig').get();
+      if(doc.exists && doc.data().categories && doc.data().categories.length){
+        var seen = {}; mergedList.forEach(function(c){ seen[c.toLowerCase()] = true; });
+        doc.data().categories.filter(function(c){ return c.visible !== false; }).forEach(function(cat){
+          var label = cat.nameBn || cat.nameEn || cat.key;
+          if(label && !seen[label.toLowerCase()]){ seen[label.toLowerCase()]=true; mergedList.push(label); }
+        });
+      }
+    }
+  }catch(e){ console.warn('Live category merge failed, using static list only', e); }
+  mergedList.push('Other'); // always last
+
+  checksWrap.innerHTML = mergedList.map(function(c){
+    var isOther = c==='Other';
+    return '<label style="display:flex;align-items:center;gap:5px;font-size:.72rem;cursor:pointer;">'+
+      '<input type="checkbox" class="needs-check" value="'+c+'" '+(isOther?'onchange="toggleNeedsOtherField(this)"':'')+'>'+c+'</label>';
+  }).join('');
+  var prioritySel = document.getElementById('needsTopPriority');
+  prioritySel.innerHTML = '<option value="">-- ঐচ্ছিক / Optional --</option>' +
+    mergedList.map(function(c){ return '<option value="'+c+'">'+c+'</option>'; }).join('');
+  document.getElementById('needsOtherWrap').style.display='none';
+  document.getElementById('needsOtherText').value='';
+}
+function toggleNeedsOtherField(checkbox){
+  document.getElementById('needsOtherWrap').style.display = checkbox.checked ? 'block' : 'none';
+}
+
 function notifyPinExpansion(pin, source){
   source = source || 'unknown';
-  if(!currentUser){
-    // No account on file — collecting email/mobile directly rather than
-    // silently submitting a request nobody can ever actually be reached at.
-    _pendingNotify = {pin:pin, source:source};
-    document.getElementById('notifyContactModal').classList.add('open');
-    return;
-  }
-  writeExpansionRequest({
-    uid: currentUser.uid, email: currentUser.email || null, mobile: null,
-    pincode: pin, source: source
-  });
-  showToast(currentLang==='bn'?'ধন্যবাদ! আমরা আপনাকে জানাবো 🔔':'Thanks! We will notify you 🔔');
-  closePinModal();
+  _pendingNotify = {pin:pin, source:source};
+  // Contact fields only needed if we don't already have this person's email
+  // on file — the survey below is shown either way, logged in or not.
+  var needContact = !currentUser;
+  document.getElementById('notifyContactFields').style.display = needContact ? 'block' : 'none';
+  document.getElementById('notifyContactSubtext').style.display = needContact ? 'block' : 'none';
+  populateNeedsSurvey();
+  document.getElementById('notifyContactModal').classList.add('open');
 }
 
 function closeNotifyContactModal(){
@@ -4376,20 +4460,33 @@ function closeNotifyContactModal(){
 }
 
 function submitNotifyContact(){
-  var email = document.getElementById('notifyContactEmail').value.trim();
-  var mobile = document.getElementById('notifyContactMobile').value.trim();
-  if(!email && !mobile){
+  var needContact = !currentUser;
+  var email = needContact ? document.getElementById('notifyContactEmail').value.trim() : (currentUser.email||null);
+  var mobile = needContact ? document.getElementById('notifyContactMobile').value.trim() : null;
+  if(needContact && !email && !mobile){
     showToast(currentLang==='bn'?'Email বা মোবাইল অন্তত একটা দিন ⚠️':'Please enter an email or mobile ⚠️');
     return;
   }
   if(!_pendingNotify) return;
+
+  // Optional survey — collected only if the user actually engaged with it.
+  var servicesWanted = Array.prototype.slice.call(document.querySelectorAll('.needs-check:checked')).map(function(el){ return el.value; });
+  var otherText = document.getElementById('needsOtherText').value.trim();
+  if(servicesWanted.indexOf('Other')>=0 && otherText){
+    servicesWanted[servicesWanted.indexOf('Other')] = 'Other: '+otherText;
+  }
+  var topPriority = document.getElementById('needsTopPriority').value || null;
+
   writeExpansionRequest({
-    uid: null, email: email||null, mobile: mobile||null,
-    pincode: _pendingNotify.pin, source: _pendingNotify.source
+    uid: (currentUser&&currentUser.uid) || null, email: email||null, mobile: mobile||null,
+    pincode: _pendingNotify.pin || null, city: _pendingNotify.city || null, source: _pendingNotify.source,
+    servicesWanted: servicesWanted, topPriority: topPriority
   });
   showToast(currentLang==='bn'?'ধন্যবাদ! আমরা আপনাকে জানাবো 🔔':'Thanks! We will notify you 🔔');
-  document.getElementById('notifyContactEmail').value='';
-  document.getElementById('notifyContactMobile').value='';
+  if(needContact){
+    document.getElementById('notifyContactEmail').value='';
+    document.getElementById('notifyContactMobile').value='';
+  }
   closeNotifyContactModal();
   closePinModal();
 }
@@ -4397,10 +4494,13 @@ function submitNotifyContact(){
 // Shared writer — Location Architecture v1 follow-up: every request now
 // carries WHERE on the site it came from (source) so Admin can see which
 // entry point drives the most expansion interest, not just which city/pincode.
+// Also carries the optional DELTA Area Needs Survey answers (servicesWanted,
+// topPriority) when the user chose to fill them in.
 function writeExpansionRequest(fields){
   if(!db) return;
   db.collection('expansionRequests').add(Object.assign({
     city: null, service: 'marketplaceDelivery', status: 'notified_requested',
+    servicesWanted: [], topPriority: null,
     requestedAt: new Date().toISOString()
   }, fields)).catch(function(e){ console.error(e); });
 }
@@ -4416,6 +4516,7 @@ function logUnservedSearch(pin, source){
     email: (currentUser&&currentUser.email) || null,
     mobile: null, pincode: pin, city: null, service: 'marketplaceDelivery',
     source: source, status: 'searched',
+    servicesWanted: [], topPriority: null,
     requestedAt: new Date().toISOString()
   }).catch(function(e){ console.error(e); });
 }
@@ -7738,10 +7839,10 @@ async function openCheckout(){
   // Location Architecture v1, Section 6 — the ONLY point in the whole app
   // where delivery availability is checked. Browsing, wishlist, and cart all
   // stay unrestricted regardless of this city's service status.
-  var serviceOk = await isServiceActive(CITY, 'marketplaceDelivery');
-  if(!serviceOk){
+  var serviceStatus = await getServiceStatus(CITY, 'marketplaceDelivery');
+  if(serviceStatus !== 'active'){
     closeCart();
-    showServiceGateModal();
+    showServiceGateModal(serviceStatus);
     return;
   }
 
@@ -7764,22 +7865,73 @@ async function openCheckout(){
   document.getElementById('checkoutModal').classList.add('open');
   closeCart();
 }
-function showServiceGateModal(){
-  document.getElementById('sgMessage').textContent =
-    'আপনার এলাকায় (' + CITY + ') এখনো marketplace delivery চালু হয়নি। আপনার Cart অক্ষত আছে — delivery শুরু হলে আমরা জানাবো।';
+async function showServiceGateModal(status){
+  status = status || 'disabled';
+  var STATUS_COPY = {
+    coming_soon: {
+      icon:'🚀', title:'শীঘ্রই আসছে!',
+      msg:'আপনার এলাকায় ('+CITY+') marketplace delivery শীঘ্রই চালু হবে। এখনো লঞ্চ হয়নি।'
+    },
+    maintenance: {
+      icon:'🔧', title:'সাময়িক Maintenance চলছে',
+      msg:'আপনার এলাকায় ('+CITY+') delivery সাময়িকভাবে বন্ধ আছে (maintenance-এর জন্য)। একটু পরে আবার চেষ্টা করুন।'
+    },
+    paused: {
+      icon:'⏸', title:'সাময়িকভাবে বন্ধ',
+      msg:'আপনার এলাকায় ('+CITY+') delivery সাময়িকভাবে বন্ধ রাখা হয়েছে। শীঘ্রই আবার চালু হবে।'
+    },
+    disabled: {
+      icon:'😔', title:'এখনো এই এলাকায় Delivery নেই',
+      msg:'আপনার এলাকায় ('+CITY+') marketplace delivery এখনো চালু হয়নি।'
+    }
+  };
+  var copy = STATUS_COPY[status] || STATUS_COPY.disabled;
+  document.getElementById('sgIcon').textContent = copy.icon;
+  document.getElementById('sgTitle').textContent = copy.title;
+  document.getElementById('sgMessage').textContent = copy.msg;
   document.getElementById('serviceGateModal').classList.add('open');
+
+  // "Explore Nearby Cities" — only meaningful for coming_soon/disabled/paused,
+  // not maintenance (a temporary blip doesn't need someone to switch cities).
+  var nearbyWrap = document.getElementById('sgNearbyWrap');
+  var nearbyList = document.getElementById('sgNearbyList');
+  if(status === 'maintenance'){ nearbyWrap.style.display='none'; return; }
+  try{
+    var snap = await db.collection('cityConfig').get();
+    var candidates = [];
+    snap.docs.forEach(function(d){
+      if(d.id===CITY) return;
+      var svc = (d.data().services && d.data().services.marketplaceDelivery) || {};
+      if(svc.status==='active') candidates.push({id:d.id, label:d.data().label||d.id});
+    });
+    if(candidates.length){
+      nearbyList.innerHTML = candidates.map(function(c){
+        return '<button class="btn-sm" style="background:var(--cream);border:1.5px solid var(--border);color:var(--charcoal);text-align:left;" '+
+          'onclick="switchToNearbyCity(\''+c.id+'\')">📍 '+c.label+'</button>';
+      }).join('');
+      nearbyWrap.style.display='block';
+    } else {
+      nearbyWrap.style.display='none';
+    }
+  }catch(e){ console.warn('Nearby cities lookup failed', e); nearbyWrap.style.display='none'; }
+}
+function switchToNearbyCity(cityId){
+  setCurrentCity(cityId);
+  closeServiceGateModal();
+  updateCityUI();
+  showToast('📍 এখন '+cityId+' browse করছেন', 'green');
+  loadData();
 }
 function closeServiceGateModal(){
   document.getElementById('serviceGateModal').classList.remove('open');
 }
 function notifyServiceExpansion(){
-  writeExpansionRequest({
-    uid: (currentUser&&currentUser.uid) || null,
-    email: (currentUser&&currentUser.email) || null,
-    mobile: null, pincode: null, city: CITY, source: 'checkout_gate'
-  });
-  showToast('ধন্যবাদ! আমরা আপনাকে জানাবো 🔔');
+  _pendingNotify = {pin:null, city:CITY, source:'checkout_gate'};
+  document.getElementById('notifyContactFields').style.display='none';
+  document.getElementById('notifyContactSubtext').style.display='none';
+  populateNeedsSurvey();
   closeServiceGateModal();
+  document.getElementById('notifyContactModal').classList.add('open');
 }
 function closeCheckout(){document.getElementById('checkoutModal').classList.remove('open');}
 function selectPay(m){
