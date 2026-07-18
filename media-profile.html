@@ -210,24 +210,41 @@ var fbcfg={apiKey:"AIzaSyA6TrrnCMwv1aa1WPqGvTVWlnieB2pVOEU",authDomain:"delta-pl
 firebase.initializeApp(fbcfg);
 var auth=firebase.auth();
 var db=firebase.firestore();
-var CITY = new URLSearchParams(location.search).get('city') || 'manteswar';
+var CITY = new URLSearchParams(location.search).get('city') || (function(){ try{ return localStorage.getItem('delta_city'); }catch(e){ return null; } })() || 'manteswar'; // Location Architecture v1 Section 3
 // City → District/State/Country lookup, backed by Firestore's cityConfig
 // collection (self-healing) rather than a hardcoded map.
 var _cityGeoCache = {};
+var CM_CACHE_TTL_MS = 8 * 60 * 1000;
 var CITY_GEO_SEED_DEFAULTS = {
-  manteswar: {label:'Manteswar', district:'Purba Bardhaman', state:'West Bengal', country:'India'}
+  manteswar: {label:'Manteswar', district:'Purba Bardhaman', state:'West Bengal', country:'India'},
+  memari: {label:'Memari', district:'Purba Bardhaman', state:'West Bengal', country:'India'}
 };
+function _cmCacheRead(key){
+  try{
+    var raw = sessionStorage.getItem(key);
+    if(!raw) return null;
+    var parsed = JSON.parse(raw);
+    if(Date.now() - parsed.t > CM_CACHE_TTL_MS) return null;
+    return parsed.v;
+  }catch(e){ return null; }
+}
+function _cmCacheWrite(key, value){
+  try{ sessionStorage.setItem(key, JSON.stringify({v:value, t:Date.now()})); }catch(e){}
+}
 async function getCityGeo(city){
   if(_cityGeoCache[city]) return _cityGeoCache[city];
+  var cached = _cmCacheRead('cm_city_'+city);
+  if(cached){ _cityGeoCache[city] = cached; return cached; }
   var fallback = CITY_GEO_SEED_DEFAULTS[city] || {label:city, district:'', state:'', country:'India'};
   try{
     var doc = await db.collection('cityConfig').doc(city).get();
-    if(doc.exists){ _cityGeoCache[city] = doc.data(); return doc.data(); }
+    if(doc.exists){ _cityGeoCache[city] = doc.data(); _cmCacheWrite('cm_city_'+city, doc.data()); return doc.data(); }
     if(auth.currentUser){
       try{ await db.collection('cityConfig').doc(city).set(fallback); }
       catch(e){ console.warn('cityConfig self-heal skipped', e); }
     }
     _cityGeoCache[city] = fallback;
+    _cmCacheWrite('cm_city_'+city, fallback);
     return fallback;
   }catch(e){
     console.warn('cityConfig fetch failed, using in-memory default', e);
@@ -261,20 +278,42 @@ async function loadProfile(){
   try{
     var doc = await db.collection('cities').doc(CITY).collection('mediaProfiles').doc(PROFILE_UID).get();
     isOwner = !!(currentUser && currentUser.uid === PROFILE_UID);
-    if(!doc.exists && isOwner){
+
+    // If not found under the guessed CITY, also check 'unassigned' before
+    // self-healing a brand new profile — otherwise someone who registered
+    // from an unverified location, then returns with CITY guessed
+    // differently, would end up with a duplicate/orphaned profile.
+    var unassignedDoc = null;
+    if(!doc.exists && isOwner && CITY !== 'unassigned'){
+      unassignedDoc = await db.collection('cities').doc('unassigned').collection('mediaProfiles').doc(PROFILE_UID).get();
+    }
+
+    if(unassignedDoc && unassignedDoc.exists){
+      profileData = unassignedDoc.data();
+    } else if(!doc.exists && isOwner){
       // Self-heal for accounts created before mediaProfiles auto-creation was
       // added to the sign-up flow — build a basic profile now rather than
-      // showing "Profile not found" forever on someone's own page.
-      var geo = await getCityGeo(CITY);
+      // showing "Profile not found" forever on someone's own page. Only
+      // trust CITY's geo info if actually verified this session — otherwise
+      // this goes into 'unassigned' too, consistent with the registration flow.
+      var isVerified = !!localStorage.getItem('delta_verified_pincode');
+      var selfHealCityPath = isVerified ? CITY : 'unassigned';
+      var pendingPincode = isVerified ? null : (localStorage.getItem('delta_last_unserved_pincode') || null);
+      var geoFields = {city:null, district:null, state:null, country:null};
+      if(isVerified){
+        var geo = await getCityGeo(CITY);
+        geoFields = {city:CITY, district:geo.district, state:geo.state, country:geo.country};
+      }
       var basicProfile = {
         uid: currentUser.uid, displayName: currentUser.displayName || 'DELTA User',
         bio:'', avatarUrl:'', coverUrl:'', roles:['customer','creator'],
         linkedCustomerId: currentUser.uid, followerCount:0, followingCount:0, postCount:0,
         primaryBadge:'customer_creator', isVerified:false,
-        city:CITY, district:geo.district, state:geo.state, country:geo.country,
+        city:geoFields.city, district:geoFields.district, state:geoFields.state, country:geoFields.country,
+        pendingPincode: pendingPincode,
         createdAt:new Date().toISOString(), updatedAt:new Date().toISOString()
       };
-      await db.collection('cities').doc(CITY).collection('mediaProfiles').doc(PROFILE_UID).set(basicProfile);
+      await db.collection('cities').doc(selfHealCityPath).collection('mediaProfiles').doc(PROFILE_UID).set(basicProfile);
       profileData = basicProfile;
     } else {
       profileData = doc.exists ? doc.data() : {};
