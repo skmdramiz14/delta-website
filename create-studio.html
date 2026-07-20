@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>DELTA Media — তৈরি করুন</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="delta-shared.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{overflow-x:hidden;max-width:100vw;}
+:root{
+  --navy:#10392D;--navy2:#1a4a3a;
+  --orange:#C7A15A;--orange-dark:#b8925a;--orange-light:#F3EFE6;
+  --white:#fff;--cream:#F7F8FA;
+  --border:#E7E9EC;--muted:#8A8F98;--charcoal:#1A1A1A;
+  --danger:#c0392b;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charcoal);padding-bottom:100px;}
+
+/* ── HEADER ── */
+.cs-nav{background:var(--white);padding:16px;min-height:64px;display:flex;align-items:center;gap:12px;
+  position:sticky;top:0;z-index:200;border-bottom:1px solid var(--border);box-shadow:0 1px 6px rgba(0,0,0,.04);}
+.cs-back{background:none;border:none;width:34px;height:34px;border-radius:8px;display:flex;align-items:center;
+  justify-content:center;cursor:pointer;flex-shrink:0;color:var(--charcoal);}
+.cs-back:hover{background:var(--cream);}
+.cs-back svg{width:22px;height:22px;}
+.cs-title{font-family:'Playfair Display',serif;font-weight:800;font-size:1.15rem;color:var(--navy);flex:1;}
+.cs-publish-btn{background:var(--navy);color:#fff;border:none;padding:9px 18px;border-radius:20px;font-weight:700;
+  font-size:.82rem;cursor:pointer;transition:opacity .15s;flex-shrink:0;}
+.cs-publish-btn:hover{opacity:.9;}
+.cs-publish-btn:disabled{opacity:.45;cursor:not-allowed;}
+
+/* ── TYPE TABS ── */
+.cs-type-row{display:flex;gap:8px;padding:14px 16px 4px;overflow-x:auto;}
+.cs-type-tab{flex:1;min-width:76px;background:var(--white);border:1.5px solid var(--border);border-radius:12px;
+  padding:12px 6px;text-align:center;cursor:pointer;transition:.15s;}
+.cs-type-tab.active{background:var(--navy);border-color:var(--navy);}
+.cs-type-tab .cs-type-icon{font-size:1.3rem;margin-bottom:4px;}
+.cs-type-tab .cs-type-label{font-size:.72rem;font-weight:700;color:var(--charcoal);}
+.cs-type-tab.active .cs-type-label{color:#fff;}
+
+/* ── SECTIONS ── */
+.cs-section{padding:18px 16px;}
+.cs-section-title{font-size:.78rem;font-weight:800;color:var(--navy);margin-bottom:10px;
+  text-transform:uppercase;letter-spacing:.04em;}
+.cs-hint{font-size:.72rem;color:var(--muted);margin-top:6px;line-height:1.5;}
+
+/* ── UPLOAD ZONE ── */
+.cs-upload-zone{border:2px dashed var(--border);border-radius:16px;padding:32px 16px;text-align:center;
+  cursor:pointer;transition:.15s;background:var(--white);}
+.cs-upload-zone:hover{border-color:var(--orange);background:var(--orange-light);}
+.cs-upload-zone.dragover{border-color:var(--navy);background:var(--orange-light);}
+.cs-upload-icon{font-size:2.4rem;margin-bottom:8px;opacity:.7;}
+.cs-upload-text{font-size:.85rem;font-weight:700;color:var(--charcoal);}
+.cs-upload-sub{font-size:.7rem;color:var(--muted);margin-top:4px;}
+.cs-file-input{display:none;}
+
+.cs-preview-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px;}
+.cs-preview-item{position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;background:var(--border);}
+.cs-preview-item img,.cs-preview-item video{width:100%;height:100%;object-fit:cover;}
+.cs-preview-remove{position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:50%;
+  background:rgba(0,0,0,.6);color:#fff;border:none;font-size:.85rem;cursor:pointer;display:flex;
+  align-items:center;justify-content:center;}
+.cs-preview-single{border-radius:14px;overflow:hidden;background:var(--border);max-height:340px;
+  display:flex;align-items:center;justify-content:center;}
+.cs-preview-single img,.cs-preview-single video{width:100%;max-height:340px;object-fit:contain;}
+
+.cs-upload-progress{margin-top:10px;background:var(--border);border-radius:6px;height:6px;overflow:hidden;display:none;}
+.cs-upload-progress-fill{height:100%;background:var(--navy);width:0%;transition:width .3s;}
+.cs-upload-status{font-size:.72rem;color:var(--muted);margin-top:6px;}
+
+/* ── FORM ELEMENTS ── */
+.cs-textarea{width:100%;border:1.5px solid var(--border);border-radius:12px;padding:12px 14px;font-family:inherit;
+  font-size:.88rem;resize:vertical;min-height:90px;background:var(--white);}
+.cs-textarea:focus{outline:none;border-color:var(--navy);}
+.cs-input{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;font-family:inherit;
+  font-size:.85rem;background:var(--white);}
+.cs-input:focus{outline:none;border-color:var(--navy);}
+.cs-char-count{font-size:.68rem;color:var(--muted);text-align:right;margin-top:4px;}
+
+/* ── TOGGLE ROW (Poll / Tag product) ── */
+.cs-toggle-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;
+  border-top:1px solid var(--border);}
+.cs-toggle-row:first-child{border-top:none;}
+.cs-toggle-label{font-size:.85rem;font-weight:700;display:flex;align-items:center;gap:8px;}
+.cs-switch{position:relative;width:42px;height:24px;flex-shrink:0;}
+.cs-switch input{opacity:0;width:0;height:0;}
+.cs-switch-track{position:absolute;inset:0;background:var(--border);border-radius:24px;cursor:pointer;transition:.2s;}
+.cs-switch-track:before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;
+  border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2);}
+.cs-switch input:checked + .cs-switch-track{background:var(--navy);}
+.cs-switch input:checked + .cs-switch-track:before{transform:translateX(18px);}
+
+.cs-poll-panel,.cs-tag-panel{display:none;padding-top:12px;}
+.cs-poll-opt{display:flex;gap:8px;margin-bottom:8px;align-items:center;}
+.cs-poll-opt input{flex:1;}
+.cs-poll-opt-remove{background:none;border:none;color:var(--danger);font-size:1.1rem;cursor:pointer;padding:4px 8px;}
+.cs-add-opt-btn{background:none;border:1.5px dashed var(--border);border-radius:10px;padding:8px;width:100%;
+  font-size:.78rem;font-weight:700;color:var(--navy);cursor:pointer;margin-top:4px;}
+
+/* ── SUBMIT STATE ── */
+.cs-success-overlay{position:fixed;inset:0;background:rgba(16,57,45,.96);z-index:999;display:none;
+  align-items:center;justify-content:center;flex-direction:column;color:#fff;text-align:center;padding:24px;}
+.cs-success-overlay.show{display:flex;}
+.cs-success-icon{font-size:3.5rem;margin-bottom:16px;}
+.cs-success-title{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:800;margin-bottom:8px;}
+.cs-success-sub{font-size:.85rem;opacity:.85;max-width:280px;line-height:1.6;}
+.cs-success-btn{margin-top:24px;background:var(--orange);color:var(--navy);border:none;padding:12px 28px;
+  border-radius:24px;font-weight:800;font-size:.85rem;cursor:pointer;}
+
+.cs-auth-gate{padding:60px 24px;text-align:center;}
+.cs-auth-gate-icon{font-size:2.5rem;margin-bottom:12px;}
+.cs-auth-gate-btn{background:var(--navy);color:#fff;border:none;padding:12px 28px;border-radius:24px;
+  font-weight:700;font-size:.85rem;cursor:pointer;margin-top:12px;}
+
+.cs-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--charcoal);
+  color:#fff;padding:11px 20px;border-radius:24px;font-size:.8rem;font-weight:600;z-index:1000;
+  transition:transform .25s;box-shadow:0 4px 16px rgba(0,0,0,.2);}
+.cs-toast.show{transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+
+<div class="cs-nav">
+  <button class="cs-back" onclick="history.length>1?history.back():location.href='media-feed.html'">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
+  <div class="cs-title" id="csTitle">তৈরি করুন</div>
+  <button class="cs-publish-btn" id="csPublishBtn" onclick="submitContent()" disabled>পোস্ট করুন</button>
+</div>
+
+<div id="csAuthGate" class="cs-auth-gate" style="display:none;">
+  <div class="cs-auth-gate-icon">🔒</div>
+  <div style="font-weight:700;">কনটেন্ট তৈরি করতে লগইন করুন</div>
+  <button class="cs-auth-gate-btn" onclick="location.href='media-feed.html?returnTo=create-studio.html'">লগইন করুন</button>
+</div>
+
+<div id="csForm" style="display:none;">
+
+  <div class="cs-type-row" id="csTypeRow">
+    <div class="cs-type-tab" data-type="post" onclick="selectType('post')">
+      <div class="cs-type-icon">🖼️</div><div class="cs-type-label">পোস্ট</div>
+    </div>
+    <div class="cs-type-tab" data-type="story" onclick="selectType('story')">
+      <div class="cs-type-icon">⭐</div><div class="cs-type-label">স্টোরি</div>
+    </div>
+    <div class="cs-type-tab" data-type="reel" onclick="selectType('reel')">
+      <div class="cs-type-icon">🎬</div><div class="cs-type-label">রিল</div>
+    </div>
+    <div class="cs-type-tab" data-type="video" onclick="selectType('video')">
+      <div class="cs-type-icon">📹</div><div class="cs-type-label">ভিডিও</div>
+    </div>
+  </div>
+
+  <!-- ── MEDIA UPLOAD ── -->
+  <div class="cs-section">
+    <div class="cs-section-title" id="csMediaSectionTitle">ছবি/ভিডিও যোগ করুন</div>
+
+    <div class="cs-upload-zone" id="csUploadZone" onclick="document.getElementById('csFileInput').click()">
+      <div class="cs-upload-icon">📤</div>
+      <div class="cs-upload-text" id="csUploadText">ট্যাপ করে ছবি/ভিডিও বেছে নিন</div>
+      <div class="cs-upload-sub" id="csUploadSub">JPG, PNG, MP4 — সর্বোচ্চ 50MB</div>
+    </div>
+    <input type="file" id="csFileInput" class="cs-file-input" accept="image/*,video/*" onchange="handleFileSelect(this)">
+
+    <div class="cs-upload-progress" id="csUploadProgress">
+      <div class="cs-upload-progress-fill" id="csUploadProgressFill"></div>
+    </div>
+    <div class="cs-upload-status" id="csUploadStatus"></div>
+
+    <div class="cs-preview-grid" id="csPreviewGrid" style="display:none;"></div>
+    <div class="cs-preview-single" id="csPreviewSingle" style="display:none;"></div>
+  </div>
+
+  <!-- ── CAPTION ── -->
+  <div class="cs-section" style="padding-top:0;">
+    <div class="cs-section-title" id="csCaptionLabel">ক্যাপশন</div>
+    <textarea class="cs-textarea" id="csCaption" maxlength="2200" placeholder="কী নিয়ে এই পোস্ট?" oninput="updateCharCount()"></textarea>
+    <div class="cs-char-count"><span id="csCharCount">0</span>/2200</div>
+  </div>
+
+  <!-- ── VIDEO TITLE (video type only) ── -->
+  <div class="cs-section" id="csVideoTitleSection" style="display:none;padding-top:0;">
+    <div class="cs-section-title">শিরোনাম</div>
+    <input type="text" class="cs-input" id="csVideoTitle" maxlength="100" placeholder="ভিডিওর একটা শিরোনাম দিন">
+  </div>
+
+  <!-- ── POLL (post type only) ── -->
+  <div class="cs-section" id="csPollSection" style="display:none;padding-top:0;">
+    <div class="cs-toggle-row">
+      <div class="cs-toggle-label">📊 পোল যোগ করুন</div>
+      <label class="cs-switch">
+        <input type="checkbox" id="csPollToggle" onchange="togglePollPanel()">
+        <span class="cs-switch-track"></span>
+      </label>
+    </div>
+    <div class="cs-poll-panel" id="csPollPanel">
+      <input type="text" class="cs-input" id="csPollQuestion" placeholder="প্রশ্ন লিখুন" style="margin-bottom:10px;">
+      <div id="csPollOptionsWrap"></div>
+      <button class="cs-add-opt-btn" onclick="addPollOption()">+ আরেকটা option যোগ করুন</button>
+    </div>
+  </div>
+
+  <div class="cs-section" style="padding-top:0;">
+    <div class="cs-hint" id="csModerationHint">📝 আপনার কনটেন্ট submit করার পর DELTA টিম review করবে, তারপর সবার জন্য দেখা যাবে।</div>
+  </div>
+
+</div>
+
+<div class="cs-success-overlay" id="csSuccessOverlay">
+  <div class="cs-success-icon">✅</div>
+  <div class="cs-success-title">Submit হয়ে গেছে!</div>
+  <div class="cs-success-sub">আপনার কনটেন্ট এখন review-এর অপেক্ষায় আছে। Approve হলেই এটা feed-এ দেখা যাবে।</div>
+  <button class="cs-success-btn" onclick="location.href='media-feed.html'">Feed-এ ফিরে যান</button>
+</div>
+
+<div class="cs-toast" id="csToast"></div>
+
+<script>
+var fbcfg = {
+  apiKey: "AIzaSyA6TrrnCMwv1aa1WPqGvTVWlnieB2pVOEU",
+  authDomain: "delta-platform-82fc0.firebaseapp.com",
+  projectId: "delta-platform-82fc0",
+  storageBucket: "delta-platform-82fc0.firebasestorage.app",
+  messagingSenderId: "444904180433",
+  appId: "1:444904180433:web:6706eba4d73a30cd67d3f0"
+};
+firebase.initializeApp(fbcfg);
+var auth = firebase.auth(), db = firebase.firestore();
+
+var CLOUD = 'djthojcmy', PRESET = 'delta_products';
+var params = new URLSearchParams(location.search);
+var CITY = params.get('city') || (function(){ try{ return localStorage.getItem('delta_city'); }catch(e){ return null; } })() || 'manteswar';
+var currentUser = null;
+var currentType = params.get('type') || 'post';
+var uploadedMedia = []; // [{url, type:'image'|'video'}]
+var pollOptionCount = 0;
+
+var TYPE_CONFIG = {
+  post: {title:'পোস্ট তৈরি করুন', publishLabel:'পোস্ট করুন', uploadText:'ট্যাপ করে ছবি বেছে নিন (একাধিক)', multiple:true, accept:'image/*', captionLabel:'ক্যাপশন'},
+  story: {title:'স্টোরি তৈরি করুন', publishLabel:'স্টোরি শেয়ার করুন', uploadText:'ট্যাপ করে ছবি/ভিডিও বেছে নিন', multiple:false, accept:'image/*,video/*', captionLabel:'টেক্সট (ঐচ্ছিক)'},
+  reel: {title:'রিল তৈরি করুন', publishLabel:'রিল পোস্ট করুন', uploadText:'ট্যাপ করে একটা ভিডিও বেছে নিন', multiple:false, accept:'video/*', captionLabel:'ক্যাপশন'},
+  video: {title:'ভিডিও আপলোড করুন', publishLabel:'ভিডিও আপলোড করুন', uploadText:'ট্যাপ করে একটা ভিডিও বেছে নিন', multiple:false, accept:'video/*', captionLabel:'বিবরণ'}
+};
+
+auth.onAuthStateChanged(function(u){
+  currentUser = u;
+  if(!u){
+    document.getElementById('csAuthGate').style.display='block';
+    document.getElementById('csForm').style.display='none';
+    return;
+  }
+  document.getElementById('csAuthGate').style.display='none';
+  document.getElementById('csForm').style.display='block';
+  selectType(currentType);
+});
+
+function selectType(type){
+  currentType = type;
+  document.querySelectorAll('.cs-type-tab').forEach(function(t){
+    t.classList.toggle('active', t.getAttribute('data-type')===type);
+  });
+  var cfg = TYPE_CONFIG[type];
+  document.getElementById('csTitle').textContent = cfg.title;
+  document.getElementById('csPublishBtn').textContent = cfg.publishLabel;
+  document.getElementById('csUploadText').textContent = cfg.uploadText;
+  document.getElementById('csCaptionLabel').textContent = cfg.captionLabel;
+  document.getElementById('csCaption').placeholder = type==='story' ? 'কিছু লিখতে চান? (ঐচ্ছিক)' : 'কী নিয়ে এই পোস্ট?';
+  document.getElementById('csFileInput').setAttribute('accept', cfg.accept);
+  document.getElementById('csFileInput').multiple = cfg.multiple;
+  document.getElementById('csVideoTitleSection').style.display = type==='video' ? 'block' : 'none';
+  document.getElementById('csPollSection').style.display = type==='post' ? 'block' : 'none';
+  document.getElementById('csModerationHint').textContent = type==='story'
+    ? '📝 স্টোরি ২৪ ঘণ্টা পর নিজে থেকেই সরে যাবে। Submit করার পর review হয়ে তারপর দেখা যাবে।'
+    : '📝 আপনার কনটেন্ট submit করার পর DELTA টিম review করবে, তারপর সবার জন্য দেখা যাবে।';
+  // Reset media when switching type — a video selected for "Reel" doesn't
+  // carry over cleanly to "Post" (which expects images), so start fresh.
+  uploadedMedia = [];
+  renderPreviews();
+  updatePublishState();
+}
+
+function showToast(msg){
+  var t = document.getElementById('csToast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 2600);
+}
+
+// ── DRAG & DROP ──
+var zone = document.getElementById('csUploadZone');
+zone.addEventListener('dragover', function(e){ e.preventDefault(); zone.classList.add('dragover'); });
+zone.addEventListener('dragleave', function(){ zone.classList.remove('dragover'); });
+zone.addEventListener('drop', function(e){
+  e.preventDefault(); zone.classList.remove('dragover');
+  if(e.dataTransfer.files.length) uploadFiles(e.dataTransfer.files);
+});
+
+function handleFileSelect(input){
+  if(input.files.length) uploadFiles(input.files);
+  input.value = ''; // allow re-selecting the same file later
+}
+
+async function uploadFiles(fileList){
+  var cfg = TYPE_CONFIG[currentType];
+  var files = Array.prototype.slice.call(fileList);
+  if(!cfg.multiple) files = files.slice(0,1); // story/reel/video: single file only
+  if(cfg.multiple && uploadedMedia.length + files.length > 6){
+    showToast('একটা পোস্টে সর্বোচ্চ ৬টা ছবি দেওয়া যাবে ⚠️');
+    files = files.slice(0, 6 - uploadedMedia.length);
+  }
+  if(!files.length) return;
+
+  var progWrap = document.getElementById('csUploadProgress');
+  var progFill = document.getElementById('csUploadProgressFill');
+  var statusEl = document.getElementById('csUploadStatus');
+  progWrap.style.display='block';
+
+  for(var i=0;i<files.length;i++){
+    var file = files[i];
+    if(file.size > 50*1024*1024){
+      showToast(file.name+' — সাইজ 50MB-এর বেশি, বাদ দেওয়া হলো ⚠️');
+      continue;
+    }
+    var isVideo = file.type.indexOf('video')===0;
+    statusEl.textContent = 'আপলোড হচ্ছে ('+(i+1)+'/'+files.length+')...';
+    progFill.style.width = '20%';
+    try{
+      var fd = new FormData();
+      fd.append('file', file); fd.append('upload_preset', PRESET); fd.append('cloud_name', CLOUD);
+      fd.append('folder', 'delta/media_content');
+      progFill.style.width = '55%';
+      var endpoint = isVideo ? 'video' : 'image';
+      var res = await fetch('https://api.cloudinary.com/v1_1/'+CLOUD+'/'+endpoint+'/upload', {method:'POST', body:fd});
+      var data = await res.json();
+      progFill.style.width = '100%';
+      if(data.secure_url){
+        if(!cfg.multiple) uploadedMedia = []; // single-media types: new upload replaces the old one
+        uploadedMedia.push({url:data.secure_url, type:isVideo?'video':'image'});
+      } else {
+        throw new Error(data.error ? data.error.message : 'Upload failed');
+      }
+    }catch(e){
+      showToast('আপলোড ব্যর্থ হয়েছে: '+e.message);
+    }
+  }
+  statusEl.textContent = '';
+  setTimeout(function(){ progWrap.style.display='none'; progFill.style.width='0'; }, 500);
+  renderPreviews();
+  updatePublishState();
+}
+
+function renderPreviews(){
+  var cfg = TYPE_CONFIG[currentType];
+  var grid = document.getElementById('csPreviewGrid');
+  var single = document.getElementById('csPreviewSingle');
+  zone.style.display = uploadedMedia.length && !cfg.multiple ? 'none' : 'block';
+
+  if(cfg.multiple){
+    single.style.display='none';
+    if(!uploadedMedia.length){ grid.style.display='none'; return; }
+    grid.style.display='grid';
+    grid.innerHTML = uploadedMedia.map(function(m, idx){
+      return '<div class="cs-preview-item">'+
+        (m.type==='video' ? '<video src="'+m.url+'" muted></video>' : '<img src="'+m.url+'">')+
+        '<button class="cs-preview-remove" onclick="removeMedia('+idx+')">✕</button></div>';
+    }).join('');
+  } else {
+    grid.style.display='none';
+    if(!uploadedMedia.length){ single.style.display='none'; return; }
+    single.style.display='flex';
+    var m = uploadedMedia[0];
+    single.innerHTML = (m.type==='video' ? '<video src="'+m.url+'" controls></video>' : '<img src="'+m.url+'">') +
+      '<button class="cs-preview-remove" style="top:10px;right:10px;" onclick="removeMedia(0)">✕</button>';
+    single.style.position='relative';
+  }
+}
+function removeMedia(idx){
+  uploadedMedia.splice(idx,1);
+  renderPreviews();
+  updatePublishState();
+  if(!uploadedMedia.length) zone.style.display='block';
+}
+
+function updateCharCount(){
+  document.getElementById('csCharCount').textContent = document.getElementById('csCaption').value.length;
+  updatePublishState();
+}
+
+function updatePublishState(){
+  var cfg = TYPE_CONFIG[currentType];
+  var hasCaption = document.getElementById('csCaption').value.trim().length > 0;
+  var ok = uploadedMedia.length > 0 || (currentType==='story' && hasCaption);
+  document.getElementById('csPublishBtn').disabled = !ok;
+}
+
+// ── POLL ──
+function togglePollPanel(){
+  var on = document.getElementById('csPollToggle').checked;
+  document.getElementById('csPollPanel').style.display = on ? 'block' : 'none';
+  if(on && !pollOptionCount){ addPollOption(); addPollOption(); }
+}
+function addPollOption(){
+  if(pollOptionCount >= 4){ showToast('সর্বোচ্চ ৪টা option দেওয়া যাবে'); return; }
+  pollOptionCount++;
+  var wrap = document.getElementById('csPollOptionsWrap');
+  var row = document.createElement('div');
+  row.className = 'cs-poll-opt';
+  row.innerHTML = '<input type="text" class="cs-input cs-poll-opt-input" placeholder="Option '+pollOptionCount+'">'+
+    '<button class="cs-poll-opt-remove" onclick="this.parentElement.remove()">✕</button>';
+  wrap.appendChild(row);
+}
+
+// ── SUBMIT ──
+async function submitContent(){
+  if(!currentUser) return;
+  var btn = document.getElementById('csPublishBtn');
+  btn.disabled = true; btn.textContent = 'জমা হচ্ছে...';
+
+  var caption = document.getElementById('csCaption').value.trim();
+  var cfg = TYPE_CONFIG[currentType];
+
+  var payload = {
+    authorUid: currentUser.uid,
+    authorDisplayName: currentUser.displayName || 'DELTA User',
+    authorAvatarUrl: currentUser.photoURL || '',
+    type: currentType,
+    status: 'pending', // moderation queue — client can never self-publish (Firestore rules enforce this too)
+    caption: caption,
+    createdAt: new Date().toISOString(),
+    stats: {views:0}
+  };
+
+  if(currentType==='post'){
+    payload.mediaUrls = uploadedMedia.map(function(m){ return m.url; });
+    var pollOn = document.getElementById('csPollToggle').checked;
+    if(pollOn){
+      var question = document.getElementById('csPollQuestion').value.trim();
+      var optionInputs = document.querySelectorAll('.cs-poll-opt-input');
+      var options = Array.prototype.slice.call(optionInputs)
+        .map(function(inp, i){ return {id:'opt'+i, text:inp.value.trim(), voteCount:0}; })
+        .filter(function(o){ return o.text; });
+      if(question && options.length >= 2){
+        payload.postSubType = 'poll';
+        payload.pollQuestion = question;
+        payload.pollOptions = options;
+      }
+    }
+  } else if(currentType==='story'){
+    if(uploadedMedia.length){
+      var m = uploadedMedia[0];
+      if(m.type==='video') payload.videoUrl = m.url; else payload.mediaUrls = [m.url];
+    }
+    payload.expiresAt = new Date(Date.now() + 24*60*60*1000).toISOString();
+  } else if(currentType==='reel'){
+    payload.videoUrl = uploadedMedia[0] ? uploadedMedia[0].url : null;
+  } else if(currentType==='video'){
+    payload.videoUrl = uploadedMedia[0] ? uploadedMedia[0].url : null;
+    payload.videoTitle = document.getElementById('csVideoTitle').value.trim();
+  }
+
+  try{
+    await db.collection('cities').doc(CITY).collection('mediaContent').add(payload);
+    document.getElementById('csSuccessOverlay').classList.add('show');
+  }catch(e){
+    showToast('জমা দিতে সমস্যা হয়েছে: '+e.message);
+    btn.disabled = false; btn.textContent = cfg.publishLabel;
+  }
+}
+</script>
+</body>
+</html>
