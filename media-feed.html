@@ -1009,8 +1009,13 @@ body.dark-mode .mh-nav-item .mhi{ background:var(--border); }
         <div class="mf-form-group"><label>Password (min 6)</label><input type="password" class="mf-form-input" id="mfRegPass" placeholder="••••••••"></div>
         <div class="mf-form-group">
           <label>📍 আপনার এলাকা <span style="color:#c0392b;">*আবশ্যক</span></label>
-          <input type="text" class="mf-form-input" id="mfRegLocationInput" placeholder="713145 বা এলাকার নাম লিখুন">
+          <input type="text" class="mf-form-input" id="mfRegLocationInput" placeholder="713145 বা এলাকার নাম লিখুন" oninput="onMfRegLocationTyped()">
           <div id="mfRegLocationStatus" style="font-size:.7rem;color:var(--muted);margin-top:4px;"></div>
+        </div>
+        <div class="mf-form-group">
+          <label>PIN Code <span style="font-weight:400;color:var(--muted);">(auto-fetched — মিলিয়ে দেখুন)</span></label>
+          <input type="text" class="mf-form-input" id="mfRegPinDisplay" readonly disabled
+            style="background:#f2f2f2;cursor:not-allowed;font-weight:700;" placeholder="—">
         </div>
         <button class="mf-submit-btn" onclick="doMediaRegister()">✅ নিবন্ধন করুন</button>
       </div>
@@ -1237,10 +1242,45 @@ function initMfRegLocationAutocomplete(){
       });
     }
     _mfRegResolvedGeo = out;
+    var pinDisplay = document.getElementById('mfRegPinDisplay');
+    if(pinDisplay) pinDisplay.value = out.pincode || '';
     if(statusEl){
-      statusEl.textContent = out.pincode ? '✅ '+out.areaLabel+' ('+out.pincode+')' : '✅ '+out.areaLabel;
+      statusEl.innerHTML = out.pincode
+        ? '✅ '+out.areaLabel+' — <strong style="color:var(--navy,#10392D);font-size:.85rem;">PIN: '+out.pincode+'</strong>'
+        : '✅ '+out.areaLabel;
     }
   });
+}
+var _mfRegTypedDebounce = null;
+function onMfRegLocationTyped(){
+  var input = document.getElementById('mfRegLocationInput');
+  var pinDisplay = document.getElementById('mfRegPinDisplay');
+  var statusEl = document.getElementById('mfRegLocationStatus');
+  var raw = input.value.trim();
+  clearTimeout(_mfRegTypedDebounce);
+  if(!raw){ if(pinDisplay) pinDisplay.value=''; if(statusEl) statusEl.textContent=''; _mfRegResolvedGeo=null; return; }
+  if(/^\d{6}$/.test(raw)){
+    if(pinDisplay) pinDisplay.value = raw;
+    return;
+  }
+  _mfRegTypedDebounce = setTimeout(async function(){
+    if(input.value.trim() !== raw) return;
+    if(statusEl) statusEl.textContent = 'খোঁজা হচ্ছে...';
+    var fullGeo = await resolveTextToFullGeo(raw);
+    if(input.value.trim() !== raw) return;
+    if(fullGeo){
+      _mfRegResolvedGeo = fullGeo;
+      if(pinDisplay) pinDisplay.value = fullGeo.pincode || '';
+      if(statusEl){
+        statusEl.innerHTML = fullGeo.pincode
+          ? '✅ '+fullGeo.areaLabel+' — <strong style="color:var(--navy,#10392D);font-size:.85rem;">PIN: '+fullGeo.pincode+'</strong>'
+          : '✅ '+fullGeo.areaLabel;
+      }
+    } else {
+      if(pinDisplay) pinDisplay.value = '';
+      if(statusEl) statusEl.textContent = '⚠️ এই এলাকা খুঁজে পাওয়া যায়নি';
+    }
+  }, 800);
 }
 
 // resolveTextToFullGeo() is now defined once in delta-shared.js, not duplicated here.
