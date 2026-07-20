@@ -8,7 +8,8 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBcXYIgnOt2SOyPswg9LXRS-5OB8-9w8oY&libraries=places&loading=async"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBcXYIgnOt2SOyPswg9LXRS-5OB8-9w8oY&libraries=places&loading=async&callback=initMfRegLocationAutocomplete"></script>
+<script src="delta-shared.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 html,body{overflow-x:hidden;max-width:100vw;}
@@ -1007,12 +1008,9 @@ body.dark-mode .mh-nav-item .mhi{ background:var(--border); }
         <div class="mf-form-group"><label>Email</label><input type="email" class="mf-form-input" id="mfRegEmail" placeholder="your@email.com"></div>
         <div class="mf-form-group"><label>Password (min 6)</label><input type="password" class="mf-form-input" id="mfRegPass" placeholder="••••••••"></div>
         <div class="mf-form-group">
-          <label>📍 আপনার শহর <span style="font-weight:400;color:var(--muted);">(ঠিক না হলে বদলে দিন)</span></label>
-          <select class="mf-form-input" id="mfRegCityConfirm" onchange="toggleMfRegPincodeField(this)"><option value="">-- লোড হচ্ছে... --</option></select>
-        </div>
-        <div class="mf-form-group" id="mfRegPincodeWrap" style="display:none;">
-          <label>📍 আপনার pincode/এলাকা <span style="color:#c0392b;">*আবশ্যক</span></label>
-          <input type="text" class="mf-form-input" id="mfRegPincodeInput" placeholder="713xxx বা এলাকার নাম">
+          <label>📍 আপনার এলাকা <span style="color:#c0392b;">*আবশ্যক</span></label>
+          <input type="text" class="mf-form-input" id="mfRegLocationInput" placeholder="713145 বা এলাকার নাম লিখুন">
+          <div id="mfRegLocationStatus" style="font-size:.7rem;color:var(--muted);margin-top:4px;"></div>
         </div>
         <button class="mf-submit-btn" onclick="doMediaRegister()">✅ নিবন্ধন করুন</button>
       </div>
@@ -1026,74 +1024,31 @@ firebase.initializeApp(fbcfg);
 var auth=firebase.auth();
 var db=firebase.firestore();
 var CITY = new URLSearchParams(location.search).get('city') || (function(){ try{ return localStorage.getItem('delta_city'); }catch(e){ return null; } })() || 'manteswar'; // Location Architecture v1 Section 3
-// City → District/State/Country lookup, now backed by Firestore's cityConfig
-// collection instead of a hardcoded map — so adding a new city as DELTA
-// expands (Master Doc Section 11) means adding one document, not editing
-// four HTML files. Self-heals: if a city's config doc doesn't exist yet, it
-// creates a sensible default (only works once the user is logged in, per the
-// Firestore rule — anonymous reads still get an in-memory fallback).
-var _cityGeoCache = {};
-var CM_CACHE_TTL_MS = 8 * 60 * 1000; // matches index.html's cache window
-var CITY_GEO_SEED_DEFAULTS = {
-  manteswar: {label:'Manteswar', district:'Purba Bardhaman', state:'West Bengal', country:'India'},
-  memari: {label:'Memari', district:'Purba Bardhaman', state:'West Bengal', country:'India'}
-};
-function _cmCacheRead(key){
+// getCityGeo/getServiceStatus/isServiceActive/CITY_GEO_SEED_DEFAULTS/
+// _cmCacheRead/_cmCacheWrite are now defined once in delta-shared.js
+// (loaded in <head>), not duplicated here.
+var PINCODE_CITY_MAP = {};
+var _pincodeMapLoaded = false;
+async function loadPincodeCityMap(){
+  if(_pincodeMapLoaded) return PINCODE_CITY_MAP;
   try{
-    var raw = sessionStorage.getItem(key);
-    if(!raw) return null;
-    var parsed = JSON.parse(raw);
-    if(Date.now() - parsed.t > CM_CACHE_TTL_MS) return null;
-    return parsed.v;
-  }catch(e){ return null; }
-}
-function _cmCacheWrite(key, value){
-  try{ sessionStorage.setItem(key, JSON.stringify({v:value, t:Date.now()})); }catch(e){}
-}
-async function getCityGeo(city){
-  if(_cityGeoCache[city]) return _cityGeoCache[city];
-  var cached = _cmCacheRead('cm_city_'+city);
-  if(cached){ _cityGeoCache[city] = cached; return cached; }
-  var fallback = CITY_GEO_SEED_DEFAULTS[city] || {label:city, district:'', state:'', country:'India'};
-  try{
-    var doc = await db.collection('cityConfig').doc(city).get();
-    if(doc.exists){ _cityGeoCache[city] = doc.data(); _cmCacheWrite('cm_city_'+city, doc.data()); return doc.data(); }
-    if(auth.currentUser){
-      try{ await db.collection('cityConfig').doc(city).set(fallback); }
-      catch(e){ console.warn('cityConfig self-heal skipped', e); }
-    }
-    _cityGeoCache[city] = fallback;
-    _cmCacheWrite('cm_city_'+city, fallback);
-    return fallback;
-  }catch(e){
-    console.warn('cityConfig fetch failed, using in-memory default', e);
-    return fallback;
+    var snap = await db.collection('cityConfig').get();
+    snap.docs.forEach(function(d){
+      var data = d.data();
+      (data.pincodes||[]).forEach(function(p){ PINCODE_CITY_MAP[p] = d.id; });
+    });
+  }catch(e){ console.warn('Pincode map load failed, using in-memory defaults', e); }
+  if(!Object.keys(PINCODE_CITY_MAP).length){
+    Object.keys(CITY_GEO_SEED_DEFAULTS).forEach(function(cityId){
+      (CITY_GEO_SEED_DEFAULTS[cityId].pincodes||[]).forEach(function(p){ PINCODE_CITY_MAP[p] = cityId; });
+    });
   }
+  _pincodeMapLoaded = true;
+  return PINCODE_CITY_MAP;
 }
-// Service-availability resolver (platform override wins over city-level status)
-// — see index.html for the fuller explanation. Kept in sync here so any
-// future Media feature that needs a delivery-dependent check can call it.
-var _platformConfigCache = null;
-async function getServiceStatus(cityId, serviceKey){
-  if(_platformConfigCache === null){
-    var cachedPlatform = _cmCacheRead('cm_platform');
-    if(cachedPlatform){ _platformConfigCache = cachedPlatform; }
-    else{
-      try{
-        var pDoc = await db.collection('platformConfig').doc('global').get();
-        _platformConfigCache = pDoc.exists ? (pDoc.data().services||{}) : {};
-        _cmCacheWrite('cm_platform', _platformConfigCache);
-      }catch(e){ console.warn('platformConfig fetch failed', e); _platformConfigCache = {}; }
-    }
-  }
-  var platformEntry = _platformConfigCache[serviceKey];
-  if(platformEntry && platformEntry.status !== 'active') return platformEntry.status;
-  var geo = await getCityGeo(cityId);
-  var cityEntry = (geo.services && geo.services[serviceKey]) || {status:'disabled'};
-  return cityEntry.status;
-}
-async function isServiceActive(cityId, serviceKey){
-  return (await getServiceStatus(cityId, serviceKey)) === 'active';
+function setCurrentCity(cityId){
+  CITY = cityId;
+  try{ localStorage.setItem('delta_city', cityId); }catch(e){}
 }
 var currentUser=null;
 // Where THIS logged-in account's own profile actually lives — a real city,
@@ -1200,32 +1155,28 @@ function mediaAuthTab(t){
   document.getElementById('mfLoginPane').style.display = t==='login' ? 'block' : 'none';
   document.getElementById('mfRegPane').style.display = t==='register' ? 'block' : 'none';
   document.getElementById('mfAuthErr').style.display = 'none';
-  if(t==='register') populateMfRegCityDropdown();
+  if(t==='register') prefillMfRegLocationField();
 }
-// Same reasoning as index.html's populateRegCityDropdown — an explicit,
-// visible confirm step instead of silently trusting device history, which
-// fixes the shared/public-device gap where the NEXT person to register
-// would otherwise silently inherit whatever the PREVIOUS person confirmed.
-function toggleMfRegPincodeField(sel){
-  var wrap = document.getElementById('mfRegPincodeWrap');
-  wrap.style.display = (sel.value === 'unassigned') ? 'block' : 'none';
-}
-async function populateMfRegCityDropdown(){
-  var sel = document.getElementById('mfRegCityConfirm');
-  if(!sel) return;
-  try{
-    var snap = await db.collection('cityConfig').get();
-    var isVerified = !!localStorage.getItem('delta_verified_pincode');
-    var cities = snap.docs.map(function(d){ return {id:d.id, label:(d.data().label||d.id)}; })
-      .sort(function(a,b){ return a.label.localeCompare(b.label); });
-    sel.innerHTML =
-      '<option value="">-- বেছে নিন --</option>' +
-      cities.map(function(c){ return '<option value="'+c.id+'"'+(isVerified&&c.id===CITY?' selected':'')+'>'+c.label+'</option>'; }).join('') +
-      '<option value="unassigned">এই তালিকায় আমার এলাকা নেই</option>';
-  }catch(e){
-    console.warn('City dropdown load failed', e);
-    sel.innerHTML = '<option value="">-- বেছে নিন --</option><option value="unassigned">এই তালিকায় আমার এলাকা নেই</option>';
+// Pre-fills the unified location field with whatever's already known this
+// session — same reasoning as index.html's prefillRegLocationField.
+async function prefillMfRegLocationField(){
+  _mfRegResolvedGeo = null;
+  var input = document.getElementById('mfRegLocationInput');
+  var statusEl = document.getElementById('mfRegLocationStatus');
+  if(!input) return;
+  if(input.value.trim()){ return; }
+  var verifiedPin = localStorage.getItem('delta_verified_pincode');
+  if(verifiedPin){
+    try{
+      var geo = await getCityGeo(CITY);
+      input.value = geo.label || CITY;
+      if(statusEl) statusEl.textContent = '✅ '+(geo.label||CITY)+' ('+verifiedPin+')';
+      _mfRegResolvedGeo = {pincode:verifiedPin, areaLabel:geo.label||CITY, citySlug:CITY, district:geo.district, state:geo.state, country:geo.country};
+      return;
+    }catch(e){ /* fall through */ }
   }
+  var lastUnserved = localStorage.getItem('delta_last_unserved_pincode');
+  if(lastUnserved){ input.value = lastUnserved; }
 }
 function showMfAuthErr(msg){
   var e = document.getElementById('mfAuthErr');
@@ -1249,71 +1200,97 @@ async function doMediaLogin(){
 // cityConfig entry), but that's no reason to hide the person's real
 // location. `city` stays null on purpose — it specifically means "a real
 // DELTA cityConfig id", not just any place name.
-function resolveTextToFullGeo(text){
-  return new Promise(function(resolve){
-    if(typeof google==='undefined' || !google.maps || !google.maps.Geocoder){
-      resolve(null); return;
-    }
-    var geocoder = new google.maps.Geocoder();
-    geocoder.geocode({ address: text }, function(results, status){
-      if(status !== 'OK' || !results || !results.length){ resolve(null); return; }
-      var comps = results[0].address_components || [];
-      var out = {pincode:null, areaLabel:results[0].formatted_address||text, cityName:null, citySlug:null, district:null, state:null, country:null};
-      comps.forEach(function(c){
-        if(c.types.indexOf('postal_code')>=0) out.pincode = c.long_name;
-        if(c.types.indexOf('locality')>=0) out.cityName = c.long_name;
-        if(!out.cityName && c.types.indexOf('administrative_area_level_2')>=0) out.cityName = c.long_name;
-        if(c.types.indexOf('administrative_area_level_2')>=0) out.district = c.long_name;
-        if(c.types.indexOf('administrative_area_level_1')>=0) out.state = c.long_name;
-        if(c.types.indexOf('country')>=0) out.country = c.long_name;
-      });
-      if(out.cityName){
-        out.citySlug = out.cityName.toLowerCase().trim().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'');
-      }
-      resolve(out);
+// Unified location field for registration — Autocomplete-powered, matching
+// index.html's registration field. No GPS-based dynamic bias here (this
+// page doesn't have that infrastructure) — a simple Purba Bardhaman-wide
+// regional bias is a reasonable default, same as index.html's own fallback
+// when GPS isn't available.
+var _mfRegResolvedGeo = null;
+function initMfRegLocationAutocomplete(){
+  var inputEl = document.getElementById('mfRegLocationInput');
+  if(!inputEl || typeof google==='undefined' || !google.maps || !google.maps.places) return;
+  var circle = new google.maps.Circle({ center:{lat:23.35, lng:88.10}, radius:40000 });
+  var autocomplete = new google.maps.places.Autocomplete(inputEl, {
+    fields: ['address_components', 'geometry', 'name', 'formatted_address'],
+    bounds: circle.getBounds()
+  });
+  autocomplete.addListener('place_changed', async function(){
+    var place = autocomplete.getPlace();
+    var statusEl = document.getElementById('mfRegLocationStatus');
+    if(!place.address_components){ _mfRegResolvedGeo = null; return; }
+    var comps = place.address_components;
+    var out = {pincode:null, areaLabel:place.formatted_address||inputEl.value, cityName:null, citySlug:null, district:null, state:null, country:null};
+    comps.forEach(function(c){
+      if(c.types.indexOf('postal_code')>=0) out.pincode = c.long_name;
+      if(c.types.indexOf('locality')>=0) out.cityName = c.long_name;
+      if(!out.cityName && c.types.indexOf('administrative_area_level_2')>=0) out.cityName = c.long_name;
+      if(c.types.indexOf('administrative_area_level_2')>=0) out.district = c.long_name;
+      if(c.types.indexOf('administrative_area_level_1')>=0) out.state = c.long_name;
+      if(c.types.indexOf('country')>=0) out.country = c.long_name;
     });
+    if(out.cityName) out.citySlug = out.cityName.toLowerCase().trim().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'');
+    if(!out.pincode && place.geometry && place.geometry.location){
+      if(statusEl) statusEl.textContent = 'খোঁজা হচ্ছে...';
+      var geocoder = new google.maps.Geocoder();
+      await new Promise(function(resolve){
+        geocoder.geocode({ location: place.geometry.location }, function(results, status){
+          if(status==='OK' && results && results.length){
+            for(var r=0;r<results.length && !out.pincode;r++){
+              (results[r].address_components||[]).forEach(function(comp){
+                if(!out.pincode && comp.types.indexOf('postal_code')>=0) out.pincode = comp.long_name;
+              });
+            }
+          }
+          resolve();
+        });
+      });
+    }
+    _mfRegResolvedGeo = out;
+    if(statusEl){
+      statusEl.textContent = out.pincode ? '✅ '+out.areaLabel+' ('+out.pincode+')' : '✅ '+out.areaLabel;
+    }
   });
 }
+
+// resolveTextToFullGeo() is now defined once in delta-shared.js, not duplicated here.
 
 async function doMediaRegister(){
   var name = document.getElementById('mfName').value.trim();
   var mobile = document.getElementById('mfMobile').value.trim();
   var email = document.getElementById('mfRegEmail').value.trim();
   var pass = document.getElementById('mfRegPass').value;
-  var confirmedCity = document.getElementById('mfRegCityConfirm').value;
+  var typedLocation = document.getElementById('mfRegLocationInput').value.trim();
   if(!name || !email || !pass){ showMfAuthErr('সব তথ্য পূরণ করুন'); return; }
   if(pass.length < 6){ showMfAuthErr('পাসওয়ার্ড কমপক্ষে ৬ অক্ষর'); return; }
-  if(!confirmedCity){ showMfAuthErr('আপনার শহর বেছে নিন'); return; }
-  if(confirmedCity==='unassigned' && !document.getElementById('mfRegPincodeInput').value.trim() && !localStorage.getItem('delta_last_unserved_pincode')){
-    showMfAuthErr('আপনার pincode বা এলাকার নাম লিখুন — এটা ছাড়া নিবন্ধন সম্পূর্ণ করা যাবে না');
+  if(!typedLocation){ showMfAuthErr('আপনার এলাকা লিখে বেছে নিন — এটা ছাড়া নিবন্ধন সম্পূর্ণ করা যাবে না'); return; }
+
+  var fullGeo = _mfRegResolvedGeo;
+  if(!fullGeo){ fullGeo = await resolveTextToFullGeo(typedLocation); }
+  if(!fullGeo || (!fullGeo.pincode && !fullGeo.citySlug)){
+    showMfAuthErr('এই এলাকা খুঁজে পাওয়া যায়নি — আরেকটু নির্দিষ্ট করে লিখুন বা dropdown থেকে বেছে নিন');
     return;
   }
+
   try{
     var cr = await auth.createUserWithEmailAndPassword(email, pass);
     await cr.user.updateProfile({displayName:name});
     // Global User Identity Architecture v1 — homeCity always holds the real
-    // place name/slug when known (e.g. 'kolkata'), whether or not DELTA
-    // serves that area yet. Served-vs-not is answered separately at
-    // service-gate time via cityConfig lookup, never by whether homeCity
-    // itself happens to be set.
-    var pendingPincode = confirmedCity==='unassigned'
-      ? (document.getElementById('mfRegPincodeInput').value.trim() || localStorage.getItem('delta_last_unserved_pincode') || null)
-      : null;
-    var geoFields = {city:null, district:null, state:null, country:null, areaLabel:null};
-    if(confirmedCity !== 'unassigned'){
-      var geo = await getCityGeo(confirmedCity);
-      geoFields = {city:confirmedCity, district:geo.district, state:geo.state, country:geo.country, areaLabel:geo.label||confirmedCity};
-      setCurrentCity(confirmedCity);
-    } else if(document.getElementById('mfRegPincodeInput').value.trim()){
-      var typedArea = document.getElementById('mfRegPincodeInput').value.trim();
-      var fullGeo = await resolveTextToFullGeo(typedArea);
-      if(fullGeo){
-        geoFields.city = fullGeo.citySlug || null;
-        geoFields.district = fullGeo.district; geoFields.state = fullGeo.state;
-        geoFields.country = fullGeo.country; geoFields.areaLabel = fullGeo.areaLabel;
-        if(!pendingPincode && fullGeo.pincode) pendingPincode = fullGeo.pincode;
-      }
+    // place name/slug; served-vs-not is decided automatically by checking
+    // the resolved pincode against known served pincodes.
+    var geoFields = {city:null, district:fullGeo.district, state:fullGeo.state, country:fullGeo.country, areaLabel:fullGeo.areaLabel};
+    var pendingPincode = null;
+    await loadPincodeCityMap();
+    var matchedCity = fullGeo.pincode ? PINCODE_CITY_MAP[fullGeo.pincode] : null;
+    if(matchedCity){
+      var geo = await getCityGeo(matchedCity);
+      geoFields = {city:matchedCity, district:geo.district, state:geo.state, country:geo.country, areaLabel:geo.label||matchedCity};
+      setCurrentCity(matchedCity);
+      localStorage.setItem('delta_verified_pincode', fullGeo.pincode);
+    } else {
+      geoFields.city = fullGeo.citySlug || null;
+      pendingPincode = fullGeo.pincode || null;
     }
+
     await db.collection('users').doc(cr.user.uid).set({
       name:name, mobile:mobile, email:email, homeCity: geoFields.city, pendingPincode:pendingPincode, createdAt:new Date().toISOString()
     });
@@ -1327,6 +1304,7 @@ async function doMediaRegister(){
       pendingPincode: pendingPincode,
       createdAt:new Date().toISOString(), updatedAt:new Date().toISOString()
     });
+    recordKnownLocation(geoFields);
     closeMediaAuth();
   }catch(err){
     showMfAuthErr(err.code==='auth/email-already-in-use' ? 'এই ইমেইল আগেই ব্যবহৃত' : err.message);
