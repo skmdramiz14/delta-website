@@ -1294,7 +1294,7 @@ async function doMediaRegister(){
     await db.collection('users').doc(cr.user.uid).set({
       name:name, mobile:mobile, email:email, homeCity: geoFields.city, pendingPincode:pendingPincode, createdAt:new Date().toISOString()
     });
-    await db.collection('mediaProfiles').doc(cr.user.uid).set({
+    await db.collection('mediaProfiles').doc(cr.user.uid).set(Object.assign({
       uid: cr.user.uid, displayName: name, bio:'', avatarUrl:'', coverUrl:'',
       roles:['customer','creator'], linkedCustomerId: cr.user.uid,
       followerCount:0, followingCount:0, postCount:0,
@@ -1303,7 +1303,7 @@ async function doMediaRegister(){
       areaLabel: geoFields.areaLabel,
       pendingPincode: pendingPincode,
       createdAt:new Date().toISOString(), updatedAt:new Date().toISOString()
-    });
+    }, lowercaseGeoFields(geoFields)));
     recordKnownLocation(geoFields);
     closeMediaAuth();
   }catch(err){
