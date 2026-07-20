@@ -103,7 +103,7 @@ var fbcfg={apiKey:"AIzaSyA6TrrnCMwv1aa1WPqGvTVWlnieB2pVOEU",authDomain:"delta-pl
 firebase.initializeApp(fbcfg);
 var auth=firebase.auth();
 var db=firebase.firestore();
-var CITY = new URLSearchParams(location.search).get('city') || 'manteswar';
+var CITY = new URLSearchParams(location.search).get('city') || (function(){ try{ return localStorage.getItem('delta_city'); }catch(e){ return null; } })() || 'manteswar'; // Location Architecture v1 Section 3
 var currentUser=null;
 var _tabParam = new URLSearchParams(location.search).get('tab');
 var activeTab = (['top','reels','follow'].indexOf(_tabParam)>=0) ? _tabParam : 'all';
@@ -260,14 +260,20 @@ async function loadAllCreators(reset){
   var loadMoreBtn = document.getElementById('dpLoadMore');
   try{
     var q;
-    if(scopeLevel==='city'){
-      q = db.collection('cities').doc(scopeValue).collection('mediaProfiles').limit(PAGE_SIZE);
-    } else if(scopeLevel==='all'){
-      q = db.collectionGroup('mediaProfiles').limit(PAGE_SIZE);
+    // Global User Identity Architecture v1 — mediaProfiles is a single
+    // top-level collection now, so every scope (City/District/State/
+    // Country/All) is just a plain query against it, filtered by whichever
+    // field matches the chosen scope. No more collectionGroup queries at
+    // all, which also means no more composite-index requirement for these —
+    // Firestore auto-indexes single-field equality queries on a plain
+    // collection by default.
+    if(scopeLevel==='all'){
+      q = db.collection('mediaProfiles').limit(PAGE_SIZE);
+    } else if(scopeLevel==='city'){
+      q = db.collection('mediaProfiles').where('homeCity','==',scopeValue).limit(PAGE_SIZE);
     } else {
-      // district / state / country — searches across every city's
-      // mediaProfiles subcollection at once via collectionGroup.
-      q = db.collectionGroup('mediaProfiles').where(scopeLevel,'==',scopeValue).limit(PAGE_SIZE);
+      // district / state / country
+      q = db.collection('mediaProfiles').where(scopeLevel,'==',scopeValue).limit(PAGE_SIZE);
     }
     if(!reset && lastDoc) q = q.startAfter(lastDoc);
     var snap = await q.get();
@@ -282,24 +288,38 @@ async function loadAllCreators(reset){
     renderAllCreatorCards(items, list);
     loadMoreBtn.style.display = snap.docs.length===PAGE_SIZE ? 'block' : 'none';
   }catch(e){
-    // Broad-scope queries (district/state/country/all) need a Firestore
-    // composite index the first time they run — same known pattern as the
-    // Trending Reels gap. Give an honest, actionable message instead of a
-    // silent blank list.
-    console.warn('All Creators load error (likely missing composite index for collectionGroup query)', e);
-    list.innerHTML = '<div class="dp-empty">এই scope-এর জন্য এখনও Firestore index তৈরি করা হয়নি।<br>Browser console-এ থাকা লিংক দিয়ে এক ক্লিকে index বানানো যাবে।</div>';
+    console.warn('All Creators load error', e);
+    list.innerHTML = '<div class="dp-empty">লোড করতে সমস্যা হয়েছে। একটু পরে আবার চেষ্টা করুন।</div>';
     loadMoreBtn.style.display='none';
   }
+}
+// Informational only — Location Architecture v1, Section 7.1. Discovery never
+// hides or filters a creator based on their city's delivery status; this is
+// purely a transparency badge next to their location.
+function cmDeliveryBadgeHtml(cityId){
+  var cfg = ALL_CITY_CONFIGS[cityId];
+  var entry = cfg && cfg.services && cfg.services.marketplaceDelivery;
+  var status = entry ? entry.status : 'disabled';
+  var meta = {
+    active:       {label:'✅ Delivery Active',  color:'#1a7a4c'},
+    coming_soon:  {label:'🕓 Delivery Coming Soon', color:'#B8925A'},
+    maintenance:  {label:'🔧 Delivery Paused (Maintenance)', color:'#c77d1e'},
+    paused:       {label:'⏸ Delivery Paused', color:'#8A8F98'},
+    disabled:     {label:'🔸 Delivery Not Yet Here', color:'#8A8F98'}
+  }[status] || {label:'', color:'#8A8F98'};
+  if(!meta.label) return '';
+  return '<span style="font-size:.62rem;font-weight:700;color:'+meta.color+';margin-left:6px;">'+meta.label+'</span>';
 }
 function renderAllCreatorCards(items, list){
   items.forEach(function(p){
     var card = document.createElement('div'); card.className='dp-card';
     var roleLabel = (p.roles||[]).indexOf('seller')>=0 ? 'Seller' : (p.primaryBadge==='service_provider' ? 'Service Provider' : 'Creator');
     var locLabel = [p.city, p.district].filter(Boolean).join(', ');
+    var badge = p.city ? cmDeliveryBadgeHtml(p.city) : '';
     card.innerHTML =
       '<div class="dp-avatar-wrap">'+dpAvatarOrLetter(p.avatarUrl, p.displayName)+'</div>'+
       '<div class="dp-info"><div class="dp-name">'+(p.displayName||'Unknown')+' <span style="font-size:.68rem;color:var(--muted);font-weight:600;">· '+roleLabel+'</span></div>'+
-      '<div class="dp-sub">'+(locLabel||'')+'</div></div>'+
+      '<div class="dp-sub">'+(locLabel||'')+badge+'</div></div>'+
       '<button class="dp-follow-btn">Follow</button>';
     var btn = card.querySelector('.dp-follow-btn');
     var info = card.querySelector('.dp-info');
@@ -319,10 +339,10 @@ async function loadFollowList(reset){
   var loadMoreBtn = document.getElementById('dpLoadMore');
   try{
     if(currentUser && !followSet.length){
-      var fs = await db.collection('cities').doc(CITY).collection('mediaProfiles').doc(currentUser.uid).collection('following').get();
+      var fs = await db.collection('mediaProfiles').doc(currentUser.uid).collection('following').get();
       followSet = fs.docs.map(function(d){return d.id;});
     }
-    var q = db.collection('cities').doc(CITY).collection('mediaProfiles').limit(PAGE_SIZE);
+    var q = db.collection('mediaProfiles').where('homeCity','==',CITY).limit(PAGE_SIZE);
     if(!reset && lastDoc) q = q.startAfter(lastDoc);
     var snap = await q.get();
     var docs = snap.docs.filter(function(d){ return d.id!==(currentUser&&currentUser.uid) && followSet.indexOf(d.id)===-1; });
@@ -356,7 +376,7 @@ function renderFollowCards(items, isDemo, list){
     if(isDemo){
       card.onclick = function(){ alert('Demo suggestion — becomes real once actual creators sign up'); };
     } else {
-      info.onclick = function(){ location.href='media-profile.html?uid='+p.id+'&city='+CITY; };
+      info.onclick = function(){ location.href='media-profile.html?uid='+p.id; };
       btn.onclick = function(e){
         e.stopPropagation();
         if(!currentUser){ requireLogin(); return; }
@@ -372,7 +392,7 @@ async function loadTopList(reset){
   var list = document.getElementById('dpList');
   var loadMoreBtn = document.getElementById('dpLoadMore');
   try{
-    var q = db.collection('cities').doc(CITY).collection('mediaProfiles').limit(PAGE_SIZE);
+    var q = db.collection('mediaProfiles').where('homeCity','==',CITY).limit(PAGE_SIZE);
     if(!reset && lastDoc) q = q.startAfter(lastDoc);
     var snap = await q.get();
     var withCounts = await Promise.all(snap.docs.map(async function(doc){
@@ -426,10 +446,9 @@ function renderTopCards(items, isDemo, list, startRank){
   dpBindAvatarFallbacks(list);
 }
 
-function toggleFollow(targetUid, btn, targetCity){
-  targetCity = targetCity || CITY;
-  var myRef = db.collection('cities').doc(CITY).collection('mediaProfiles').doc(currentUser.uid).collection('following').doc(targetUid);
-  var theirRef = db.collection('cities').doc(targetCity).collection('mediaProfiles').doc(targetUid).collection('followers').doc(currentUser.uid);
+function toggleFollow(targetUid, btn){
+  var myRef = db.collection('mediaProfiles').doc(currentUser.uid).collection('following').doc(targetUid);
+  var theirRef = db.collection('mediaProfiles').doc(targetUid).collection('followers').doc(currentUser.uid);
   var isFollowing = btn.classList.contains('following');
   if(isFollowing){
     myRef.delete(); theirRef.delete();
@@ -495,6 +514,27 @@ function loadMore(){
   else loadAllCreators(false);
 }
 
+// Where THIS logged-in account's own profile actually lives (or, for an
+// unassigned account, their real geocoded district/state) — used to default
+// the scope selector to something that's actually THEIRS, rather than
+// falling back to a generic city (e.g. Manteswar) they have no connection
+// to just because a formal DELTA city doesn't exist for them yet.
+async function loadMyScopeDefault(uid){
+  try{
+    var doc = await db.collection('mediaProfiles').doc(uid).get();
+    if(!doc.exists) return null;
+    var d = doc.data();
+    if(d.homeCity) return {level:'city', value:d.homeCity};
+    // No real city — but the district/state they were geocoded into at
+    // registration IS real, and is a far more honest default than
+    // Manteswar. City scope itself has no meaningful value for them
+    // (homeCity is null), so scope one level up.
+    if(d.district) return {level:'district', value:d.district};
+    if(d.state) return {level:'state', value:d.state};
+    return null; // nothing geocoded — genuinely nothing to default to
+  }catch(e){ console.warn('loadMyScopeDefault failed (non-fatal)', e); return null; }
+}
+
 auth.onAuthStateChanged(async function(u){
   currentUser = u;
   followSet = [];
@@ -509,6 +549,10 @@ auth.onAuthStateChanged(async function(u){
   else if(activeTab==='reels') loadReelsList(true);
   else {
     await loadAllCityConfigs();
+    if(u && scopeLevel==='city'){
+      var myDefault = await loadMyScopeDefault(u.uid);
+      if(myDefault){ scopeLevel = myDefault.level; scopeValue = myDefault.value; }
+    }
     renderScopePills(); renderScopeValueSelect(); loadAllCreators(true);
   }
 });
