@@ -217,3 +217,21 @@ async function getKnownLocations(){
     return data;
   }catch(e){ console.warn('getKnownLocations failed, using empty list', e); return empty; }
 }
+
+/**
+ * Firestore's `==` queries are case-sensitive, so searching "delhi" would
+ * never match a stored "Delhi Division" — this computes lowercase-normalized
+ * copies of each location field (homeCity_lower, district_lower, etc.) at
+ * write time, so queries can compare against THESE instead of the original
+ * properly-cased display fields, while still showing the nice display
+ * version everywhere in the UI. Call this once and spread its result into
+ * every profile/customer write alongside the real geoFields.
+ */
+function lowercaseGeoFields(geoFields){
+  return {
+    homeCity_lower: geoFields.city ? geoFields.city.toLowerCase() : null,
+    district_lower: geoFields.district ? geoFields.district.toLowerCase() : null,
+    state_lower: geoFields.state ? geoFields.state.toLowerCase() : null,
+    country_lower: geoFields.country ? geoFields.country.toLowerCase() : null
+  };
+}
