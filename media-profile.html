@@ -8,6 +8,7 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="delta-shared.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 html,body{overflow-x:hidden;max-width:100vw;}
@@ -211,46 +212,8 @@ firebase.initializeApp(fbcfg);
 var auth=firebase.auth();
 var db=firebase.firestore();
 var CITY = new URLSearchParams(location.search).get('city') || (function(){ try{ return localStorage.getItem('delta_city'); }catch(e){ return null; } })() || 'manteswar'; // Location Architecture v1 Section 3
-// City → District/State/Country lookup, backed by Firestore's cityConfig
-// collection (self-healing) rather than a hardcoded map.
-var _cityGeoCache = {};
-var CM_CACHE_TTL_MS = 8 * 60 * 1000;
-var CITY_GEO_SEED_DEFAULTS = {
-  manteswar: {label:'Manteswar', district:'Purba Bardhaman', state:'West Bengal', country:'India'},
-  memari: {label:'Memari', district:'Purba Bardhaman', state:'West Bengal', country:'India'}
-};
-function _cmCacheRead(key){
-  try{
-    var raw = sessionStorage.getItem(key);
-    if(!raw) return null;
-    var parsed = JSON.parse(raw);
-    if(Date.now() - parsed.t > CM_CACHE_TTL_MS) return null;
-    return parsed.v;
-  }catch(e){ return null; }
-}
-function _cmCacheWrite(key, value){
-  try{ sessionStorage.setItem(key, JSON.stringify({v:value, t:Date.now()})); }catch(e){}
-}
-async function getCityGeo(city){
-  if(_cityGeoCache[city]) return _cityGeoCache[city];
-  var cached = _cmCacheRead('cm_city_'+city);
-  if(cached){ _cityGeoCache[city] = cached; return cached; }
-  var fallback = CITY_GEO_SEED_DEFAULTS[city] || {label:city, district:'', state:'', country:'India'};
-  try{
-    var doc = await db.collection('cityConfig').doc(city).get();
-    if(doc.exists){ _cityGeoCache[city] = doc.data(); _cmCacheWrite('cm_city_'+city, doc.data()); return doc.data(); }
-    if(auth.currentUser){
-      try{ await db.collection('cityConfig').doc(city).set(fallback); }
-      catch(e){ console.warn('cityConfig self-heal skipped', e); }
-    }
-    _cityGeoCache[city] = fallback;
-    _cmCacheWrite('cm_city_'+city, fallback);
-    return fallback;
-  }catch(e){
-    console.warn('cityConfig fetch failed, using in-memory default', e);
-    return fallback;
-  }
-}
+// getCityGeo/CITY_GEO_SEED_DEFAULTS/_cmCacheRead/_cmCacheWrite are now
+// defined once in delta-shared.js (loaded in <head>), not duplicated here.
 var PROFILE_UID = new URLSearchParams(location.search).get('uid');
 var INITIAL_TAB = new URLSearchParams(location.search).get('tab');
 var currentUser = null;
@@ -330,7 +293,19 @@ async function loadProfile(){
     // ── Bio & meta ──
     if(profileData.bio){ document.getElementById('ppBio').textContent = profileData.bio; document.getElementById('ppBio').style.display='block'; }
     var metaParts = [];
-    if(profileData.location) metaParts.push('📍 '+profileData.location);
+    // Auto-fetched, verified location — always reflects the real registered
+    // area (areaLabel/homeCity), distinct from the free-text bio "location"
+    // field below. Styled like a verified-location badge (Instagram/LinkedIn
+    // style) since it's a confirmed fact about the account, not a claim the
+    // user typed themselves.
+    var verifiedLoc = profileData.areaLabel ||
+      [profileData.homeCity, profileData.district, profileData.state].filter(Boolean).join(', ');
+    if(verifiedLoc){
+      metaParts.push('<span style="color:var(--gold,#C9971F);font-weight:700;">📍 '+verifiedLoc+
+        ' <span style="font-size:.68rem;color:var(--muted);font-weight:400;">· '+
+        (currentLang==='bn'?'নিবন্ধিত এলাকা':'registered area')+'</span></span>');
+    }
+    if(profileData.location) metaParts.push('🏷️ '+profileData.location);
     if(profileData.businessCategory) metaParts.push('🏷️ '+profileData.businessCategory);
     document.getElementById('ppMetaRow').innerHTML = metaParts.map(function(m){ return '<span>'+m+'</span>'; }).join('');
 
