@@ -3435,6 +3435,10 @@ img{max-width:100%;height:auto;}
         <div class="form-group"><label>Mobile</label><input type="tel" class="form-input" id="cMobile" placeholder="9XXXXXXXXX"></div>
         <div class="form-group"><label>Email</label><input type="email" class="form-input" id="cRegEmail" placeholder="your@email.com"></div>
         <div class="form-group"><label>Password (min 6)</label><input type="password" class="form-input" id="cRegPass" placeholder="••••••••"></div>
+        <div class="form-group">
+          <label>📍 আপনার শহর <span style="font-weight:400;color:var(--muted);">(ঠিক না হলে বদলে দিন)</span></label>
+          <select class="form-input" id="regCityConfirm"><option value="">-- লোড হচ্ছে... --</option></select>
+        </div>
         <button class="submit-btn" onclick="doCustomerRegister()">✅ নিবন্ধন করুন</button>
       </div>
     </div>
@@ -8029,6 +8033,29 @@ function authTab(t,el){
   document.getElementById('loginPane').style.display=t==='login'?'block':'none';
   document.getElementById('regPane').style.display=t==='register'?'block':'none';
   document.getElementById('authErr').style.display='none';
+  if(t==='register') populateRegCityDropdown();
+}
+// Explicit, visible city-confirmation at registration — fixes the
+// shared/public-device gap: relying only on "has THIS BROWSER ever verified
+// a location" silently assigns whoever registers next to whatever the
+// PREVIOUS person on this device confirmed. Showing the detected city and
+// letting the actual person confirm/correct it removes that assumption.
+async function populateRegCityDropdown(){
+  var sel = document.getElementById('regCityConfirm');
+  if(!sel) return;
+  try{
+    var snap = await db.collection('cityConfig').get();
+    var isVerified = !!localStorage.getItem('delta_verified_pincode');
+    var cities = snap.docs.map(function(d){ return {id:d.id, label:(d.data().label||d.id)}; })
+      .sort(function(a,b){ return a.label.localeCompare(b.label); });
+    sel.innerHTML =
+      '<option value="">-- বেছে নিন --</option>' +
+      cities.map(function(c){ return '<option value="'+c.id+'"'+(isVerified&&c.id===CITY?' selected':'')+'>'+c.label+'</option>'; }).join('') +
+      '<option value="unassigned">এই তালিকায় আমার এলাকা নেই</option>';
+  }catch(e){
+    console.warn('City dropdown load failed', e);
+    sel.innerHTML = '<option value="">-- বেছে নিন --</option><option value="unassigned">এই তালিকায় আমার এলাকা নেই</option>';
+  }
 }
 function showAuthErr(m){var e=document.getElementById('authErr');e.textContent=m;e.style.display='block';}
 // If the user was sent here from another DELTA page (e.g. media-feed.html) to
@@ -8050,25 +8077,28 @@ async function doCustomerLogin(){
 async function doCustomerRegister(){
   var name=document.getElementById('cName').value.trim(),mobile=document.getElementById('cMobile').value.trim();
   var e=document.getElementById('cRegEmail').value.trim(),p=document.getElementById('cRegPass').value;
+  var confirmedCity = document.getElementById('regCityConfirm').value;
   if(!name||!e||!p){showAuthErr('সব তথ্য পূরণ করুন');return;}
   if(p.length<6){showAuthErr('পাসওয়ার্ড কমপক্ষে ৬ অক্ষর');return;}
+  if(!confirmedCity){showAuthErr('আপনার শহর বেছে নিন');return;}
   try{
     var cr=await auth.createUserWithEmailAndPassword(e,p);
     await cr.user.updateProfile({displayName:name});
-    // Only treat this as a real, servable city if the user actually verified
-    // a served location this session — otherwise CITY is just sitting at its
-    // default fallback (Manteswar), which would falsely tag someone from an
-    // unserved area (or who skipped the gate) as being a Manteswar customer.
-    // Unverified registrations go into a distinct 'unassigned' bucket instead,
-    // carrying their real searched pincode so a later automatic check can
-    // move them into the correct city once DELTA starts serving that area.
-    var isVerified = !!localStorage.getItem('delta_verified_pincode');
-    var regCityPath = isVerified ? CITY : 'unassigned';
-    var pendingPincode = isVerified ? null : (localStorage.getItem('delta_last_unserved_pincode') || null);
+    // The explicit dropdown selection is now the SOLE source of truth for
+    // which city this account belongs to — not "has this browser/device ever
+    // verified a location before" (localStorage.delta_verified_pincode). That
+    // device-history check silently assigned whoever registers next on a
+    // shared/public device to whatever the PREVIOUS person confirmed, which
+    // this visible confirm-step fixes: the actual person in front of the
+    // screen right now makes the call.
+    var regCityPath = confirmedCity; // a real cityConfig id, or the literal 'unassigned'
+    var pendingPincode = confirmedCity==='unassigned' ? (localStorage.getItem('delta_last_unserved_pincode') || null) : null;
     var geoFields = {city:null, district:null, state:null, country:null};
-    if(isVerified){
-      var geo = await getCityGeo(CITY);
-      geoFields = {city:CITY, district:geo.district, state:geo.state, country:geo.country};
+    if(confirmedCity !== 'unassigned'){
+      var geo = await getCityGeo(confirmedCity);
+      geoFields = {city:confirmedCity, district:geo.district, state:geo.state, country:geo.country};
+      // Keep this session's browsing scope in sync with what they just confirmed.
+      setCurrentCity(confirmedCity);
     }
     await db.collection('cities').doc(regCityPath).collection('customers').doc(cr.user.uid).set({
       name, mobile, email:e, city:geoFields.city, pendingPincode:pendingPincode, createdAt:new Date().toISOString()
