@@ -595,6 +595,7 @@ textarea.form-input{resize:vertical;min-height:70px;font-family:inherit;}
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="delta-shared.js"></script>
 <script>
 var FB_CFG = {
   apiKey:"AIzaSyA6TrrnCMwv1aa1WPqGvTVWlnieB2pVOEU",
@@ -605,64 +606,9 @@ var FB_CFG = {
   appId:"1:444904180433:web:6706eba4d73a30cd67d3f0"
 };
 var CITY = new URLSearchParams(location.search).get('city') || (function(){ try{ return localStorage.getItem('delta_city'); }catch(e){ return null; } })() || 'manteswar'; // Location Architecture v1 Section 3 — shared city persistence
-var _cityGeoCache = {};
-var CM_CACHE_TTL_MS = 8 * 60 * 1000;
-var CITY_GEO_SEED_DEFAULTS = {
-  manteswar: {label:'Manteswar', district:'Purba Bardhaman', state:'West Bengal', country:'India'},
-  memari: {label:'Memari', district:'Purba Bardhaman', state:'West Bengal', country:'India'}
-};
-function _cmCacheRead(key){
-  try{
-    var raw = sessionStorage.getItem(key);
-    if(!raw) return null;
-    var parsed = JSON.parse(raw);
-    if(Date.now() - parsed.t > CM_CACHE_TTL_MS) return null;
-    return parsed.v;
-  }catch(e){ return null; }
-}
-function _cmCacheWrite(key, value){
-  try{ sessionStorage.setItem(key, JSON.stringify({v:value, t:Date.now()})); }catch(e){}
-}
-async function getCityGeo(city){
-  if(_cityGeoCache[city]) return _cityGeoCache[city];
-  var cached = _cmCacheRead('cm_city_'+city);
-  if(cached){ _cityGeoCache[city] = cached; return cached; }
-  var fallback = CITY_GEO_SEED_DEFAULTS[city] || {label:city, district:'', state:'', country:'India'};
-  try{
-    var doc = await db.collection('cityConfig').doc(city).get();
-    if(doc.exists){ _cityGeoCache[city] = doc.data(); _cmCacheWrite('cm_city_'+city, doc.data()); return doc.data(); }
-    _cityGeoCache[city] = fallback;
-    _cmCacheWrite('cm_city_'+city, fallback);
-    return fallback;
-  }catch(e){
-    console.warn('cityConfig fetch failed, using in-memory default', e);
-    return fallback;
-  }
-}
-// Service-availability resolver — platform-wide override wins over the
-// city's own per-service status. Same pattern as index.html.
-var _platformConfigCache = null;
-async function getServiceStatus(cityId, serviceKey){
-  if(_platformConfigCache === null){
-    var cachedPlatform = _cmCacheRead('cm_platform');
-    if(cachedPlatform){ _platformConfigCache = cachedPlatform; }
-    else{
-      try{
-        var pDoc = await db.collection('platformConfig').doc('global').get();
-        _platformConfigCache = pDoc.exists ? (pDoc.data().services||{}) : {};
-        _cmCacheWrite('cm_platform', _platformConfigCache);
-      }catch(e){ console.warn('platformConfig fetch failed', e); _platformConfigCache = {}; }
-    }
-  }
-  var platformEntry = _platformConfigCache[serviceKey];
-  if(platformEntry && platformEntry.status !== 'active') return platformEntry.status;
-  var geo = await getCityGeo(cityId);
-  var cityEntry = (geo.services && geo.services[serviceKey]) || {status:'disabled'};
-  return cityEntry.status;
-}
-async function isServiceActive(cityId, serviceKey){
-  return (await getServiceStatus(cityId, serviceKey)) === 'active';
-}
+// getCityGeo/getServiceStatus/isServiceActive/CITY_GEO_SEED_DEFAULTS/
+// _cmCacheRead/_cmCacheWrite are now defined once in delta-shared.js
+// (loaded in <head>), not duplicated here.
 var CLOUD = 'djthojcmy', PRESET = 'delta_products';
 var auth, db, currentUser = null;
 var uploadedImageUrl = '';
@@ -786,6 +732,7 @@ async function doBazaarRegister(){
       areaLabel: geoFields.areaLabel,
       createdAt:new Date().toISOString(), updatedAt:new Date().toISOString()
     });
+    recordKnownLocation(geoFields);
     window._guestPhone = mobile;
     closeAuthModal();
     showToast('নিবন্ধন সফল! স্বাগতম '+name+' ✅', 'green');
