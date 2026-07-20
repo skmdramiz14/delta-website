@@ -339,8 +339,8 @@ function renderAllCreatorCards(items, list){
   items.forEach(function(p){
     var card = document.createElement('div'); card.className='dp-card';
     var roleLabel = (p.roles||[]).indexOf('seller')>=0 ? 'Seller' : (p.primaryBadge==='service_provider' ? 'Service Provider' : 'Creator');
-    var locLabel = [p.city, p.district].filter(Boolean).join(', ');
-    var badge = p.city ? cmDeliveryBadgeHtml(p.city) : '';
+    var locLabel = p.areaLabel || [p.homeCity, p.district].filter(Boolean).join(', ');
+    var badge = p.homeCity ? cmDeliveryBadgeHtml(p.homeCity) : '';
     card.innerHTML =
       '<div class="dp-avatar-wrap">'+dpAvatarOrLetter(p.avatarUrl, p.displayName)+'</div>'+
       '<div class="dp-info"><div class="dp-name">'+(p.displayName||'Unknown')+' <span style="font-size:.68rem;color:var(--muted);font-weight:600;">· '+roleLabel+'</span></div>'+
@@ -348,11 +348,11 @@ function renderAllCreatorCards(items, list){
       '<button class="dp-follow-btn">Follow</button>';
     var btn = card.querySelector('.dp-follow-btn');
     var info = card.querySelector('.dp-info');
-    info.onclick = function(){ location.href='media-profile.html?uid='+p.id+'&city='+(p.city||CITY); };
+    info.onclick = function(){ location.href='media-profile.html?uid='+p.id; };
     btn.onclick = function(e){
       e.stopPropagation();
       if(!currentUser){ requireLogin(); return; }
-      toggleFollow(p.id, btn, p.city);
+      toggleFollow(p.id, btn);
     };
     list.appendChild(card);
   });
@@ -459,7 +459,7 @@ function renderTopCards(items, isDemo, list, startRank){
     if(isDemo){
       card.onclick = function(){ alert('Demo entry — becomes real once creators build a real following'); };
     } else {
-      info.onclick = function(){ location.href='media-profile.html?uid='+item.id+'&city='+CITY; };
+      info.onclick = function(){ location.href='media-profile.html?uid='+item.id; };
       btn.onclick = function(e){
         e.stopPropagation();
         if(!currentUser){ requireLogin(); return; }
