@@ -4078,8 +4078,8 @@ function initRegLocationAutocomplete(bias){
     }
     _regResolvedGeo = out;
     if(statusEl){
-      statusEl.textContent = out.pincode
-        ? '✅ '+out.areaLabel+' ('+out.pincode+')'
+      statusEl.innerHTML = out.pincode
+        ? '✅ '+out.areaLabel+' — <strong style="color:var(--navy,#10392D);font-size:.85rem;">PIN: '+out.pincode+'</strong>'
         : '✅ '+out.areaLabel;
     }
   });
@@ -8140,7 +8140,28 @@ async function doCustomerRegister(){
       createdAt:new Date().toISOString(), updatedAt:new Date().toISOString()
     }, lowercaseGeoFields(geoFields)));
     recordKnownLocation(geoFields); // Discover People's scope dropdowns learn about this area
-    closeAuth();showToast('নিবন্ধন সফল! স্বাগতম '+name+' 🎉','green');redirectAfterAuthIfNeeded();
+    closeAuth();
+
+    if(!matchedCity && geoFields.district){
+      // "Near-miss" check — the pincode they resolved to isn't in our served
+      // list, but if another known DELTA city shares this exact district,
+      // that's a strong signal they likely DO live within a served block,
+      // just at a specific pincode we haven't registered yet (a real,
+      // reportable gap — visible to Admin via Expansion Demand Dashboard).
+      // This avoids the confusing "why does my area sometimes work and
+      // sometimes not" experience when two places share a district name.
+      try{
+        var nearMissSnap = await db.collection('cityConfig').where('district','==',geoFields.district).limit(1).get();
+        if(!nearMissSnap.empty){
+          var nearCityLabel = nearMissSnap.docs[0].data().label || nearMissSnap.docs[0].id;
+          showToast('স্বাগতম '+name+'! 🎉 আপনার এলাকা '+geoFields.district+'-এর মধ্যেই, যেখানে DELTA '+nearCityLabel+'-এ আছে — কিন্তু আপনার নির্দিষ্ট pincode এখনো registered না। Admin-কে জানানো হয়েছে।', 'green');
+          redirectAfterAuthIfNeeded();
+          return;
+        }
+      }catch(err){ console.warn('Near-miss district check failed (non-fatal)', err); }
+    }
+
+    showToast('নিবন্ধন সফল! স্বাগতম '+name+' 🎉','green');redirectAfterAuthIfNeeded();
   }catch(er){showAuthErr(er.code==='auth/email-already-in-use'?'এই ইমেইল আগেই ব্যবহৃত':er.message);}
 }
 
