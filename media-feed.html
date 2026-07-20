@@ -1157,26 +1157,17 @@ function mediaAuthTab(t){
   document.getElementById('mfAuthErr').style.display = 'none';
   if(t==='register') prefillMfRegLocationField();
 }
-// Pre-fills the unified location field with whatever's already known this
-// session — same reasoning as index.html's prefillRegLocationField.
+// Deliberately NOT auto-filling — see index.html's prefillRegLocationField
+// for the full reasoning: a prior delivery-check only ever captured a bare
+// pincode or generic city label, never the specific landmark someone
+// actually lives at, so auto-filling with it let people skip entering
+// their real location during registration.
 async function prefillMfRegLocationField(){
   _mfRegResolvedGeo = null;
   var input = document.getElementById('mfRegLocationInput');
   var statusEl = document.getElementById('mfRegLocationStatus');
-  if(!input) return;
-  if(input.value.trim()){ return; }
-  var verifiedPin = localStorage.getItem('delta_verified_pincode');
-  if(verifiedPin){
-    try{
-      var geo = await getCityGeo(CITY);
-      input.value = geo.label || CITY;
-      if(statusEl) statusEl.textContent = '✅ '+(geo.label||CITY)+' ('+verifiedPin+')';
-      _mfRegResolvedGeo = {pincode:verifiedPin, areaLabel:geo.label||CITY, citySlug:CITY, district:geo.district, state:geo.state, country:geo.country};
-      return;
-    }catch(e){ /* fall through */ }
-  }
-  var lastUnserved = localStorage.getItem('delta_last_unserved_pincode');
-  if(lastUnserved){ input.value = lastUnserved; }
+  if(input) input.value = '';
+  if(statusEl) statusEl.textContent = '';
 }
 function showMfAuthErr(msg){
   var e = document.getElementById('mfAuthErr');
@@ -1283,7 +1274,10 @@ async function doMediaRegister(){
     var matchedCity = fullGeo.pincode ? PINCODE_CITY_MAP[fullGeo.pincode] : null;
     if(matchedCity){
       var geo = await getCityGeo(matchedCity);
-      geoFields = {city:matchedCity, district:geo.district, state:geo.state, country:geo.country, areaLabel:geo.label||matchedCity};
+      geoFields.city = matchedCity;
+      geoFields.district = geo.district; geoFields.state = geo.state; geoFields.country = geo.country;
+      // Keep the specific searched place, not just the generic city label.
+      geoFields.areaLabel = fullGeo.areaLabel || geo.label || matchedCity;
       setCurrentCity(matchedCity);
       localStorage.setItem('delta_verified_pincode', fullGeo.pincode);
     } else {
