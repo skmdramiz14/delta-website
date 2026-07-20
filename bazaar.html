@@ -746,7 +746,7 @@ async function doBazaarRegister(){
     await db.collection('users').doc(cr.user.uid).set({
       name:name, mobile:mobile, email:email, homeCity:geoFields.city, createdAt:new Date().toISOString()
     });
-    await db.collection('mediaProfiles').doc(cr.user.uid).set({
+    await db.collection('mediaProfiles').doc(cr.user.uid).set(Object.assign({
       uid: cr.user.uid, displayName: name, bio:'', avatarUrl:'', coverUrl:'',
       roles:['customer','creator'], linkedCustomerId: cr.user.uid,
       followerCount:0, followingCount:0, postCount:0,
@@ -754,7 +754,7 @@ async function doBazaarRegister(){
       homeCity:geoFields.city, district:geoFields.district, state:geoFields.state, country:geoFields.country,
       areaLabel: geoFields.areaLabel,
       createdAt:new Date().toISOString(), updatedAt:new Date().toISOString()
-    });
+    }, lowercaseGeoFields(geoFields)));
     recordKnownLocation(geoFields);
     window._guestPhone = mobile;
     closeAuthModal();
