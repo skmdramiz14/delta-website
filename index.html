@@ -8006,7 +8006,24 @@ async function placeOrder(){
 }
 
 // ── AUTH ──
-function handleUserBtn(){if(currentUser){if(confirm('লগআউট করবেন?'))auth.signOut();}else openAuth();}
+function handleUserBtn(){
+  if(currentUser){
+    if(confirm('লগআউট করবেন?')){
+      // Same shared-device reasoning as the registration fix — a location
+      // verified while THIS account was logged in shouldn't silently carry
+      // over and get shown to whoever uses this device/browser next.
+      localStorage.removeItem('delta_verified_pincode');
+      auth.signOut().then(function(){
+        // Immediately re-ask for location — nothing else re-runs this check
+        // mid-session (detectCity() only runs once, at initial page load),
+        // so without this the header would just keep showing the previous
+        // account's now-cleared-but-still-displayed location until a
+        // manual refresh.
+        showWelcomeGateIfNeeded();
+      });
+    }
+  } else { openAuth(); }
+}
 function goToMyDeltaMedia(){
   if(currentUser){ window.location.href='media-profile.html?uid='+currentUser.uid; }
   else { openAuth(); }
