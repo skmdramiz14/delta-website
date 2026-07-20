@@ -1005,6 +1005,10 @@ body.dark-mode .mh-nav-item .mhi{ background:var(--border); }
         <div class="mf-form-group"><label>Mobile</label><input type="tel" class="mf-form-input" id="mfMobile" placeholder="9XXXXXXXXX"></div>
         <div class="mf-form-group"><label>Email</label><input type="email" class="mf-form-input" id="mfRegEmail" placeholder="your@email.com"></div>
         <div class="mf-form-group"><label>Password (min 6)</label><input type="password" class="mf-form-input" id="mfRegPass" placeholder="••••••••"></div>
+        <div class="mf-form-group">
+          <label>📍 আপনার শহর <span style="font-weight:400;color:var(--muted);">(ঠিক না হলে বদলে দিন)</span></label>
+          <select class="mf-form-input" id="mfRegCityConfirm"><option value="">-- লোড হচ্ছে... --</option></select>
+        </div>
         <button class="mf-submit-btn" onclick="doMediaRegister()">✅ নিবন্ধন করুন</button>
       </div>
     </div>
@@ -1190,6 +1194,28 @@ function mediaAuthTab(t){
   document.getElementById('mfLoginPane').style.display = t==='login' ? 'block' : 'none';
   document.getElementById('mfRegPane').style.display = t==='register' ? 'block' : 'none';
   document.getElementById('mfAuthErr').style.display = 'none';
+  if(t==='register') populateMfRegCityDropdown();
+}
+// Same reasoning as index.html's populateRegCityDropdown — an explicit,
+// visible confirm step instead of silently trusting device history, which
+// fixes the shared/public-device gap where the NEXT person to register
+// would otherwise silently inherit whatever the PREVIOUS person confirmed.
+async function populateMfRegCityDropdown(){
+  var sel = document.getElementById('mfRegCityConfirm');
+  if(!sel) return;
+  try{
+    var snap = await db.collection('cityConfig').get();
+    var isVerified = !!localStorage.getItem('delta_verified_pincode');
+    var cities = snap.docs.map(function(d){ return {id:d.id, label:(d.data().label||d.id)}; })
+      .sort(function(a,b){ return a.label.localeCompare(b.label); });
+    sel.innerHTML =
+      '<option value="">-- বেছে নিন --</option>' +
+      cities.map(function(c){ return '<option value="'+c.id+'"'+(isVerified&&c.id===CITY?' selected':'')+'>'+c.label+'</option>'; }).join('') +
+      '<option value="unassigned">এই তালিকায় আমার এলাকা নেই</option>';
+  }catch(e){
+    console.warn('City dropdown load failed', e);
+    sel.innerHTML = '<option value="">-- বেছে নিন --</option><option value="unassigned">এই তালিকায় আমার এলাকা নেই</option>';
+  }
 }
 function showMfAuthErr(msg){
   var e = document.getElementById('mfAuthErr');
@@ -1213,28 +1239,30 @@ async function doMediaRegister(){
   var mobile = document.getElementById('mfMobile').value.trim();
   var email = document.getElementById('mfRegEmail').value.trim();
   var pass = document.getElementById('mfRegPass').value;
+  var confirmedCity = document.getElementById('mfRegCityConfirm').value;
   if(!name || !email || !pass){ showMfAuthErr('সব তথ্য পূরণ করুন'); return; }
   if(pass.length < 6){ showMfAuthErr('পাসওয়ার্ড কমপক্ষে ৬ অক্ষর'); return; }
+  if(!confirmedCity){ showMfAuthErr('আপনার শহর বেছে নিন'); return; }
   try{
     var cr = await auth.createUserWithEmailAndPassword(email, pass);
     await cr.user.updateProfile({displayName:name});
-    // Only treat this as a real, servable city if the location was actually
-    // verified this session — otherwise it goes into 'unassigned', carrying
-    // the real searched pincode so it can auto-migrate once that area is served.
-    var isVerified = !!localStorage.getItem('delta_verified_pincode');
-    var regCityPath = isVerified ? CITY : 'unassigned';
-    var pendingPincode = isVerified ? null : (localStorage.getItem('delta_last_unserved_pincode') || null);
+    // The explicit dropdown selection is the sole source of truth for city —
+    // not device history (localStorage.delta_verified_pincode), which would
+    // silently carry over whoever last verified a location on a shared device.
+    var regCityPath = confirmedCity;
+    var pendingPincode = confirmedCity==='unassigned' ? (localStorage.getItem('delta_last_unserved_pincode') || null) : null;
     // Same write path as index.html's doCustomerRegister — one shared account.
     await db.collection('cities').doc(regCityPath).collection('customers').doc(cr.user.uid).set({
-      name:name, mobile:mobile, email:email, city: isVerified?CITY:null, pendingPincode:pendingPincode, createdAt:new Date().toISOString()
+      name:name, mobile:mobile, email:email, city: confirmedCity==='unassigned'?null:confirmedCity, pendingPincode:pendingPincode, createdAt:new Date().toISOString()
     });
     // Identity Bridge (Part A Section 3.2) — every account also gets a basic
     // mediaProfiles doc, so DELTA Media's profile page actually finds them
     // instead of showing "Profile not found".
     var geoFields = {city:null, district:null, state:null, country:null};
-    if(isVerified){
-      var geo = await getCityGeo(CITY);
-      geoFields = {city:CITY, district:geo.district, state:geo.state, country:geo.country};
+    if(confirmedCity !== 'unassigned'){
+      var geo = await getCityGeo(confirmedCity);
+      geoFields = {city:confirmedCity, district:geo.district, state:geo.state, country:geo.country};
+      setCurrentCity(confirmedCity);
     }
     await db.collection('cities').doc(regCityPath).collection('mediaProfiles').doc(cr.user.uid).set({
       uid: cr.user.uid, displayName: name, bio:'', avatarUrl:'', coverUrl:'',
