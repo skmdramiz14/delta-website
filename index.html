@@ -4151,17 +4151,30 @@ async function detectCity(){
     fired=true;
     loadData();
   }
-  function fallbackToPincodeGate(){
-    // GPS failed/denied/out-of-range → ask via pincode gate instead
-    // Guard: if GPS/city detection already resolved (fired), never show the gate —
-    // otherwise this 5s safety-net can pop the gate on top of a modal the user
-    // already opened themselves (e.g. the header location button).
-    if(fired) return;
-    if(!localStorage.getItem('delta_verified_pincode')){
-      document.getElementById('gateOverlay').style.display='flex';
+  async function fallbackToPincodeGate(){
+      // GPS failed/denied/out-of-range → ask via pincode gate instead
+      // Guard: if GPS/city detection already resolved (fired), never show the gate —
+      // otherwise this 5s safety-net can pop the gate on top of a modal the user
+      // already opened themselves (e.g. the header location button).
+      if(fired) return;
+      // Also skip if we already know this account's real location (from
+      // registration) — the device-local 'verified this session' flag isn't
+      // the only signal that matters once someone is logged in; asking again
+      // every refresh is redundant when their account already has an answer,
+      // and they'll be informed again anyway at the moment they try to use
+      // a location-gated service. Explicitly waits for the account-city
+      // check here (rather than just reading the global var) since a fast
+      // GPS response can otherwise race ahead of the async Firestore fetch.
+      if(auth.currentUser && MY_ACCOUNT_CITY===null && MY_ACCOUNT_AREA_LABEL===null){
+        await loadMyAccountCity(auth.currentUser.uid);
+      }
+      if(fired) return; // re-check — GPS may have resolved while we were awaiting above
+      var accountKnowsLocation = !!(auth.currentUser && (MY_ACCOUNT_CITY || MY_ACCOUNT_AREA_LABEL));
+      if(!localStorage.getItem('delta_verified_pincode') && !accountKnowsLocation){
+        document.getElementById('gateOverlay').style.display='flex';
+      }
+      proceedWithData();
     }
-    proceedWithData();
-  }
 
   // If already verified via pincode in a previous visit, trust that and skip GPS prompt entirely
   var savedPin = localStorage.getItem('delta_verified_pincode');
@@ -4439,14 +4452,26 @@ function toggleNeedsOtherField(checkbox){
   document.getElementById('needsOtherWrap').style.display = checkbox.checked ? 'block' : 'none';
 }
 
-function notifyPinExpansion(pin, source){
+async function notifyPinExpansion(pin, source){
   source = source || 'unknown';
   _pendingNotify = {pin:pin, source:source};
-  // Contact fields only needed if we don't already have this person's email
-  // on file — the survey below is shown either way, logged in or not.
-  var needContact = !currentUser;
-  document.getElementById('notifyContactFields').style.display = needContact ? 'block' : 'none';
-  document.getElementById('notifyContactSubtext').style.display = needContact ? 'block' : 'none';
+  // Always show the contact fields — even when logged in, pre-fill with
+  // whatever we already have on file (editable) rather than hiding them.
+  // Hiding previously made it look like the fields had vanished, and it
+  // meant a logged-in account's stored mobile number never actually got
+  // used even though we had it.
+  document.getElementById('notifyContactFields').style.display = 'block';
+  document.getElementById('notifyContactSubtext').style.display = 'block';
+  var emailEl = document.getElementById('notifyContactEmail');
+  var mobileEl = document.getElementById('notifyContactMobile');
+  emailEl.value = (currentUser && currentUser.email) || '';
+  mobileEl.value = '';
+  if(currentUser){
+    try{
+      var userDoc = await db.collection('users').doc(currentUser.uid).get();
+      if(userDoc.exists && userDoc.data().mobile) mobileEl.value = userDoc.data().mobile;
+    }catch(e){ console.warn('Could not pre-fill mobile from account', e); }
+  }
   populateNeedsSurvey();
   document.getElementById('notifyContactModal').classList.add('open');
 }
@@ -4457,10 +4482,9 @@ function closeNotifyContactModal(){
 }
 
 function submitNotifyContact(){
-  var needContact = !currentUser;
-  var email = needContact ? document.getElementById('notifyContactEmail').value.trim() : (currentUser.email||null);
-  var mobile = needContact ? document.getElementById('notifyContactMobile').value.trim() : null;
-  if(needContact && !email && !mobile){
+  var email = document.getElementById('notifyContactEmail').value.trim();
+  var mobile = document.getElementById('notifyContactMobile').value.trim();
+  if(!email && !mobile){
     showToast(currentLang==='bn'?'Email বা মোবাইল অন্তত একটা দিন ⚠️':'Please enter an email or mobile ⚠️');
     return;
   }
@@ -4480,10 +4504,8 @@ function submitNotifyContact(){
     servicesWanted: servicesWanted, topPriority: topPriority
   });
   showToast(currentLang==='bn'?'ধন্যবাদ! আমরা আপনাকে জানাবো 🔔':'Thanks! We will notify you 🔔');
-  if(needContact){
-    document.getElementById('notifyContactEmail').value='';
-    document.getElementById('notifyContactMobile').value='';
-  }
+  document.getElementById('notifyContactEmail').value='';
+  document.getElementById('notifyContactMobile').value='';
   closeNotifyContactModal();
   closePinModal();
 }
@@ -4521,7 +4543,8 @@ function logUnservedSearch(pin, source){
 // ── WELCOME PINCODE GATE (shown on first visit only) ──
 function showWelcomeGateIfNeeded(){
   var verified = localStorage.getItem('delta_verified_pincode');
-  if(!verified){
+  var accountKnowsLocation = !!(auth.currentUser && (MY_ACCOUNT_CITY || MY_ACCOUNT_AREA_LABEL));
+  if(!verified && !accountKnowsLocation){
     document.getElementById('gateOverlay').style.display='flex';
   }
 }
@@ -7892,10 +7915,20 @@ function switchToNearbyCity(cityId){
 function closeServiceGateModal(){
   document.getElementById('serviceGateModal').classList.remove('open');
 }
-function notifyServiceExpansion(){
+async function notifyServiceExpansion(){
   _pendingNotify = {pin:null, city:CITY, source:'checkout_gate'};
-  document.getElementById('notifyContactFields').style.display='none';
-  document.getElementById('notifyContactSubtext').style.display='none';
+  document.getElementById('notifyContactFields').style.display='block';
+  document.getElementById('notifyContactSubtext').style.display='block';
+  var emailEl = document.getElementById('notifyContactEmail');
+  var mobileEl = document.getElementById('notifyContactMobile');
+  emailEl.value = (currentUser && currentUser.email) || '';
+  mobileEl.value = '';
+  if(currentUser){
+    try{
+      var userDoc = await db.collection('users').doc(currentUser.uid).get();
+      if(userDoc.exists && userDoc.data().mobile) mobileEl.value = userDoc.data().mobile;
+    }catch(e){ console.warn('Could not pre-fill mobile from account', e); }
+  }
   populateNeedsSurvey();
   closeServiceGateModal();
   document.getElementById('notifyContactModal').classList.add('open');
