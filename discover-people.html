@@ -89,13 +89,15 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 
 <div class="dp-scope-row" id="dpScopeRow" style="display:none;">
   <div class="dp-scope-pills" id="dpScopePills"></div>
-  <div style="display:flex;gap:6px;align-items:center;flex:1;min-width:200px;">
-    <input type="text" class="dp-scope-select" id="dpScopeValueInput" list="dpScopeValueList"
-      placeholder="এলাকা লিখে খুঁজুন..." style="flex:1;" onkeydown="if(event.key==='Enter')onScopeValueSearch()">
-    <datalist id="dpScopeValueList"></datalist>
-    <button onclick="onScopeValueSearch()" style="white-space:nowrap;padding:7px 12px;border-radius:8px;
-      border:1.5px solid var(--navy,#10392D);background:var(--navy,#10392D);color:#fff;font-size:.78rem;
-      font-weight:700;cursor:pointer;">🔍</button>
+  <div style="display:flex;flex-direction:column;gap:6px;flex:1;min-width:200px;">
+    <select class="dp-scope-select" id="dpScopeValueSelect" onchange="onScopeValueSelectChange()"></select>
+    <div style="display:flex;gap:6px;">
+      <input type="text" class="dp-scope-select" id="dpScopeSearchInput"
+        placeholder="বা টাইপ করে খুঁজুন..." style="flex:1;" onkeydown="if(event.key==='Enter')onScopeValueSearch()">
+      <button onclick="onScopeValueSearch()" style="white-space:nowrap;padding:7px 12px;border-radius:8px;
+        border:1.5px solid var(--navy,#10392D);background:var(--navy,#10392D);color:#fff;font-size:.78rem;
+        font-weight:700;cursor:pointer;">🔍</button>
+    </div>
   </div>
 </div>
 
@@ -236,12 +238,12 @@ function onScopeLevelChange(level){
   loadAllCreators(true);
 }
 async function renderScopeValueSelect(){
-  var input = document.getElementById('dpScopeValueInput');
-  var list = document.getElementById('dpScopeValueList');
-  var wrap = input.parentElement;
+  var sel = document.getElementById('dpScopeValueSelect');
+  var searchInput = document.getElementById('dpScopeSearchInput');
+  var wrap = sel.parentElement;
   if(scopeLevel==='all'){ wrap.style.display='none'; return; }
   wrap.style.display='flex';
-  input.value = scopeValue || '';
+  searchInput.value = '';
 
   var options = [];
   if(scopeLevel==='city'){
@@ -257,7 +259,7 @@ async function renderScopeValueSelect(){
   }
 
   // Merge in real places people have actually registered from, even where
-  // DELTA has no cityConfig entry (e.g. someone in Kolkata) — otherwise
+  // DELTA has no cityConfig entry (e.g. someone in Navi Mumbai) — otherwise
   // they'd never appear as a selectable option at all, only findable by
   // someone who already knows the exact name to type.
   try{
@@ -271,10 +273,17 @@ async function renderScopeValueSelect(){
   }catch(e){ console.warn('Could not merge known locations into scope options', e); }
 
   options.sort(function(a,b){ return a.label.localeCompare(b.label); });
-  list.innerHTML = options.map(function(o){ return '<option value="'+o.value+'">'+o.label+'</option>'; }).join('');
+  sel.innerHTML = '<option value="">-- বেছে নিন --</option>' +
+    options.map(function(o){ return '<option value="'+o.value+'"'+(o.value===scopeValue?' selected':'')+'>'+o.label+'</option>'; }).join('');
+}
+function onScopeValueSelectChange(){
+  var val = document.getElementById('dpScopeValueSelect').value;
+  if(!val) return;
+  scopeValue = val;
+  loadAllCreators(true);
 }
 function onScopeValueSearch(){
-  var val = document.getElementById('dpScopeValueInput').value.trim();
+  var val = document.getElementById('dpScopeSearchInput').value.trim();
   if(!val) return;
   scopeValue = val;
   loadAllCreators(true);
