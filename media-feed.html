@@ -8,6 +8,7 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBcXYIgnOt2SOyPswg9LXRS-5OB8-9w8oY&libraries=places&loading=async"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 html,body{overflow-x:hidden;max-width:100vw;}
@@ -1007,7 +1008,11 @@ body.dark-mode .mh-nav-item .mhi{ background:var(--border); }
         <div class="mf-form-group"><label>Password (min 6)</label><input type="password" class="mf-form-input" id="mfRegPass" placeholder="••••••••"></div>
         <div class="mf-form-group">
           <label>📍 আপনার শহর <span style="font-weight:400;color:var(--muted);">(ঠিক না হলে বদলে দিন)</span></label>
-          <select class="mf-form-input" id="mfRegCityConfirm"><option value="">-- লোড হচ্ছে... --</option></select>
+          <select class="mf-form-input" id="mfRegCityConfirm" onchange="toggleMfRegPincodeField(this)"><option value="">-- লোড হচ্ছে... --</option></select>
+        </div>
+        <div class="mf-form-group" id="mfRegPincodeWrap" style="display:none;">
+          <label>📍 আপনার pincode/এলাকা <span style="color:#c0392b;">*আবশ্যক</span></label>
+          <input type="text" class="mf-form-input" id="mfRegPincodeInput" placeholder="713xxx বা এলাকার নাম">
         </div>
         <button class="mf-submit-btn" onclick="doMediaRegister()">✅ নিবন্ধন করুন</button>
       </div>
@@ -1091,17 +1096,18 @@ async function isServiceActive(cityId, serviceKey){
   return (await getServiceStatus(cityId, serviceKey)) === 'active';
 }
 var currentUser=null;
-// Where THIS logged-in account's own profile actually lives — 'unassigned',
-// a real city, or null (logged out / not yet checked). Separate from CITY
-// (the general feed-browsing scope for this page).
+// Where THIS logged-in account's own profile actually lives — a real city,
+// 'unassigned', or null. Separate from CITY (the general feed-browsing scope).
 var MY_ACCOUNT_CITY = null;
+var MY_ACCOUNT_AREA_LABEL = null;
 async function loadMyAccountCity(uid){
   try{
-    var unassignedDoc = await db.collection('cities').doc('unassigned').collection('mediaProfiles').doc(uid).get();
-    if(unassignedDoc.exists){ MY_ACCOUNT_CITY = 'unassigned'; return; }
-    var homeDoc = await db.collection('cities').doc(CITY).collection('mediaProfiles').doc(uid).get();
-    MY_ACCOUNT_CITY = homeDoc.exists ? CITY : null;
-  }catch(e){ console.warn('loadMyAccountCity failed (non-fatal)', e); MY_ACCOUNT_CITY = null; }
+    var doc = await db.collection('mediaProfiles').doc(uid).get();
+    if(!doc.exists){ MY_ACCOUNT_CITY = null; MY_ACCOUNT_AREA_LABEL = null; return; }
+    var data = doc.data();
+    MY_ACCOUNT_CITY = data.homeCity || null;
+    MY_ACCOUNT_AREA_LABEL = data.areaLabel || null;
+  }catch(e){ console.warn('loadMyAccountCity failed (non-fatal)', e); MY_ACCOUNT_CITY = null; MY_ACCOUNT_AREA_LABEL = null; }
 }
 var NAV_AVATAR_GENERIC_ICON = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3.3"/><path d="M4.5 20c1-4.2 4-6.5 7.5-6.5s6.5 2.3 7.5 6.5" stroke-linecap="round"/></svg>';
 // Discover row cards (Who to Follow / Top Creators / Official) and desktop
@@ -1177,8 +1183,8 @@ function requireLogin(){
 }
 // Native login/signup modal — opens right here on media-feed.html, no more
 // redirect to index.html. Same Firebase project/account, same
-// cities/{city}/customers/{uid} write path on register, so the account is
-// identical either way — this just avoids the extra page hop.
+// users/{uid} write path on register (Global User Identity Architecture),
+// so the account is identical either way — this just avoids the extra page hop.
 function goToLogin(){
   openMediaAuth();
 }
@@ -1200,6 +1206,10 @@ function mediaAuthTab(t){
 // visible confirm step instead of silently trusting device history, which
 // fixes the shared/public-device gap where the NEXT person to register
 // would otherwise silently inherit whatever the PREVIOUS person confirmed.
+function toggleMfRegPincodeField(sel){
+  var wrap = document.getElementById('mfRegPincodeWrap');
+  wrap.style.display = (sel.value === 'unassigned') ? 'block' : 'none';
+}
 async function populateMfRegCityDropdown(){
   var sel = document.getElementById('mfRegCityConfirm');
   if(!sel) return;
@@ -1234,6 +1244,37 @@ async function doMediaLogin(){
     showMfAuthErr('ইমেইল বা পাসওয়ার্ড ভুল');
   }
 }
+// Fuller geocoding for unassigned registrations — same as index.html's
+// resolveTextToFullGeo. DELTA doesn't officially serve this area yet (no
+// cityConfig entry), but that's no reason to hide the person's real
+// location. `city` stays null on purpose — it specifically means "a real
+// DELTA cityConfig id", not just any place name.
+function resolveTextToFullGeo(text){
+  return new Promise(function(resolve){
+    if(typeof google==='undefined' || !google.maps || !google.maps.Geocoder){
+      resolve(null); return;
+    }
+    var geocoder = new google.maps.Geocoder();
+    geocoder.geocode({ address: text }, function(results, status){
+      if(status !== 'OK' || !results || !results.length){ resolve(null); return; }
+      var comps = results[0].address_components || [];
+      var out = {pincode:null, areaLabel:results[0].formatted_address||text, cityName:null, citySlug:null, district:null, state:null, country:null};
+      comps.forEach(function(c){
+        if(c.types.indexOf('postal_code')>=0) out.pincode = c.long_name;
+        if(c.types.indexOf('locality')>=0) out.cityName = c.long_name;
+        if(!out.cityName && c.types.indexOf('administrative_area_level_2')>=0) out.cityName = c.long_name;
+        if(c.types.indexOf('administrative_area_level_2')>=0) out.district = c.long_name;
+        if(c.types.indexOf('administrative_area_level_1')>=0) out.state = c.long_name;
+        if(c.types.indexOf('country')>=0) out.country = c.long_name;
+      });
+      if(out.cityName){
+        out.citySlug = out.cityName.toLowerCase().trim().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'');
+      }
+      resolve(out);
+    });
+  });
+}
+
 async function doMediaRegister(){
   var name = document.getElementById('mfName').value.trim();
   var mobile = document.getElementById('mfMobile').value.trim();
@@ -1243,33 +1284,46 @@ async function doMediaRegister(){
   if(!name || !email || !pass){ showMfAuthErr('সব তথ্য পূরণ করুন'); return; }
   if(pass.length < 6){ showMfAuthErr('পাসওয়ার্ড কমপক্ষে ৬ অক্ষর'); return; }
   if(!confirmedCity){ showMfAuthErr('আপনার শহর বেছে নিন'); return; }
+  if(confirmedCity==='unassigned' && !document.getElementById('mfRegPincodeInput').value.trim() && !localStorage.getItem('delta_last_unserved_pincode')){
+    showMfAuthErr('আপনার pincode বা এলাকার নাম লিখুন — এটা ছাড়া নিবন্ধন সম্পূর্ণ করা যাবে না');
+    return;
+  }
   try{
     var cr = await auth.createUserWithEmailAndPassword(email, pass);
     await cr.user.updateProfile({displayName:name});
-    // The explicit dropdown selection is the sole source of truth for city —
-    // not device history (localStorage.delta_verified_pincode), which would
-    // silently carry over whoever last verified a location on a shared device.
-    var regCityPath = confirmedCity;
-    var pendingPincode = confirmedCity==='unassigned' ? (localStorage.getItem('delta_last_unserved_pincode') || null) : null;
-    // Same write path as index.html's doCustomerRegister — one shared account.
-    await db.collection('cities').doc(regCityPath).collection('customers').doc(cr.user.uid).set({
-      name:name, mobile:mobile, email:email, city: confirmedCity==='unassigned'?null:confirmedCity, pendingPincode:pendingPincode, createdAt:new Date().toISOString()
-    });
-    // Identity Bridge (Part A Section 3.2) — every account also gets a basic
-    // mediaProfiles doc, so DELTA Media's profile page actually finds them
-    // instead of showing "Profile not found".
-    var geoFields = {city:null, district:null, state:null, country:null};
+    // Global User Identity Architecture v1 — homeCity always holds the real
+    // place name/slug when known (e.g. 'kolkata'), whether or not DELTA
+    // serves that area yet. Served-vs-not is answered separately at
+    // service-gate time via cityConfig lookup, never by whether homeCity
+    // itself happens to be set.
+    var pendingPincode = confirmedCity==='unassigned'
+      ? (document.getElementById('mfRegPincodeInput').value.trim() || localStorage.getItem('delta_last_unserved_pincode') || null)
+      : null;
+    var geoFields = {city:null, district:null, state:null, country:null, areaLabel:null};
     if(confirmedCity !== 'unassigned'){
       var geo = await getCityGeo(confirmedCity);
-      geoFields = {city:confirmedCity, district:geo.district, state:geo.state, country:geo.country};
+      geoFields = {city:confirmedCity, district:geo.district, state:geo.state, country:geo.country, areaLabel:geo.label||confirmedCity};
       setCurrentCity(confirmedCity);
+    } else if(document.getElementById('mfRegPincodeInput').value.trim()){
+      var typedArea = document.getElementById('mfRegPincodeInput').value.trim();
+      var fullGeo = await resolveTextToFullGeo(typedArea);
+      if(fullGeo){
+        geoFields.city = fullGeo.citySlug || null;
+        geoFields.district = fullGeo.district; geoFields.state = fullGeo.state;
+        geoFields.country = fullGeo.country; geoFields.areaLabel = fullGeo.areaLabel;
+        if(!pendingPincode && fullGeo.pincode) pendingPincode = fullGeo.pincode;
+      }
     }
-    await db.collection('cities').doc(regCityPath).collection('mediaProfiles').doc(cr.user.uid).set({
+    await db.collection('users').doc(cr.user.uid).set({
+      name:name, mobile:mobile, email:email, homeCity: geoFields.city, pendingPincode:pendingPincode, createdAt:new Date().toISOString()
+    });
+    await db.collection('mediaProfiles').doc(cr.user.uid).set({
       uid: cr.user.uid, displayName: name, bio:'', avatarUrl:'', coverUrl:'',
       roles:['customer','creator'], linkedCustomerId: cr.user.uid,
       followerCount:0, followingCount:0, postCount:0,
       primaryBadge:'customer_creator', isVerified:false,
-      city:geoFields.city, district:geoFields.district, state:geoFields.state, country:geoFields.country,
+      homeCity:geoFields.city, district:geoFields.district, state:geoFields.state, country:geoFields.country,
+      areaLabel: geoFields.areaLabel,
       pendingPincode: pendingPincode,
       createdAt:new Date().toISOString(), updatedAt:new Date().toISOString()
     });
@@ -1386,7 +1440,7 @@ function loadNavAvatar(){
   var dot = document.getElementById('navOnlineDot');
   dot.style.display = currentUser ? 'block' : 'none'; // "online" = currently logged in
   if(!currentUser){ img.style.display='none'; fallback.style.display='flex'; fallback.innerHTML=NAV_AVATAR_GENERIC_ICON; return; }
-  db.collection('cities').doc(CITY).collection('mediaProfiles').doc(currentUser.uid).get().then(function(doc){
+  db.collection('mediaProfiles').doc(currentUser.uid).get().then(function(doc){
     var p = doc.exists ? doc.data() : {};
     if(p.avatarUrl){ img.src = p.avatarUrl; img.style.display='block'; fallback.style.display='none'; return; }
     img.style.display='none'; fallback.style.display='flex';
@@ -1442,7 +1496,7 @@ function refreshSideMenuHead(){
   }
   loginBtn.style.display='none';
   logoutItem.style.display='flex'; logoutDivider.style.display='block';
-  db.collection('cities').doc(CITY).collection('mediaProfiles').doc(currentUser.uid).get().then(function(doc){
+  db.collection('mediaProfiles').doc(currentUser.uid).get().then(function(doc){
     var p = doc.exists ? doc.data() : {};
     nameEl.textContent = p.displayName || currentUser.email || 'Your Profile';
     subEl.textContent = p.username ? ('@'+p.username) : 'View your DELTA Media profile';
@@ -1573,7 +1627,7 @@ function smGo(dest){
 }
 function handleNavAvatarClick(){
   if(!currentUser){ goToLogin(); return; }
-  location.href='media-profile.html?uid='+currentUser.uid+'&city='+(MY_ACCOUNT_CITY || CITY);
+  location.href='media-profile.html?uid='+currentUser.uid;
 }
 
 // ═══ Report a Problem — writes a real doc to the existing supportTickets
@@ -1772,7 +1826,7 @@ function loadStories(){
     // DELTA Official — no longer pinned ahead of everything; sits right next to
     // "Add Story" as a normal (still visually verified) story item.
     if(officialUid){
-      db.collection('cities').doc(CITY).collection('mediaProfiles').doc(officialUid).get().then(function(pDoc){
+      db.collection('mediaProfiles').doc(officialUid).get().then(function(pDoc){
         clearLoadingOnce();
         var pinItem=document.createElement('div'); pinItem.className='story-item';
         pinItem.innerHTML =
@@ -2012,15 +2066,15 @@ function svShare(id){
   else { navigator.clipboard&&navigator.clipboard.writeText(url); alert('Link copied'); }
 }
 function checkSvFollow(authorUid){
-  db.collection('cities').doc(CITY).collection('mediaProfiles').doc(authorUid).collection('followers').doc(currentUser.uid).get().then(function(d){
+  db.collection('mediaProfiles').doc(authorUid).collection('followers').doc(currentUser.uid).get().then(function(d){
     var btn=document.getElementById('svFollowBtn');
     if(d.exists){ btn.textContent='Following'; } else { btn.textContent='Follow'; }
   });
 }
 function toggleSvFollow(targetUid){
   if(!currentUser){ requireLogin(); return; }
-  var followerDoc=db.collection('cities').doc(CITY).collection('mediaProfiles').doc(targetUid).collection('followers').doc(currentUser.uid);
-  var followingDoc=db.collection('cities').doc(CITY).collection('mediaProfiles').doc(currentUser.uid).collection('following').doc(targetUid);
+  var followerDoc=db.collection('mediaProfiles').doc(targetUid).collection('followers').doc(currentUser.uid);
+  var followingDoc=db.collection('mediaProfiles').doc(currentUser.uid).collection('following').doc(targetUid);
   followerDoc.get().then(function(d){
     var now=new Date().toISOString();
     if(d.exists){ followerDoc.delete(); followingDoc.delete(); } else { followerDoc.set({followedAt:now}); followingDoc.set({followedAt:now}); }
@@ -2092,7 +2146,7 @@ async function loadFeed(){
     return;
   }
   if(activeSort==='following' && !followingSetFeed){
-    var fs = await db.collection('cities').doc(CITY).collection('mediaProfiles').doc(currentUser.uid).collection('following').get();
+    var fs = await db.collection('mediaProfiles').doc(currentUser.uid).collection('following').get();
     followingSetFeed = fs.docs.map(function(d){return d.id;});
   }
   if(activeSort==='nearby') console.warn('Nearby: no geo field on mediaContent yet — showing standard feed instead.');
@@ -2170,7 +2224,7 @@ var mhOfficialUid = null;
 async function getMhOfficialUid(){
   if(mhOfficialUid) return mhOfficialUid;
   try{
-    var snap = await db.collection('cities').doc(CITY).collection('mediaProfiles')
+    var snap = await db.collection('mediaProfiles')
       .where('primaryBadge','==','delta_official').limit(1).get();
     if(!snap.empty){ mhOfficialUid = snap.docs[0].id; return mhOfficialUid; }
   }catch(e){ console.warn('Could not resolve DELTA Official account', e); }
@@ -2191,22 +2245,22 @@ async function loadMhOfficialCard(){
     return;
   }
 
-  var profileDoc = await db.collection('cities').doc(CITY).collection('mediaProfiles').doc(uid).get();
+  var profileDoc = await db.collection('mediaProfiles').doc(uid).get();
   if(profileDoc.exists){
     document.getElementById('mhOfficialHandle').textContent = '@'+(profileDoc.data().username||'delta.official');
   }
   if(currentUser && uid===currentUser.uid){ followBtn.style.display='none'; return; }
   followBtn.onclick = function(){ toggleMhFollow(uid, followBtn); };
   if(currentUser){
-    db.collection('cities').doc(CITY).collection('mediaProfiles').doc(uid).collection('followers').doc(currentUser.uid).get().then(function(d){
+    db.collection('mediaProfiles').doc(uid).collection('followers').doc(currentUser.uid).get().then(function(d){
       if(d.exists){ followBtn.textContent='Following'; followBtn.classList.add('following'); }
     });
   }
 }
 function toggleMhFollow(targetUid, btn){
   if(!currentUser){ requireLogin(); return; }
-  var followerDoc = db.collection('cities').doc(CITY).collection('mediaProfiles').doc(targetUid).collection('followers').doc(currentUser.uid);
-  var followingDoc = db.collection('cities').doc(CITY).collection('mediaProfiles').doc(currentUser.uid).collection('following').doc(targetUid);
+  var followerDoc = db.collection('mediaProfiles').doc(targetUid).collection('followers').doc(currentUser.uid);
+  var followingDoc = db.collection('mediaProfiles').doc(currentUser.uid).collection('following').doc(targetUid);
   followerDoc.get().then(function(d){
     var now = new Date().toISOString();
     if(d.exists){ followerDoc.delete(); followingDoc.delete(); btn.textContent='Follow'; btn.classList.remove('following'); }
@@ -2247,10 +2301,10 @@ async function loadMhWhoToFollow(){
   try{
     var followSet = [];
     if(currentUser){
-      var fs = await db.collection('cities').doc(CITY).collection('mediaProfiles').doc(currentUser.uid).collection('following').get();
+      var fs = await db.collection('mediaProfiles').doc(currentUser.uid).collection('following').get();
       followSet = fs.docs.map(function(d){return d.id;});
     }
-    var snap = await db.collection('cities').doc(CITY).collection('mediaProfiles').limit(15).get();
+    var snap = await db.collection('mediaProfiles').limit(15).get();
     var candidates = snap.docs.filter(function(d){
       return d.id!==(currentUser&&currentUser.uid) && followSet.indexOf(d.id)===-1;
     }).slice(0,3);
@@ -2323,7 +2377,7 @@ async function loadMhTopCreators(){
     {displayName:'Salon XYZ', avatarUrl:'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=200&q=60', count:'6.1K'}
   ];
   try{
-    var snap = await db.collection('cities').doc(CITY).collection('mediaProfiles').limit(8).get();
+    var snap = await db.collection('mediaProfiles').limit(8).get();
     var withCounts = await Promise.all(snap.docs.map(async function(doc){
       var followers = await doc.ref.collection('followers').get();
       return {id:doc.id, data:doc.data(), count:followers.size};
@@ -2384,7 +2438,7 @@ async function loadMhDiscoverRow(){
     var officialUid = await getMhOfficialUid();
     officialCard = document.createElement('div'); officialCard.className='mh-d-card';
     if(officialUid){
-      var pDoc = await db.collection('cities').doc(CITY).collection('mediaProfiles').doc(officialUid).get();
+      var pDoc = await db.collection('mediaProfiles').doc(officialUid).get();
       var avatarUrl = pDoc.exists ? (pDoc.data().avatarUrl||'') : '';
       officialCard.innerHTML =
         '<div class="mh-d-avatar-wrap"><div class="mh-d-rank" style="background:linear-gradient(135deg,#4a90d9,#8b5cf6,#e0245e);color:#fff;">✓</div>'+
@@ -2411,10 +2465,10 @@ async function loadMhDiscoverRow(){
   try{
     var followSet = [];
     if(currentUser){
-      var fs = await db.collection('cities').doc(CITY).collection('mediaProfiles').doc(currentUser.uid).collection('following').get();
+      var fs = await db.collection('mediaProfiles').doc(currentUser.uid).collection('following').get();
       followSet = fs.docs.map(function(d){return d.id;});
     }
-    var snap = await db.collection('cities').doc(CITY).collection('mediaProfiles').limit(15).get();
+    var snap = await db.collection('mediaProfiles').limit(15).get();
     var candidateDocs = snap.docs.filter(function(d){
       return d.id!==(currentUser&&currentUser.uid) && followSet.indexOf(d.id)===-1;
     }).slice(0,2);
@@ -2457,7 +2511,7 @@ async function loadMhDiscoverRow(){
     {displayName:'Fish Corner', avatarUrl:'https://images.unsplash.com/photo-1544943910-4c1dc44aab44?w=200&q=60', count:'8.7K'},
   ];
   try{
-    var snap2 = await db.collection('cities').doc(CITY).collection('mediaProfiles').limit(8).get();
+    var snap2 = await db.collection('mediaProfiles').limit(8).get();
     var withCounts = await Promise.all(snap2.docs.map(async function(doc){
       var followers = await doc.ref.collection('followers').get();
       return {id:doc.id, data:doc.data(), count:followers.size};
@@ -2772,8 +2826,8 @@ function votePoll(contentId, optionId){
 // ── FOLLOW FROM FEED (same subcollection pattern as media-profile.html) ──
 function toggleFollowFromFeed(targetUid, btn){
   if(!currentUser){ requireLogin(); return; }
-  var followerDoc = db.collection('cities').doc(CITY).collection('mediaProfiles').doc(targetUid).collection('followers').doc(currentUser.uid);
-  var followingDoc = db.collection('cities').doc(CITY).collection('mediaProfiles').doc(currentUser.uid).collection('following').doc(targetUid);
+  var followerDoc = db.collection('mediaProfiles').doc(targetUid).collection('followers').doc(currentUser.uid);
+  var followingDoc = db.collection('mediaProfiles').doc(currentUser.uid).collection('following').doc(targetUid);
   followerDoc.get().then(function(d){
     if(d.exists){ followerDoc.delete(); followingDoc.delete(); btn.textContent='+ Follow'; btn.classList.remove('following'); }
     else { var now=new Date().toISOString(); followerDoc.set({followedAt:now}); followingDoc.set({followedAt:now}); btn.textContent='✓ Following'; btn.classList.add('following'); }
