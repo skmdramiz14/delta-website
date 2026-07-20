@@ -292,13 +292,18 @@ async function loadAllCreators(reset){
     // all, which also means no more composite-index requirement for these —
     // Firestore auto-indexes single-field equality queries on a plain
     // collection by default.
+    //
+    // Queries use the *_lower fields (case-insensitive), not the original
+    // properly-cased display fields — Firestore's == is case-sensitive, so
+    // searching "delhi" would never match a stored "Delhi Division" without
+    // this. scopeValue itself stays properly-cased for display purposes.
     if(scopeLevel==='all'){
       q = db.collection('mediaProfiles').limit(PAGE_SIZE);
     } else if(scopeLevel==='city'){
-      q = db.collection('mediaProfiles').where('homeCity','==',scopeValue).limit(PAGE_SIZE);
+      q = db.collection('mediaProfiles').where('homeCity_lower','==',(scopeValue||'').toLowerCase()).limit(PAGE_SIZE);
     } else {
       // district / state / country
-      q = db.collection('mediaProfiles').where(scopeLevel,'==',scopeValue).limit(PAGE_SIZE);
+      q = db.collection('mediaProfiles').where(scopeLevel+'_lower','==',(scopeValue||'').toLowerCase()).limit(PAGE_SIZE);
     }
     if(!reset && lastDoc) q = q.startAfter(lastDoc);
     var snap = await q.get();
