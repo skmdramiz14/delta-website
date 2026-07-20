@@ -565,6 +565,29 @@ textarea.form-input{resize:vertical;min-height:70px;font-family:inherit;}
   </div>
 </div>
 
+<!-- Contact collection for the notify flow — bazaar's request form is
+     reachable without logging in first (unlike checkout), so unlike
+     index.html's checkout-gate notify, we can't just assume currentUser
+     exists here. -->
+<div class="modal-overlay" id="bazaarContactModal">
+  <div class="modal-box" style="text-align:center;">
+    <div style="font-size:2rem;margin-bottom:8px;">🔔</div>
+    <h3><span class="lang-bn">কোথায় জানাবো?</span><span class="lang-en">Where should we notify you?</span></h3>
+    <p style="font-size:.82rem;color:var(--muted);margin:6px 0 16px;">
+      <span class="lang-bn">Account লাগবে না — শুধু email বা মোবাইল দিন</span>
+      <span class="lang-en">No account needed — just an email or mobile number</span>
+    </p>
+    <div class="form-group"><label>Email</label>
+      <input type="email" class="form-input" id="bzNotifyEmail" placeholder="your@email.com"></div>
+    <div class="form-group"><label><span class="lang-bn">অথবা মোবাইল নম্বর</span><span class="lang-en">Or mobile number</span></label>
+      <input type="tel" class="form-input" id="bzNotifyMobile" placeholder="98XXXXXXXX"></div>
+    <button class="submit-btn" onclick="submitBazaarNotifyContact()">🔔 <span class="lang-bn">জানান</span><span class="lang-en">Notify me</span></button>
+    <button onclick="closeBazaarContactModal()" style="width:100%;background:transparent;border:none;color:var(--muted);
+      padding:10px;margin-top:6px;font-size:.82rem;cursor:pointer;">
+      <span class="lang-bn">বাতিল করুন</span><span class="lang-en">Cancel</span></button>
+  </div>
+</div>
+
 <div class="modal-overlay" id="authModal">
   <div class="modal-box">
     <h3>△ DELTA</h3>
@@ -955,18 +978,49 @@ async function uploadRequestImage(input){
 function closeBazaarGateModal(){
   document.getElementById('bazaarGateModal').classList.remove('open');
 }
-function notifyBazaarExpansion(){
-  if(db){
+async function notifyBazaarExpansion(){
+  closeBazaarGateModal();
+  if(currentUser){
+    var email = currentUser.email || null;
+    var mobile = null;
+    try{
+      var userDoc = await db.collection('users').doc(currentUser.uid).get();
+      if(userDoc.exists && userDoc.data().mobile) mobile = userDoc.data().mobile;
+    }catch(e){ console.warn('Could not fetch mobile from account', e); }
     db.collection('expansionRequests').add({
-      uid: (currentUser&&currentUser.uid) || null,
-      email: (currentUser&&currentUser.email) || null,
-      mobile: null, pincode: null, city: CITY, service: 'bazaarDelivery',
+      uid: currentUser.uid, email: email, mobile: mobile,
+      pincode: null, city: CITY, service: 'bazaarDelivery',
       source: 'bazaar_request_gate', status: 'notified_requested',
       requestedAt: new Date().toISOString()
     }).catch(function(e){ console.error(e); });
+    showToast('ধন্যবাদ! আমরা আপনাকে জানাবো 🔔', 'green');
+  } else {
+    // Not logged in and bazaar's request form doesn't require login first —
+    // collect contact info directly instead of silently submitting a
+    // request with mobile:null and no email either.
+    document.getElementById('bazaarContactModal').classList.add('open');
   }
+}
+function closeBazaarContactModal(){
+  document.getElementById('bazaarContactModal').classList.remove('open');
+}
+function submitBazaarNotifyContact(){
+  var email = document.getElementById('bzNotifyEmail').value.trim();
+  var mobile = document.getElementById('bzNotifyMobile').value.trim();
+  if(!email && !mobile){
+    showToast('Email বা মোবাইল অন্তত একটা দিন ⚠️', 'red');
+    return;
+  }
+  db.collection('expansionRequests').add({
+    uid: null, email: email||null, mobile: mobile||null,
+    pincode: null, city: CITY, service: 'bazaarDelivery',
+    source: 'bazaar_request_gate', status: 'notified_requested',
+    requestedAt: new Date().toISOString()
+  }).catch(function(e){ console.error(e); });
   showToast('ধন্যবাদ! আমরা আপনাকে জানাবো 🔔', 'green');
-  closeBazaarGateModal();
+  document.getElementById('bzNotifyEmail').value='';
+  document.getElementById('bzNotifyMobile').value='';
+  closeBazaarContactModal();
 }
 
 async function submitBazaarRequest(){
