@@ -125,7 +125,7 @@ var fbcfg={apiKey:"AIzaSyA6TrrnCMwv1aa1WPqGvTVWlnieB2pVOEU",authDomain:"delta-pl
 firebase.initializeApp(fbcfg);
 var auth=firebase.auth();
 var db=firebase.firestore();
-var CITY = new URLSearchParams(location.search).get('city') || 'manteswar';
+var CITY = new URLSearchParams(location.search).get('city') || (function(){ try{ return localStorage.getItem('delta_city'); }catch(e){ return null; } })() || 'manteswar'; // Location Architecture v1 Section 3
 var currentUser=null;
 var activeFilter='foryou';
 var followingSet=null;
@@ -169,7 +169,7 @@ async function loadReels(){
   if(activeFilter==='following'){
     if(!currentUser){ toastEmpty('Following দেখতে লগইন করুন'); return; }
     if(!followingSet){
-      var followSnap = await db.collection('cities').doc(CITY).collection('mediaProfiles').doc(currentUser.uid).collection('following').get();
+      var followSnap = await db.collection('mediaProfiles').doc(currentUser.uid).collection('following').get();
       followingSet = followSnap.docs.map(function(d){return d.id;});
     }
     if(!followingSet.length){ toastEmpty('আপনি এখনও কাউকে follow করেননি'); return; }
@@ -327,7 +327,7 @@ function refreshLikeCommentCounts(id){
 }
 
 function checkFollowState(authorUid, id){
-  db.collection('cities').doc(CITY).collection('mediaProfiles').doc(authorUid).collection('followers').doc(currentUser.uid).get().then(function(d){
+  db.collection('mediaProfiles').doc(authorUid).collection('followers').doc(currentUser.uid).get().then(function(d){
     var btn=document.getElementById('followBtn-'+id); if(!btn) return;
     if(d.exists){ btn.textContent='Following'; btn.classList.add('following'); }
     else { btn.textContent='Follow'; btn.classList.remove('following'); }
@@ -335,8 +335,8 @@ function checkFollowState(authorUid, id){
 }
 function toggleFollow(targetUid, id){
   if(!currentUser){ alert('লগইন করুন প্রথমে'); return; }
-  var followerDoc = db.collection('cities').doc(CITY).collection('mediaProfiles').doc(targetUid).collection('followers').doc(currentUser.uid);
-  var followingDoc = db.collection('cities').doc(CITY).collection('mediaProfiles').doc(currentUser.uid).collection('following').doc(targetUid);
+  var followerDoc = db.collection('mediaProfiles').doc(targetUid).collection('followers').doc(currentUser.uid);
+  var followingDoc = db.collection('mediaProfiles').doc(currentUser.uid).collection('following').doc(targetUid);
   followerDoc.get().then(function(d){
     var now=new Date().toISOString();
     if(d.exists){ followerDoc.delete(); followingDoc.delete(); }
