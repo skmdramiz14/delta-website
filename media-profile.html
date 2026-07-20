@@ -276,28 +276,19 @@ async function loadProfile(){
     return;
   }
   try{
-    var doc = await db.collection('cities').doc(CITY).collection('mediaProfiles').doc(PROFILE_UID).get();
+    // Global User Identity Architecture v1 — a single top-level lookup.
+    // No more guessing which city-tenant the profile might be nested under,
+    // and no more 'unassigned'-bucket fallback check: mediaProfiles/{uid}
+    // is the ONE place any account's profile lives, regardless of whether
+    // DELTA serves their area yet.
+    var doc = await db.collection('mediaProfiles').doc(PROFILE_UID).get();
     isOwner = !!(currentUser && currentUser.uid === PROFILE_UID);
 
-    // If not found under the guessed CITY, also check 'unassigned' before
-    // self-healing a brand new profile — otherwise someone who registered
-    // from an unverified location, then returns with CITY guessed
-    // differently, would end up with a duplicate/orphaned profile.
-    var unassignedDoc = null;
-    if(!doc.exists && isOwner && CITY !== 'unassigned'){
-      unassignedDoc = await db.collection('cities').doc('unassigned').collection('mediaProfiles').doc(PROFILE_UID).get();
-    }
-
-    if(unassignedDoc && unassignedDoc.exists){
-      profileData = unassignedDoc.data();
-    } else if(!doc.exists && isOwner){
+    if(!doc.exists && isOwner){
       // Self-heal for accounts created before mediaProfiles auto-creation was
       // added to the sign-up flow — build a basic profile now rather than
-      // showing "Profile not found" forever on someone's own page. Only
-      // trust CITY's geo info if actually verified this session — otherwise
-      // this goes into 'unassigned' too, consistent with the registration flow.
+      // showing "Profile not found" forever on someone's own page.
       var isVerified = !!localStorage.getItem('delta_verified_pincode');
-      var selfHealCityPath = isVerified ? CITY : 'unassigned';
       var pendingPincode = isVerified ? null : (localStorage.getItem('delta_last_unserved_pincode') || null);
       var geoFields = {city:null, district:null, state:null, country:null};
       if(isVerified){
@@ -309,11 +300,11 @@ async function loadProfile(){
         bio:'', avatarUrl:'', coverUrl:'', roles:['customer','creator'],
         linkedCustomerId: currentUser.uid, followerCount:0, followingCount:0, postCount:0,
         primaryBadge:'customer_creator', isVerified:false,
-        city:geoFields.city, district:geoFields.district, state:geoFields.state, country:geoFields.country,
+        homeCity:geoFields.city, district:geoFields.district, state:geoFields.state, country:geoFields.country,
         pendingPincode: pendingPincode,
         createdAt:new Date().toISOString(), updatedAt:new Date().toISOString()
       };
-      await db.collection('cities').doc(selfHealCityPath).collection('mediaProfiles').doc(PROFILE_UID).set(basicProfile);
+      await db.collection('mediaProfiles').doc(PROFILE_UID).set(basicProfile);
       profileData = basicProfile;
     } else {
       profileData = doc.exists ? doc.data() : {};
@@ -370,7 +361,7 @@ async function loadProfile(){
 
 async function loadRealCounts(){
   try{
-    var base = db.collection('cities').doc(CITY).collection('mediaProfiles').doc(PROFILE_UID);
+    var base = db.collection('mediaProfiles').doc(PROFILE_UID);
     var followers = await base.collection('followers').get();
     var following = await base.collection('following').get();
     document.getElementById('ppFollowerCount').textContent = followers.size;
@@ -411,7 +402,7 @@ function renderActions(){
 async function refreshFollowBtnState(){
   if(!currentUser || isOwner) return;
   try{
-    var d = await db.collection('cities').doc(CITY).collection('mediaProfiles').doc(currentUser.uid).collection('following').doc(PROFILE_UID).get();
+    var d = await db.collection('mediaProfiles').doc(currentUser.uid).collection('following').doc(PROFILE_UID).get();
     var btn = document.getElementById('ppFollowBtn');
     if(btn && d.exists){ btn.textContent = 'Following'; btn.classList.add('following'); }
   }catch(e){}
@@ -419,8 +410,8 @@ async function refreshFollowBtnState(){
 function toggleFollowProfile(){
   if(!currentUser){ requireLogin(); return; }
   var btn = document.getElementById('ppFollowBtn');
-  var myRef = db.collection('cities').doc(CITY).collection('mediaProfiles').doc(currentUser.uid).collection('following').doc(PROFILE_UID);
-  var theirRef = db.collection('cities').doc(CITY).collection('mediaProfiles').doc(PROFILE_UID).collection('followers').doc(currentUser.uid);
+  var myRef = db.collection('mediaProfiles').doc(currentUser.uid).collection('following').doc(PROFILE_UID);
+  var theirRef = db.collection('mediaProfiles').doc(PROFILE_UID).collection('followers').doc(currentUser.uid);
   var isFollowing = btn.classList.contains('following');
   if(isFollowing){
     myRef.delete(); theirRef.delete();
@@ -600,7 +591,7 @@ async function saveProfileEdit(){
     updatedAt: new Date().toISOString()
   };
   try{
-    await db.collection('cities').doc(CITY).collection('mediaProfiles').doc(currentUser.uid).set(updates, {merge:true});
+    await db.collection('mediaProfiles').doc(currentUser.uid).set(updates, {merge:true});
     closeEditProfile();
     profileData = Object.assign({}, profileData, updates);
     loadProfile();
@@ -614,11 +605,11 @@ function openFollowList(kind){
   document.getElementById('followListTitle').textContent = kind==='followers' ? 'Followers' : 'Following';
   document.getElementById('followListModal').classList.add('open');
   document.getElementById('followListBody').innerHTML = '<div class="pp-loading">লোড হচ্ছে...</div>';
-  db.collection('cities').doc(CITY).collection('mediaProfiles').doc(PROFILE_UID).collection(kind).limit(50).get()
+  db.collection('mediaProfiles').doc(PROFILE_UID).collection(kind).limit(50).get()
     .then(async function(snap){
       if(!snap.docs.length){ document.getElementById('followListBody').innerHTML = '<div class="pp-empty">কেউ নেই এখনো।</div>'; return; }
       var rows = await Promise.all(snap.docs.map(async function(d){
-        var pDoc = await db.collection('cities').doc(CITY).collection('mediaProfiles').doc(d.id).get();
+        var pDoc = await db.collection('mediaProfiles').doc(d.id).get();
         var p = pDoc.exists ? pDoc.data() : {};
         return '<div class="pp-follow-row"><img class="pp-follow-avatar" src="'+(p.avatarUrl||'')+'" onerror="this.style.background=\'var(--cream)\'">'+
           '<div class="pp-follow-name" onclick="location.href=\'media-profile.html?uid='+d.id+'&city='+CITY+'\'">'+(p.displayName||'Unknown')+'</div></div>';
