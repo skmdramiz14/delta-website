@@ -1,4 +1,4 @@
-<!DOCTYPE html>   
+<!DOCTYPE html> 
 <html lang="bn">
 <head>
 <meta charset="UTF-8">
@@ -8026,23 +8026,19 @@ function authTab(t,el){
 // remains fully editable, and _regResolvedGeo is reset so a stale
 // selection from a previous attempt never silently carries over.
 async function prefillRegLocationField(){
+  // Deliberately NOT auto-filling from an earlier delivery-check's pincode
+  // (delta_verified_pincode / delta_last_unserved_pincode) — that earlier
+  // check only ever captured a bare pincode or a generic city-level label,
+  // never the specific landmark/address a person actually lives at.
+  // Auto-filling with that coarse value let people register without ever
+  // typing their real, specific location — always start blank so
+  // Autocomplete's suggestion (or a fresh geocode at submit time) is what
+  // actually gets saved, not a leftover generic value from a prior search.
   _regResolvedGeo = null;
   var input = document.getElementById('regLocationInput');
   var statusEl = document.getElementById('regLocationStatus');
-  if(!input) return;
-  if(input.value.trim()){ return; } // don't clobber something they're already typing
-  var verifiedPin = localStorage.getItem('delta_verified_pincode');
-  if(verifiedPin){
-    try{
-      var geo = await getCityGeo(CITY);
-      input.value = geo.label || CITY;
-      if(statusEl) statusEl.textContent = '✅ '+(geo.label||CITY)+' ('+verifiedPin+')';
-      _regResolvedGeo = {pincode:verifiedPin, areaLabel:geo.label||CITY, citySlug:CITY, district:geo.district, state:geo.state, country:geo.country};
-      return;
-    }catch(e){ /* fall through to unserved-pincode prefill below */ }
-  }
-  var lastUnserved = localStorage.getItem('delta_last_unserved_pincode');
-  if(lastUnserved){ input.value = lastUnserved; }
+  if(input) input.value = '';
+  if(statusEl) statusEl.textContent = '';
 }
 function showAuthErr(m){var e=document.getElementById('authErr');e.textContent=m;e.style.display='block';}
 // If the user was sent here from another DELTA page (e.g. media-feed.html) to
@@ -8097,7 +8093,13 @@ async function doCustomerRegister(){
     var matchedCity = fullGeo.pincode ? PINCODE_CITY_MAP[fullGeo.pincode] : null;
     if(matchedCity){
       var geo = await getCityGeo(matchedCity);
-      geoFields = {city:matchedCity, district:geo.district, state:geo.state, country:geo.country, areaLabel:geo.label||matchedCity};
+      geoFields.city = matchedCity;
+      geoFields.district = geo.district; geoFields.state = geo.state; geoFields.country = geo.country;
+      // Keep the specific place the user actually searched/selected
+      // (e.g. "Jamna Gram Panchayat, Manteswar...") rather than replacing it
+      // with just the generic city-level label — losing that landmark
+      // detail was a real bug reported by testing.
+      geoFields.areaLabel = fullGeo.areaLabel || geo.label || matchedCity;
       setCurrentCity(matchedCity);
       localStorage.setItem('delta_verified_pincode', fullGeo.pincode);
     } else {
