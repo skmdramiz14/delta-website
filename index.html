@@ -4639,10 +4639,11 @@ async function checkAndMigrateUnassignedUser(uid){
 
     var geo = await getCityGeo(newCity);
     await userRef.update({ homeCity: newCity, pendingPincode: null });
-    await profRef.update({
+    await profRef.update(Object.assign({
       homeCity: newCity, district: geo.district, state: geo.state, country: geo.country,
       areaLabel: geo.label||newCity, pendingPincode: null, updatedAt: new Date().toISOString()
-    }).catch(function(e){ console.warn('mediaProfiles update skipped (may not exist)', e); });
+    }, lowercaseGeoFields({city:newCity, district:geo.district, state:geo.state, country:geo.country})))
+      .catch(function(e){ console.warn('mediaProfiles update skipped (may not exist)', e); });
 
     setCurrentCity(newCity);
     updateCityUI();
@@ -8109,7 +8110,7 @@ async function doCustomerRegister(){
     });
     // Identity Bridge — same account also needs a mediaProfiles doc so DELTA
     // Media's profile page finds them, whether they signed up here or there.
-    await db.collection('mediaProfiles').doc(cr.user.uid).set({
+    await db.collection('mediaProfiles').doc(cr.user.uid).set(Object.assign({
       uid: cr.user.uid, displayName: name, bio:'', avatarUrl:'', coverUrl:'',
       roles:['customer','creator'], linkedCustomerId: cr.user.uid,
       followerCount:0, followingCount:0, postCount:0,
@@ -8118,7 +8119,7 @@ async function doCustomerRegister(){
       areaLabel: geoFields.areaLabel,
       pendingPincode: pendingPincode,
       createdAt:new Date().toISOString(), updatedAt:new Date().toISOString()
-    });
+    }, lowercaseGeoFields(geoFields)));
     recordKnownLocation(geoFields); // Discover People's scope dropdowns learn about this area
     closeAuth();showToast('নিবন্ধন সফল! স্বাগতম '+name+' 🎉','green');redirectAfterAuthIfNeeded();
   }catch(er){showAuthErr(er.code==='auth/email-already-in-use'?'এই ইমেইল আগেই ব্যবহৃত':er.message);}
