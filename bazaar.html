@@ -545,19 +545,48 @@ textarea.form-input{resize:vertical;min-height:70px;font-family:inherit;}
   <div id="myReqListWrap"></div>
 </div>
 
-<!-- ═══ LOGIN MODAL ═══ -->
+<!-- ═══ LOGIN MODAL — now real email/password (Identity Bridge), not
+     anonymous auth. Same account works across index.html/media-feed.html/
+     bazaar.html — see Location Architecture v1 discussion on identity
+     fragmentation. ═══ -->
+<!-- BAZAAR SERVICE GATE — Location Architecture v1, Section 6. This was
+     planned from the start but never actually wired up until now: the
+     schema/admin toggle for bazaarDelivery existed, but this page never
+     checked it before letting a request go through. -->
+<div class="modal-overlay" id="bazaarGateModal">
+  <div class="modal-box" style="text-align:center;">
+    <div style="font-size:2rem;margin-bottom:8px;">😔</div>
+    <h3><span class="lang-bn">এখনো এই এলাকায় Bazaar Delivery নেই</span><span class="lang-en">Bazaar Delivery isn't available here yet</span></h3>
+    <p style="font-size:.85rem;color:var(--muted);margin:8px 0 18px;" id="bzGateMessage"></p>
+    <button class="submit-btn" onclick="notifyBazaarExpansion()">🔔 <span class="lang-bn">জানান যখন আসবে</span><span class="lang-en">Notify me when available</span></button>
+    <button onclick="closeBazaarGateModal()" style="width:100%;background:transparent;border:none;color:var(--muted);
+      padding:10px;margin-top:6px;font-size:.82rem;cursor:pointer;">
+      <span class="lang-bn">বন্ধ করুন</span><span class="lang-en">Close</span></button>
+  </div>
+</div>
+
 <div class="modal-overlay" id="authModal">
   <div class="modal-box">
-    <h3>লগইন করুন</h3>
-    <div class="form-group">
-      <label>মোবাইল নম্বর</label>
-      <input type="tel" class="form-input" id="authPhone" placeholder="98XXXXXXXX">
+    <h3>△ DELTA</h3>
+    <div style="display:flex;gap:8px;margin:14px 0;">
+      <button class="btn-sm" id="bzTabLoginBtn" style="flex:1;background:var(--navy);color:#fff;" onclick="bzAuthTab('login')">🔐 লগইন</button>
+      <button class="btn-sm" id="bzTabRegBtn" style="flex:1;background:var(--border);color:var(--charcoal);" onclick="bzAuthTab('register')">📝 নিবন্ধন</button>
     </div>
-    <div class="form-group">
-      <label>আপনার নাম</label>
-      <input type="text" class="form-input" id="authName" placeholder="আপনার নাম">
+    <div id="bzAuthErr" style="color:#c0392b;font-size:.78rem;margin-bottom:10px;display:none;"></div>
+
+    <div id="bzLoginPane">
+      <div class="form-group"><label>Email</label><input type="email" class="form-input" id="bzEmail" placeholder="your@email.com"></div>
+      <div class="form-group"><label>Password</label><input type="password" class="form-input" id="bzPass" placeholder="••••••••"></div>
+      <button class="submit-btn" onclick="doBazaarLogin()">লগইন করুন</button>
     </div>
-    <button class="submit-btn" onclick="quickLogin()">লগইন করুন</button>
+    <div id="bzRegPane" style="display:none;">
+      <div class="form-group"><label>আপনার নাম</label><input type="text" class="form-input" id="bzRegName" placeholder="আপনার নাম"></div>
+      <div class="form-group"><label>মোবাইল নম্বর</label><input type="tel" class="form-input" id="bzRegMobile" placeholder="98XXXXXXXX"></div>
+      <div class="form-group"><label>Email</label><input type="email" class="form-input" id="bzRegEmail" placeholder="your@email.com"></div>
+      <div class="form-group"><label>Password (কমপক্ষে ৬ অক্ষর)</label><input type="password" class="form-input" id="bzRegPass" placeholder="••••••••"></div>
+      <button class="submit-btn" onclick="doBazaarRegister()">নিবন্ধন করুন</button>
+    </div>
+
     <button onclick="closeAuthModal()" style="width:100%;background:transparent;border:none;color:var(--muted);
       padding:10px;margin-top:6px;font-size:.82rem;cursor:pointer;">বাতিল করুন</button>
   </div>
@@ -575,7 +604,65 @@ var FB_CFG = {
   messagingSenderId:"444904180433",
   appId:"1:444904180433:web:6706eba4d73a30cd67d3f0"
 };
-var CITY = 'manteswar';
+var CITY = new URLSearchParams(location.search).get('city') || (function(){ try{ return localStorage.getItem('delta_city'); }catch(e){ return null; } })() || 'manteswar'; // Location Architecture v1 Section 3 — shared city persistence
+var _cityGeoCache = {};
+var CM_CACHE_TTL_MS = 8 * 60 * 1000;
+var CITY_GEO_SEED_DEFAULTS = {
+  manteswar: {label:'Manteswar', district:'Purba Bardhaman', state:'West Bengal', country:'India'},
+  memari: {label:'Memari', district:'Purba Bardhaman', state:'West Bengal', country:'India'}
+};
+function _cmCacheRead(key){
+  try{
+    var raw = sessionStorage.getItem(key);
+    if(!raw) return null;
+    var parsed = JSON.parse(raw);
+    if(Date.now() - parsed.t > CM_CACHE_TTL_MS) return null;
+    return parsed.v;
+  }catch(e){ return null; }
+}
+function _cmCacheWrite(key, value){
+  try{ sessionStorage.setItem(key, JSON.stringify({v:value, t:Date.now()})); }catch(e){}
+}
+async function getCityGeo(city){
+  if(_cityGeoCache[city]) return _cityGeoCache[city];
+  var cached = _cmCacheRead('cm_city_'+city);
+  if(cached){ _cityGeoCache[city] = cached; return cached; }
+  var fallback = CITY_GEO_SEED_DEFAULTS[city] || {label:city, district:'', state:'', country:'India'};
+  try{
+    var doc = await db.collection('cityConfig').doc(city).get();
+    if(doc.exists){ _cityGeoCache[city] = doc.data(); _cmCacheWrite('cm_city_'+city, doc.data()); return doc.data(); }
+    _cityGeoCache[city] = fallback;
+    _cmCacheWrite('cm_city_'+city, fallback);
+    return fallback;
+  }catch(e){
+    console.warn('cityConfig fetch failed, using in-memory default', e);
+    return fallback;
+  }
+}
+// Service-availability resolver — platform-wide override wins over the
+// city's own per-service status. Same pattern as index.html.
+var _platformConfigCache = null;
+async function getServiceStatus(cityId, serviceKey){
+  if(_platformConfigCache === null){
+    var cachedPlatform = _cmCacheRead('cm_platform');
+    if(cachedPlatform){ _platformConfigCache = cachedPlatform; }
+    else{
+      try{
+        var pDoc = await db.collection('platformConfig').doc('global').get();
+        _platformConfigCache = pDoc.exists ? (pDoc.data().services||{}) : {};
+        _cmCacheWrite('cm_platform', _platformConfigCache);
+      }catch(e){ console.warn('platformConfig fetch failed', e); _platformConfigCache = {}; }
+    }
+  }
+  var platformEntry = _platformConfigCache[serviceKey];
+  if(platformEntry && platformEntry.status !== 'active') return platformEntry.status;
+  var geo = await getCityGeo(cityId);
+  var cityEntry = (geo.services && geo.services[serviceKey]) || {status:'disabled'};
+  return cityEntry.status;
+}
+async function isServiceActive(cityId, serviceKey){
+  return (await getServiceStatus(cityId, serviceKey)) === 'active';
+}
 var CLOUD = 'djthojcmy', PRESET = 'delta_products';
 var auth, db, currentUser = null;
 var uploadedImageUrl = '';
@@ -642,21 +729,69 @@ function handleUserBtn(){
 }
 function closeAuthModal(){ document.getElementById('authModal').classList.remove('open'); }
 
-function quickLogin(){
-  var phone = document.getElementById('authPhone').value.trim();
-  var name = document.getElementById('authName').value.trim();
-  if(!phone || !name){ showToast('নাম ও মোবাইল নম্বর দিন', 'red'); return; }
-  // Lightweight anonymous auth + profile attached locally (full phone-OTP is Phase 2)
-  auth.signInAnonymously().then(function(cred){
-    currentUser = cred.user;
-    currentUser.updateProfile({displayName: name}).then(function(){
-      currentUser.displayName = name;
-      window._guestPhone = phone;
-      updateAuthUI();
-      closeAuthModal();
-      showToast('লগইন সফল ✅', 'green');
+function bzAuthTab(t){
+  document.getElementById('bzTabLoginBtn').style.background = t==='login' ? 'var(--navy)' : 'var(--border)';
+  document.getElementById('bzTabLoginBtn').style.color = t==='login' ? '#fff' : 'var(--charcoal)';
+  document.getElementById('bzTabRegBtn').style.background = t==='register' ? 'var(--navy)' : 'var(--border)';
+  document.getElementById('bzTabRegBtn').style.color = t==='register' ? '#fff' : 'var(--charcoal)';
+  document.getElementById('bzLoginPane').style.display = t==='login' ? 'block' : 'none';
+  document.getElementById('bzRegPane').style.display = t==='register' ? 'block' : 'none';
+  document.getElementById('bzAuthErr').style.display = 'none';
+}
+function showBzAuthErr(msg){
+  var e = document.getElementById('bzAuthErr');
+  e.textContent = msg; e.style.display = 'block';
+}
+async function doBazaarLogin(){
+  var email = document.getElementById('bzEmail').value.trim();
+  var pass = document.getElementById('bzPass').value;
+  if(!email || !pass){ showBzAuthErr('Email ও Password দিন'); return; }
+  try{
+    await auth.signInWithEmailAndPassword(email, pass);
+    closeAuthModal();
+    showToast('লগইন সফল ✅', 'green');
+  }catch(err){ showBzAuthErr('ইমেইল বা পাসওয়ার্ড ভুল'); }
+}
+async function doBazaarRegister(){
+  var name = document.getElementById('bzRegName').value.trim();
+  var mobile = document.getElementById('bzRegMobile').value.trim();
+  var email = document.getElementById('bzRegEmail').value.trim();
+  var pass = document.getElementById('bzRegPass').value;
+  if(!name || !email || !pass){ showBzAuthErr('সব তথ্য পূরণ করুন'); return; }
+  if(pass.length < 6){ showBzAuthErr('পাসওয়ার্ড কমপক্ষে ৬ অক্ষর'); return; }
+  try{
+    var cr = await auth.createUserWithEmailAndPassword(email, pass);
+    await cr.user.updateProfile({displayName:name});
+    // Global User Identity Architecture v1 — same top-level users/{uid} and
+    // mediaProfiles/{uid} write path as index.html/media-feed.html, one
+    // identity across the whole platform. Only trust CITY as a real homeCity
+    // if the user actually verified a served location this session —
+    // otherwise this account is honestly 'unassigned' (homeCity: null)
+    // rather than silently forced into whatever city is being browsed.
+    var isVerified = !!localStorage.getItem('delta_verified_pincode');
+    var geoFields = {city:null, district:null, state:null, country:null, areaLabel:null};
+    if(isVerified){
+      var geo = await getCityGeo(CITY);
+      geoFields = {city:CITY, district:geo.district, state:geo.state, country:geo.country, areaLabel:geo.label||CITY};
+    }
+    await db.collection('users').doc(cr.user.uid).set({
+      name:name, mobile:mobile, email:email, homeCity:geoFields.city, createdAt:new Date().toISOString()
     });
-  }).catch(function(e){ showToast('লগইন ব্যর্থ: '+e.message, 'red'); });
+    await db.collection('mediaProfiles').doc(cr.user.uid).set({
+      uid: cr.user.uid, displayName: name, bio:'', avatarUrl:'', coverUrl:'',
+      roles:['customer','creator'], linkedCustomerId: cr.user.uid,
+      followerCount:0, followingCount:0, postCount:0,
+      primaryBadge:'customer_creator', isVerified:false,
+      homeCity:geoFields.city, district:geoFields.district, state:geoFields.state, country:geoFields.country,
+      areaLabel: geoFields.areaLabel,
+      createdAt:new Date().toISOString(), updatedAt:new Date().toISOString()
+    });
+    window._guestPhone = mobile;
+    closeAuthModal();
+    showToast('নিবন্ধন সফল! স্বাগতম '+name+' ✅', 'green');
+  }catch(err){
+    showBzAuthErr(err.code==='auth/email-already-in-use' ? 'এই ইমেইল আগেই ব্যবহৃত' : err.message);
+  }
 }
 
 // ═══ VISUAL ANCHOR CATALOG (live from Firestore) ═══
@@ -870,13 +1005,41 @@ async function uploadRequestImage(input){
 }
 
 // ═══ SUBMIT REQUEST ═══
-function submitBazaarRequest(){
+function closeBazaarGateModal(){
+  document.getElementById('bazaarGateModal').classList.remove('open');
+}
+function notifyBazaarExpansion(){
+  if(db){
+    db.collection('expansionRequests').add({
+      uid: (currentUser&&currentUser.uid) || null,
+      email: (currentUser&&currentUser.email) || null,
+      mobile: null, pincode: null, city: CITY, service: 'bazaarDelivery',
+      source: 'bazaar_request_gate', status: 'notified_requested',
+      requestedAt: new Date().toISOString()
+    }).catch(function(e){ console.error(e); });
+  }
+  showToast('ধন্যবাদ! আমরা আপনাকে জানাবো 🔔', 'green');
+  closeBazaarGateModal();
+}
+
+async function submitBazaarRequest(){
   var itemName = document.getElementById('reqItemName').value.trim();
   var desc = document.getElementById('reqDesc').value.trim();
   var budgetMin = parseFloat(document.getElementById('reqBudgetMin').value) || 0;
   var budgetMax = parseFloat(document.getElementById('reqBudgetMax').value) || 0;
 
   if(!itemName){ showToast('পণ্যের নাম লিখুন', 'red'); return; }
+
+  // Location Architecture v1, Section 6 — the ONLY point in Bazaar where
+  // delivery availability is checked. Browsing the catalog, viewing items,
+  // and filling this form all stay unrestricted regardless of city status.
+  var bazaarOk = await isServiceActive(CITY, 'bazaarDelivery');
+  if(!bazaarOk){
+    document.getElementById('bzGateMessage').textContent =
+      'আপনার এলাকায় (' + CITY + ') এখনো DELTA Bazaar delivery চালু হয়নি। আপনার লেখা তথ্য এখানেই থাকবে — delivery শুরু হলে জানাবো।';
+    document.getElementById('bazaarGateModal').classList.add('open');
+    return;
+  }
 
   var customerName, customerPhone, customerId;
   if(currentUser){
