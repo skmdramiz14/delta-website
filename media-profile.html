@@ -302,8 +302,7 @@ async function loadProfile(){
       [profileData.homeCity, profileData.district, profileData.state].filter(Boolean).join(', ');
     if(verifiedLoc){
       metaParts.push('<span style="color:var(--gold,#C9971F);font-weight:700;">📍 '+verifiedLoc+
-        ' <span style="font-size:.68rem;color:var(--muted);font-weight:400;">· '+
-        (currentLang==='bn'?'নিবন্ধিত এলাকা':'registered area')+'</span></span>');
+        ' <span style="font-size:.68rem;color:var(--muted);font-weight:400;">· নিবন্ধিত এলাকা</span></span>');
     }
     if(profileData.location) metaParts.push('🏷️ '+profileData.location);
     if(profileData.businessCategory) metaParts.push('🏷️ '+profileData.businessCategory);
