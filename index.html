@@ -3438,8 +3438,13 @@ img{max-width:100%;height:auto;}
         <div class="form-group"><label>Password (min 6)</label><input type="password" class="form-input" id="cRegPass" placeholder="••••••••"></div>
         <div class="form-group">
           <label>📍 আপনার এলাকা <span style="color:#c0392b;">*আবশ্যক</span></label>
-          <input type="text" class="form-input" id="regLocationInput" placeholder="713145 বা এলাকার নাম লিখুন">
+          <input type="text" class="form-input" id="regLocationInput" placeholder="713145 বা এলাকার নাম লিখুন" oninput="onRegLocationTyped()">
           <div id="regLocationStatus" style="font-size:.7rem;color:var(--muted);margin-top:4px;"></div>
+        </div>
+        <div class="form-group">
+          <label>PIN Code <span style="font-weight:400;color:var(--muted);">(auto-fetched — মিলিয়ে দেখুন)</span></label>
+          <input type="text" class="form-input" id="regPinDisplay" readonly disabled
+            style="background:#f2f2f2;color:var(--charcoal);cursor:not-allowed;font-weight:700;" placeholder="—">
         </div>
         <button class="submit-btn" onclick="doCustomerRegister()">✅ নিবন্ধন করুন</button>
       </div>
@@ -4033,6 +4038,46 @@ async function initGooglePlacesAutocomplete(){
 // from the raw typed text at submit time in case they typed without
 // clicking a suggestion.
 var _regResolvedGeo = null;
+var _regTypedDebounce = null;
+// Handles the case where someone types a raw pincode (or any text) directly
+// without ever clicking an Autocomplete suggestion — without this, the
+// read-only PIN display would only update on suggestion-select, leaving it
+// blank/stale for anyone who just types "713145" and hits register.
+function onRegLocationTyped(){
+  var input = document.getElementById('regLocationInput');
+  var pinDisplay = document.getElementById('regPinDisplay');
+  var statusEl = document.getElementById('regLocationStatus');
+  var raw = input.value.trim();
+  clearTimeout(_regTypedDebounce);
+  if(!raw){ if(pinDisplay) pinDisplay.value=''; if(statusEl) statusEl.textContent=''; _regResolvedGeo=null; return; }
+  // A bare 6-digit number typed directly IS the pincode — no need to wait
+  // for a debounced geocode round-trip, show it immediately.
+  if(/^\d{6}$/.test(raw)){
+    if(pinDisplay) pinDisplay.value = raw;
+    return;
+  }
+  // Free text (a landmark name) — debounce a geocode attempt so we're not
+  // firing a request on every keystroke, only after they pause typing.
+  _regTypedDebounce = setTimeout(async function(){
+    if(input.value.trim() !== raw) return; // they kept typing — a newer call will handle it
+    if(statusEl) statusEl.textContent = currentLang==='bn' ? 'খোঁজা হচ্ছে...' : 'Searching...';
+    var fullGeo = await resolveTextToFullGeo(raw);
+    if(input.value.trim() !== raw) return; // stale response — input changed while we waited
+    if(fullGeo){
+      _regResolvedGeo = fullGeo;
+      if(pinDisplay) pinDisplay.value = fullGeo.pincode || '';
+      if(statusEl){
+        statusEl.innerHTML = fullGeo.pincode
+          ? '✅ '+fullGeo.areaLabel+' — <strong style="color:var(--navy,#10392D);font-size:.85rem;">PIN: '+fullGeo.pincode+'</strong>'
+          : '✅ '+fullGeo.areaLabel;
+      }
+    } else {
+      if(pinDisplay) pinDisplay.value = '';
+      if(statusEl) statusEl.textContent = currentLang==='bn' ? '⚠️ এই এলাকা খুঁজে পাওয়া যায়নি' : '⚠️ Could not find this place';
+    }
+  }, 800);
+}
+
 function initRegLocationAutocomplete(bias){
   var inputEl = document.getElementById('regLocationInput');
   if(!inputEl || typeof google==='undefined' || !google.maps || !google.maps.places) return;
@@ -4077,6 +4122,8 @@ function initRegLocationAutocomplete(bias){
       });
     }
     _regResolvedGeo = out;
+    var pinDisplay = document.getElementById('regPinDisplay');
+    if(pinDisplay) pinDisplay.value = out.pincode || '';
     if(statusEl){
       statusEl.innerHTML = out.pincode
         ? '✅ '+out.areaLabel+' — <strong style="color:var(--navy,#10392D);font-size:.85rem;">PIN: '+out.pincode+'</strong>'
