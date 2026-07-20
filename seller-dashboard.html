@@ -1974,7 +1974,7 @@ var FB_CFG = {
 };
 var CLOUD = 'djthojcmy', PRESET = 'delta_products';
 var storyPhotoUrl = null, storyVideoUrl = null;
-var CITY = 'manteswar'; // Multi-tenant: current city
+var CITY = new URLSearchParams(location.search).get('city') || (function(){ try{ return localStorage.getItem('delta_city'); }catch(e){ return null; } })() || 'manteswar'; // Location Architecture v1 Section 3 — shared city persistence
 
 // ═══ STATE ═══
 var auth, db, CU = null, SD = null;
@@ -2006,10 +2006,47 @@ function initFirebase(){
     firebase.initializeApp(FB_CFG);
     auth = firebase.auth(); db = firebase.firestore();
     auth.onAuthStateChanged(function(u){
-      if(u){ CU = u; loadSellerData(); loadNotifications(); }
+      if(u){ CU = u; resolveSellerCityThenLoad(); }
       else{ hideLoading(); showAuth(); }
     });
   }catch(e){ hideLoading(); showAuth(); showToast('Firebase error: '+e.message,'red'); }
+}
+
+// A seller's shop lives under whichever city they registered in
+// (cities/{city}/sellers/{uid}) — but CITY here is only a GUESS, based on
+// the current browser's detected location (Location Architecture v1,
+// Section 3), which may not match where this seller actually registered.
+// Before loading anything, confirm the guess is right; if not, search the
+// known cities for this seller's real doc and correct CITY (persisting the
+// fix to localStorage so future visits go straight to the right city).
+async function resolveSellerCityThenLoad(){
+  try{
+    var guessDoc = await db.collection('cities').doc(CITY).collection('sellers').doc(CU.uid).get();
+    if(guessDoc.exists){ loadSellerData(); loadNotifications(); return; }
+
+    var cityConfigSnap = await db.collection('cityConfig').get();
+    var candidateCities = cityConfigSnap.docs.map(function(d){ return d.id; }).filter(function(c){ return c!==CITY; });
+    for(var i=0;i<candidateCities.length;i++){
+      var altDoc = await db.collection('cities').doc(candidateCities[i]).collection('sellers').doc(CU.uid).get();
+      if(altDoc.exists){
+        CITY = candidateCities[i];
+        try{ localStorage.setItem('delta_city', CITY); }catch(e){}
+        console.info('Seller found under a different city — corrected CITY to', CITY);
+        loadSellerData();
+        loadNotifications();
+        return;
+      }
+    }
+    // Not found anywhere — genuinely a new/incomplete registration, proceed
+    // with the original guess so the rest of the UI can show its normal
+    // "no shop yet" state rather than silently failing.
+    loadSellerData();
+    loadNotifications();
+  }catch(e){
+    console.warn('Seller city resolution failed, proceeding with guessed CITY', e);
+    loadSellerData();
+    loadNotifications();
+  }
 }
 
 // ═══ HELPERS ═══
@@ -2026,7 +2063,7 @@ function showToast(msg,type){
 function sellerRef(uid){ return db.collection('cities').doc(CITY).collection('sellers').doc(uid||CU.uid); }
 function productsRef(){ return sellerRef().collection('products'); }
 function ordersRef(){ return sellerRef().collection('orders'); }
-function customersRef(){ return db.collection('cities').doc(CITY).collection('customers'); }
+function customersRef(){ return db.collection('users'); } // Global User Identity Architecture v1 — top-level, no longer city-scoped
 
 // ═══ AUTH ═══
 function switchAuthTab(tab,el){
