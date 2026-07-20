@@ -3098,6 +3098,42 @@ function expLoadDemand(){
           '<span>'+contact+'</span><span style="color:var(--muted);">'+(SOURCE_LABELS[r.source]||r.source||'')+' · '+when+'</span></div>';
       }).join('');
 
+      // ── DELTA Area Needs Survey breakdown (optional, so only counted
+      // among people who actually answered) ──
+      var surveyRespondents = items.filter(function(r){ return r.servicesWanted && r.servicesWanted.length; });
+      var needsHtml = '';
+      if(surveyRespondents.length){
+        var needCounts = {};
+        surveyRespondents.forEach(function(r){
+          r.servicesWanted.forEach(function(s){
+            var base = s.indexOf('Other:')===0 ? 'Other' : s;
+            needCounts[base] = (needCounts[base]||0)+1;
+          });
+        });
+        var rankedNeeds = Object.keys(needCounts).sort(function(a,b){ return needCounts[b]-needCounts[a]; });
+        needsHtml = '<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);">'+
+          '<div style="font-size:.7rem;font-weight:700;color:var(--navy);margin-bottom:6px;">🙋 সবচেয়ে বেশি চাওয়া সেবা ('+surveyRespondents.length+' জন উত্তর দিয়েছে)</div>'+
+          rankedNeeds.map(function(n){
+            var pct = Math.round((needCounts[n]/surveyRespondents.length)*100);
+            return '<div style="display:flex;justify-content:space-between;font-size:.72rem;padding:2px 0;">'+
+              '<span>'+n+'</span><span style="font-weight:700;color:var(--navy);">'+pct+'%</span></div>';
+          }).join('') +
+        '</div>';
+
+        var priorityVotes = items.filter(function(r){ return r.topPriority; });
+        if(priorityVotes.length){
+          var prioCounts = {};
+          priorityVotes.forEach(function(r){ prioCounts[r.topPriority] = (prioCounts[r.topPriority]||0)+1; });
+          var rankedPrio = Object.keys(prioCounts).sort(function(a,b){ return prioCounts[b]-prioCounts[a]; });
+          needsHtml += '<div style="margin-top:8px;">'+
+            '<div style="font-size:.7rem;font-weight:700;color:var(--gold-dark,#B8925A);margin-bottom:4px;">⭐ সবচেয়ে জরুরি (১ম পছন্দ, '+priorityVotes.length+' ভোট)</div>'+
+            rankedPrio.slice(0,3).map(function(n){
+              return '<div style="font-size:.7rem;color:var(--muted);">'+n+' — '+prioCounts[n]+' ভোট</div>';
+            }).join('') +
+          '</div>';
+        }
+      }
+
       return '<div class="add-zone-card" style="margin-bottom:12px;">'+
         '<div style="display:flex;justify-content:space-between;align-items:baseline;">'+
           '<div style="font-weight:800;font-size:.95rem;">📍 '+key+'</div>'+
@@ -3105,6 +3141,7 @@ function expLoadDemand(){
         '</div>'+
         '<div style="font-size:.78rem;margin:6px 0;">👀 '+searched+' search &nbsp; 🔔 '+notified+' notify-request</div>'+
         '<div style="margin-bottom:8px;">'+sourceHtml+'</div>'+
+        needsHtml+
         (contactRows ? '<div style="margin-top:8px;">'+contactRows+'</div>' : '')+
       '</div>';
     }).join('');
