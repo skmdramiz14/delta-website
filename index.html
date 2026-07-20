@@ -3437,7 +3437,11 @@ img{max-width:100%;height:auto;}
         <div class="form-group"><label>Password (min 6)</label><input type="password" class="form-input" id="cRegPass" placeholder="••••••••"></div>
         <div class="form-group">
           <label>📍 আপনার শহর <span style="font-weight:400;color:var(--muted);">(ঠিক না হলে বদলে দিন)</span></label>
-          <select class="form-input" id="regCityConfirm"><option value="">-- লোড হচ্ছে... --</option></select>
+          <select class="form-input" id="regCityConfirm" onchange="toggleRegPincodeField(this)"><option value="">-- লোড হচ্ছে... --</option></select>
+        </div>
+        <div class="form-group" id="regPincodeWrap" style="display:none;">
+          <label>📍 আপনার pincode/এলাকা <span style="color:#c0392b;">*আবশ্যক</span></label>
+          <input type="text" class="form-input" id="regPincodeInput" placeholder="713xxx বা এলাকার নাম">
         </div>
         <button class="submit-btn" onclick="doCustomerRegister()">✅ নিবন্ধন করুন</button>
       </div>
@@ -3976,17 +3980,22 @@ async function loadPincodeCityMap(){
 })();
 
 var USER_GPS_COORDS = null;   // set once GPS resolves in detectCity()
-// Where THIS logged-in account's own profile actually lives — 'unassigned',
-// a real city, or null (logged out / not yet checked). Kept separate from
-// CITY (the general browsing scope) — see the login handler for why.
+// Where THIS logged-in account's own profile actually lives — a real city,
+// 'unassigned' (homeCity field is null), or null (logged out / not checked
+// yet). Kept separate from CITY (the general browsing scope).
 var MY_ACCOUNT_CITY = null;
+var MY_ACCOUNT_AREA_LABEL = null; // real geocoded area name for unassigned accounts, if captured at registration
+// Global User Identity Architecture v1 — a single top-level read, since
+// homeCity is just a field now, not a tenant folder to search for the
+// account inside of.
 async function loadMyAccountCity(uid){
   try{
-    var unassignedDoc = await db.collection('cities').doc('unassigned').collection('customers').doc(uid).get();
-    if(unassignedDoc.exists){ MY_ACCOUNT_CITY = 'unassigned'; updateCityUI(); return; }
-    var homeDoc = await db.collection('cities').doc(CITY).collection('customers').doc(uid).get();
-    MY_ACCOUNT_CITY = homeDoc.exists ? CITY : null;
-  }catch(e){ console.warn('loadMyAccountCity failed (non-fatal)', e); MY_ACCOUNT_CITY = null; }
+    var doc = await db.collection('users').doc(uid).get();
+    if(!doc.exists){ MY_ACCOUNT_CITY = null; MY_ACCOUNT_AREA_LABEL = null; updateCityUI(); return; }
+    var data = doc.data();
+    MY_ACCOUNT_CITY = data.homeCity || null;
+    MY_ACCOUNT_AREA_LABEL = data.areaLabel || null;
+  }catch(e){ console.warn('loadMyAccountCity failed (non-fatal)', e); MY_ACCOUNT_CITY = null; MY_ACCOUNT_AREA_LABEL = null; }
   updateCityUI();
 }
 var _autocompleteInstances = []; // so bias can update dynamically after init
@@ -4220,13 +4229,16 @@ async function updateCityUI(){
   // general browsing scope, so someone whose account is 'unassigned' sees
   // an honest label instead of whatever city they happen to be browsing.
   if(currentUser && MY_ACCOUNT_CITY !== null){
-    if(MY_ACCOUNT_CITY === 'unassigned'){
-      cityLabel = currentLang==='bn' ? 'এলাকা নির্বাচন করুন' : 'Select your area';
-      isUnassignedState = true;
-    } else {
-      var accGeo = await getCityGeo(MY_ACCOUNT_CITY);
-      cityLabel = accGeo.label || MY_ACCOUNT_CITY;
-    }
+    // Prefer areaLabel — captured at registration for BOTH real DELTA
+    // cities and arbitrary geocoded areas alike. Deliberately avoids
+    // calling getCityGeo() here, which would otherwise self-heal a bogus
+    // cityConfig doc for any random place name that was never meant to be
+    // a real DELTA-operated city (that self-heal exists for genuine city
+    // lookups elsewhere, not for arbitrary geocoded home-city labels).
+    cityLabel = MY_ACCOUNT_AREA_LABEL || MY_ACCOUNT_CITY;
+  } else if(currentUser && MY_ACCOUNT_CITY === null){
+    cityLabel = currentLang==='bn' ? 'এলাকা নির্বাচন করুন' : 'Select your area';
+    isUnassignedState = true;
   } else if(CITY === 'unassigned'){
     cityLabel = currentLang==='bn' ? 'এলাকা নির্বাচন করুন' : 'Select your area';
     isUnassignedState = true;
@@ -4354,6 +4366,41 @@ function resolveTextToPincode(text){
         if(comps[i].types.indexOf('postal_code') >= 0){ resolve(comps[i].long_name); return; }
       }
       resolve(null);
+    });
+  });
+}
+
+// Fuller geocoding for unassigned registrations — extracts a human-readable
+// area label, a real city name + normalized slug (used as homeCity — this
+// now holds the ACTUAL place name, e.g. 'kolkata', not null), plus
+// district/state/country. Whether DELTA actually operates there is a
+// SEPARATE question, answered by whether a cityConfig doc exists for this
+// slug (checked at service-gate time, via the existing safe fallback that
+// already treats "no cityConfig doc" as all-services-disabled) — homeCity
+// itself is just an honest fact about where the person is, never a claim
+// about service availability.
+function resolveTextToFullGeo(text){
+  return new Promise(function(resolve){
+    if(typeof google==='undefined' || !google.maps || !google.maps.Geocoder){
+      resolve(null); return;
+    }
+    var geocoder = new google.maps.Geocoder();
+    geocoder.geocode({ address: text }, function(results, status){
+      if(status !== 'OK' || !results || !results.length){ resolve(null); return; }
+      var comps = results[0].address_components || [];
+      var out = {pincode:null, areaLabel:results[0].formatted_address||text, cityName:null, citySlug:null, district:null, state:null, country:null};
+      comps.forEach(function(c){
+        if(c.types.indexOf('postal_code')>=0) out.pincode = c.long_name;
+        if(c.types.indexOf('locality')>=0) out.cityName = c.long_name;
+        if(!out.cityName && c.types.indexOf('administrative_area_level_2')>=0) out.cityName = c.long_name;
+        if(c.types.indexOf('administrative_area_level_2')>=0) out.district = c.long_name;
+        if(c.types.indexOf('administrative_area_level_1')>=0) out.state = c.long_name;
+        if(c.types.indexOf('country')>=0) out.country = c.long_name;
+      });
+      if(out.cityName){
+        out.citySlug = out.cityName.toLowerCase().trim().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'');
+      }
+      resolve(out);
     });
   });
 }
@@ -4604,69 +4651,39 @@ function browseUnservedLocation(pin){
   skipGate();
 }
 
-// ── Automatic "unassigned" → real city migration ──
-// If this account registered from an area DELTA didn't serve yet, its
-// customer/mediaProfile documents live under cities/unassigned/... with a
-// pendingPincode field recording the real location they searched. This
-// checks whether that pincode is now served, and if so moves them into the
-// correct city automatically — so, per the desired behaviour, their header
-// location updates to the real place name and whichever services are now
-// Active for that city unlock (via the existing getServiceStatus() checks),
-// while anything still not Active stays gated, exactly as it would for any
-// other user of that city.
-//
-// KNOWN LIMITATION: the mediaProfiles "followers" subcollection (people who
-// follow THIS account) is intentionally not migrated — Firestore rules only
-// allow each follower to write their own entry in someone else's followers
-// list (by design, so nobody can fake who follows them), so the profile
-// owner can't copy those entries during migration. In practice this is very
-// unlikely to matter: an account that registered from an unserved area
-// wouldn't have accumulated real followers before DELTA even launched there.
-// The "following" subcollection (who THIS account follows) is fully
-// migrated, since the user owns those entries.
+// ── Automatic "unassigned" → real city update ──
+// Global User Identity Architecture v1 — this used to be a fragile
+// copy-then-delete across two different city-tenant paths (Location
+// Architecture v1's original approach), with a real risk of partial
+// failure and a known limitation that the "followers" subcollection could
+// never be migrated at all. Now that identity is a single top-level
+// document, "moving" is just updating one field. Nothing to copy, nothing
+// that can partially fail, and followers/following never need touching —
+// they were never nested under a city-tenant path to begin with.
 async function checkAndMigrateUnassignedUser(uid){
   try{
-    var custRef = db.collection('cities').doc('unassigned').collection('customers').doc(uid);
-    var profRef = db.collection('cities').doc('unassigned').collection('mediaProfiles').doc(uid);
-    var custDoc = await custRef.get();
-    var profDoc = await profRef.get();
-    if(!custDoc.exists && !profDoc.exists) return; // nothing pending — normal case for most users
-
-    var pendingPincode = (custDoc.exists && custDoc.data().pendingPincode) || (profDoc.exists && profDoc.data().pendingPincode);
+    var userRef = db.collection('users').doc(uid);
+    var profRef = db.collection('mediaProfiles').doc(uid);
+    var userDoc = await userRef.get();
+    if(!userDoc.exists) return;
+    var userData = userDoc.data();
+    // pendingPincode presence is the real signal for "still needs checking" —
+    // homeCity is no longer a reliable signal on its own, since it now holds
+    // the real place name even for areas DELTA doesn't serve yet.
+    var pendingPincode = userData.pendingPincode;
     if(!pendingPincode) return;
 
     await loadPincodeCityMap();
     var newCity = PINCODE_CITY_MAP[pendingPincode];
-    if(!newCity) return; // still not served yet — check again next login, nothing to do now
+    if(!newCity) return; // still not served yet — check again next login
 
     var geo = await getCityGeo(newCity);
+    await userRef.update({ homeCity: newCity, pendingPincode: null });
+    await profRef.update({
+      homeCity: newCity, district: geo.district, state: geo.state, country: geo.country,
+      areaLabel: geo.label||newCity, pendingPincode: null, updatedAt: new Date().toISOString()
+    }).catch(function(e){ console.warn('mediaProfiles update skipped (may not exist)', e); });
 
-    if(custDoc.exists){
-      var custData = custDoc.data();
-      custData.city = newCity;
-      custData.pendingPincode = null;
-      await db.collection('cities').doc(newCity).collection('customers').doc(uid).set(custData);
-      await custRef.delete();
-    }
-
-    if(profDoc.exists){
-      var profData = profDoc.data();
-      profData.city = newCity;
-      profData.district = geo.district; profData.state = geo.state; profData.country = geo.country;
-      profData.pendingPincode = null;
-      var newProfRef = db.collection('cities').doc(newCity).collection('mediaProfiles').doc(uid);
-      await newProfRef.set(profData);
-
-      // Migrate "following" (entries this account itself owns/wrote)
-      var followingSnap = await profRef.collection('following').get();
-      for(var i=0;i<followingSnap.docs.length;i++){
-        await newProfRef.collection('following').doc(followingSnap.docs[i].id).set(followingSnap.docs[i].data());
-        await followingSnap.docs[i].ref.delete();
-      }
-      await profRef.delete();
-    }
-
-    // Reflect the change immediately in this session's UI
     setCurrentCity(newCity);
     updateCityUI();
     showToast((currentLang==='bn'
@@ -8020,10 +8037,7 @@ async function placeOrder(){
 // ── AUTH ──
 function handleUserBtn(){if(currentUser){if(confirm('লগআউট করবেন?'))auth.signOut();}else openAuth();}
 function goToMyDeltaMedia(){
-  if(currentUser){
-    var profileCity = MY_ACCOUNT_CITY || CITY; // fall back to browsing CITY only if not determined yet
-    window.location.href='media-profile.html?uid='+currentUser.uid+'&city='+profileCity;
-  }
+  if(currentUser){ window.location.href='media-profile.html?uid='+currentUser.uid; }
   else { openAuth(); }
 }
 function openAuth(){document.getElementById('authModal').classList.add('open');}
@@ -8034,6 +8048,14 @@ function authTab(t,el){
   document.getElementById('regPane').style.display=t==='register'?'block':'none';
   document.getElementById('authErr').style.display='none';
   if(t==='register') populateRegCityDropdown();
+}
+// Shows the pincode-capture field only when "not in list" is selected — this
+// is what lets checkAndMigrateUnassignedUser() ever find this person again
+// once their area becomes served, even if they never used the location
+// search on the homepage first and went straight to registering.
+function toggleRegPincodeField(sel){
+  var wrap = document.getElementById('regPincodeWrap');
+  wrap.style.display = (sel.value === 'unassigned') ? 'block' : 'none';
 }
 // Explicit, visible city-confirmation at registration — fixes the
 // shared/public-device gap: relying only on "has THIS BROWSER ever verified
@@ -8081,36 +8103,54 @@ async function doCustomerRegister(){
   if(!name||!e||!p){showAuthErr('সব তথ্য পূরণ করুন');return;}
   if(p.length<6){showAuthErr('পাসওয়ার্ড কমপক্ষে ৬ অক্ষর');return;}
   if(!confirmedCity){showAuthErr('আপনার শহর বেছে নিন');return;}
+  if(confirmedCity==='unassigned' && !document.getElementById('regPincodeInput').value.trim() && !localStorage.getItem('delta_last_unserved_pincode')){
+    showAuthErr('আপনার pincode বা এলাকার নাম লিখুন — এটা ছাড়া নিবন্ধন সম্পূর্ণ করা যাবে না');
+    return;
+  }
   try{
     var cr=await auth.createUserWithEmailAndPassword(e,p);
     await cr.user.updateProfile({displayName:name});
-    // The explicit dropdown selection is now the SOLE source of truth for
-    // which city this account belongs to — not "has this browser/device ever
-    // verified a location before" (localStorage.delta_verified_pincode). That
-    // device-history check silently assigned whoever registers next on a
-    // shared/public device to whatever the PREVIOUS person confirmed, which
-    // this visible confirm-step fixes: the actual person in front of the
-    // screen right now makes the call.
-    var regCityPath = confirmedCity; // a real cityConfig id, or the literal 'unassigned'
-    var pendingPincode = confirmedCity==='unassigned' ? (localStorage.getItem('delta_last_unserved_pincode') || null) : null;
-    var geoFields = {city:null, district:null, state:null, country:null};
+    // Global User Identity Architecture v1 — homeCity is just a field on a
+    // single top-level document, always holding the REAL place name/slug
+    // when we have one (e.g. 'kolkata'), whether or not DELTA actually
+    // serves that area. Whether it's served is a SEPARATE question,
+    // answered at service-gate time by whether a matching cityConfig doc
+    // exists — never by whether homeCity itself happens to be set. This is
+    // what makes City-scope discovery actually work for real place names
+    // DELTA doesn't officially operate in yet.
+    var typedArea = document.getElementById('regPincodeInput').value.trim();
+    var pendingPincode = confirmedCity==='unassigned'
+      ? (typedArea || localStorage.getItem('delta_last_unserved_pincode') || null)
+      : null;
+    var geoFields = {city:null, district:null, state:null, country:null, areaLabel:null};
     if(confirmedCity !== 'unassigned'){
       var geo = await getCityGeo(confirmedCity);
-      geoFields = {city:confirmedCity, district:geo.district, state:geo.state, country:geo.country};
-      // Keep this session's browsing scope in sync with what they just confirmed.
+      geoFields = {city:confirmedCity, district:geo.district, state:geo.state, country:geo.country, areaLabel:geo.label||confirmedCity};
       setCurrentCity(confirmedCity);
+    } else if(typedArea){
+      var fullGeo = await resolveTextToFullGeo(typedArea);
+      if(fullGeo){
+        // Real place name becomes homeCity even though DELTA doesn't serve
+        // it yet — service-gating stays safe because getServiceStatus()
+        // already treats "no cityConfig doc for this id" as all-disabled.
+        geoFields.city = fullGeo.citySlug || null;
+        geoFields.district = fullGeo.district; geoFields.state = fullGeo.state;
+        geoFields.country = fullGeo.country; geoFields.areaLabel = fullGeo.areaLabel;
+        if(!pendingPincode && fullGeo.pincode) pendingPincode = fullGeo.pincode;
+      }
     }
-    await db.collection('cities').doc(regCityPath).collection('customers').doc(cr.user.uid).set({
-      name, mobile, email:e, city:geoFields.city, pendingPincode:pendingPincode, createdAt:new Date().toISOString()
+    await db.collection('users').doc(cr.user.uid).set({
+      name, mobile, email:e, homeCity:geoFields.city, pendingPincode:pendingPincode, createdAt:new Date().toISOString()
     });
     // Identity Bridge — same account also needs a mediaProfiles doc so DELTA
     // Media's profile page finds them, whether they signed up here or there.
-    await db.collection('cities').doc(regCityPath).collection('mediaProfiles').doc(cr.user.uid).set({
+    await db.collection('mediaProfiles').doc(cr.user.uid).set({
       uid: cr.user.uid, displayName: name, bio:'', avatarUrl:'', coverUrl:'',
       roles:['customer','creator'], linkedCustomerId: cr.user.uid,
       followerCount:0, followingCount:0, postCount:0,
       primaryBadge:'customer_creator', isVerified:false,
-      city:geoFields.city, district:geoFields.district, state:geoFields.state, country:geoFields.country,
+      homeCity:geoFields.city, district:geoFields.district, state:geoFields.state, country:geoFields.country,
+      areaLabel: geoFields.areaLabel,
       pendingPincode: pendingPincode,
       createdAt:new Date().toISOString(), updatedAt:new Date().toISOString()
     });
@@ -8388,7 +8428,7 @@ var DEMO_PINNED_OFFICIAL = {
 };
 async function getDeltaOfficialUid(){
   try{
-    var snap = await db.collection('cities').doc(CITY).collection('mediaProfiles')
+    var snap = await db.collection('mediaProfiles')
       .where('primaryBadge','==','delta_official').limit(1).get();
     if(!snap.empty) return snap.docs[0].id;
   }catch(e){ console.warn('Could not resolve DELTA Official account', e); }
@@ -8462,7 +8502,7 @@ async function rankStoriesFull(){
     // real distance-based "nearby" needs lat/lng on both viewer and shop, which
     // isn't collected yet. Area match is a reasonable interim signal, not a fake one.
     try{
-      var myProfile = await db.collection('cities').doc(CITY).collection('mediaProfiles').doc(currentUser.uid).get();
+      var myProfile = await db.collection('mediaProfiles').doc(currentUser.uid).get();
       if(myProfile.exists && myProfile.data().location && myProfile.data().location.area){
         myArea = myProfile.data().location.area.trim().toLowerCase();
       }
@@ -8470,7 +8510,7 @@ async function rankStoriesFull(){
 
     // Tier 2 data: Following — already fully real and working.
     try{
-      var fs = await db.collection('cities').doc(CITY).collection('mediaProfiles').doc(currentUser.uid).collection('following').get();
+      var fs = await db.collection('mediaProfiles').doc(currentUser.uid).collection('following').get();
       followSet = fs.docs.map(function(d){return d.id;});
     }catch(e){ console.warn('Following tier: could not load following list', e); }
 
@@ -8480,7 +8520,7 @@ async function rankStoriesFull(){
     // it's the viewer writing their own subcollection). Until that's added, this
     // query just returns empty and the tier scores 0 for everyone — neutral, safe.
     try{
-      var visits = await db.collection('cities').doc(CITY).collection('mediaProfiles').doc(currentUser.uid).collection('shopVisits').get();
+      var visits = await db.collection('mediaProfiles').doc(currentUser.uid).collection('shopVisits').get();
       visits.forEach(function(v){ visitCounts[v.id] = (v.data().visitCount)||0; });
     }catch(e){ console.warn('Frequently-visited tier: no visit data yet (expected until shop.html logs visits)', e); }
   }
@@ -8824,15 +8864,15 @@ function svShare(id){
   else { navigator.clipboard&&navigator.clipboard.writeText(url); alert('Link copied'); }
 }
 function checkSvFollow(authorUid){
-  db.collection('cities').doc(CITY).collection('mediaProfiles').doc(authorUid).collection('followers').doc(currentUser.uid).get().then(function(d){
+  db.collection('mediaProfiles').doc(authorUid).collection('followers').doc(currentUser.uid).get().then(function(d){
     var btn=document.getElementById('svFollowBtn');
     if(d.exists){ btn.textContent='Following'; } else { btn.textContent='Follow'; }
   });
 }
 function toggleSvFollow(targetUid){
   if(!currentUser){ alert('লগইন করুন প্রথমে'); return; }
-  var followerDoc=db.collection('cities').doc(CITY).collection('mediaProfiles').doc(targetUid).collection('followers').doc(currentUser.uid);
-  var followingDoc=db.collection('cities').doc(CITY).collection('mediaProfiles').doc(currentUser.uid).collection('following').doc(targetUid);
+  var followerDoc=db.collection('mediaProfiles').doc(targetUid).collection('followers').doc(currentUser.uid);
+  var followingDoc=db.collection('mediaProfiles').doc(currentUser.uid).collection('following').doc(targetUid);
   followerDoc.get().then(function(d){
     var now=new Date().toISOString();
     if(d.exists){ followerDoc.delete(); followingDoc.delete(); } else { followerDoc.set({followedAt:now}); followingDoc.set({followedAt:now}); }
