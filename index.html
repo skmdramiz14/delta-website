@@ -7878,11 +7878,18 @@ function prodQtyChange(pid,sid,d){
 var voRecognition = null;
 var voSessionId = null;
 var voLastResult = null;
+var voFinished = false;
 
 function openVoiceOrder(){
   if(!currentUser){ showToast('অর্ডার করতে আগে লগইন করুন'); openAuth(); return; }
   document.getElementById('voOverlay').classList.add('open');
   resetVoiceOrderUI();
+  // Greeting — DELTA speaks first, before the customer taps the mic
+  var firstName = (currentUser.displayName||'').split(' ')[0];
+  var greeting = firstName
+    ? 'নমস্কার '+firstName+'! আজকে আপনার কী প্রয়োজন?'
+    : 'নমস্কার! আজকে আপনার কী প্রয়োজন?';
+  speakVoiceOrderText(greeting);
 }
 function closeVoiceOrder(){
   document.getElementById('voOverlay').classList.remove('open');
@@ -8059,6 +8066,7 @@ function confirmVoiceOrderNo(){
 
 async function confirmVoiceOrderYes(){
   if(!voLastResult) return;
+  voFinished = false;
   var items = (voLastResult.parsedItems||[]).filter(function(i){
     return i.interactionModel !== 'OUT_OF_SCOPE_V1' && i.matchCandidates && i.matchCandidates.length;
   });
@@ -8080,6 +8088,31 @@ async function confirmVoiceOrderYes(){
     status:'confirmed', updatedAt:new Date().toISOString()
   }).catch(function(){});
 
+  // Closing gesture — DELTA says goodbye before the sheet closes, rather than
+  // just silently vanishing into the cart.
+  var farewell = 'ধন্যবাদ! আপনার অর্ডার নেওয়া হয়েছে। ভালো থাকবেন।';
+  var voice = getPreferredVoiceOrderVoice();
+  document.getElementById('voContent').innerHTML =
+    '<div class="vo-mic-stage"><div class="vo-status-text">'+farewell+'</div></div>';
+  if(window.speechSynthesis && (currentLang!=='bn' || voice)){
+    try{
+      speechSynthesis.cancel();
+      var u = new SpeechSynthesisUtterance(farewell);
+      u.lang = currentLang==='bn' ? 'bn-IN' : 'en-US';
+      if(voice) u.voice = voice;
+      u.onend = function(){ finishVoiceOrder(); };
+      u.onerror = function(){ finishVoiceOrder(); };
+      speechSynthesis.speak(u);
+      setTimeout(finishVoiceOrder, 4000); // safety fallback if onend never fires
+    }catch(e){ finishVoiceOrder(); }
+  } else {
+    setTimeout(finishVoiceOrder, 1200); // no voice available — still pause briefly on screen
+  }
+}
+
+function finishVoiceOrder(){
+  if(voFinished) return; // guard against both onend AND the setTimeout fallback firing
+  voFinished = true;
   closeVoiceOrder();
   showToast('কার্টে যোগ হয়েছে ✅','green');
   voSessionId = null; voLastResult = null;
