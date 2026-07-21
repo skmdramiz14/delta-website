@@ -8026,14 +8026,22 @@ function renderVoiceOrderConfirmation(result){
   var rowsHtml = inScope.map(function(item){
     var hasMatch = item.matchCandidates && item.matchCandidates.length;
     var top = hasMatch ? item.matchCandidates[0] : null;
-    var lineTotal = top ? (top.price||0) * (item.quantity||1) : 0;
+    // Use convertedQuantity (in the PRODUCT's own unit) for price math, not
+    // the raw spoken quantity — fixes a real bug where "৫০০ গ্রাম" against a
+    // per-kg-priced product would have been multiplied as if 500 kg.
+    var qtyForMath = (item.convertedQuantity!=null) ? item.convertedQuantity : (item.quantity||1);
+    var lineTotal = top ? (top.price||0) * qtyForMath : 0;
     total += lineTotal;
     var badges = '';
     if(item.isMedicine) badges += '<span class="vo-item-badge medicine">💊 '+(item.scheduleType==='OTC'?'OTC':'Prescription লাগবে')+'</span>';
     if(item.needsClarification || !hasMatch) badges += '<span class="vo-item-badge unresolved">⚠️ নিশ্চিত না</span>';
-    return '<div class="vo-item-row">'+
-      '<span class="vo-item-name">'+(item.rawText||'')+(top?' — '+top.label:'')+badges+'</span>'+
-      '<span class="vo-item-qty">'+(item.quantity||'')+' '+(item.unit||'')+(top?' · ₹'+lineTotal:'')+'</span>'+
+    var conversionNoteHtml = item.unitConversionNote
+      ? '<div style="font-size:.72rem;color:#8A6215;margin-top:2px;">ℹ️ '+item.unitConversionNote+'</div>' : '';
+    return '<div class="vo-item-row" style="flex-direction:column;align-items:flex-start;">'+
+      '<div style="display:flex;justify-content:space-between;width:100%;">'+
+        '<span class="vo-item-name">'+(item.rawText||'')+(top?' — '+top.label:'')+badges+'</span>'+
+        '<span class="vo-item-qty">'+(item.quantity||'')+' '+(item.unit||'')+(top?' · ₹'+lineTotal:'')+'</span>'+
+      '</div>'+conversionNoteHtml+
     '</div>';
   }).join('');
 
@@ -8156,9 +8164,13 @@ async function confirmVoiceOrderYes(){
     var top = item.matchCandidates[0];
     var existing = allProducts.find(function(p){ return p.id===top.productId && p.shopId===top.sellerId; });
     if(!existing) return; // safety: only add products that genuinely still exist
+    // Use convertedQuantity (already in the product's own stored unit) —
+    // never the raw spoken quantity, which may be in a different unit
+    // (Section: unit conversion fix — "৫০০ গ্রাম" vs a per-kg product).
+    var qty = (item.convertedQuantity!=null) ? item.convertedQuantity : (item.quantity||1);
     var ex = cart.find(function(c){ return c.id===top.productId && c.shopId===top.sellerId; });
-    if(ex) ex.qty += (item.quantity||1);
-    else cart.push(Object.assign({qty:item.quantity||1, selected:true}, existing));
+    if(ex) ex.qty += qty;
+    else cart.push(Object.assign({qty:qty, selected:true}, existing));
   });
   updateCartBadge();
 
