@@ -786,6 +786,58 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 }
 
 /* ── WHATSAPP FLOAT ── */
+/* ── DELTA VOICE ORDERING — entry button + full conversation overlay ── */
+.vo-entry-wrap{padding:0 6% 14px;}
+.vo-entry-btn{
+  width:100%;display:flex;align-items:center;justify-content:center;gap:10px;
+  background:linear-gradient(135deg,#10392D 0%,#1a4a3a 100%);
+  border:1.5px solid #D4AF37;border-radius:16px;padding:14px 20px;cursor:pointer;
+  box-shadow:0 6px 20px rgba(16,57,45,.18),0 0 0 1px rgba(212,175,55,.08);
+  transition:transform .15s ease;
+}
+.vo-entry-btn:active{transform:scale(.98);}
+.vo-entry-icon{font-size:1.3rem;filter:drop-shadow(0 0 6px rgba(212,175,55,.5));}
+.vo-entry-text{font-family:'Playfair Display',serif;font-weight:800;font-size:.98rem;color:#F8E7C3;letter-spacing:.2px;}
+
+.vo-overlay{position:fixed;inset:0;background:rgba(10,20,16,.75);backdrop-filter:blur(4px);
+  z-index:5000;display:none;align-items:flex-end;justify-content:center;}
+.vo-overlay.open{display:flex;animation:fmFadeIn .2s ease;}
+.vo-sheet{background:#FAF8F3;width:100%;max-width:520px;border-radius:24px 24px 0 0;
+  padding:22px 22px calc(24px + env(safe-area-inset-bottom,0px));animation:fmSlideUp .25s ease;
+  max-height:88vh;overflow-y:auto;}
+.vo-sheet-close{position:absolute;top:16px;right:16px;width:32px;height:32px;border-radius:50%;
+  background:rgba(15,59,49,.08);border:none;color:#0F3B31;font-size:1rem;cursor:pointer;}
+.vo-mic-stage{display:flex;flex-direction:column;align-items:center;text-align:center;padding:20px 10px;}
+.vo-mic-circle{width:88px;height:88px;border-radius:50%;background:linear-gradient(135deg,#10392D,#1a4a3a);
+  border:2px solid #D4AF37;display:flex;align-items:center;justify-content:center;font-size:2.2rem;
+  margin-bottom:16px;box-shadow:0 8px 24px rgba(16,57,45,.25);cursor:pointer;}
+.vo-mic-circle.listening{animation:voMicPulse 1.4s ease-in-out infinite;}
+@keyframes voMicPulse{0%,100%{box-shadow:0 8px 24px rgba(16,57,45,.25),0 0 0 0 rgba(212,175,55,.5);}
+  50%{box-shadow:0 8px 24px rgba(16,57,45,.25),0 0 0 14px rgba(212,175,55,0);}}
+.vo-status-text{font-family:'Tiro Bangla',Georgia,serif;font-size:1rem;color:#2a2f2b;line-height:1.6;margin-bottom:6px;}
+.vo-transcript-text{font-size:.85rem;color:#6b6b6b;font-style:italic;min-height:20px;}
+.vo-confirm-card{background:#fff;border:1px solid #E4DFD2;border-radius:14px;padding:16px;margin-top:14px;}
+.vo-confirm-title{font-weight:800;color:#10392D;font-size:.92rem;margin-bottom:10px;}
+.vo-item-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;
+  border-bottom:1px solid #F0ECE5;font-size:.86rem;}
+.vo-item-row:last-child{border-bottom:none;}
+.vo-item-name{color:#2a2f2b;font-weight:600;}
+.vo-item-qty{color:#8A6215;font-weight:700;}
+.vo-item-badge{font-size:.62rem;font-weight:700;padding:2px 7px;border-radius:8px;margin-left:6px;}
+.vo-item-badge.medicine{background:#fdeeec;color:#c0392b;}
+.vo-item-badge.unresolved{background:#fff8e8;color:#8A6215;}
+.vo-total-row{display:flex;justify-content:space-between;font-weight:800;color:#10392D;
+  padding-top:10px;margin-top:6px;border-top:2px solid #10392D;font-size:.95rem;}
+.vo-action-row{display:flex;gap:10px;margin-top:16px;}
+.vo-btn-yes{flex:1;background:#10392D;color:#F8E7C3;border:1.5px solid #D4AF37;border-radius:12px;
+  padding:13px;font-weight:800;font-size:.9rem;cursor:pointer;}
+.vo-btn-no{flex:1;background:#fff;color:#c0392b;border:1.5px solid #e4dfd2;border-radius:12px;
+  padding:13px;font-weight:800;font-size:.9rem;cursor:pointer;}
+.vo-retry-btn{background:var(--sand,#F3EFE6);color:#2a2f2b;border:none;border-radius:12px;
+  padding:11px 18px;font-weight:700;font-size:.85rem;cursor:pointer;margin-top:10px;}
+.vo-scope-notice{background:#fff8e8;border:1px solid #f0d488;border-radius:10px;padding:10px 12px;
+  font-size:.8rem;color:#8A6215;margin-top:10px;line-height:1.5;}
+
 .wa-float{position:fixed;bottom:28px;right:18px;z-index:1500;}
 .music-float{position:fixed;bottom:96px;right:18px;z-index:1500;}
 .music-btn{width:44px;height:44px;background:#0F3B31;border-radius:50%;display:flex;align-items:center;
@@ -2317,6 +2369,19 @@ img{max-width:100%;height:auto;}
     </div>
   </div>
 
+  <!-- ═══ DELTA VOICE ORDERING — distinct from the small search-mic above:
+       this UNDERSTANDS a full sentence (product+quantity), confirms, and
+       places an order. DELTA Voice Ordering Architecture v3.2. ═══ -->
+  <div class="vo-entry-wrap">
+    <button class="vo-entry-btn" onclick="openVoiceOrder()">
+      <span class="vo-entry-icon">🎙️</span>
+      <span class="vo-entry-text">
+        <span class="lang-bn">বলুন, কী লাগবে?</span>
+        <span class="lang-en">Tell us what you need</span>
+      </span>
+    </button>
+  </div>
+
   <!-- ═══ DELTA STORIES — Commerce Story, not Instagram Status ═══ -->
   <div class="delta-stories-wrap">
     <div class="ds-head">
@@ -3798,6 +3863,20 @@ img{max-width:100%;height:auto;}
 </div>
 
 <!-- WHATSAPP FLOAT — Deep Emerald + Gold premium theme -->
+<!-- ═══ DELTA VOICE ORDERING — overlay (Architecture v3.2, Section 3.6: multimodal confirmation) ═══ -->
+<div class="vo-overlay" id="voOverlay">
+  <div class="vo-sheet">
+    <button class="vo-sheet-close" onclick="closeVoiceOrder()">✕</button>
+    <div id="voContent">
+      <div class="vo-mic-stage">
+        <div class="vo-mic-circle" id="voMicCircle" onclick="startVoiceOrderListening()">🎙️</div>
+        <div class="vo-status-text" id="voStatusText">মাইক-এ চাপ দিয়ে বলুন কী লাগবে</div>
+        <div class="vo-transcript-text" id="voTranscriptText"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="wa-float">
   <div class="wa-hint" id="waHint"><span class="lang-bn">💬 সাহায্য লাগবে?</span><span class="lang-en">💬 Need help?</span></div>
   <div class="music-tagline" id="waTagline">
@@ -3872,7 +3951,7 @@ async function loadPincodeCityMap(){
 
 // Dynamic Firebase loader — robust version with error handling + timeout fallback
 (function(){
-  var s=['https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js','https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js','https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js'];
+  var s=['https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js','https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js','https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js','https://www.gstatic.com/firebasejs/8.10.1/firebase-functions.js'];
   var n=0, fbInitDone=false, hadError=false;
   function tryInit(){
     if(fbInitDone) return;
@@ -7785,6 +7864,203 @@ function prodQtyChange(pid,sid,d){
   }
   updateCartBadge();
 }
+// ══════════════════════════════════════════════════════════════════════
+// DELTA VOICE ORDERING — DELTA Voice Ordering Architecture v3.2
+// v1 scope: single-shot understanding (Section 1.5.6 — PRODUCT_ORDER +
+// REGULATED_PRODUCT only). Multi-turn clarification/correction (Section
+// 3.2/3.7) is a later iteration — for now, low-confidence/unresolved items
+// are shown clearly and the customer can retry by voice or fall back to
+// normal search, rather than being walked through a follow-up question.
+// ══════════════════════════════════════════════════════════════════════
+var voRecognition = null;
+var voSessionId = null;
+var voLastResult = null;
+
+function openVoiceOrder(){
+  if(!currentUser){ showToast('অর্ডার করতে আগে লগইন করুন'); openAuth(); return; }
+  document.getElementById('voOverlay').classList.add('open');
+  resetVoiceOrderUI();
+}
+function closeVoiceOrder(){
+  document.getElementById('voOverlay').classList.remove('open');
+  if(voRecognition){ try{ voRecognition.stop(); }catch(e){} }
+  if(window.speechSynthesis) speechSynthesis.cancel();
+}
+function resetVoiceOrderUI(){
+  document.getElementById('voContent').innerHTML =
+    '<div class="vo-mic-stage">'+
+      '<div class="vo-mic-circle" id="voMicCircle" onclick="startVoiceOrderListening()">🎙️</div>'+
+      '<div class="vo-status-text" id="voStatusText">মাইক-এ চাপ দিয়ে বলুন কী লাগবে</div>'+
+      '<div class="vo-transcript-text" id="voTranscriptText"></div>'+
+    '</div>';
+}
+
+function startVoiceOrderListening(){
+  var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SpeechRecognition){
+    showToast('এই browser এ voice support নেই। Chrome ব্যবহার করুন।');
+    return;
+  }
+  var micCircle = document.getElementById('voMicCircle');
+  var statusText = document.getElementById('voStatusText');
+  var transcriptText = document.getElementById('voTranscriptText');
+  micCircle.classList.add('listening');
+  statusText.textContent = 'শুনছি...';
+  transcriptText.textContent = '';
+
+  voRecognition = new SpeechRecognition();
+  voRecognition.lang = currentLang==='bn' ? 'bn-IN' : 'en-US';
+  voRecognition.continuous = false;
+  voRecognition.interimResults = true;
+
+  voRecognition.onresult = function(e){
+    var text = '';
+    for(var i=0;i<e.results.length;i++){ text += e.results[i][0].transcript; }
+    transcriptText.textContent = text;
+  };
+  voRecognition.onerror = function(){
+    micCircle.classList.remove('listening');
+    // Section 3.11.1 — nothing heard
+    statusText.textContent = 'আমি ঠিক শুনতে পারিনি। আরেকবার চেষ্টা করুন।';
+  };
+  voRecognition.onend = function(){
+    micCircle.classList.remove('listening');
+    var finalText = transcriptText.textContent.trim();
+    if(!finalText){
+      statusText.textContent = 'আমি ঠিক শুনতে পারিনি। আরেকবার বলবেন?';
+      return;
+    }
+    processVoiceOrderTranscript(finalText);
+  };
+  voRecognition.start();
+}
+
+async function processVoiceOrderTranscript(transcript){
+  var statusText = document.getElementById('voStatusText');
+  statusText.textContent = 'বুঝার চেষ্টা করছি...';
+
+  try{
+    // Section 2.1 — voiceOrderSessions scratch-pad, written before calling
+    // the Cloud Function so nothing is lost if the connection drops
+    // (Section 3.11.3 — resumable state).
+    if(!voSessionId){
+      var sessionRef = await db.collection('cities').doc(CITY).collection('voiceOrderSessions').add({
+        uid: currentUser.uid, status:'processing',
+        transcript:[{speaker:'customer', text:transcript, at:new Date().toISOString()}],
+        createdAt:new Date().toISOString(), updatedAt:new Date().toISOString()
+      });
+      voSessionId = sessionRef.id;
+    }
+
+    var fn = firebase.functions().httpsCallable('voiceOrderUnderstand');
+    var res = await fn({transcript:transcript, cityId:CITY, priorParsedItems:null});
+    voLastResult = res.data;
+
+    await db.collection('cities').doc(CITY).collection('voiceOrderSessions').doc(voSessionId).update({
+      status:'awaiting_confirmation', parsedItems:res.data.parsedItems, updatedAt:new Date().toISOString()
+    });
+
+    renderVoiceOrderConfirmation(res.data);
+  }catch(e){
+    statusText.textContent = 'একটু সমস্যা হয়েছে। আবার চেষ্টা করুন।';
+    showToast('Voice order error: '+e.message,'red');
+  }
+}
+
+function renderVoiceOrderConfirmation(result){
+  var items = result.parsedItems || [];
+  var inScope = items.filter(function(i){ return i.interactionModel !== 'OUT_OF_SCOPE_V1'; });
+  var outOfScope = items.filter(function(i){ return i.interactionModel === 'OUT_OF_SCOPE_V1'; });
+
+  var total = 0;
+  var rowsHtml = inScope.map(function(item){
+    var hasMatch = item.matchCandidates && item.matchCandidates.length;
+    var top = hasMatch ? item.matchCandidates[0] : null;
+    var lineTotal = top ? (top.price||0) * (item.quantity||1) : 0;
+    total += lineTotal;
+    var badges = '';
+    if(item.isMedicine) badges += '<span class="vo-item-badge medicine">💊 '+(item.scheduleType==='OTC'?'OTC':'Prescription লাগবে')+'</span>';
+    if(item.needsClarification || !hasMatch) badges += '<span class="vo-item-badge unresolved">⚠️ নিশ্চিত না</span>';
+    return '<div class="vo-item-row">'+
+      '<span class="vo-item-name">'+(item.rawText||'')+(top?' — '+top.label:'')+badges+'</span>'+
+      '<span class="vo-item-qty">'+(item.quantity||'')+' '+(item.unit||'')+(top?' · ₹'+lineTotal:'')+'</span>'+
+    '</div>';
+  }).join('');
+
+  var scopeNoticeHtml = outOfScope.length
+    ? '<div class="vo-scope-notice">এই ধরনের অনুরোধ ("'+outOfScope.map(function(i){return i.rawText;}).join('", "')+'") এখনও DELTA Voice-এ চালু হয়নি। আপনি মেনু থেকে সরাসরি খুঁজে দেখতে পারেন।</div>'
+    : '';
+
+  var hasUnresolved = inScope.some(function(i){ return !i.matchCandidates || !i.matchCandidates.length; });
+  var confirmDisabledAttr = (inScope.length===0) ? 'disabled style="opacity:.5;"' : '';
+
+  var confirmText = inScope.length
+    ? 'আপনি চেয়েছেন — '+inScope.map(function(i){
+        var top = i.matchCandidates && i.matchCandidates[0];
+        return (i.quantity||'')+' '+(i.unit||'')+' '+(top?top.label:i.rawText);
+      }).join(', ')+'। মোট আনুমানিক ₹'+total+'। অর্ডার করবেন?'
+    : 'দুঃখিত, কোনো পণ্য চেনা যায়নি। আবার চেষ্টা করুন।';
+
+  document.getElementById('voContent').innerHTML =
+    '<div class="vo-confirm-card">'+
+      '<div class="vo-confirm-title">আপনার অর্ডার</div>'+
+      (rowsHtml || '<div style="color:#8a8a8a;font-size:.82rem;">কিছু বোঝা যায়নি</div>')+
+      (inScope.length ? '<div class="vo-total-row"><span>মোট আনুমানিক</span><span>₹'+total+'</span></div>' : '')+
+      scopeNoticeHtml+
+      (hasUnresolved ? '<div class="vo-scope-notice">কিছু জিনিস স্পষ্ট বোঝা যায়নি — Confirm করার আগে আবার স্পষ্ট করে বলার চেষ্টা করুন।</div>' : '')+
+      '<div class="vo-action-row">'+
+        '<button class="vo-btn-yes" '+confirmDisabledAttr+' onclick="confirmVoiceOrderYes()">✓ হ্যাঁ, অর্ডার করুন</button>'+
+        '<button class="vo-btn-no" onclick="confirmVoiceOrderNo()">✕ আবার বলুন</button>'+
+      '</div>'+
+    '</div>';
+
+  // Section 3.6 — multimodal: voice readout happens alongside, not instead of, the screen
+  speakVoiceOrderText(confirmText);
+}
+
+function speakVoiceOrderText(text){
+  if(!window.speechSynthesis) return;
+  try{
+    speechSynthesis.cancel();
+    var u = new SpeechSynthesisUtterance(text);
+    u.lang = currentLang==='bn' ? 'bn-IN' : 'en-US';
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+
+function confirmVoiceOrderNo(){
+  resetVoiceOrderUI();
+}
+
+async function confirmVoiceOrderYes(){
+  if(!voLastResult) return;
+  var items = (voLastResult.parsedItems||[]).filter(function(i){
+    return i.interactionModel !== 'OUT_OF_SCOPE_V1' && i.matchCandidates && i.matchCandidates.length;
+  });
+  if(!items.length){ showToast('কোনো নিশ্চিত পণ্য নেই','red'); return; }
+
+  // Section 3.6 Golden Rule: this function only ever runs after the customer's
+  // OWN explicit tap on "হ্যাঁ" — voice understanding alone never reaches here.
+  items.forEach(function(item){
+    var top = item.matchCandidates[0];
+    var existing = allProducts.find(function(p){ return p.id===top.productId && p.shopId===top.sellerId; });
+    if(!existing) return; // safety: only add products that genuinely still exist
+    var ex = cart.find(function(c){ return c.id===top.productId && c.shopId===top.sellerId; });
+    if(ex) ex.qty += (item.quantity||1);
+    else cart.push(Object.assign({qty:item.quantity||1, selected:true}, existing));
+  });
+  updateCartBadge();
+
+  db.collection('cities').doc(CITY).collection('voiceOrderSessions').doc(voSessionId).update({
+    status:'confirmed', updatedAt:new Date().toISOString()
+  }).catch(function(){});
+
+  closeVoiceOrder();
+  showToast('কার্টে যোগ হয়েছে ✅','green');
+  voSessionId = null; voLastResult = null;
+  openCart();
+}
+
 function addToCartById(pid,sid){
   var p=allProducts.find(function(x){return x.id===pid&&x.shopId===sid;});if(!p)return;
   var ex=cart.find(function(c){return c.id===pid&&c.shopId===sid;});
