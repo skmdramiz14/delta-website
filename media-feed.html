@@ -1832,6 +1832,12 @@ function loadStories(){
       item.onclick=function(){ openStoryViewerAt(groupIndex); };
       wrap.appendChild(item);
     });
+    // Arrived here via media-profile.html's Stories tab (?openStoryId=<id>).
+    // Called here (not in just one of the three loading paths below) so it
+    // fires reliably regardless of whether the real query won the race, the
+    // 6s timeout fired first, or the query errored — all three paths call
+    // this same function, this is the one place they all converge.
+    if(!isDemo) openDeepLinkedStoryIfAny();
   };
 
   getMhOfficialUid().then(function(officialUid){
@@ -1884,6 +1890,24 @@ function loadStories(){
       console.error('Story query failed — showing demo. Reason:', e);
       renderRealStories(DEMO_MF_STORIES, true);
     });
+}
+
+// Arrived here via media-profile.html's Stories tab, which links to
+// ?openStoryId=<id> — a bare redirect here without this would just land on
+// the generic feed and never actually play the specific story that was
+// tapped, which is exactly the bug this fixes.
+function openDeepLinkedStoryIfAny(){
+  var targetId = new URLSearchParams(location.search).get('openStoryId');
+  if(!targetId || !window.mfAllGroups) return;
+  for(var i=0;i<window.mfAllGroups.length;i++){
+    var group = window.mfAllGroups[i];
+    if(group.some(function(entry){ return entry.id===targetId; })){
+      openStoryViewerAt(i);
+      return;
+    }
+  }
+  // Not found among the last 15 published stories (likely expired or old).
+  console.warn('Deep-linked story not found in current story list:', targetId);
 }
 
 // ═══ STORY VIEWER — local to DELTA Media, ported from index.html ═══
