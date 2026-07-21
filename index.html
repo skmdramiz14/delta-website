@@ -7879,10 +7879,14 @@ var voRecognition = null;
 var voSessionId = null;
 var voLastResult = null;
 var voFinished = false;
+var voInCorrectionMode = false;
 
 function openVoiceOrder(){
   if(!currentUser){ showToast('অর্ডার করতে আগে লগইন করুন'); openAuth(); return; }
   document.getElementById('voOverlay').classList.add('open');
+  voInCorrectionMode = false;
+  voLastResult = null;
+  voSessionId = null;
   resetVoiceOrderUI();
   // Greeting — DELTA speaks first, before the customer taps the mic
   var firstName = (currentUser.displayName||'').split(' ')[0];
@@ -7961,21 +7965,56 @@ async function processVoiceOrderTranscript(transcript){
         createdAt:new Date().toISOString(), updatedAt:new Date().toISOString()
       });
       voSessionId = sessionRef.id;
+    } else {
+      db.collection('cities').doc(CITY).collection('voiceOrderSessions').doc(voSessionId).update({
+        transcript: firebase.firestore.FieldValue.arrayUnion({speaker:'customer', text:transcript, at:new Date().toISOString()}),
+        updatedAt:new Date().toISOString()
+      }).catch(function(){});
     }
 
+    // Section 3.2/3.2.1 — pass the PRIOR parsedItems so the Cloud Function
+    // can tell this is an answer to a pending clarification, not a fresh
+    // order. On the very first turn, voLastResult is still null.
+    var priorItems = voLastResult ? voLastResult.parsedItems : null;
+    var isCorrection = voInCorrectionMode;
+    voInCorrectionMode = false; // consumed — only applies to this one turn
+
     var fn = firebase.functions().httpsCallable('voiceOrderUnderstand');
-    var res = await fn({transcript:transcript, cityId:CITY, priorParsedItems:null});
+    var res = await fn({transcript:transcript, cityId:CITY, priorParsedItems:priorItems, isCorrection:isCorrection});
     voLastResult = res.data;
 
     await db.collection('cities').doc(CITY).collection('voiceOrderSessions').doc(voSessionId).update({
-      status:'awaiting_confirmation', parsedItems:res.data.parsedItems, updatedAt:new Date().toISOString()
+      status: res.data.needsClarification ? 'awaiting_clarification' : 'awaiting_confirmation',
+      parsedItems:res.data.parsedItems, updatedAt:new Date().toISOString()
     });
 
-    renderVoiceOrderConfirmation(res.data);
+    if(res.data.needsClarification){
+      renderClarificationQuestion(res.data);
+    } else {
+      renderVoiceOrderConfirmation(res.data);
+    }
   }catch(e){
     statusText.textContent = 'একটু সমস্যা হয়েছে। আবার চেষ্টা করুন।';
     showToast('Voice order error: '+e.message,'red');
   }
+}
+
+function renderClarificationQuestion(result){
+  // Section 3.5 — Hard Rule: one question at a time. Shows only the single
+  // pending question, speaks it (Section 3.6.1 multimodal), then re-opens
+  // the mic automatically so the customer can answer without an extra tap.
+  var question = result.retryNote || result.clarificationQuestion || 'আরেকবার বলবেন?';
+  document.getElementById('voContent').innerHTML =
+    '<div class="vo-mic-stage">'+
+      '<div class="vo-mic-circle listening" id="voMicCircle" onclick="startVoiceOrderListening()">🎙️</div>'+
+      '<div class="vo-status-text" id="voStatusText">'+question+'</div>'+
+      '<div class="vo-transcript-text" id="voTranscriptText"></div>'+
+      '<button class="vo-retry-btn" onclick="closeVoiceOrder()">✕ বন্ধ করুন</button>'+
+    '</div>';
+  speakVoiceOrderText(question, function(){
+    // auto re-listen right after DELTA finishes asking — no extra tap needed
+    startVoiceOrderListening();
+  });
 }
 
 function renderVoiceOrderConfirmation(result){
@@ -8029,9 +8068,32 @@ function renderVoiceOrderConfirmation(result){
   speakVoiceOrderText(confirmText);
 }
 
+// Voices load asynchronously in most browsers — the very first call to
+// getVoices() often returns an empty array even on a device that DOES have
+// a Bengali voice installed, simply because they haven't finished loading
+// yet. This was why the greeting silently never spoke: the code checked
+// too early, saw an empty list, and concluded "no Bengali voice" every time.
+var voVoicesCache = null;
+function ensureVoicesLoaded(callback){
+  if(!window.speechSynthesis){ callback(); return; }
+  var existing = speechSynthesis.getVoices();
+  if(existing && existing.length){ voVoicesCache = existing; callback(); return; }
+  var done = false;
+  var timer = setTimeout(function(){
+    if(done) return; done = true;
+    voVoicesCache = speechSynthesis.getVoices() || [];
+    callback();
+  }, 600);
+  speechSynthesis.onvoiceschanged = function(){
+    if(done) return; done = true;
+    clearTimeout(timer);
+    voVoicesCache = speechSynthesis.getVoices() || [];
+    callback();
+  };
+}
+
 function getPreferredVoiceOrderVoice(){
-  if(!window.speechSynthesis) return null;
-  var voices = speechSynthesis.getVoices() || [];
+  var voices = voVoicesCache || (window.speechSynthesis ? speechSynthesis.getVoices() : []) || [];
   if(currentLang!=='bn') return voices.find(function(v){ return /^en/i.test(v.lang); }) || null;
   // Section 6.2.1 — real-device Bengali TTS quality varies; prefer an actual
   // Bengali voice if the OS/browser has one installed, never force a wrong
@@ -8040,28 +8102,44 @@ function getPreferredVoiceOrderVoice(){
   return voices.find(function(v){ return /^bn/i.test(v.lang); }) || null;
 }
 
-function speakVoiceOrderText(text){
-  if(!window.speechSynthesis) return;
-  try{
-    speechSynthesis.cancel();
-    var voice = getPreferredVoiceOrderVoice();
-    if(currentLang==='bn' && !voice){
-      // No real Bengali voice installed on this device — screen already
-      // shows the full confirmation (Section 3.6.1: both channels carry
-      // the complete message), so silently skip TTS rather than speak
-      // Bengali text in a wrong-language voice, which is worse than no
-      // voice at all (unintelligible, not just accented).
-      return;
-    }
-    var u = new SpeechSynthesisUtterance(text);
-    u.lang = currentLang==='bn' ? 'bn-IN' : 'en-US';
-    if(voice) u.voice = voice;
-    speechSynthesis.speak(u);
-  }catch(e){}
+function speakVoiceOrderText(text, onDone){
+  if(!window.speechSynthesis){ if(onDone) onDone(); return; }
+  ensureVoicesLoaded(function(){
+    try{
+      speechSynthesis.cancel();
+      var voice = getPreferredVoiceOrderVoice();
+      if(currentLang==='bn' && !voice){
+        // No real Bengali voice installed on this device — screen already
+        // shows the full confirmation (Section 3.6.1: both channels carry
+        // the complete message), so silently skip TTS rather than speak
+        // Bengali text in a wrong-language voice, which is worse than no
+        // voice at all (unintelligible, not just accented).
+        if(onDone) onDone();
+        return;
+      }
+      var u = new SpeechSynthesisUtterance(text);
+      u.lang = currentLang==='bn' ? 'bn-IN' : 'en-US';
+      if(voice) u.voice = voice;
+      if(onDone){ u.onend = onDone; u.onerror = onDone; }
+      speechSynthesis.speak(u);
+    }catch(e){ if(onDone) onDone(); }
+  });
 }
 
 function confirmVoiceOrderNo(){
-  resetVoiceOrderUI();
+  // Section 3.7.3 — don't discard everything already understood; ask ONE
+  // question about what to change, then treat the answer as a correction
+  // patch (Section 3.7.1), not a fresh order.
+  voInCorrectionMode = true;
+  var question = 'ঠিক আছে, কী পরিবর্তন করতে চান?';
+  document.getElementById('voContent').innerHTML =
+    '<div class="vo-mic-stage">'+
+      '<div class="vo-mic-circle listening" id="voMicCircle" onclick="startVoiceOrderListening()">🎙️</div>'+
+      '<div class="vo-status-text" id="voStatusText">'+question+'</div>'+
+      '<div class="vo-transcript-text" id="voTranscriptText"></div>'+
+      '<button class="vo-retry-btn" onclick="closeVoiceOrder()">✕ বন্ধ করুন</button>'+
+    '</div>';
+  speakVoiceOrderText(question, function(){ startVoiceOrderListening(); });
 }
 
 async function confirmVoiceOrderYes(){
@@ -8091,23 +8169,16 @@ async function confirmVoiceOrderYes(){
   // Closing gesture — DELTA says goodbye before the sheet closes, rather than
   // just silently vanishing into the cart.
   var farewell = 'ধন্যবাদ! আপনার অর্ডার নেওয়া হয়েছে। ভালো থাকবেন।';
-  var voice = getPreferredVoiceOrderVoice();
   document.getElementById('voContent').innerHTML =
     '<div class="vo-mic-stage"><div class="vo-status-text">'+farewell+'</div></div>';
-  if(window.speechSynthesis && (currentLang!=='bn' || voice)){
-    try{
-      speechSynthesis.cancel();
-      var u = new SpeechSynthesisUtterance(farewell);
-      u.lang = currentLang==='bn' ? 'bn-IN' : 'en-US';
-      if(voice) u.voice = voice;
-      u.onend = function(){ finishVoiceOrder(); };
-      u.onerror = function(){ finishVoiceOrder(); };
-      speechSynthesis.speak(u);
-      setTimeout(finishVoiceOrder, 4000); // safety fallback if onend never fires
-    }catch(e){ finishVoiceOrder(); }
-  } else {
-    setTimeout(finishVoiceOrder, 1200); // no voice available — still pause briefly on screen
+  var farewellShownAt = Date.now();
+  function finishAfterMinDisplay(){
+    var elapsed = Date.now() - farewellShownAt;
+    var wait = Math.max(0, 1500 - elapsed); // always show the farewell for at least 1.5s
+    setTimeout(finishVoiceOrder, wait);
   }
+  setTimeout(finishAfterMinDisplay, 4500); // safety fallback if onDone never fires
+  speakVoiceOrderText(farewell, finishAfterMinDisplay);
 }
 
 function finishVoiceOrder(){
