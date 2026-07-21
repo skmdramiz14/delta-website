@@ -805,8 +805,10 @@ button,input,select{font-family:'Poppins','Noto Sans Bengali',sans-serif;}
 .vo-sheet{background:#FAF8F3;width:100%;max-width:520px;border-radius:24px 24px 0 0;
   padding:22px 22px calc(24px + env(safe-area-inset-bottom,0px));animation:fmSlideUp .25s ease;
   max-height:88vh;overflow-y:auto;}
-.vo-sheet-close{position:absolute;top:16px;right:16px;width:32px;height:32px;border-radius:50%;
-  background:rgba(15,59,49,.08);border:none;color:#0F3B31;font-size:1rem;cursor:pointer;}
+.vo-sheet-close{position:absolute;top:14px;right:14px;width:38px;height:38px;border-radius:50%;
+  background:#10392D;border:1.5px solid #D4AF37;color:#F8E7C3;font-size:1.1rem;font-weight:700;
+  cursor:pointer;z-index:20;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 2px 8px rgba(0,0,0,.15);}
 .vo-mic-stage{display:flex;flex-direction:column;align-items:center;text-align:center;padding:20px 10px;}
 .vo-mic-circle{width:88px;height:88px;border-radius:50%;background:linear-gradient(135deg,#10392D,#1a4a3a);
   border:2px solid #D4AF37;display:flex;align-items:center;justify-content:center;font-size:2.2rem;
@@ -3872,6 +3874,7 @@ img{max-width:100%;height:auto;}
         <div class="vo-mic-circle" id="voMicCircle" onclick="startVoiceOrderListening()">🎙️</div>
         <div class="vo-status-text" id="voStatusText">মাইক-এ চাপ দিয়ে বলুন কী লাগবে</div>
         <div class="vo-transcript-text" id="voTranscriptText"></div>
+        <button class="vo-retry-btn" onclick="closeVoiceOrder()">✕ বন্ধ করুন</button>
       </div>
     </div>
   </div>
@@ -7892,6 +7895,7 @@ function resetVoiceOrderUI(){
       '<div class="vo-mic-circle" id="voMicCircle" onclick="startVoiceOrderListening()">🎙️</div>'+
       '<div class="vo-status-text" id="voStatusText">মাইক-এ চাপ দিয়ে বলুন কী লাগবে</div>'+
       '<div class="vo-transcript-text" id="voTranscriptText"></div>'+
+      '<button class="vo-retry-btn" onclick="closeVoiceOrder()">✕ বন্ধ করুন</button>'+
     '</div>';
 }
 
@@ -8018,12 +8022,33 @@ function renderVoiceOrderConfirmation(result){
   speakVoiceOrderText(confirmText);
 }
 
+function getPreferredVoiceOrderVoice(){
+  if(!window.speechSynthesis) return null;
+  var voices = speechSynthesis.getVoices() || [];
+  if(currentLang!=='bn') return voices.find(function(v){ return /^en/i.test(v.lang); }) || null;
+  // Section 6.2.1 — real-device Bengali TTS quality varies; prefer an actual
+  // Bengali voice if the OS/browser has one installed, never force a wrong
+  // language voice to read Bengali text (that's what caused "কী ভাষায় বলছে
+  // বোঝা যাচ্ছে না" — unclear/garbled speech).
+  return voices.find(function(v){ return /^bn/i.test(v.lang); }) || null;
+}
+
 function speakVoiceOrderText(text){
   if(!window.speechSynthesis) return;
   try{
     speechSynthesis.cancel();
+    var voice = getPreferredVoiceOrderVoice();
+    if(currentLang==='bn' && !voice){
+      // No real Bengali voice installed on this device — screen already
+      // shows the full confirmation (Section 3.6.1: both channels carry
+      // the complete message), so silently skip TTS rather than speak
+      // Bengali text in a wrong-language voice, which is worse than no
+      // voice at all (unintelligible, not just accented).
+      return;
+    }
     var u = new SpeechSynthesisUtterance(text);
     u.lang = currentLang==='bn' ? 'bn-IN' : 'en-US';
+    if(voice) u.voice = voice;
     speechSynthesis.speak(u);
   }catch(e){}
 }
