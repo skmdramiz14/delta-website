@@ -8548,7 +8548,13 @@ function finishOrderConfirmation(awaitingRx){
     var wait = Math.max(0, 1500 - elapsed); // always show the farewell for at least 1.5s
     setTimeout(finishVoiceOrder, wait);
   }
-  setTimeout(finishAfterMinDisplay, 4500); // safety fallback if onDone never fires
+  setTimeout(finishAfterMinDisplay, 9000); // safety fallback if onDone never fires — was
+    // 4500ms, too tight once the cancel/speak delay + voice-loading time is
+    // added on top of actual speech duration; this was cutting the farewell
+    // off mid-sentence by firing BEFORE onend, not because of the earlier
+    // cancel/speak race condition. 9s gives real speech (a short sentence)
+    // comfortable room to finish naturally, while still recovering if the
+    // TTS engine genuinely never fires onend at all.
   speakVoiceOrderText(farewell, finishAfterMinDisplay);
 }
 
@@ -8611,6 +8617,9 @@ async function uploadPrescriptionAndContinue(){
     var fd = new FormData();
     fd.append('file', file);
     fd.append('upload_preset', 'delta_products'); // same Cloudinary preset used elsewhere on DELTA
+    fd.append('folder', 'prescriptions'); // keep sensitive medical documents in their own
+      // folder, separate from public product photos — easier for admin to find/manage,
+      // and avoids mixing sensitive uploads into the general product-photo library
     var uploadRes = await fetch('https://api.cloudinary.com/v1_1/djthojcmy/image/upload', {method:'POST', body:fd});
     var uploadData = await uploadRes.json();
     if(!uploadData.secure_url) throw new Error('Upload failed');
