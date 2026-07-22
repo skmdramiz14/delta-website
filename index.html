@@ -7887,6 +7887,7 @@ function openVoiceOrder(){
   voInCorrectionMode = false;
   voLastResult = null;
   voSessionId = null;
+  voCheckoutState = null; voCollectedAddr = null; voCollectedMobile = null; voCollectedPayment = 'cod';
   resetVoiceOrderUI();
   // Greeting — DELTA speaks first, before the customer taps the mic
   var firstName = (currentUser.displayName||'').split(' ')[0];
@@ -7945,6 +7946,7 @@ function startVoiceOrderListening(){
       statusText.textContent = 'আমি ঠিক শুনতে পারিনি। আরেকবার বলবেন?';
       return;
     }
+    if(voCheckoutState){ handleCheckoutVoiceInput(finalText); return; }
     processVoiceOrderTranscript(finalText);
   };
   voRecognition.start();
@@ -8193,7 +8195,207 @@ async function confirmVoiceOrderYes(){
     return;
   }
 
-  finishOrderConfirmation();
+  startVoiceCheckout();
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// VOICE CHECKOUT — collects delivery address/mobile/payment BY VOICE too
+// (not a typed form), so a digitally-illiterate customer never needs to
+// type anything, matching Section 3.6's Golden Rule: order authorization
+// happens at ONE final explicit "হ্যাঁ", but that "হ্যাঁ" must be given
+// AFTER hearing the complete picture (items + address + phone + payment),
+// never before. Saved address/mobile (localStorage) skip re-asking on
+// repeat orders — DELTA just confirms "আগের ঠিকানায় পাঠাবো?" instead.
+// ══════════════════════════════════════════════════════════════════════
+var voCheckoutState = null; // null | 'confirm_saved' | 'address' | 'mobile' | 'payment' | 'review'
+var voCollectedAddr = null;
+var voCollectedMobile = null;
+var voCollectedPayment = 'cod';
+
+function isAffirmative(text){
+  var t = (text||'').toLowerCase();
+  return /হ্যাঁ|হা+|ঠিক আছে|ইয়েস|yes|ok|correct|আচ্ছা/.test(t);
+}
+function isNegative(text){
+  var t = (text||'').toLowerCase();
+  return /না|নাহ|নো|no|ভুল|wrong/.test(t);
+}
+
+function startVoiceCheckout(){
+  var savedAddr = localStorage.getItem('delta_voice_addr');
+  var savedMobile = localStorage.getItem('delta_voice_mobile');
+  voCollectedPayment = 'cod';
+  if(savedAddr && savedMobile){
+    voCollectedAddr = savedAddr;
+    voCollectedMobile = savedMobile;
+    voCheckoutState = 'confirm_saved';
+    askVoiceCheckoutQuestion('আগের ঠিকানায় পাঠাবো — '+savedAddr+', ফোন '+savedMobile+'। ঠিক আছে?');
+  } else {
+    voCheckoutState = 'address';
+    askVoiceCheckoutQuestion('আপনার ডেলিভারি ঠিকানা বলুন');
+  }
+}
+
+function askVoiceCheckoutQuestion(question){
+  document.getElementById('voContent').innerHTML =
+    '<div class="vo-mic-stage">'+
+      '<div class="vo-mic-circle listening" id="voMicCircle" onclick="startVoiceOrderListening()">🎙️</div>'+
+      '<div class="vo-status-text" id="voStatusText">'+question+'</div>'+
+      '<div class="vo-transcript-text" id="voTranscriptText"></div>'+
+      '<button class="vo-retry-btn" onclick="closeVoiceOrder()">✕ বন্ধ করুন</button>'+
+    '</div>';
+  speakVoiceOrderText(question, function(){ startVoiceOrderListening(); });
+}
+
+function handleCheckoutVoiceInput(transcript){
+  if(voCheckoutState === 'confirm_saved'){
+    if(isAffirmative(transcript)){ showFinalReview(); return; }
+    // customer wants a different address this time — ask fresh, don't
+    // silently keep the old saved one (Section 3.6 Golden Rule again)
+    voCheckoutState = 'address';
+    askVoiceCheckoutQuestion('ঠিক আছে, নতুন ঠিকানা বলুন');
+    return;
+  }
+  if(voCheckoutState === 'address'){
+    voCollectedAddr = transcript;
+    voCheckoutState = 'mobile';
+    askVoiceCheckoutQuestion('আপনার মোবাইল নম্বর বলুন');
+    return;
+  }
+  if(voCheckoutState === 'mobile'){
+    // Keep only digits — spoken numbers sometimes come with stray words
+    var digits = transcript.replace(/[^0-9]/g, '');
+    voCollectedMobile = digits.length>=10 ? digits : transcript;
+    voCheckoutState = 'payment';
+    askVoiceCheckoutQuestion('নগদে পেমেন্ট করবেন, না অনলাইনে? কিছু না বললে নগদ ধরে নেব');
+    return;
+  }
+  if(voCheckoutState === 'payment'){
+    voCollectedPayment = /অনলাইন|online|upi/i.test(transcript) ? 'online' : 'cod';
+    showFinalReview();
+    return;
+  }
+  if(voCheckoutState === 'review'){
+    if(isAffirmative(transcript)){ placeVoiceOrder(); return; }
+    if(isNegative(transcript)){
+      voCheckoutState = 'address';
+      askVoiceCheckoutQuestion('ঠিক আছে, আবার শুরু করি। আপনার ডেলিভারি ঠিকানা বলুন');
+      return;
+    }
+    // unclear — re-ask the same review question rather than guessing
+    showFinalReview();
+  }
+}
+
+function showFinalReview(){
+  voCheckoutState = 'review';
+  var items = (voLastResult.parsedItems||[]).filter(function(i){
+    return i.interactionModel !== 'OUT_OF_SCOPE_V1' && i.matchCandidates && i.matchCandidates.length;
+  });
+  var total = 0;
+  var itemsText = items.map(function(i){
+    var top = i.matchCandidates[0];
+    var qty = (i.convertedQuantity!=null) ? i.convertedQuantity : (i.quantity||1);
+    total += (top.price||0)*qty;
+    return (i.quantity||'')+' '+(i.unit||'')+' '+top.label;
+  }).join(', ');
+  var paymentText = voCollectedPayment==='cod' ? 'নগদে (Cash on Delivery)' : 'অনলাইনে';
+
+  var reviewText = 'আপনার অর্ডার — '+itemsText+'। ঠিকানা: '+voCollectedAddr+
+    '। মোবাইল: '+voCollectedMobile+'। পেমেন্ট: '+paymentText+
+    '। মোট আনুমানিক ₹'+total+'। সব ঠিক আছে? অর্ডার করবেন?';
+
+  document.getElementById('voContent').innerHTML =
+    '<div class="vo-confirm-card">'+
+      '<div class="vo-confirm-title">চূড়ান্ত Review</div>'+
+      '<div class="vo-item-row"><span class="vo-item-name">পণ্য</span><span class="vo-item-qty">'+itemsText+'</span></div>'+
+      '<div class="vo-item-row"><span class="vo-item-name">ঠিকানা</span><span class="vo-item-qty">'+voCollectedAddr+'</span></div>'+
+      '<div class="vo-item-row"><span class="vo-item-name">মোবাইল</span><span class="vo-item-qty">'+voCollectedMobile+'</span></div>'+
+      '<div class="vo-item-row"><span class="vo-item-name">পেমেন্ট</span><span class="vo-item-qty">'+paymentText+'</span></div>'+
+      '<div class="vo-total-row"><span>মোট আনুমানিক</span><span>₹'+total+'</span></div>'+
+      '<div class="vo-action-row">'+
+        '<button class="vo-btn-yes" onclick="startVoiceOrderListening()">🎙️ বলুন — ঠিক আছে/না</button>'+
+        '<button class="vo-btn-no" onclick="placeVoiceOrder()">✓ ঠিক আছে (ট্যাপ করুন)</button>'+
+      '</div>'+
+    '</div>';
+  speakVoiceOrderText(reviewText, function(){ startVoiceOrderListening(); });
+}
+
+async function placeVoiceOrder(){
+  // Section 3.6 Golden Rule — this is the ONE place a voice order actually
+  // becomes real, and only ever reached after the full review above.
+  if(!voCollectedAddr || !voCollectedMobile){ showToast('ঠিকানা/মোবাইল পাওয়া যায়নি','red'); return; }
+
+  var selectedItems = cart.filter(function(c){ return c.selected!==false; });
+  if(!selectedItems.length){ showToast('কার্ট খালি','red'); return; }
+
+  // Location Architecture v1, Section 6 — the same delivery-availability
+  // gate the manual checkout uses (openCheckout()). Voice checkout bypasses
+  // that function entirely, so this check must be duplicated here — an
+  // order must never be placeable in a city where delivery isn't active,
+  // regardless of which path (typed or voice) reached checkout.
+  var serviceStatus = await getServiceStatus(CITY, 'marketplaceDelivery');
+  if(serviceStatus !== 'active'){
+    closeVoiceOrder();
+    showServiceGateModal(serviceStatus);
+    return;
+  }
+  var voSubtotal = selectedItems.reduce(function(s,c){return s+(c.price||c.sellPrice||0)*c.qty;},0);
+  var MIN_ORDER = 50;
+  if(voSubtotal < MIN_ORDER){
+    document.getElementById('voStatusText') && (document.getElementById('voStatusText').textContent =
+      'ন্যূনতম অর্ডার ₹'+MIN_ORDER+' — আরও কিছু যোগ করুন');
+    showToast('ন্যূনতম অর্ডার ₹'+MIN_ORDER+' — আরও ₹'+(MIN_ORDER-voSubtotal)+' যোগ করুন ⚠️');
+    return;
+  }
+
+  document.getElementById('voContent').innerHTML =
+    '<div class="vo-mic-stage"><div class="vo-status-text">অর্ডার করা হচ্ছে...</div></div>';
+
+  var FREE_DELIVERY_MIN = 399;
+  var byShop={};
+  selectedItems.forEach(function(c){
+    if(!byShop[c.shopId])byShop[c.shopId]={shopId:c.shopId,shopName:c.shopName,items:[],total:0,orderSource:'normal',commissionRate:0};
+    var itemPrice = c.price||c.sellPrice||0;
+    var itemEntry = {id:c.id, name:c.nameBn||c.nameEn||c.name, price:itemPrice, qty:c.qty, orderSource:c.orderSource||'normal'};
+    if(c.prescriptionUrl){ itemEntry.prescriptionUrl = c.prescriptionUrl; itemEntry.prescriptionStatus = c.prescriptionStatus||'pending_pharmacist_review'; }
+    byShop[c.shopId].items.push(itemEntry);
+    byShop[c.shopId].total += itemPrice*c.qty;
+    if(itemEntry.prescriptionUrl) byShop[c.shopId].hasPendingPrescription = true;
+    if(c.orderSource==='flash_sale'){ byShop[c.shopId].orderSource='flash_sale'; byShop[c.shopId].commissionRate=c.commissionRate||0; }
+  });
+
+  try{
+    var oids=[];
+    for(var sid in byShop){
+      var od=byShop[sid];
+      var deliveryCharge = od.total >= FREE_DELIVERY_MIN ? 0 : 30;
+      var shopInfo = allShops.find(function(s){ return s.id === sid; }) || {};
+      var ref=await db.collection('cities').doc(CITY).collection('sellers').doc(sid).collection('orders').add({
+        customerId:currentUser.uid, customerName:currentUser.displayName||'Customer',
+        customerEmail:currentUser.email, customerMobile:voCollectedMobile, deliveryAddress:voCollectedAddr,
+        items:od.items.map(function(i){return i.name+' ×'+i.qty;}).join(', '),
+        itemsDetail:od.items,
+        hasPendingPrescription: !!od.hasPendingPrescription,
+        total:od.total, deliveryCharge:deliveryCharge, grandTotal:od.total+deliveryCharge,
+        paymentMethod:voCollectedPayment,
+        shopName:od.shopName||shopInfo.shopName||'দোকান',
+        shopAddress:shopInfo.area||shopInfo.address||'', shopPhone:shopInfo.phone||shopInfo.ownerPhone||'',
+        orderSource: od.orderSource||'normal', commissionRate: od.commissionRate||0,
+        status:'pending', sourceChannel:'voice', voiceSessionId: voSessionId||null,
+        createdAt:new Date().toISOString()
+      });
+      oids.push(ref.id);
+    }
+    // Remember this address/mobile for next time — skips re-asking
+    localStorage.setItem('delta_voice_addr', voCollectedAddr);
+    localStorage.setItem('delta_voice_mobile', voCollectedMobile);
+    cart = cart.filter(function(c){ return c.selected===false; }); // clear ordered items
+    updateCartBadge();
+    finishOrderConfirmation();
+  }catch(e){
+    showToast('অর্ডার করতে সমস্যা হয়েছে: '+e.message,'red');
+  }
 }
 
 function finishOrderConfirmation(){
@@ -8256,7 +8458,7 @@ function skipPrescriptionItem(){
   var remaining = (window._voPendingRxItems||[]).slice(1);
   if(remaining.length){ renderPrescriptionUploadGate(remaining, true); return; }
   showToast('ওষুধ ছাড়া বাকি অর্ডার সম্পন্ন হয়েছে','green');
-  finishOrderConfirmation();
+  startVoiceCheckout();
 }
 
 async function uploadPrescriptionAndContinue(){
@@ -8289,7 +8491,7 @@ async function uploadPrescriptionAndContinue(){
 
     var remaining = (window._voPendingRxItems||[]).slice(1);
     if(remaining.length){ renderPrescriptionUploadGate(remaining, true); return; }
-    finishOrderConfirmation();
+    startVoiceCheckout();
   }catch(e){
     showToast('আপলোড করতে সমস্যা হয়েছে: '+e.message,'red');
   }
@@ -8299,9 +8501,12 @@ function finishVoiceOrder(){
   if(voFinished) return; // guard against both onend AND the setTimeout fallback firing
   voFinished = true;
   closeVoiceOrder();
-  showToast('কার্টে যোগ হয়েছে ✅','green');
+  // By this point placeVoiceOrder() has already created the real order —
+  // no need to send the customer to cart/checkout again (that manual step
+  // is exactly what voice checkout was built to skip).
+  showToast('আপনার অর্ডার সম্পন্ন হয়েছে ✅','green');
   voSessionId = null; voLastResult = null;
-  openCart();
+  voCheckoutState = null; voCollectedAddr = null; voCollectedMobile = null; voCollectedPayment = 'cod';
 }
 
 function addToCartById(pid,sid){
