@@ -1814,6 +1814,7 @@ function loadStories(){
   // can chain from one author's last story into the next author's first,
   // same as the homepage's viewer.
   window.mfAllGroups = [];
+  openHighlightStoryIfAny();
 
   var renderRealStories = function(list, isDemo){
     clearLoadingOnce();
@@ -1908,6 +1909,25 @@ function openDeepLinkedStoryIfAny(){
   }
   // Not found among the last 15 published stories (likely expired or old).
   console.warn('Deep-linked story not found in current story list:', targetId);
+}
+
+// Arrived here via media-profile.html's Highlights row. Unlike a regular
+// deep-linked story, a highlighted story is very likely PAST its 24h expiry
+// and won't be in window.mfAllGroups at all (that list only ever holds the
+// last 15 currently-active stories) — so this fetches the document
+// directly by ID instead of searching the existing list, then builds a
+// one-off group for the viewer to show it from.
+async function openHighlightStoryIfAny(){
+  var storyId = new URLSearchParams(location.search).get('openHighlightStoryId');
+  if(!storyId) return;
+  try{
+    var doc = await db.collection('cities').doc(CITY).collection('mediaContent').doc(storyId).get();
+    if(!doc.exists){ console.warn('Highlighted story no longer exists:', storyId); return; }
+    var entry = {id:doc.id, data:doc.data()};
+    var groupIndex = window.mfAllGroups.length;
+    window.mfAllGroups.push([entry]);
+    openStoryViewerAt(groupIndex);
+  }catch(e){ console.error('Highlight story fetch failed', e); }
 }
 
 // ═══ STORY VIEWER — local to DELTA Media, ported from index.html ═══
