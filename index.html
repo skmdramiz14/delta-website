@@ -8158,9 +8158,20 @@ async function confirmVoiceOrderYes(){
   });
   if(!items.length){ showToast('কোনো নিশ্চিত পণ্য নেই','red'); return; }
 
+  // ⚠️ Compliance gate (Section 4.2–4.3): a regulated medicine (non-OTC,
+  // not yet prescriptionStatus:'verified') must NEVER be silently added to
+  // cart just because the customer said "হ্যাঁ" — that confirms UNDERSTANDING,
+  // not regulatory clearance (Section 1.0's core distinction). This was a
+  // real gap: the badge displayed "Prescription লাগবে" but nothing actually
+  // blocked the item from being added anyway.
+  var regulatedNeedingRx = items.filter(function(i){
+    return i.isMedicine && i.scheduleType !== 'OTC' && i.prescriptionStatus !== 'verified';
+  });
+  var normalItems = items.filter(function(i){ return regulatedNeedingRx.indexOf(i) === -1; });
+
   // Section 3.6 Golden Rule: this function only ever runs after the customer's
   // OWN explicit tap on "হ্যাঁ" — voice understanding alone never reaches here.
-  items.forEach(function(item){
+  normalItems.forEach(function(item){
     var top = item.matchCandidates[0];
     var existing = allProducts.find(function(p){ return p.id===top.productId && p.shopId===top.sellerId; });
     if(!existing) return; // safety: only add products that genuinely still exist
@@ -8174,6 +8185,18 @@ async function confirmVoiceOrderYes(){
   });
   updateCartBadge();
 
+  if(regulatedNeedingRx.length){
+    // Section 4.5.5 — partial success: the normal items already proceeded
+    // above; the regulated item(s) are held back for prescription upload,
+    // never silently dropped OR silently allowed through.
+    renderPrescriptionUploadGate(regulatedNeedingRx, normalItems.length>0);
+    return;
+  }
+
+  finishOrderConfirmation();
+}
+
+function finishOrderConfirmation(){
   db.collection('cities').doc(CITY).collection('voiceOrderSessions').doc(voSessionId).update({
     status:'confirmed', updatedAt:new Date().toISOString()
   }).catch(function(){});
@@ -8191,6 +8214,85 @@ async function confirmVoiceOrderYes(){
   }
   setTimeout(finishAfterMinDisplay, 4500); // safety fallback if onDone never fires
   speakVoiceOrderText(farewell, finishAfterMinDisplay);
+}
+
+// ⚠️ Section 4.2–4.3 compliance gate: a regulated medicine item is held
+// here — never added to cart — until a prescription photo is uploaded.
+// HONEST LIMITATION: this closes the "customer must upload before the item
+// enters their cart" half of the gate. It does NOT yet include a
+// pharmacist-review dashboard (Section 4.2's prescriptionStatus:'pending_upload'
+// → 'pending_pharmacist_review' → 'verified'/'rejected' transition needs a
+// UI for the seller/pharmacist to actually review the uploaded photo and
+// approve/reject — that still needs to be built in seller-dashboard.html).
+// This fix's job is narrower but still essential: make it structurally
+// impossible for a regulated item to reach the cart with NO prescription
+// captured at all, which is what was happening before.
+function renderPrescriptionUploadGate(regulatedItems, someItemsAlreadyAdded){
+  var item = regulatedItems[0]; // Section 3.5 — one at a time, even here
+  var top = item.matchCandidates[0];
+  var already = someItemsAlreadyAdded
+    ? '<div class="vo-scope-notice">বাকি জিনিসগুলো কার্টে যোগ হয়ে গেছে। ✅</div>' : '';
+  document.getElementById('voContent').innerHTML =
+    '<div class="vo-confirm-card">'+
+      '<div class="vo-confirm-title">💊 প্রেসক্রিপশন প্রয়োজন</div>'+
+      '<div class="vo-status-text" style="text-align:left;margin-bottom:10px;">'+
+        (top.label||item.rawText)+'-এর জন্য ডাক্তারের প্রেসক্রিপশনের ছবি আপলোড করুন। '+
+        'Pharmacist যাচাই করার পরই এই অংশটুকুর অর্ডার নিশ্চিত হবে।'+
+      '</div>'+
+      already+
+      '<input type="file" accept="image/*" capture="environment" id="voRxFileInput" style="margin:10px 0;">'+
+      '<div class="vo-action-row">'+
+        '<button class="vo-btn-yes" onclick="uploadPrescriptionAndContinue()">📷 আপলোড করুন</button>'+
+        '<button class="vo-btn-no" onclick="skipPrescriptionItem()">✕ এই জিনিসটা বাদ দিন</button>'+
+      '</div>'+
+    '</div>';
+  speakVoiceOrderText('এই ওষুধের জন্য প্রেসক্রিপশনের ছবি আপলোড করুন।');
+  window._voPendingRxItems = regulatedItems;
+}
+
+function skipPrescriptionItem(){
+  // Customer chose not to provide a prescription right now — the regulated
+  // item is simply excluded, never added unverified (Section 4.3's hard rule).
+  var remaining = (window._voPendingRxItems||[]).slice(1);
+  if(remaining.length){ renderPrescriptionUploadGate(remaining, true); return; }
+  showToast('ওষুধ ছাড়া বাকি অর্ডার সম্পন্ন হয়েছে','green');
+  finishOrderConfirmation();
+}
+
+async function uploadPrescriptionAndContinue(){
+  var fileInput = document.getElementById('voRxFileInput');
+  var file = fileInput && fileInput.files && fileInput.files[0];
+  if(!file){ showToast('আগে একটা ছবি বাছুন','red'); return; }
+
+  var item = (window._voPendingRxItems||[])[0];
+  var top = item.matchCandidates[0];
+  var existing = allProducts.find(function(p){ return p.id===top.productId && p.shopId===top.sellerId; });
+  if(!existing){ showToast('এই পণ্য আর পাওয়া যাচ্ছে না','red'); skipPrescriptionItem(); return; }
+
+  try{
+    showToast('আপলোড হচ্ছে...');
+    var fd = new FormData();
+    fd.append('file', file);
+    fd.append('upload_preset', 'delta_products'); // same Cloudinary preset used elsewhere on DELTA
+    var uploadRes = await fetch('https://api.cloudinary.com/v1_1/djthojcmy/image/upload', {method:'POST', body:fd});
+    var uploadData = await uploadRes.json();
+    if(!uploadData.secure_url) throw new Error('Upload failed');
+
+    var qty = (item.convertedQuantity!=null) ? item.convertedQuantity : (item.quantity||1);
+    cart.push(Object.assign({
+      qty:qty, selected:true,
+      prescriptionUrl: uploadData.secure_url,
+      prescriptionStatus: 'pending_pharmacist_review' // NOT 'verified' — a human still has to approve this
+    }, existing));
+    updateCartBadge();
+    showToast('প্রেসক্রিপশন জমা হয়েছে, pharmacist যাচাই করবেন ✅','green');
+
+    var remaining = (window._voPendingRxItems||[]).slice(1);
+    if(remaining.length){ renderPrescriptionUploadGate(remaining, true); return; }
+    finishOrderConfirmation();
+  }catch(e){
+    showToast('আপলোড করতে সমস্যা হয়েছে: '+e.message,'red');
+  }
 }
 
 function finishVoiceOrder(){
@@ -8416,12 +8518,25 @@ async function placeOrder(){
   selectedItems.forEach(function(c){
     if(!byShop[c.shopId])byShop[c.shopId]={shopId:c.shopId,shopName:c.shopName,items:[],total:0,orderSource:'normal',commissionRate:0};
     var itemPrice = c.price||c.sellPrice||0;
-    byShop[c.shopId].items.push({
+    var itemEntry = {
       id:c.id, name:c.nameBn||c.nameEn||c.name,
       price:itemPrice, qty:c.qty,
       orderSource:c.orderSource||'normal'
-    });
+    };
+    // Voice Ordering prescription gate (Section 4.2–4.3) — these fields were
+    // previously silently dropped here, meaning an uploaded prescription
+    // never actually reached the order document at all. Carried per-item now,
+    // AND aggregated onto the order below so a pharmacist dashboard can
+    // filter without inspecting every item.
+    if(c.prescriptionUrl){
+      itemEntry.prescriptionUrl = c.prescriptionUrl;
+      itemEntry.prescriptionStatus = c.prescriptionStatus || 'pending_pharmacist_review';
+    }
+    byShop[c.shopId].items.push(itemEntry);
     byShop[c.shopId].total += itemPrice*c.qty;
+    if(itemEntry.prescriptionUrl && !byShop[c.shopId].hasPendingPrescription){
+      byShop[c.shopId].hasPendingPrescription = true;
+    }
     // Flash sale থেকে আসলে source override করো
     if(c.orderSource==='flash_sale'){
       byShop[c.shopId].orderSource = 'flash_sale';
@@ -8440,6 +8555,7 @@ async function placeOrder(){
         customerEmail:currentUser.email,customerMobile:mobile,deliveryAddress:addr,
         items:od.items.map(function(i){return i.name+' ×'+i.qty;}).join(', '),
         itemsDetail:od.items,
+        hasPendingPrescription: !!od.hasPendingPrescription, // pharmacist review dashboard filters on this
         total:od.total,
         deliveryCharge:deliveryCharge,
         grandTotal:od.total+deliveryCharge,
