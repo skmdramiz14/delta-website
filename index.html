@@ -7902,7 +7902,7 @@ function openVoiceOrder(){
   voInCorrectionMode = false;
   voLastResult = null;
   voSessionId = null;
-  voCheckoutState = null; voCollectedAddr = null; voCollectedMobile = null; voCollectedPayment = 'cod';
+  voCheckoutState = null; voCollectedAddr = null; voCollectedMobile = null; voCollectedPayment = 'cod'; voEditingSingleField = null; voReturningToReview = false;
   resetVoiceOrderUI();
   // Greeting — DELTA speaks first, before the customer taps the mic
   var firstName = (currentUser.displayName||'').split(' ')[0];
@@ -8167,6 +8167,31 @@ function confirmVoiceOrderNo(){
   speakVoiceOrderText(question, function(){ startVoiceOrderListening(); });
 }
 
+var voReturningToReview = false; // when true, confirmVoiceOrderYes() skips
+  // straight to showFinalReview() instead of re-collecting delivery
+  // details that were already gathered earlier this same session.
+
+function editVoiceOrderItems(){
+  // Lets the customer change PRODUCTS from the final Review screen too —
+  // reuses the exact same correction pipeline (Section 3.7.1) already built
+  // for the earlier item-confirmation step, just entered from a different
+  // point. voCheckoutState must be cleared here so the next spoken answer
+  // routes through processVoiceOrderTranscript() (item correction), not
+  // handleCheckoutVoiceInput() (which only understands address/mobile/payment).
+  voCheckoutState = null;
+  voInCorrectionMode = true;
+  voReturningToReview = true;
+  var question = 'ঠিক আছে, পণ্যে কী পরিবর্তন করতে চান?';
+  document.getElementById('voContent').innerHTML =
+    '<div class="vo-mic-stage">'+
+      '<div class="vo-mic-circle listening" id="voMicCircle" onclick="startVoiceOrderListening()">🎙️</div>'+
+      '<div class="vo-status-text" id="voStatusText">'+question+'</div>'+
+      '<div class="vo-transcript-text" id="voTranscriptText"></div>'+
+      '<button class="vo-retry-btn" onclick="closeVoiceOrder()">✕ বন্ধ করুন</button>'+
+    '</div>';
+  speakVoiceOrderText(question, function(){ startVoiceOrderListening(); });
+}
+
 async function confirmVoiceOrderYes(){
   if(!voLastResult) return;
   voFinished = false;
@@ -8210,7 +8235,7 @@ async function confirmVoiceOrderYes(){
     return;
   }
 
-  startVoiceCheckout();
+  proceedToCheckoutOrReview();
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -8234,6 +8259,15 @@ function isAffirmative(text){
 function isNegative(text){
   var t = (text||'').toLowerCase();
   return /না|নাহ|নো|no|ভুল|wrong/.test(t);
+}
+
+function proceedToCheckoutOrReview(){
+  // If we're returning from a product-edit triggered FROM the review screen
+  // (editVoiceOrderItems()), delivery details were already collected this
+  // same session — go straight back to review instead of re-asking
+  // address/mobile/payment from scratch.
+  if(voReturningToReview){ voReturningToReview = false; showFinalReview(); return; }
+  startVoiceCheckout();
 }
 
 function startVoiceCheckout(){
@@ -8262,6 +8296,27 @@ function askVoiceCheckoutQuestion(question){
   speakVoiceOrderText(question, function(){ startVoiceOrderListening(); });
 }
 
+var voEditingSingleField = null; // when set, collecting ONE field returns straight
+                                   // to review instead of continuing the full
+                                   // address→mobile→payment sequence
+
+function editVoiceCheckoutField(field){
+  // Tap-to-edit (Section 3.7's correction philosophy applied to checkout):
+  // fixing one wrong field should never require redoing everything else.
+  voEditingSingleField = field;
+  if(field === 'address'){ voCheckoutState='address'; askVoiceCheckoutQuestion('নতুন ডেলিভারি ঠিকানা বলুন'); }
+  else if(field === 'mobile'){ voCheckoutState='mobile'; askVoiceCheckoutQuestion('নতুন মোবাইল নম্বর বলুন'); }
+  else if(field === 'payment'){ voCheckoutState='payment'; askVoiceCheckoutQuestion('নগদে পেমেন্ট করবেন, না অনলাইনে?'); }
+}
+
+function isKeepSameIntent(text){
+  // "আগেরটাই রাখো/থাকুক", "same", "ওইটাই ঠিক আছে" — the customer means
+  // "don't change this", not literally dictating that sentence as the new
+  // value. Missing this was a real bug: the raw transcript ("মোবাইল নাম্বার
+  // আগে যেটা বলা আছে সেটাই") was getting stored AS the mobile number itself.
+  return /আগেরটাই|আগের.*(রাখো|থাকুক)|same|ওইটাই|সেটাই থাকুক|যেটা ছিল|যেমন ছিল|change করব না|বদলাব না/i.test(text||'');
+}
+
 function handleCheckoutVoiceInput(transcript){
   if(voCheckoutState === 'confirm_saved'){
     if(isAffirmative(transcript)){ showFinalReview(); return; }
@@ -8272,29 +8327,43 @@ function handleCheckoutVoiceInput(transcript){
     return;
   }
   if(voCheckoutState === 'address'){
-    voCollectedAddr = transcript;
+    if(!isKeepSameIntent(transcript)) voCollectedAddr = transcript;
+    if(voEditingSingleField){ voEditingSingleField=null; showFinalReview(); return; }
     voCheckoutState = 'mobile';
     askVoiceCheckoutQuestion('আপনার মোবাইল নম্বর বলুন');
     return;
   }
   if(voCheckoutState === 'mobile'){
-    // Keep only digits — spoken numbers sometimes come with stray words
-    var digits = transcript.replace(/[^0-9]/g, '');
-    voCollectedMobile = digits.length>=10 ? digits : transcript;
+    if(!isKeepSameIntent(transcript)){
+      // Keep only digits — spoken numbers sometimes come with stray words
+      var digits = transcript.replace(/[^0-9]/g, '');
+      voCollectedMobile = digits.length>=10 ? digits : transcript;
+    }
+    if(voEditingSingleField){ voEditingSingleField=null; showFinalReview(); return; }
     voCheckoutState = 'payment';
     askVoiceCheckoutQuestion('নগদে পেমেন্ট করবেন, না অনলাইনে? কিছু না বললে নগদ ধরে নেব');
     return;
   }
   if(voCheckoutState === 'payment'){
     voCollectedPayment = /অনলাইন|online|upi/i.test(transcript) ? 'online' : 'cod';
+    voEditingSingleField = null;
     showFinalReview();
     return;
   }
   if(voCheckoutState === 'review'){
+    // Section 3.7's correction philosophy: the customer can name the EXACT
+    // field to fix directly by voice too, not only by tapping — matches
+    // "কোনটা ঠিক করতে চান — ঠিকানা, মোবাইল, না পেমেন্ট?" asked in the
+    // review's own spoken text.
+    if(/পণ্য|প্রোডাক্ট|আইটেম|product|item/i.test(transcript)){ editVoiceOrderItems(); return; }
+    if(/ঠিকানা|address/i.test(transcript)){ editVoiceCheckoutField('address'); return; }
+    if(/মোবাইল|ফোন|নম্বর|mobile|phone/i.test(transcript)){ editVoiceCheckoutField('mobile'); return; }
+    if(/পেমেন্ট|payment/i.test(transcript)){ editVoiceCheckoutField('payment'); return; }
     if(isAffirmative(transcript)){ placeVoiceOrder(); return; }
     if(isNegative(transcript)){
-      voCheckoutState = 'address';
-      askVoiceCheckoutQuestion('ঠিক আছে, আবার শুরু করি। আপনার ডেলিভারি ঠিকানা বলুন');
+      // generic "না" with no specific field named — ask which one, rather
+      // than assuming everything needs to be redone
+      askVoiceCheckoutQuestion('কোনটা ঠিক করতে চান — পণ্য, ঠিকানা, মোবাইল, না পেমেন্ট?');
       return;
     }
     // unclear — re-ask the same review question rather than guessing
@@ -8318,19 +8387,34 @@ function showFinalReview(){
 
   var reviewText = 'আপনার অর্ডার — '+itemsText+'। ঠিকানা: '+voCollectedAddr+
     '। মোবাইল: '+voCollectedMobile+'। পেমেন্ট: '+paymentText+
-    '। মোট আনুমানিক ₹'+total+'। সব ঠিক আছে? অর্ডার করবেন?';
+    '। মোট আনুমানিক ₹'+total+'। সব ঠিক থাকলে বলুন হ্যাঁ, নাহলে কোনটা ঠিক করতে চান বলুন — পণ্য, ঠিকানা, মোবাইল, না পেমেন্ট?';
 
+  // Tap-to-edit per field (Section 3.7's correction philosophy applied to
+  // checkout too — fixing ONE wrong field should never require redoing
+  // everything else). Each row is directly tappable, not just a fallback
+  // "না বললে সব আবার শুরু" behavior. Products row reuses the SAME
+  // correction mechanism (Section 3.7.1) already built for the earlier
+  // item-confirmation step — no new logic needed, just a new entry point.
   document.getElementById('voContent').innerHTML =
     '<div class="vo-confirm-card">'+
-      '<div class="vo-confirm-title">চূড়ান্ত Review</div>'+
-      '<div class="vo-item-row"><span class="vo-item-name">পণ্য</span><span class="vo-item-qty">'+itemsText+'</span></div>'+
-      '<div class="vo-item-row"><span class="vo-item-name">ঠিকানা</span><span class="vo-item-qty">'+voCollectedAddr+'</span></div>'+
-      '<div class="vo-item-row"><span class="vo-item-name">মোবাইল</span><span class="vo-item-qty">'+voCollectedMobile+'</span></div>'+
-      '<div class="vo-item-row"><span class="vo-item-name">পেমেন্ট</span><span class="vo-item-qty">'+paymentText+'</span></div>'+
+      '<div class="vo-confirm-title">চূড়ান্ত Review — ভুল থাকলে সেই লাইনে ট্যাপ করুন</div>'+
+      '<div class="vo-item-row" style="cursor:pointer" onclick="editVoiceOrderItems()">'+
+        '<span class="vo-item-name">পণ্য</span><span class="vo-item-qty">'+itemsText+' ✏️</span></div>'+
+      '<div class="vo-item-row" style="cursor:pointer" onclick="editVoiceCheckoutField(\'address\')">'+
+        '<span class="vo-item-name">ঠিকানা</span><span class="vo-item-qty">'+voCollectedAddr+' ✏️</span></div>'+
+      '<div class="vo-item-row" style="cursor:pointer" onclick="editVoiceCheckoutField(\'mobile\')">'+
+        '<span class="vo-item-name">মোবাইল</span><span class="vo-item-qty">'+voCollectedMobile+' ✏️</span></div>'+
+      '<div class="vo-item-row" style="cursor:pointer" onclick="editVoiceCheckoutField(\'payment\')">'+
+        '<span class="vo-item-name">পেমেন্ট</span><span class="vo-item-qty">'+paymentText+' ✏️</span></div>'+
       '<div class="vo-total-row"><span>মোট আনুমানিক</span><span>₹'+total+'</span></div>'+
       '<div class="vo-action-row">'+
-        '<button class="vo-btn-yes" onclick="startVoiceOrderListening()">🎙️ বলুন — ঠিক আছে/না</button>'+
-        '<button class="vo-btn-no" onclick="placeVoiceOrder()">✓ ঠিক আছে (ট্যাপ করুন)</button>'+
+        '<button class="vo-btn-yes" onclick="placeVoiceOrder()">✓ সব ঠিক আছে, অর্ডার করুন</button>'+
+        '<button class="vo-btn-no" onclick="closeVoiceOrder()">✕ বাতিল করুন</button>'+
+      '</div>'+
+      '<div class="vo-mic-stage" style="padding-top:14px;">'+
+        '<div class="vo-mic-circle" id="voMicCircle" onclick="startVoiceOrderListening()">🎙️</div>'+
+        '<div class="vo-status-text" id="voStatusText">অথবা বলুন — হ্যাঁ / ঠিকানা / মোবাইল / পেমেন্ট</div>'+
+        '<div class="vo-transcript-text" id="voTranscriptText"></div>'+
       '</div>'+
     '</div>';
   speakVoiceOrderText(reviewText, function(){ startVoiceOrderListening(); });
@@ -8488,7 +8572,7 @@ function skipPrescriptionItem(){
   var remaining = (window._voPendingRxItems||[]).slice(1);
   if(remaining.length){ renderPrescriptionUploadGate(remaining, true); return; }
   showToast('ওষুধ ছাড়া বাকি অর্ডার সম্পন্ন হয়েছে','green');
-  startVoiceCheckout();
+  proceedToCheckoutOrReview();
 }
 
 async function uploadPrescriptionAndContinue(){
@@ -8521,7 +8605,7 @@ async function uploadPrescriptionAndContinue(){
 
     var remaining = (window._voPendingRxItems||[]).slice(1);
     if(remaining.length){ renderPrescriptionUploadGate(remaining, true); return; }
-    startVoiceCheckout();
+    proceedToCheckoutOrReview();
   }catch(e){
     showToast('আপলোড করতে সমস্যা হয়েছে: '+e.message,'red');
   }
@@ -8536,7 +8620,7 @@ function finishVoiceOrder(){
   // is exactly what voice checkout was built to skip).
   showToast('আপনার অর্ডার সম্পন্ন হয়েছে ✅','green');
   voSessionId = null; voLastResult = null;
-  voCheckoutState = null; voCollectedAddr = null; voCollectedMobile = null; voCollectedPayment = 'cod';
+  voCheckoutState = null; voCollectedAddr = null; voCollectedMobile = null; voCollectedPayment = 'cod'; voEditingSingleField = null; voReturningToReview = false;
 }
 
 function addToCartById(pid,sid){
