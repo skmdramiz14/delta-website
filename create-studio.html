@@ -96,6 +96,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 .cs-switch input:checked + .cs-switch-track:before{transform:translateX(18px);}
 
 .cs-poll-panel,.cs-tag-panel{display:none;padding-top:12px;}
+.cs-shop-result,.cs-product-result{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;
+  cursor:pointer;border:1.5px solid var(--border);margin-bottom:6px;background:var(--white);}
+.cs-shop-result.selected,.cs-product-result.selected{border-color:var(--navy);background:var(--orange-light);}
+.cs-shop-result-name,.cs-product-result-name{font-size:.82rem;font-weight:700;flex:1;}
+.cs-product-result-price{font-size:.78rem;color:var(--muted);font-weight:700;}
 .cs-poll-opt{display:flex;gap:8px;margin-bottom:8px;align-items:center;}
 .cs-poll-opt input{flex:1;}
 .cs-poll-opt-remove{background:none;border:none;color:var(--danger);font-size:1.1rem;cursor:pointer;padding:4px 8px;}
@@ -205,6 +210,38 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
     </div>
   </div>
 
+  <!-- ── COMMERCE TAG (Post/Reel only) — links this content to a real shop/
+       product so viewers get a Visit Shop / Add to Cart CTA, same card the
+       feed already knows how to render (Section 7) — this UI was the
+       missing piece, since nothing could ever set d.tags before. ── -->
+  <div class="cs-section" id="csTagSection" style="display:none;padding-top:0;">
+    <div class="cs-toggle-row">
+      <div class="cs-toggle-label">🏪 দোকান/পণ্য ট্যাগ করুন</div>
+      <label class="cs-switch">
+        <input type="checkbox" id="csTagToggle" onchange="toggleTagPanel()">
+        <span class="cs-switch-track"></span>
+      </label>
+    </div>
+    <div class="cs-tag-panel" id="csTagPanel">
+      <input type="text" class="cs-input" id="csShopSearchInput" placeholder="দোকানের নাম লিখুন..." oninput="searchShopsForTag()" style="margin-bottom:8px;">
+      <div id="csShopResultsWrap"></div>
+      <div id="csProductPickWrap" style="display:none;margin-top:10px;">
+        <div class="cs-section-title" style="font-size:.7rem;">পণ্য বেছে নিন (ঐচ্ছিক — না দিলে শুধু দোকান ট্যাগ হবে)</div>
+        <div id="csProductResultsWrap"></div>
+      </div>
+      <div id="csCtaTypeWrap" style="display:none;margin-top:10px;">
+        <div class="cs-section-title" style="font-size:.7rem;">Call-to-Action</div>
+        <select class="cs-input" id="csCtaTypeSelect">
+          <option value="visit_shop">🏪 Visit Shop</option>
+          <option value="view_product">🛒 View Product</option>
+          <option value="order_now">📦 Order Now</option>
+          <option value="call">📞 Call</option>
+          <option value="whatsapp">💬 WhatsApp</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
   <div class="cs-section" style="padding-top:0;">
     <div class="cs-hint" id="csModerationHint">📝 আপনার কনটেন্ট submit করার পর DELTA টিম review করবে, তারপর সবার জন্য দেখা যাবে।</div>
   </div>
@@ -274,6 +311,7 @@ function selectType(type){
   document.getElementById('csFileInput').multiple = cfg.multiple;
   document.getElementById('csVideoTitleSection').style.display = type==='video' ? 'block' : 'none';
   document.getElementById('csPollSection').style.display = type==='post' ? 'block' : 'none';
+  document.getElementById('csTagSection').style.display = (type==='post'||type==='reel') ? 'block' : 'none';
   document.getElementById('csModerationHint').textContent = type==='story'
     ? '📝 স্টোরি ২৪ ঘণ্টা পর নিজে থেকেই সরে যাবে। Submit করার পর review হয়ে তারপর দেখা যাবে।'
     : '📝 আপনার কনটেন্ট submit করার পর DELTA টিম review করবে, তারপর সবার জন্য দেখা যাবে।';
@@ -282,6 +320,13 @@ function selectType(type){
   uploadedMedia = [];
   renderPreviews();
   updatePublishState();
+  _selectedTagShop = null; _selectedTagProduct = null;
+  document.getElementById('csTagToggle').checked = false;
+  document.getElementById('csTagPanel').style.display = 'none';
+  document.getElementById('csShopSearchInput').value = '';
+  document.getElementById('csShopResultsWrap').innerHTML = '';
+  document.getElementById('csProductPickWrap').style.display = 'none';
+  document.getElementById('csCtaTypeWrap').style.display = 'none';
 }
 
 function showToast(msg){
@@ -415,6 +460,91 @@ function addPollOption(){
   wrap.appendChild(row);
 }
 
+// ── COMMERCE TAG PICKER ──
+var _selectedTagShop = null;   // {id, shopName}
+var _selectedTagProduct = null; // {id, name, categoryId}
+var _shopSearchDebounce = null;
+
+function toggleTagPanel(){
+  var on = document.getElementById('csTagToggle').checked;
+  document.getElementById('csTagPanel').style.display = on ? 'block' : 'none';
+}
+
+function searchShopsForTag(){
+  var query = document.getElementById('csShopSearchInput').value.trim();
+  clearTimeout(_shopSearchDebounce);
+  var wrap = document.getElementById('csShopResultsWrap');
+  if(!query){ wrap.innerHTML = ''; return; }
+  _shopSearchDebounce = setTimeout(async function(){
+    wrap.innerHTML = '<div class="cs-hint">খোঁজা হচ্ছে...</div>';
+    try{
+      // Firestore has no case-insensitive "contains" search, so this does a
+      // simple prefix-range query on shopName — good enough for a hyperlocal
+      // seller list where a customer usually knows roughly how the shop
+      // name starts. A proper fuzzy search would need Algolia (Master Doc
+      // Section 10, Step 23.5 — not built yet).
+      var lower = query.toLowerCase();
+      var snap = await db.collection('cities').doc(CITY).collection('sellers')
+        .orderBy('shopName').startAt(query).endAt(query+'\uf8ff').limit(8).get();
+      if(snap.empty){ wrap.innerHTML = '<div class="cs-hint">কোনো দোকান পাওয়া যায়নি</div>'; return; }
+      wrap.innerHTML = '';
+      snap.forEach(function(doc){
+        var s = doc.data();
+        var row = document.createElement('div');
+        row.className = 'cs-shop-result';
+        row.innerHTML = '<span class="cs-shop-result-name">🏪 '+(s.shopName||'দোকান')+'</span>';
+        row.onclick = function(){ selectShopForTag(doc.id, s.shopName||'দোকান'); };
+        wrap.appendChild(row);
+      });
+    }catch(e){
+      console.warn('Shop search error', e);
+      wrap.innerHTML = '<div class="cs-hint">খোঁজা যাচ্ছে না — আবার চেষ্টা করুন</div>';
+    }
+  }, 500);
+}
+
+function selectShopForTag(shopId, shopName){
+  _selectedTagShop = {id:shopId, shopName:shopName};
+  _selectedTagProduct = null;
+  document.getElementById('csShopSearchInput').value = shopName;
+  document.getElementById('csShopResultsWrap').innerHTML =
+    '<div class="cs-shop-result selected"><span class="cs-shop-result-name">✅ '+shopName+'</span></div>';
+  document.getElementById('csProductPickWrap').style.display = 'block';
+  document.getElementById('csCtaTypeWrap').style.display = 'block';
+  loadProductsForTag(shopId);
+}
+
+async function loadProductsForTag(shopId){
+  var wrap = document.getElementById('csProductResultsWrap');
+  wrap.innerHTML = '<div class="cs-hint">পণ্য লোড হচ্ছে...</div>';
+  try{
+    var snap = await db.collection('cities').doc(CITY).collection('sellers').doc(shopId)
+      .collection('products').limit(15).get();
+    if(snap.empty){ wrap.innerHTML = '<div class="cs-hint">এই দোকানে এখনো কোনো পণ্য যোগ হয়নি</div>'; return; }
+    wrap.innerHTML = '';
+    snap.forEach(function(doc){
+      var p = doc.data();
+      var row = document.createElement('div');
+      row.className = 'cs-product-result';
+      row.innerHTML = '<span class="cs-product-result-name">'+(p.nameBn||p.name||'পণ্য')+'</span>'+
+        '<span class="cs-product-result-price">৳'+(p.price||p.sellPrice||0)+'</span>';
+      row.onclick = function(){ selectProductForTag(doc.id, p.nameBn||p.name, p.category||''); };
+      wrap.appendChild(row);
+    });
+  }catch(e){
+    console.warn('Product load error', e);
+    wrap.innerHTML = '<div class="cs-hint">পণ্য লোড করা যাচ্ছে না</div>';
+  }
+}
+
+function selectProductForTag(productId, name, categoryId){
+  var already = _selectedTagProduct && _selectedTagProduct.id===productId;
+  _selectedTagProduct = already ? null : {id:productId, name:name, categoryId:categoryId};
+  document.querySelectorAll('.cs-product-result').forEach(function(el){ el.classList.remove('selected'); });
+  if(!already) event.currentTarget.classList.add('selected');
+  document.getElementById('csCtaTypeSelect').value = _selectedTagProduct ? 'view_product' : 'visit_shop';
+}
+
 // ── SUBMIT ──
 async function submitContent(){
   if(!currentUser) return;
@@ -424,10 +554,25 @@ async function submitContent(){
   var caption = document.getElementById('csCaption').value.trim();
   var cfg = TYPE_CONFIG[currentType];
 
+  // DELTA's own auth.currentUser.photoURL/displayName are essentially never
+  // populated (registration never asks for a profile photo), so pulling
+  // author info from there silently produced posts/reels with no avatar
+  // anywhere they later got displayed. mediaProfiles/{uid} is the real,
+  // editable profile (Edit Profile writes here) — that's the correct source.
+  var authorName = currentUser.displayName || 'DELTA User';
+  var authorAvatar = '';
+  try{
+    var myProfile = await db.collection('mediaProfiles').doc(currentUser.uid).get();
+    if(myProfile.exists){
+      authorName = myProfile.data().displayName || authorName;
+      authorAvatar = myProfile.data().avatarUrl || '';
+    }
+  }catch(e){ console.warn('Could not fetch profile for author info (non-fatal)', e); }
+
   var payload = {
     authorUid: currentUser.uid,
-    authorDisplayName: currentUser.displayName || 'DELTA User',
-    authorAvatarUrl: currentUser.photoURL || '',
+    authorDisplayName: authorName,
+    authorAvatarUrl: authorAvatar,
     type: currentType,
     status: 'pending', // moderation queue — client can never self-publish (Firestore rules enforce this too)
     caption: caption,
@@ -461,6 +606,17 @@ async function submitContent(){
   } else if(currentType==='video'){
     payload.videoUrl = uploadedMedia[0] ? uploadedMedia[0].url : null;
     payload.videoTitle = document.getElementById('csVideoTitle').value.trim();
+  }
+
+  // Commerce tag — Post/Reel only, only if a shop was actually selected via
+  // the picker (never trust a stray toggle state alone).
+  if((currentType==='post' || currentType==='reel') && _selectedTagShop){
+    payload.tags = {
+      shopId: _selectedTagShop.id,
+      productId: _selectedTagProduct ? _selectedTagProduct.id : null,
+      categoryId: _selectedTagProduct ? _selectedTagProduct.categoryId : _selectedTagShop.shopName
+    };
+    payload.ctaType = document.getElementById('csCtaTypeSelect').value;
   }
 
   try{
