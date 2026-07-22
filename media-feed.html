@@ -2405,10 +2405,10 @@ async function loadMhTrendingReels(){
     docs.forEach(function(item){
       var d = item.data;
       var card = document.createElement('div'); card.className='mh-trending-card';
-      card.innerHTML =
-        '<img class="mh-trending-thumb" src="'+(d.thumbnailUrl||'')+'" onerror="this.style.background=\'var(--sand)\'">'+
-        '<div class="mh-trending-views">▶ '+((d.stats&&d.stats.views)||0)+'</div>';
-      card.onclick = function(){ location.href='reels-player.html?city='+CITY; };
+      var thumbHtml = d.thumbnailUrl ? '<img class="mh-trending-thumb" src="'+d.thumbnailUrl+'" onerror="this.style.background=\'var(--sand)\'">'
+        : (d.videoUrl ? '<video class="mh-trending-thumb" src="'+d.videoUrl+'" muted playsinline preload="metadata"></video>' : '<div class="mh-trending-thumb" style="background:var(--sand);"></div>');
+      card.innerHTML = thumbHtml+'<div class="mh-trending-views">▶ '+((d.stats&&d.stats.views)||0)+'</div>';
+      card.onclick = function(){ location.href='reels-player.html?city='+CITY+'&id='+item.id; };
       wrap.appendChild(card);
     });
   }catch(e){
@@ -2629,8 +2629,14 @@ async function loadMhDiscoverRow(){
       docs.forEach(function(item){
         var d = item.data;
         var card = document.createElement('div'); card.className='mh-d-reel';
-        card.innerHTML = '<img src="'+(d.thumbnailUrl||'')+'" onerror="this.style.background=\'var(--sand)\'"><div class="mh-d-reel-tag">Reel</div><div class="mh-d-reel-views">▶ '+((d.stats&&d.stats.views)||0)+'</div>';
-        card.onclick = function(){ location.href='reels-player.html?city='+CITY; };
+        // thumbnailUrl is never actually populated by create-studio.html (no
+        // auto-thumbnail generation exists yet) — fall back to showing the
+        // video itself muted, same fix already applied on the profile page's
+        // content grid, otherwise every real reel showed a blank white box here.
+        var mediaHtml = d.thumbnailUrl ? '<img src="'+d.thumbnailUrl+'" onerror="this.style.background=\'var(--sand)\'">'
+          : (d.videoUrl ? '<video src="'+d.videoUrl+'" muted playsinline preload="metadata"></video>' : '<div style="width:100%;height:100%;background:var(--sand);"></div>');
+        card.innerHTML = mediaHtml+'<div class="mh-d-reel-tag">Reel</div><div class="mh-d-reel-views">▶ '+((d.stats&&d.stats.views)||0)+'</div>';
+        card.onclick = function(){ location.href='reels-player.html?city='+CITY+'&id='+item.id; };
         reelCards.push(card);
       });
     }
