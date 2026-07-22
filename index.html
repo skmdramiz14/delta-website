@@ -3626,6 +3626,20 @@ img{max-width:100%;height:auto;}
     </div>
   </div>
 </div>
+
+<!-- ═══ MY ORDERS — customer-facing order tracking (previously missing entirely) ═══ -->
+<div class="modal-overlay" id="myOrdersModal">
+  <div class="checkout-modal">
+    <div class="co-head">
+      <h3>📦 আমার অর্ডার</h3>
+      <button onclick="closeMyOrders()" style="border:none;background:none;cursor:pointer;font-size:1.1rem;color:var(--muted);">✕</button>
+    </div>
+    <div class="co-body" id="myOrdersBody">
+      <div style="color:var(--muted);padding:30px;text-align:center;">লোড হচ্ছে...</div>
+    </div>
+  </div>
+</div>
+
 <!-- SIDE MENU DRAWER (Amazon two-panel style) -->
 <div class="side-menu-overlay" id="sideMenuOverlay" onclick="closeSideMenu()"></div>
 <div class="side-menu-drawer" id="sideMenuDrawer">
@@ -3741,6 +3755,7 @@ img{max-width:100%;height:auto;}
         <div class="smd-panel-title">আমার অ্যাকাউন্ট</div>
         <div class="smd-cat-list">
           <div class="smd-cat-row" onclick="closeSideMenu();handleUserBtn()"><span>🔐</span><span id="smdLoginLabel">লগইন / রেজিস্ট্রেশন</span></div>
+          <div class="smd-cat-row" onclick="closeSideMenu();openMyOrders()"><span>📦</span>আমার অর্ডার</div>
           <div class="smd-cat-row" onclick="closeSideMenu();goToMyDeltaMedia()"><span>🎬</span>আমার DELTA Media</div>
           <div class="smd-cat-row" onclick="closeSideMenu();openCart()"><span>🛒</span>আমার কার্ট</div>
           <div class="smd-cat-row" onclick="closeSideMenu();openRequestModal()"><span>📦</span>পণ্য রিকোয়েস্ট</div>
@@ -8367,10 +8382,20 @@ async function placeVoiceOrder(){
 
   try{
     var oids=[];
+    var anyOrderAwaitingRx = false;
     for(var sid in byShop){
       var od=byShop[sid];
       var deliveryCharge = od.total >= FREE_DELIVERY_MIN ? 0 : 30;
       var shopInfo = allShops.find(function(s){ return s.id === sid; }) || {};
+      // ⚠️ CRITICAL — this is the actual point of pharmacist verification:
+      // an order containing an unverified regulated medicine must NEVER
+      // enter the normal fulfillment queue (status:'pending') just because
+      // the customer said "হ্যাঁ" and completed checkout. It stays in a
+      // holding status until a pharmacist actually approves — otherwise
+      // "verification" would happen AFTER the order already succeeded,
+      // which defeats its entire purpose.
+      var initialStatus = od.hasPendingPrescription ? 'awaiting_prescription_verification' : 'pending';
+      if(od.hasPendingPrescription) anyOrderAwaitingRx = true;
       var ref=await db.collection('cities').doc(CITY).collection('sellers').doc(sid).collection('orders').add({
         customerId:currentUser.uid, customerName:currentUser.displayName||'Customer',
         customerEmail:currentUser.email, customerMobile:voCollectedMobile, deliveryAddress:voCollectedAddr,
@@ -8382,7 +8407,7 @@ async function placeVoiceOrder(){
         shopName:od.shopName||shopInfo.shopName||'দোকান',
         shopAddress:shopInfo.area||shopInfo.address||'', shopPhone:shopInfo.phone||shopInfo.ownerPhone||'',
         orderSource: od.orderSource||'normal', commissionRate: od.commissionRate||0,
-        status:'pending', sourceChannel:'voice', voiceSessionId: voSessionId||null,
+        status:initialStatus, sourceChannel:'voice', voiceSessionId: voSessionId||null,
         createdAt:new Date().toISOString()
       });
       oids.push(ref.id);
@@ -8392,20 +8417,25 @@ async function placeVoiceOrder(){
     localStorage.setItem('delta_voice_mobile', voCollectedMobile);
     cart = cart.filter(function(c){ return c.selected===false; }); // clear ordered items
     updateCartBadge();
-    finishOrderConfirmation();
+    finishOrderConfirmation(anyOrderAwaitingRx);
   }catch(e){
     showToast('অর্ডার করতে সমস্যা হয়েছে: '+e.message,'red');
   }
 }
 
-function finishOrderConfirmation(){
+function finishOrderConfirmation(awaitingRx){
   db.collection('cities').doc(CITY).collection('voiceOrderSessions').doc(voSessionId).update({
     status:'confirmed', updatedAt:new Date().toISOString()
   }).catch(function(){});
 
   // Closing gesture — DELTA says goodbye before the sheet closes, rather than
-  // just silently vanishing into the cart.
-  var farewell = 'ধন্যবাদ! আপনার অর্ডার নেওয়া হয়েছে। ভালো থাকবেন।';
+  // just silently vanishing into the cart. Message is honest about what
+  // actually happened: an order awaiting prescription verification is NOT
+  // yet a confirmed/successful order — saying otherwise here would be the
+  // exact same mistake this whole fix corrects, just moved into the copy.
+  var farewell = awaitingRx
+    ? 'আপনার প্রেসক্রিপশন জমা হয়েছে। Pharmacist যাচাই করার পর অর্ডার নিশ্চিত হবে, আপনাকে জানানো হবে। ধন্যবাদ।'
+    : 'ধন্যবাদ! আপনার অর্ডার নিশ্চিত হয়েছে। ভালো থাকবেন।';
   document.getElementById('voContent').innerHTML =
     '<div class="vo-mic-stage"><div class="vo-status-text">'+farewell+'</div></div>';
   var farewellShownAt = Date.now();
@@ -8706,6 +8736,80 @@ async function notifyServiceExpansion(){
   document.getElementById('notifyContactModal').classList.add('open');
 }
 function closeCheckout(){document.getElementById('checkoutModal').classList.remove('open');}
+
+// ═══════════════════ MY ORDERS (customer-facing tracking — previously
+// entirely missing; a customer had no way to check ANY order's status,
+// voice-placed or not) ═══════════════════
+var CUSTOMER_STATUS_MAP = {
+  pending: {label:'⏳ অপেক্ষমাণ', color:'#8A6215'},
+  confirmed: {label:'✅ নিশ্চিত হয়েছে', color:'#1a7a4c'},
+  preparing: {label:'🔄 তৈরি হচ্ছে', color:'#1a7a4c'},
+  out: {label:'🛵 ডেলিভারির পথে', color:'#1a7a4c'},
+  delivered: {label:'📦 পৌঁছে গেছে', color:'#1a7a4c'},
+  cancelled: {label:'❌ বাতিল হয়েছে', color:'#c0392b'},
+  awaiting_prescription_verification: {label:'💊 প্রেসক্রিপশন যাচাই হচ্ছে', color:'#8A6215'},
+  prescription_rejected: {label:'🚫 প্রেসক্রিপশন গ্রহণযোগ্য হয়নি', color:'#c0392b'}
+};
+
+function openMyOrders(){
+  if(!currentUser){ showToast('আগে লগইন করুন'); openAuth(); return; }
+  document.getElementById('myOrdersModal').classList.add('open');
+  loadMyOrders();
+}
+function closeMyOrders(){ document.getElementById('myOrdersModal').classList.remove('open'); }
+
+function loadMyOrders(){
+  var wrap = document.getElementById('myOrdersBody');
+  wrap.innerHTML = '<div style="color:var(--muted);padding:30px;text-align:center;">লোড হচ্ছে...</div>';
+  // Collection-group query — a customer's orders live scattered across
+  // many sellers' own orders subcollections (cities/{city}/sellers/{sid}/
+  // orders), never in one place, so this is the only way to see "all my
+  // orders" without a separate denormalized index collection.
+  db.collectionGroup('orders').where('customerId','==',currentUser.uid)
+    .orderBy('createdAt','desc').limit(30).get()
+    .then(function(snap){
+      if(snap.empty){
+        wrap.innerHTML = '<div style="color:var(--muted);padding:30px;text-align:center;">এখনো কোনো অর্ডার করেননি।</div>';
+        return;
+      }
+      wrap.innerHTML = snap.docs.map(function(doc){
+        var o = doc.data();
+        var st = CUSTOMER_STATUS_MAP[o.status] || {label:o.status||'—', color:'var(--muted)'};
+        var rejectNote = '';
+        if(o.status==='prescription_rejected'){
+          var rejectedItem = (o.itemsDetail||[]).find(function(i){ return i.prescriptionRejectReason; });
+          if(rejectedItem) rejectNote = '<div style="font-size:.76rem;color:#c0392b;margin-top:4px;">কারণ: '+rejectedItem.prescriptionRejectReason+'</div>';
+        }
+        var time = o.createdAt ? new Date(o.createdAt).toLocaleString('bn-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) : '';
+        var voiceTag = o.sourceChannel==='voice' ? ' <span style="font-size:.68rem;background:#eef9f0;color:#1a7a4c;padding:1px 7px;border-radius:8px;">🎙️ Voice</span>' : '';
+        return '<div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px;">'+
+          '<div style="display:flex;justify-content:space-between;margin-bottom:6px;">'+
+            '<strong>'+(o.shopName||'দোকান')+voiceTag+'</strong>'+
+            '<span style="font-size:.78rem;color:var(--muted);">'+time+'</span>'+
+          '</div>'+
+          '<div style="font-size:.85rem;color:var(--charcoal);margin-bottom:6px;">'+(o.items||'')+'</div>'+
+          '<div style="display:flex;justify-content:space-between;align-items:center;">'+
+            '<span style="font-weight:700;color:'+st.color+';">'+st.label+'</span>'+
+            '<span style="font-weight:700;">₹'+(o.grandTotal||o.total||0)+'</span>'+
+          '</div>'+
+          rejectNote+
+        '</div>';
+      }).join('');
+    })
+    .catch(function(e){
+      // Collection-group queries with a composite filter+orderBy need a
+      // one-time Firestore index — same situation encountered earlier with
+      // Discover People's scope queries. Handled the same way: point the
+      // user at the console link Firestore itself provides in the error.
+      wrap.innerHTML = '<div style="color:var(--muted);padding:20px;line-height:1.6;">'+
+        (String(e.message).toLowerCase().indexOf('index')>-1
+          ? 'প্রথমবার এই ফিচার চালু করতে Firestore-এ একটা ছোট index বানাতে হবে। Browser Console (F12) খুলে এখানে যে error দেখাচ্ছে, তার ভেতরের নীল লিংকে ক্লিক করে "Create Index" চাপুন।'
+          : 'লোড করতে সমস্যা হয়েছে: '+e.message)+
+        '</div>';
+    });
+}
+
+
 function selectPay(m){
   selectedPay=m;
   document.getElementById('codOpt').classList.toggle('on',m==='cod');
