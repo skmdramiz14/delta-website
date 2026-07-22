@@ -8886,6 +8886,10 @@ function loadMyOrders(){
       // one-time Firestore index — same situation encountered earlier with
       // Discover People's scope queries. Handled the same way: point the
       // user at the console link Firestore itself provides in the error.
+      // ⚠️ This console.error was missing before — without it, the raw
+      // Firebase error (which contains the clickable index-creation link)
+      // never actually appeared in DevTools at all, only this toast text.
+      console.error('My Orders query error (look for an index-creation link above):', e);
       wrap.innerHTML = '<div style="color:var(--muted);padding:20px;line-height:1.6;">'+
         (String(e.message).toLowerCase().indexOf('index')>-1
           ? 'প্রথমবার এই ফিচার চালু করতে Firestore-এ একটা ছোট index বানাতে হবে। Browser Console (F12) খুলে এখানে যে error দেখাচ্ছে, তার ভেতরের নীল লিংকে ক্লিক করে "Create Index" চাপুন।'
