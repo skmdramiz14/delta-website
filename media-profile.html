@@ -72,6 +72,56 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
   display:flex;align-items:center;justify-content:center;cursor:pointer;}
 
 /* ── Tabs ── */
+.pp-see-more{color:var(--gold-dark);font-weight:700;cursor:pointer;}
+
+.pp-link-chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
+.pp-link-chip{display:inline-flex;align-items:center;gap:5px;background:var(--sand);border:1px solid var(--border);
+  border-radius:16px;padding:6px 12px;font-size:.72rem;font-weight:700;color:var(--charcoal);text-decoration:none;}
+
+/* ── Story Highlights row ── */
+.pp-highlights-row{display:flex;gap:16px;overflow-x:auto;padding:16px 14px 6px;scrollbar-width:none;}
+.pp-highlights-row::-webkit-scrollbar{display:none;}
+.pp-hl-item{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;width:64px;}
+.pp-hl-ring{width:62px;height:62px;border-radius:50%;padding:2.5px;
+  background:linear-gradient(135deg,var(--gold),#e8c874,var(--gold-dark));
+  transition:transform .15s;}
+.pp-hl-item:active .pp-hl-ring{transform:scale(.93);}
+.pp-hl-ring-inner{width:100%;height:100%;border-radius:50%;background:var(--cream);padding:2.5px;}
+.pp-hl-ring-inner img{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;}
+.pp-hl-new .pp-hl-ring{background:var(--border);}
+.pp-hl-new .pp-hl-ring-inner{display:flex;align-items:center;justify-content:center;background:var(--sand);font-size:1.4rem;color:var(--muted);}
+.pp-hl-label{font-size:.66rem;font-weight:600;color:var(--charcoal);text-align:center;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:64px;}
+
+/* ── Highlight picker modal grid ── */
+.pp-hl-picker-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0;max-height:260px;overflow-y:auto;}
+.pp-hl-pick-cell{position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;cursor:pointer;
+  border:2.5px solid transparent;background:var(--border);}
+.pp-hl-pick-cell.selected{border-color:var(--gold);}
+.pp-hl-pick-cell img,.pp-hl-pick-cell video{width:100%;height:100%;object-fit:cover;}
+.pp-hl-pick-check{position:absolute;top:4px;right:4px;width:18px;height:18px;border-radius:50%;background:var(--gold);
+  color:#fff;display:none;align-items:center;justify-content:center;font-size:.65rem;}
+.pp-hl-pick-cell.selected .pp-hl-pick-check{display:flex;}
+
+/* ── Quick post composer (owner, top of Posts feed) ── */
+.pp-composer{background:var(--sand);border:1px solid var(--border);border-radius:16px;padding:14px;margin:14px;
+  box-shadow:0 1px 6px rgba(0,0,0,.04);}
+.pp-composer-row{display:flex;align-items:center;gap:10px;cursor:pointer;padding-bottom:12px;margin-bottom:12px;
+  border-bottom:1px solid var(--border);}
+.pp-composer-avatar{width:38px;height:38px;border-radius:50%;object-fit:cover;background:var(--navy);flex-shrink:0;}
+.pp-composer-input{flex:1;background:var(--cream);border-radius:20px;padding:10px 16px;color:var(--muted);font-size:.85rem;}
+.pp-composer-quick{display:flex;gap:8px;}
+.pp-composer-qbtn{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 4px;
+  border-radius:10px;background:var(--cream);font-size:.75rem;font-weight:700;color:var(--charcoal);cursor:pointer;
+  transition:background .15s;}
+.pp-composer-qbtn:active{background:var(--border);}
+
+/* ── Mutual follows preview ── */
+.pp-mutual-row{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:.76rem;color:var(--muted);}
+.pp-mutual-avatars{display:flex;}
+.pp-mutual-avatars img{width:20px;height:20px;border-radius:50%;object-fit:cover;border:1.5px solid var(--sand);margin-left:-7px;}
+.pp-mutual-avatars img:first-child{margin-left:0;}
+
 .pp-tabs{display:flex;gap:4px;overflow-x:auto;border-bottom:1px solid var(--border);margin-top:14px;padding:0 14px;scrollbar-width:none;}
 .pp-tabs::-webkit-scrollbar{display:none;}
 .pp-tab{padding:12px 14px;font-size:.78rem;font-weight:700;color:var(--muted);cursor:pointer;white-space:nowrap;
@@ -84,6 +134,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 .pp-grid-item.tall{aspect-ratio:9/14;}
 .pp-grid-item img,.pp-grid-item video{width:100%;height:100%;object-fit:cover;display:block;}
 .pp-grid-badge{position:absolute;top:6px;right:6px;color:#fff;font-size:.85rem;filter:drop-shadow(0 1px 2px rgba(0,0,0,.5));}
+.pp-grid-pin{position:absolute;top:6px;left:6px;font-size:.85rem;filter:drop-shadow(0 1px 2px rgba(0,0,0,.5));}
+.pp-grid-pin-toggle{position:absolute;bottom:6px;right:6px;width:22px;height:22px;border-radius:50%;
+  background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;font-size:.7rem;cursor:pointer;}
 .pp-grid-stat{position:absolute;bottom:6px;left:6px;color:#fff;font-size:.66rem;font-weight:700;background:rgba(0,0,0,.4);
   padding:2px 7px;border-radius:8px;}
 .pp-grid-status{position:absolute;top:6px;left:6px;font-size:.6rem;font-weight:800;padding:2px 7px;border-radius:7px;
@@ -115,6 +168,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 .pp-modal{background:#fff;width:100%;max-width:480px;border-radius:18px 18px 0 0;max-height:85vh;overflow-y:auto;padding:20px;}
 .pp-modal-head{display:flex;justify-content:space-between;align-items:center;font-weight:800;margin-bottom:14px;}
 .pp-form-group{margin-bottom:12px;}
+.pp-form-section-label{font-size:.72rem;font-weight:800;color:var(--gold-dark);text-transform:uppercase;
+  letter-spacing:.05em;margin:18px 0 8px;padding-top:12px;border-top:1px solid var(--border);}
 .pp-form-group label{font-size:.75rem;font-weight:700;display:block;margin-bottom:5px;}
 .pp-form-input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:.85rem;font-family:inherit;}
 .pp-form-textarea{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:.85rem;font-family:inherit;resize:vertical;}
@@ -174,10 +229,25 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 
   <div class="pp-bio" id="ppBio" style="display:none;"></div>
   <div class="pp-meta-row" id="ppMetaRow"></div>
+  <div class="pp-link-chips" id="ppLinkChips" style="display:none;"></div>
 
   <div class="pp-actions" id="ppActions"></div>
 
+  <div class="pp-highlights-row" id="ppHighlightsRow"></div>
+
   <div class="pp-tabs" id="ppTabs"></div>
+</div>
+
+<!-- Highlight picker modal (owner only) — pick one of your own stories
+     (even an expired one; the underlying document survives past 24h, only
+     the normal feed hides it) to save permanently to your profile. -->
+<div class="pp-modal-overlay" id="highlightPickerModal">
+  <div class="pp-modal">
+    <div class="pp-modal-head">নতুন Highlight <button onclick="closeHighlightPicker()" style="background:none;border:none;font-size:1.1rem;cursor:pointer;">✕</button></div>
+    <div class="pp-form-group"><label>Highlight-এর নাম</label><input type="text" class="pp-form-input" id="hlTitleInput" placeholder="যেমন: Bestsellers, Behind the Scenes" maxlength="20"></div>
+    <div class="pp-hl-picker-grid" id="hlPickerGrid"><div class="pp-loading" style="padding:20px 0;">আপনার story-গুলো লোড হচ্ছে...</div></div>
+    <button class="pp-modal-save" id="hlSaveBtn" onclick="saveHighlight()" disabled>Highlight হিসেবে সেভ করুন</button>
+  </div>
 </div>
 
 <div id="ppContentArea">
@@ -194,6 +264,16 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
     <div class="pp-form-group"><label>Location</label><input type="text" class="pp-form-input" id="editLocation"></div>
     <div class="pp-form-group"><label>Avatar Image URL</label><input type="text" class="pp-form-input" id="editAvatarUrl" placeholder="https://..."></div>
     <div class="pp-form-group"><label>Cover Image URL</label><input type="text" class="pp-form-input" id="editCoverUrl" placeholder="https://..."></div>
+
+    <div class="pp-form-section-label">External Links</div>
+    <div class="pp-form-group"><label>🌐 Website</label><input type="text" class="pp-form-input" id="editWebsite" placeholder="https://..."></div>
+    <div class="pp-form-group"><label>▶️ YouTube</label><input type="text" class="pp-form-input" id="editYoutube" placeholder="https://youtube.com/@..."></div>
+    <div class="pp-form-group"><label>📘 Facebook</label><input type="text" class="pp-form-input" id="editFacebook" placeholder="https://facebook.com/..."></div>
+
+    <div class="pp-form-section-label" id="editBusinessLabel" style="display:none;">Business Details</div>
+    <div class="pp-form-group" id="editShopCategoryWrap" style="display:none;"><label>দোকানের ধরন</label><input type="text" class="pp-form-input" id="editShopCategory" placeholder="যেমন: মিষ্টির দোকান, কাপড়ের দোকান"></div>
+    <div class="pp-form-group" id="editEstablishedWrap" style="display:none;"><label>প্রতিষ্ঠার বছর</label><input type="text" class="pp-form-input" id="editEstablishedYear" placeholder="যেমন: 2018"></div>
+
     <button class="pp-modal-save" onclick="saveProfileEdit()">Save Changes</button>
   </div>
 </div>
@@ -222,6 +302,27 @@ var isOwner = false;
 var activeTab = 'post';
 
 function requireLogin(){ alert('Login to engage, share and grow.\n\n☰ মেনু থেকে লগইন করুন।'); }
+
+function expandBio(el){
+  var bioEl = document.getElementById('ppBio');
+  bioEl.textContent = bioEl.getAttribute('data-full');
+}
+
+function renderLinkChips(){
+  var wrap = document.getElementById('ppLinkChips');
+  var links = profileData.links || {};
+  var chips = [];
+  if(links.website) chips.push({icon:'🌐', label:hostFromUrl(links.website), url:links.website});
+  if(links.youtube) chips.push({icon:'▶️', label:'YouTube', url:links.youtube});
+  if(links.facebook) chips.push({icon:'📘', label:'Facebook', url:links.facebook});
+  wrap.innerHTML = chips.map(function(c){
+    return '<a href="'+c.url+'" target="_blank" class="pp-link-chip">'+c.icon+' '+c.label+'</a>';
+  }).join('');
+  wrap.style.display = chips.length ? 'flex' : 'none';
+}
+function hostFromUrl(url){
+  try{ return new URL(url).hostname.replace(/^www\./,''); }catch(e){ return 'Website'; }
+}
 
 function badgeInfo(p){
   if(p.primaryBadge==='delta_official') return {cls:'official', text:'✓ DELTA Official'};
@@ -291,7 +392,17 @@ async function loadProfile(){
     if(profileData.username){ document.getElementById('ppUsername').textContent = '@'+profileData.username; }
 
     // ── Bio & meta ──
-    if(profileData.bio){ document.getElementById('ppBio').textContent = profileData.bio; document.getElementById('ppBio').style.display='block'; }
+    var bioEl = document.getElementById('ppBio');
+    if(profileData.bio){
+      var bioText = profileData.bio;
+      if(bioText.length > 120){
+        bioEl.innerHTML = bioText.slice(0,120)+'... <span class="pp-see-more" onclick="expandBio(this)">আরও দেখুন</span>';
+        bioEl.setAttribute('data-full', bioText);
+      } else {
+        bioEl.textContent = bioText;
+      }
+      bioEl.style.display='block';
+    }
     var metaParts = [];
     // Auto-fetched, verified location — always reflects the real registered
     // area (areaLabel/homeCity), distinct from the free-text bio "location"
@@ -305,8 +416,17 @@ async function loadProfile(){
         ' <span style="font-size:.68rem;color:var(--muted);font-weight:400;">· নিবন্ধিত এলাকা</span></span>');
     }
     if(profileData.location) metaParts.push('🏷️ '+profileData.location);
+    if(profileData.shopCategory) metaParts.push('🏪 '+profileData.shopCategory);
+    if(profileData.establishedYear) metaParts.push('📅 '+profileData.establishedYear+' থেকে');
     if(profileData.businessCategory) metaParts.push('🏷️ '+profileData.businessCategory);
+    if(profileData.createdAt){
+      var joinYear = new Date(profileData.createdAt).getFullYear();
+      metaParts.push('🗓️ '+joinYear+' সাল থেকে DELTA-তে');
+    }
     document.getElementById('ppMetaRow').innerHTML = metaParts.map(function(m){ return '<span>'+m+'</span>'; }).join('');
+
+    // ── External links ──
+    renderLinkChips();
 
     // ── Stats ──
     document.getElementById('ppFollowerCount').textContent = (profileData.followerCount||0);
@@ -321,6 +441,8 @@ async function loadProfile(){
 
     renderActions();
     renderTabs();
+    loadHighlights();
+    if(!isOwner && currentUser) loadMutualFollows();
 
     // Honor ?tab= from hamburger menu links
     if(INITIAL_TAB==='analytics' && isOwner) switchTab('analytics');
@@ -344,6 +466,127 @@ async function loadRealCounts(){
       .where('authorUid','==',PROFILE_UID).where('status','==','published').get();
     document.getElementById('ppPostCount').textContent = content.size;
   }catch(e){ console.warn('Count load error', e); }
+}
+
+// ═══ STORY HIGHLIGHTS — permanent, curated stories on the profile,
+// bypassing the normal 24h expiry (Instagram-style). ═══
+var _hlPickedStory = null; // {id, data} of the story chosen in the picker
+
+async function loadHighlights(){
+  var wrap = document.getElementById('ppHighlightsRow');
+  var html = '';
+  if(isOwner){
+    html += '<div class="pp-hl-item pp-hl-new" onclick="openHighlightPicker()">'+
+      '<div class="pp-hl-ring"><div class="pp-hl-ring-inner">+</div></div>'+
+      '<div class="pp-hl-label">নতুন</div></div>';
+  }
+  try{
+    var snap = await db.collection('mediaProfiles').doc(PROFILE_UID).collection('highlights')
+      .orderBy('createdAt','desc').limit(20).get();
+    snap.forEach(function(doc){
+      var h = doc.data();
+      html += '<div class="pp-hl-item" onclick="openHighlight(\''+doc.id+'\',\''+h.storyId+'\')">'+
+        '<div class="pp-hl-ring"><div class="pp-hl-ring-inner">'+
+        (h.coverUrl ? '<img src="'+h.coverUrl+'">' : '<div style="width:100%;height:100%;border-radius:50%;background:var(--navy);"></div>')+
+        '</div></div><div class="pp-hl-label">'+(h.title||'Highlight')+'</div></div>';
+    });
+  }catch(e){ console.warn('Highlights load error (non-fatal)', e); }
+  wrap.innerHTML = html;
+  wrap.style.display = html ? 'flex' : 'none';
+}
+
+function openHighlight(highlightId, storyId){
+  // Highlighted stories bypass the normal "last 15 active" story list
+  // entirely (that's the whole point — they can be long past their 24h
+  // expiry), so this can't reuse the regular ?openStoryId= deep-link path,
+  // which only searches among currently-active stories. media-feed.html
+  // fetches this ID directly by document reference instead.
+  location.href = 'media-feed.html?city='+CITY+'&openHighlightStoryId='+storyId;
+}
+
+async function openHighlightPicker(){
+  document.getElementById('highlightPickerModal').classList.add('open');
+  document.getElementById('hlTitleInput').value = '';
+  _hlPickedStory = null;
+  document.getElementById('hlSaveBtn').disabled = true;
+  var grid = document.getElementById('hlPickerGrid');
+  grid.innerHTML = '<div class="pp-loading" style="padding:20px 0;">আপনার story-গুলো লোড হচ্ছে...</div>';
+  try{
+    // Deliberately no status/expiresAt filter — highlights exist precisely
+    // to rescue a story that would otherwise be gone from the normal feed,
+    // so owner needs to see ALL of their own stories here, expired or not.
+    var snap = await db.collection('cities').doc(CITY).collection('mediaContent')
+      .where('authorUid','==',PROFILE_UID).where('type','==','story')
+      .orderBy('createdAt','desc').limit(30).get();
+    if(snap.empty){ grid.innerHTML = '<div class="pp-empty" style="padding:20px 0;">এখনো কোনো story তৈরি করেননি।</div>'; return; }
+    var cells = [];
+    snap.forEach(function(doc){
+      var d = doc.data();
+      var thumb = d.mediaUrls && d.mediaUrls[0];
+      cells.push('<div class="pp-hl-pick-cell" data-id="'+doc.id+'" onclick=\'pickHlStory(this,'+JSON.stringify(JSON.stringify({id:doc.id,thumb:thumb||null,video:d.videoUrl||null}))+')\'>'+
+        (thumb ? '<img src="'+thumb+'">' : (d.videoUrl ? '<video src="'+d.videoUrl+'" muted></video>' : ''))+
+        '<div class="pp-hl-pick-check">✓</div></div>');
+    });
+    grid.innerHTML = cells.join('');
+  }catch(e){
+    console.error('Highlight picker load error', e);
+    grid.innerHTML = '<div class="pp-empty" style="padding:20px 0;">লোড করতে সমস্যা হয়েছে।</div>';
+  }
+}
+function pickHlStory(el, payloadJson){
+  document.querySelectorAll('.pp-hl-pick-cell').forEach(function(c){ c.classList.remove('selected'); });
+  el.classList.add('selected');
+  _hlPickedStory = JSON.parse(payloadJson);
+  document.getElementById('hlSaveBtn').disabled = false;
+}
+function closeHighlightPicker(){
+  document.getElementById('highlightPickerModal').classList.remove('open');
+}
+async function saveHighlight(){
+  var title = document.getElementById('hlTitleInput').value.trim();
+  if(!title || !_hlPickedStory) return;
+  var btn = document.getElementById('hlSaveBtn');
+  btn.disabled = true; btn.textContent = 'সেভ হচ্ছে...';
+  try{
+    await db.collection('mediaProfiles').doc(PROFILE_UID).collection('highlights').add({
+      title: title, storyId: _hlPickedStory.id,
+      coverUrl: _hlPickedStory.thumb || null,
+      createdAt: new Date().toISOString()
+    });
+    closeHighlightPicker();
+    loadHighlights();
+  }catch(e){
+    alert('Highlight সেভ করতে সমস্যা হয়েছে: '+e.message);
+  }
+  btn.disabled = false; btn.textContent = 'Highlight হিসেবে সেভ করুন';
+}
+
+// ═══ MUTUAL FOLLOWS PREVIEW (shown only when viewing someone else's profile) ═══
+async function loadMutualFollows(){
+  try{
+    var myFollowingSnap = await db.collection('mediaProfiles').doc(currentUser.uid).collection('following').limit(200).get();
+    if(myFollowingSnap.empty) return;
+    var myFollowingIds = myFollowingSnap.docs.map(function(d){ return d.id; });
+    var theirFollowersSnap = await db.collection('mediaProfiles').doc(PROFILE_UID).collection('followers').limit(200).get();
+    var theirFollowerIds = {}; theirFollowersSnap.forEach(function(d){ theirFollowerIds[d.id]=true; });
+    var mutualIds = myFollowingIds.filter(function(id){ return theirFollowerIds[id]; });
+    if(!mutualIds.length) return;
+    var previewIds = mutualIds.slice(0,3);
+    var profiles = await Promise.all(previewIds.map(function(id){
+      return db.collection('mediaProfiles').doc(id).get();
+    }));
+    var names = profiles.map(function(p){ return p.exists ? (p.data().displayName||'কেউ একজন') : 'কেউ একজন'; });
+    var avatarHtml = profiles.map(function(p){
+      var a = p.exists ? p.data().avatarUrl : '';
+      return a ? '<img src="'+a+'">' : '<img src="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27%3E%3Ccircle cx=%2712%27 cy=%2712%27 r=%2712%27 fill=%27%23141414%27/%3E%3C/svg%3E">';
+    }).join('');
+    var extra = mutualIds.length - previewIds.length;
+    var text = names.join(', ') + (extra>0 ? ' এবং আরও '+extra+' জন' : '') + ' follow করেন';
+    var row = document.createElement('div');
+    row.className = 'pp-mutual-row';
+    row.innerHTML = '<span class="pp-mutual-avatars">'+avatarHtml+'</span><span>'+text+'</span>';
+    document.getElementById('ppMetaRow').after(row);
+  }catch(e){ console.warn('Mutual follows load error (non-fatal)', e); }
 }
 
 function renderActions(){
@@ -427,8 +670,37 @@ function switchTab(tab){
   loadContentGrid(tab);
 }
 
+// ═══ QUICK POST COMPOSER (owner, top of the Posts tab) ═══
+function buildComposerHtml(){
+  var avatar = profileData.avatarUrl
+    ? '<img class="pp-composer-avatar" src="'+profileData.avatarUrl+'">'
+    : '<div class="pp-composer-avatar" style="display:flex;align-items:center;justify-content:center;color:var(--gold);font-weight:800;">'+(profileData.displayName||'?').charAt(0).toUpperCase()+'</div>';
+  return '<div class="pp-composer">'+
+    '<div class="pp-composer-row" onclick="location.href=\'create-studio.html?type=post&city='+CITY+'\'">'+
+      avatar+
+      '<div class="pp-composer-input">'+(profileData.displayName||'আপনি')+', কী মনে হচ্ছে?</div>'+
+    '</div>'+
+    '<div class="pp-composer-quick">'+
+      '<div class="pp-composer-qbtn" onclick="location.href=\'create-studio.html?type=reel&city='+CITY+'\'">🎬 Reel</div>'+
+      '<div class="pp-composer-qbtn" onclick="location.href=\'create-studio.html?type=story&city='+CITY+'\'">⭐ Story</div>'+
+      '<div class="pp-composer-qbtn" onclick="location.href=\'create-studio.html?type=video&city='+CITY+'\'">📹 Video</div>'+
+    '</div>'+
+  '</div>';
+}
+
+async function togglePinPost(contentId){
+  if(!isOwner) return;
+  var newPinnedId = profileData.pinnedPostId===contentId ? null : contentId;
+  try{
+    await db.collection('mediaProfiles').doc(currentUser.uid).set({pinnedPostId:newPinnedId}, {merge:true});
+    profileData.pinnedPostId = newPinnedId;
+    loadContentGrid('post');
+  }catch(e){ alert('Pin করতে সমস্যা হয়েছে: '+e.message); }
+}
+
 async function loadContentGrid(type){
   var area = document.getElementById('ppContentArea');
+  var composerHtml = (type==='post' && isOwner) ? buildComposerHtml() : '';
   try{
     var q = db.collection('cities').doc(CITY).collection('mediaContent')
       .where('authorUid','==',PROFILE_UID).where('type','==',type);
@@ -438,31 +710,53 @@ async function loadContentGrid(type){
         if(item.data.status==='published') return true;
         return isOwner; // owner also sees their own draft/pending
       })
-      .sort(function(a,b){ return new Date(b.data.createdAt) - new Date(a.data.createdAt); });
+      .sort(function(a,b){
+        // Pinned post always first (Post tab only — pinning a reel/video/
+        // story doesn't carry the same meaning), then newest-first.
+        if(type==='post'){
+          var aPinned = a.id===profileData.pinnedPostId, bPinned = b.id===profileData.pinnedPostId;
+          if(aPinned && !bPinned) return -1;
+          if(bPinned && !aPinned) return 1;
+        }
+        return new Date(b.data.createdAt) - new Date(a.data.createdAt);
+      });
 
     if(!docs.length){
-      area.innerHTML = '<div class="pp-empty">এখানে এখনও কোনো '+type+' নেই।'+(isOwner?'<br>Create Studio থেকে প্রথমটা বানিয়ে ফেলো।':'')+'</div>';
+      area.innerHTML = composerHtml+'<div class="pp-empty">এখানে এখনও কোনো '+type+' নেই।'+(isOwner?'<br>নিচে থেকে বা Create Studio থেকে প্রথমটা বানিয়ে ফেলো।':'')+'</div>';
       return;
     }
     var grid = document.createElement('div'); grid.className = 'pp-grid';
     docs.forEach(function(item){
       var d = item.data;
+      var isPinned = type==='post' && item.id===profileData.pinnedPostId;
       var cell = document.createElement('div');
       cell.className = 'pp-grid-item' + ((type==='reel'||type==='story') ? ' tall' : '');
+      // thumbnailUrl first, then a real image, then fall back to showing the
+      // video itself (muted, first frame) — previously this only checked
+      // thumbnailUrl/mediaUrls, leaving video-only stories/reels/videos with
+      // a blank cell since videoUrl was never considered at all.
       var thumb = d.thumbnailUrl || (d.mediaUrls && d.mediaUrls[0]) || '';
       cell.innerHTML =
-        (thumb ? '<img src="'+thumb+'" onerror="this.style.display=\'none\'">' : '')+
+        (thumb ? '<img src="'+thumb+'" onerror="this.style.display=\'none\'">'
+          : (d.videoUrl ? '<video src="'+d.videoUrl+'" muted playsinline preload="metadata"></video>' : ''))+
         (type==='reel' ? '<span class="pp-grid-badge">▶</span>' : (type==='video' ? '<span class="pp-grid-badge">▶</span>' : ''))+
+        (isPinned ? '<span class="pp-grid-pin">📌</span>' : '')+
         (d.stats ? '<span class="pp-grid-stat">👁 '+(d.stats.views||0)+'</span>' : '')+
-        (isOwner && d.status!=='published' ? '<span class="pp-grid-status">'+d.status+'</span>' : '');
+        (isOwner && d.status!=='published' ? '<span class="pp-grid-status">'+d.status+'</span>' : '')+
+        (isOwner && type==='post' ? '<span class="pp-grid-pin-toggle" onclick="event.stopPropagation();togglePinPost(\''+item.id+'\')">'+(isPinned?'📌':'📍')+'</span>' : '');
       cell.onclick = function(){
-        if(type==='reel') location.href='reels-player.html?city='+CITY;
-        else if(type==='video') location.href='video-hub.html?city='+CITY;
-        else location.href='media-feed.html?city='+CITY;
+        // Deep-link with the specific content ID so the destination page can
+        // actually open/play THIS item — a bare redirect to the generic hub
+        // page (previous behaviour) never played anything, it just landed
+        // on the default feed.
+        if(type==='reel') location.href='reels-player.html?city='+CITY+'&id='+item.id;
+        else if(type==='video') location.href='video-hub.html?city='+CITY+'&id='+item.id;
+        else if(type==='story') location.href='media-feed.html?city='+CITY+'&openStoryId='+item.id;
+        else location.href='media-feed.html?city='+CITY+'&openPostId='+item.id;
       };
       grid.appendChild(cell);
     });
-    area.innerHTML = ''; area.appendChild(grid);
+    area.innerHTML = composerHtml; area.appendChild(grid);
   }catch(e){
     console.warn('Content grid load error (likely missing composite index)', e);
     area.innerHTML = '<div class="pp-empty">লোড করতে সমস্যা হয়েছে — সম্ভবত Firestore index তৈরি করা লাগবে।</div>';
@@ -550,6 +844,18 @@ function openEditProfile(){
   document.getElementById('editLocation').value = profileData.location || '';
   document.getElementById('editAvatarUrl').value = profileData.avatarUrl || '';
   document.getElementById('editCoverUrl').value = profileData.coverUrl || '';
+  var links = profileData.links || {};
+  document.getElementById('editWebsite').value = links.website || '';
+  document.getElementById('editYoutube').value = links.youtube || '';
+  document.getElementById('editFacebook').value = links.facebook || '';
+  var isSeller = profileData.primaryBadge==='seller' || (profileData.roles||[]).indexOf('seller')>=0;
+  document.getElementById('editBusinessLabel').style.display = isSeller ? 'block' : 'none';
+  document.getElementById('editShopCategoryWrap').style.display = isSeller ? 'block' : 'none';
+  document.getElementById('editEstablishedWrap').style.display = isSeller ? 'block' : 'none';
+  if(isSeller){
+    document.getElementById('editShopCategory').value = profileData.shopCategory || '';
+    document.getElementById('editEstablishedYear').value = profileData.establishedYear || '';
+  }
   document.getElementById('editModal').classList.add('open');
 }
 function closeEditProfile(){ document.getElementById('editModal').classList.remove('open'); }
@@ -562,8 +868,18 @@ async function saveProfileEdit(){
     location: document.getElementById('editLocation').value.trim(),
     avatarUrl: document.getElementById('editAvatarUrl').value.trim(),
     coverUrl: document.getElementById('editCoverUrl').value.trim(),
+    links: {
+      website: document.getElementById('editWebsite').value.trim(),
+      youtube: document.getElementById('editYoutube').value.trim(),
+      facebook: document.getElementById('editFacebook').value.trim()
+    },
     updatedAt: new Date().toISOString()
   };
+  var isSeller = profileData.primaryBadge==='seller' || (profileData.roles||[]).indexOf('seller')>=0;
+  if(isSeller){
+    updates.shopCategory = document.getElementById('editShopCategory').value.trim();
+    updates.establishedYear = document.getElementById('editEstablishedYear').value.trim();
+  }
   try{
     await db.collection('mediaProfiles').doc(currentUser.uid).set(updates, {merge:true});
     closeEditProfile();
