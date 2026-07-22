@@ -8098,6 +8098,14 @@ function renderVoiceOrderConfirmation(result){
 // a Bengali voice installed, simply because they haven't finished loading
 // yet. This was why the greeting silently never spoke: the code checked
 // too early, saw an empty list, and concluded "no Bengali voice" every time.
+//
+// ⚠️ FIXED BUG: an empty array ([]) is truthy in JavaScript, so the old
+// `voVoicesCache || fallback` check treated "still empty after the 600ms
+// timeout" as a permanently cached, final answer — never retrying on later
+// calls within the same page load. This exactly matched the reported
+// symptom: greeting silent on first attempt, but working after a page
+// refresh (which cleared the bad cache). Now only a NON-EMPTY result is
+// cached; an empty one is never trusted as final.
 var voVoicesCache = null;
 function ensureVoicesLoaded(callback){
   if(!window.speechSynthesis){ callback(); return; }
@@ -8106,19 +8114,23 @@ function ensureVoicesLoaded(callback){
   var done = false;
   var timer = setTimeout(function(){
     if(done) return; done = true;
-    voVoicesCache = speechSynthesis.getVoices() || [];
+    var v = speechSynthesis.getVoices() || [];
+    if(v.length) voVoicesCache = v; // only cache if genuinely non-empty
     callback();
   }, 600);
   speechSynthesis.onvoiceschanged = function(){
     if(done) return; done = true;
     clearTimeout(timer);
-    voVoicesCache = speechSynthesis.getVoices() || [];
+    var v = speechSynthesis.getVoices() || [];
+    if(v.length) voVoicesCache = v;
     callback();
   };
 }
 
 function getPreferredVoiceOrderVoice(){
-  var voices = voVoicesCache || (window.speechSynthesis ? speechSynthesis.getVoices() : []) || [];
+  var voices = (voVoicesCache && voVoicesCache.length)
+    ? voVoicesCache
+    : ((window.speechSynthesis ? speechSynthesis.getVoices() : []) || []);
   if(currentLang!=='bn') return voices.find(function(v){ return /^en/i.test(v.lang); }) || null;
   // Section 6.2.1 — real-device Bengali TTS quality varies; prefer an actual
   // Bengali voice if the OS/browser has one installed, never force a wrong
@@ -8142,11 +8154,19 @@ function speakVoiceOrderText(text, onDone){
         if(onDone) onDone();
         return;
       }
-      var u = new SpeechSynthesisUtterance(text);
-      u.lang = currentLang==='bn' ? 'bn-IN' : 'en-US';
-      if(voice) u.voice = voice;
-      if(onDone){ u.onend = onDone; u.onerror = onDone; }
-      speechSynthesis.speak(u);
+      // ⚠️ Known Android Chrome bug: calling speak() immediately after
+      // cancel() can truncate the audio partway through the sentence —
+      // this was cutting off "ধন্যবাদ..." mid-word. A short delay between
+      // the two calls avoids it; this is a documented workaround for the
+      // underlying Web Speech API race condition on Android, not a
+      // DELTA-specific issue.
+      setTimeout(function(){
+        var u = new SpeechSynthesisUtterance(text);
+        u.lang = currentLang==='bn' ? 'bn-IN' : 'en-US';
+        if(voice) u.voice = voice;
+        if(onDone){ u.onend = onDone; u.onerror = onDone; }
+        speechSynthesis.speak(u);
+      }, 150);
     }catch(e){ if(onDone) onDone(); }
   });
 }
