@@ -235,3 +235,4 @@ function lowercaseGeoFields(geoFields){
     country_lower: geoFields.country ? geoFields.country.toLowerCase() : null
   };
 }
+ 
