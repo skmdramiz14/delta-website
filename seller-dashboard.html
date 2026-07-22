@@ -3728,7 +3728,9 @@ var statusMap={
   preparing:{label:'🔄 Preparing',cls:'status-preparing'},
   out:{label:'🛵 Out for Delivery',cls:'status-out'},
   delivered:{label:'📦 Delivered',cls:'status-delivered'},
-  cancelled:{label:'❌ Cancelled',cls:'status-cancelled'}
+  cancelled:{label:'❌ Cancelled',cls:'status-cancelled'},
+  awaiting_prescription_verification:{label:'💊 প্রেসক্রিপশন যাচাই বাকি',cls:'status-pending'},
+  prescription_rejected:{label:'🚫 প্রেসক্রিপশন Reject হয়েছে',cls:'status-cancelled'}
 };
 
 function calcSellerAmount(total){
@@ -3742,7 +3744,16 @@ function orderCardHTML(o){
   var st=statusMap[o.status]||statusMap.pending;
   var time=o.createdAt?new Date(o.createdAt).toLocaleString('bn-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'সম্প্রতি';
   var actionBtns='';
-  if(o.status==='pending')
+  // ⚠️ Safeguard: an order still awaiting prescription verification must
+  // never be progressable through the normal order-action buttons here —
+  // that would let a seller bypass the actual review step (Prescription
+  // Review tab) by mistake. This is the same rule the Firestore Rules
+  // enforce server-side; this is just the matching UI-level guard.
+  if(o.status==='awaiting_prescription_verification'){
+    actionBtns='<div style="background:#fff8e8;border:1px solid #f0d488;border-radius:8px;padding:9px 12px;'+
+      'font-size:.76rem;color:#8A6215;text-align:center;">'+
+      '💊 এই অর্ডারে প্রেসক্রিপশন যাচাই বাকি — "প্রেসক্রিপশন যাচাই" ট্যাবে গিয়ে Approve/Reject করুন</div>';
+  } else if(o.status==='pending')
     actionBtns='<button class="btn-sm btn-green" onclick="updateOrder(\''+o.id+'\',\'confirmed\')">✅ Confirm</button>'+
       '<button class="btn-sm btn-red" onclick="updateOrder(\''+o.id+'\',\'cancelled\')">❌ Cancel</button>';
   if(o.status==='confirmed')
@@ -3882,8 +3893,16 @@ function loadPrescriptionReview(){
 /**
  * Reads the full order, patches ONE item inside itemsDetail[] (Firestore
  * has no partial-array-element update, so the whole array is re-read,
- * modified in memory, and written back), then recomputes the order-level
- * hasPendingPrescription flag from the updated array.
+ * modified in memory, and written back), then recomputes BOTH the
+ * order-level hasPendingPrescription flag AND the order's actual status.
+ *
+ * ⚠️ This status transition is the actual point of pharmacist verification:
+ * an order sits at status:'awaiting_prescription_verification' (NOT in the
+ * normal fulfillment queue, invisible to delivery/order-manager workflows)
+ * until this function runs. Only on APPROVAL does it become status:'pending'
+ * and enter the real queue. On REJECTION it becomes a distinct terminal
+ * status so it's clear the order didn't fail generically — it failed
+ * prescription review specifically.
  */
 function updatePrescriptionItemStatus(orderId, itemIndex, newStatus, rejectReason){
   var orderRef = db.collection('cities').doc(CITY).collection('sellers').doc(auth.currentUser.uid)
@@ -3900,22 +3919,38 @@ function updatePrescriptionItemStatus(orderId, itemIndex, newStatus, rejectReaso
     });
     if(newStatus === 'rejected' && rejectReason) items[itemIndex].prescriptionRejectReason = rejectReason;
     var stillPending = items.some(function(i){ return i.prescriptionStatus === 'pending_pharmacist_review'; });
-    return orderRef.update({itemsDetail: items, hasPendingPrescription: stillPending});
+
+    var updateData = {itemsDetail: items, hasPendingPrescription: stillPending};
+    if(order.status === 'awaiting_prescription_verification'){
+      if(newStatus === 'rejected'){
+        // v1 simplification: the whole order was held together while ANY
+        // item awaited verification (Section 4.5's full Parent/Sub-order
+        // splitting isn't built yet), so a rejection cancels the whole
+        // order rather than just the one item. Customer sees why via
+        // prescriptionRejectReason, not a generic cancellation.
+        updateData.status = 'prescription_rejected';
+      } else if(!stillPending){
+        // Every regulated item in this order is now verified — THIS is the
+        // moment the order actually becomes real and enters normal fulfillment.
+        updateData.status = 'pending';
+      }
+    }
+    return orderRef.update(updateData);
   });
 }
 
 function approvePrescriptionItem(orderId, itemIndex){
   if(!confirm('আপনি নিশ্চিত এই প্রেসক্রিপশনটি সঠিক এবং এই ওষুধের জন্যই বৈধ?')) return;
   updatePrescriptionItemStatus(orderId, itemIndex, 'verified')
-    .then(function(){ showToast('প্রেসক্রিপশন Approve করা হয়েছে ✅','green'); loadPrescriptionReview(); })
+    .then(function(){ showToast('প্রেসক্রিপশন Approve করা হয়েছে — অর্ডার এখন প্রক্রিয়াধীন ✅','green'); loadPrescriptionReview(); })
     .catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
 }
 
 function rejectPrescriptionItem(orderId, itemIndex){
-  var reason = prompt('কেন Reject করছেন? (গ্রাহককে এই কারণ জানানো হবে)');
+  var reason = prompt('কেন Reject করছেন? (গ্রাহককে এই কারণ জানানো হবে, পুরো অর্ডারটি বাতিল হয়ে যাবে)');
   if(reason===null) return; // cancelled
   updatePrescriptionItemStatus(orderId, itemIndex, 'rejected', reason)
-    .then(function(){ showToast('প্রেসক্রিপশন Reject করা হয়েছে','green'); loadPrescriptionReview(); })
+    .then(function(){ showToast('প্রেসক্রিপশন Reject করা হয়েছে, অর্ডার বাতিল হয়েছে','green'); loadPrescriptionReview(); })
     .catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
 }
 
