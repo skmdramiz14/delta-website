@@ -630,6 +630,9 @@ select.form-input{cursor:pointer;}
       <button class="nav-btn" id="nb-orders" onclick="goPage('orders',this)">
         <span class="nicon">🛍️</span><span data-lang-bn="অর্ডার" data-lang-en="Orders">অর্ডার</span>
         <span class="nav-badge" id="pendingBadge" style="display:none">0</span></button>
+      <button class="nav-btn" id="nb-prescriptions" onclick="goPage('prescriptions',this)">
+        <span class="nicon">💊</span><span data-lang-bn="প্রেসক্রিপশন যাচাই" data-lang-en="Prescription Review">প্রেসক্রিপশন যাচাই</span>
+        <span class="nav-badge" id="prescriptionBadge" style="display:none">0</span></button>
       <button class="nav-btn" id="nb-festival" onclick="goPage('festival',this)">
         <span class="nicon">🎊</span><span data-lang-bn="উৎসব" data-lang-en="Festival">উৎসব</span></button>
       <button class="nav-btn" id="nb-sale" onclick="goPage('sale',this)">
@@ -788,6 +791,24 @@ select.form-input{cursor:pointer;}
           <button class="filter-pill" onclick="filterOrders('cancelled',this)">❌ Cancelled</button>
         </div>
         <div id="ordersWrap"></div>
+      </div>
+
+      <!-- ═══ PRESCRIPTION REVIEW PAGE (DELTA Voice Ordering Architecture v3.2,
+           Section 4.2–4.3 — closes the pharmacist-review half of the
+           compliance gate; customer-side upload already exists in index.html) ═══ -->
+      <div class="page" id="page-prescriptions">
+        <div class="sec-head">
+          <div class="sec-title">
+            <span data-lang-bn="প্রেসক্রিপশন যাচাই" data-lang-en="Prescription Review">প্রেসক্রিপশন যাচাই</span>
+            <small id="rxCount">0টা যাচাই বাকি</small>
+          </div>
+        </div>
+        <div style="background:#fff8e8;border:1px solid #f0d488;border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:.82rem;color:#8A6215;line-height:1.6;">
+          ⚠️ এখানে যেসব অর্ডারে regulated ওষুধ (Schedule H/H1/X) আছে সেগুলোর প্রেসক্রিপশনের ছবি দেখানো হবে।
+          <strong>ছবি স্পষ্ট, সঠিক এবং সেই নির্দিষ্ট ওষুধের জন্যই কিনা যাচাই করেই Approve করুন</strong> — এটাই আইনি বাধ্যবাধকতা,
+          শুধু ফর্মালিটি না। নিশ্চিত না হলে Reject করে গ্রাহককে সরাসরি ফোনে/দোকানে যোগাযোগ করতে বলুন।
+        </div>
+        <div id="prescriptionReviewWrap"><div style="color:var(--muted);padding:20px;text-align:center;">লোড হচ্ছে...</div></div>
       </div>
 
       <!-- ═══ FESTIVAL PAGE ═══ -->
@@ -1974,7 +1995,7 @@ var FB_CFG = {
 };
 var CLOUD = 'djthojcmy', PRESET = 'delta_products';
 var storyPhotoUrl = null, storyVideoUrl = null;
-var CITY = new URLSearchParams(location.search).get('city') || (function(){ try{ return localStorage.getItem('delta_city'); }catch(e){ return null; } })() || 'manteswar'; // Location Architecture v1 Section 3 — shared city persistence
+var CITY = 'manteswar'; // Multi-tenant: current city
 
 // ═══ STATE ═══
 var auth, db, CU = null, SD = null;
@@ -2006,47 +2027,10 @@ function initFirebase(){
     firebase.initializeApp(FB_CFG);
     auth = firebase.auth(); db = firebase.firestore();
     auth.onAuthStateChanged(function(u){
-      if(u){ CU = u; resolveSellerCityThenLoad(); }
+      if(u){ CU = u; loadSellerData(); loadNotifications(); }
       else{ hideLoading(); showAuth(); }
     });
   }catch(e){ hideLoading(); showAuth(); showToast('Firebase error: '+e.message,'red'); }
-}
-
-// A seller's shop lives under whichever city they registered in
-// (cities/{city}/sellers/{uid}) — but CITY here is only a GUESS, based on
-// the current browser's detected location (Location Architecture v1,
-// Section 3), which may not match where this seller actually registered.
-// Before loading anything, confirm the guess is right; if not, search the
-// known cities for this seller's real doc and correct CITY (persisting the
-// fix to localStorage so future visits go straight to the right city).
-async function resolveSellerCityThenLoad(){
-  try{
-    var guessDoc = await db.collection('cities').doc(CITY).collection('sellers').doc(CU.uid).get();
-    if(guessDoc.exists){ loadSellerData(); loadNotifications(); return; }
-
-    var cityConfigSnap = await db.collection('cityConfig').get();
-    var candidateCities = cityConfigSnap.docs.map(function(d){ return d.id; }).filter(function(c){ return c!==CITY; });
-    for(var i=0;i<candidateCities.length;i++){
-      var altDoc = await db.collection('cities').doc(candidateCities[i]).collection('sellers').doc(CU.uid).get();
-      if(altDoc.exists){
-        CITY = candidateCities[i];
-        try{ localStorage.setItem('delta_city', CITY); }catch(e){}
-        console.info('Seller found under a different city — corrected CITY to', CITY);
-        loadSellerData();
-        loadNotifications();
-        return;
-      }
-    }
-    // Not found anywhere — genuinely a new/incomplete registration, proceed
-    // with the original guess so the rest of the UI can show its normal
-    // "no shop yet" state rather than silently failing.
-    loadSellerData();
-    loadNotifications();
-  }catch(e){
-    console.warn('Seller city resolution failed, proceeding with guessed CITY', e);
-    loadSellerData();
-    loadNotifications();
-  }
 }
 
 // ═══ HELPERS ═══
@@ -2063,7 +2047,7 @@ function showToast(msg,type){
 function sellerRef(uid){ return db.collection('cities').doc(CITY).collection('sellers').doc(uid||CU.uid); }
 function productsRef(){ return sellerRef().collection('products'); }
 function ordersRef(){ return sellerRef().collection('orders'); }
-function customersRef(){ return db.collection('users'); } // Global User Identity Architecture v1 — top-level, no longer city-scoped
+function customersRef(){ return db.collection('cities').doc(CITY).collection('customers'); }
 
 // ═══ AUTH ═══
 function switchAuthTab(tab,el){
@@ -2196,6 +2180,7 @@ var PAGE_TITLES = {
   dashboard: {bn:'ড্যাশবোর্ড', en:'Dashboard'},
   products:  {bn:'পণ্য তালিকা', en:'Products'},
   orders:    {bn:'অর্ডার', en:'Orders'},
+  prescriptions: {bn:'প্রেসক্রিপশন যাচাই', en:'Prescription Review'},
   profile:   {bn:'শপ প্রোফাইল', en:'Shop Profile'},
   subscription:{bn:'সাবস্ক্রিপশন', en:'Subscription'},
   performance: {bn:'পারফরম্যান্স', en:'Performance'},
@@ -2265,6 +2250,7 @@ function goPage(page,btnEl){
   document.getElementById('pageTitle').textContent=titles[currentLang]||titles.bn;
   if(page==='products')renderProducts();
   if(page==='orders')renderOrders('all');
+  if(page==='prescriptions')loadPrescriptionReview();
   if(page==='performance')renderPerformance();
   if(page==='support')loadMyTickets();
   if(page==='festival')loadSellerFestivalSection();
@@ -3842,6 +3828,95 @@ function orderCardHTML(o){
         '📄 Order Receipt PDF</button>'
       : '')+
   '</div>';
+}
+
+// ═══════════════════ PRESCRIPTION REVIEW (DELTA Voice Ordering Architecture
+// v3.2, Section 4.2–4.3) — pharmacist verifies uploaded prescription photos
+// before a regulated medicine order can proceed. ═══════════════════
+function loadPrescriptionReview(){
+  var wrap = document.getElementById('prescriptionReviewWrap');
+  wrap.innerHTML = '<div style="color:var(--muted);padding:20px;text-align:center;">লোড হচ্ছে...</div>';
+  db.collection('cities').doc(CITY).collection('sellers').doc(auth.currentUser.uid)
+    .collection('orders').where('hasPendingPrescription','==',true).get()
+    .then(function(snap){
+      var pendingRows = [];
+      snap.forEach(function(doc){
+        var order = doc.data();
+        (order.itemsDetail||[]).forEach(function(item, idx){
+          if(item.prescriptionStatus === 'pending_pharmacist_review'){
+            pendingRows.push({orderId:doc.id, itemIndex:idx, item:item, order:order});
+          }
+        });
+      });
+      document.getElementById('rxCount').textContent = pendingRows.length+'টা যাচাই বাকি';
+      var badge = document.getElementById('prescriptionBadge');
+      if(pendingRows.length){ badge.style.display='inline-block'; badge.textContent=pendingRows.length; }
+      else badge.style.display='none';
+
+      if(!pendingRows.length){
+        wrap.innerHTML = '<div style="color:var(--muted);padding:30px;text-align:center;">✅ এখন কোনো প্রেসক্রিপশন যাচাই বাকি নেই।</div>';
+        return;
+      }
+      wrap.innerHTML = pendingRows.map(function(row){
+        return '<div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:14px;">'+
+          '<div style="display:flex;justify-content:space-between;margin-bottom:10px;">'+
+            '<div><strong>'+(row.item.name||'—')+'</strong> × '+(row.item.qty||1)+'</div>'+
+            '<div style="font-size:.78rem;color:var(--muted);">গ্রাহক: '+(row.order.customerName||'—')+' · '+(row.order.customerMobile||'')+'</div>'+
+          '</div>'+
+          (row.item.prescriptionUrl
+            ? '<img src="'+row.item.prescriptionUrl+'" style="max-width:100%;max-height:320px;border-radius:10px;border:1px solid var(--border);margin-bottom:12px;cursor:pointer;" onclick="window.open(\''+row.item.prescriptionUrl+'\',\'_blank\')">'
+            : '<div style="color:var(--muted);">ছবি পাওয়া যায়নি</div>')+
+          '<div style="display:flex;gap:10px;">'+
+            '<button onclick="approvePrescriptionItem(\''+row.orderId+'\','+row.itemIndex+')" '+
+              'style="flex:1;background:#1a7a4c;color:#fff;border:none;padding:11px;border-radius:10px;font-weight:700;cursor:pointer;">✅ Approve</button>'+
+            '<button onclick="rejectPrescriptionItem(\''+row.orderId+'\','+row.itemIndex+')" '+
+              'style="flex:1;background:#fdeeec;color:#c0392b;border:none;padding:11px;border-radius:10px;font-weight:700;cursor:pointer;">❌ Reject</button>'+
+          '</div>'+
+        '</div>';
+      }).join('');
+    }).catch(function(e){
+      wrap.innerHTML = '<div style="color:var(--muted);padding:20px;">লোড করতে সমস্যা: '+e.message+'</div>';
+    });
+}
+
+/**
+ * Reads the full order, patches ONE item inside itemsDetail[] (Firestore
+ * has no partial-array-element update, so the whole array is re-read,
+ * modified in memory, and written back), then recomputes the order-level
+ * hasPendingPrescription flag from the updated array.
+ */
+function updatePrescriptionItemStatus(orderId, itemIndex, newStatus, rejectReason){
+  var orderRef = db.collection('cities').doc(CITY).collection('sellers').doc(auth.currentUser.uid)
+    .collection('orders').doc(orderId);
+  return orderRef.get().then(function(doc){
+    if(!doc.exists) throw new Error('Order not found');
+    var order = doc.data();
+    var items = (order.itemsDetail||[]).slice();
+    if(!items[itemIndex]) throw new Error('Item not found');
+    items[itemIndex] = Object.assign({}, items[itemIndex], {
+      prescriptionStatus: newStatus,
+      prescriptionVerifiedBy: auth.currentUser.uid,
+      prescriptionVerifiedAt: new Date().toISOString()
+    });
+    if(newStatus === 'rejected' && rejectReason) items[itemIndex].prescriptionRejectReason = rejectReason;
+    var stillPending = items.some(function(i){ return i.prescriptionStatus === 'pending_pharmacist_review'; });
+    return orderRef.update({itemsDetail: items, hasPendingPrescription: stillPending});
+  });
+}
+
+function approvePrescriptionItem(orderId, itemIndex){
+  if(!confirm('আপনি নিশ্চিত এই প্রেসক্রিপশনটি সঠিক এবং এই ওষুধের জন্যই বৈধ?')) return;
+  updatePrescriptionItemStatus(orderId, itemIndex, 'verified')
+    .then(function(){ showToast('প্রেসক্রিপশন Approve করা হয়েছে ✅','green'); loadPrescriptionReview(); })
+    .catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
+}
+
+function rejectPrescriptionItem(orderId, itemIndex){
+  var reason = prompt('কেন Reject করছেন? (গ্রাহককে এই কারণ জানানো হবে)');
+  if(reason===null) return; // cancelled
+  updatePrescriptionItemStatus(orderId, itemIndex, 'rejected', reason)
+    .then(function(){ showToast('প্রেসক্রিপশন Reject করা হয়েছে','green'); loadPrescriptionReview(); })
+    .catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
 }
 
 function renderOrders(filter){
