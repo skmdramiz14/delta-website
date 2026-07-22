@@ -397,9 +397,6 @@ button,input,select{font-family:'DM Sans',sans-serif;}
     <button class="tab-btn" id="tab-expansion" onclick="goTab('expansion',this)">
       <span>📊 Expansion Demand</span>
     </button>
-    <button class="tab-btn" id="tab-voiceorder" onclick="goTab('voiceorder',this)">
-      <span>🎙️ Voice Ordering</span>
-    </button>
     </nav>
 
     <div class="sb-footer">
@@ -2445,54 +2442,6 @@ button,input,select{font-family:'DM Sans',sans-serif;}
       <div id="expDemandListWrap"><div style="color:var(--muted);padding:20px;text-align:center;">Tab click করলে লোড হবে</div></div>
     </div>
 
-    <!-- ═══ VOICE ORDERING — MEDICINE SCHEDULE REFERENCE ═══ -->
-    <div class="page" id="page-voiceorder">
-      <div class="sec-head">
-        <div class="sec-title">🎙️ Voice Ordering — Medicine Schedule Reference
-          <small>কোন ওষুধ OTC (prescription ছাড়া বিক্রি করা যায়) আর কোনটা Schedule H/H1/X (prescription বাধ্যতামূলক) — এই তালিকার উপর ভিত্তি করেই Voice Ordering স্বয়ংক্রিয়ভাবে সিদ্ধান্ত নেয়, AI নিজে থেকে অনুমান করে না।</small>
-        </div>
-      </div>
-
-      <div class="add-zone-card" style="margin-bottom:20px;">
-        <div id="medRefFormTitle" style="font-size:.9rem;font-weight:700;color:var(--navy);margin-bottom:4px;">💊 নতুন ওষুধ যোগ করুন</div>
-        <div style="font-size:.72rem;color:var(--muted);margin-bottom:14px;">
-          Schedule ভুল হলে সরাসরি আইনি সমস্যা হতে পারে — নিশ্চিত না হলে Schedule H1/X দিয়ে রাখুন (বেশি সতর্ক থাকা ভালো), OTC তখনই দিন যখন সত্যিই নিশ্চিত।
-        </div>
-        <input type="hidden" id="medRefEditId" value="">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
-          <div class="form-group" style="margin-bottom:0">
-            <label>ওষুধের নাম (বাংলা) *</label>
-            <input type="text" class="form-input" id="medRefName" placeholder="প্যারাসিটামল">
-          </div>
-          <div class="form-group" style="margin-bottom:0">
-            <label>Schedule Type *</label>
-            <select class="form-input" id="medRefSchedule">
-              <option value="OTC">✅ OTC — prescription ছাড়াই বিক্রি করা যায়</option>
-              <option value="H">🔴 Schedule H — prescription বাধ্যতামূলক</option>
-              <option value="H1">🔴 Schedule H1 — prescription বাধ্যতামূলক (কড়া নজরদারি)</option>
-              <option value="X">🔴 Schedule X — prescription বাধ্যতামূলক (narcotic/সর্বোচ্চ নিয়ন্ত্রিত)</option>
-            </select>
-          </div>
-          <div class="form-group" style="margin-bottom:0;grid-column:1/-1;">
-            <label>Aliases <span style="font-weight:400;color:var(--muted);">— কমা দিয়ে আলাদা করুন (customer voice-এ যেভাবে বলতে পারে)</span></label>
-            <input type="text" class="form-input" id="medRefAliases" placeholder="paracetamol, napa, para, ক্রোসিন">
-          </div>
-        </div>
-        <button class="btn-sm btn-orange" onclick="saveMedRef()">💊 সেভ করুন</button>
-        <button class="btn-sm" style="background:var(--border);color:var(--charcoal);" onclick="resetMedRefForm()">✕ বাতিল</button>
-      </div>
-
-      <div class="sec-head" style="margin-top:24px;">
-        <div class="sec-title" style="font-size:1rem;">সব ওষুধ <small id="medRefCount"></small></div>
-      </div>
-      <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
-        <button class="btn-sm" style="background:var(--sand);color:var(--charcoal);" onclick="filterMedRef('all')">সব</button>
-        <button class="btn-sm" style="background:#eef9f0;color:#1a7a4c;" onclick="filterMedRef('OTC')">✅ OTC</button>
-        <button class="btn-sm" style="background:#fdeeec;color:#c0392b;" onclick="filterMedRef('regulated')">🔴 Regulated (H/H1/X)</button>
-      </div>
-      <div id="medRefListWrap"><div style="color:var(--muted);font-size:.82rem;">Tab click করলে লোড হবে</div></div>
-    </div>
-
   </div>
     </div>
   </div>
@@ -2637,7 +2586,6 @@ function goTab(tab, btn){
   if(tab==='media') medLoadStats();
   if(tab==='citymgmt') cmLoadCities();
   if(tab==='expansion') expLoadDemand();
-  if(tab==='voiceorder') loadMedRef();
 }
 
 // ═══ DELTA MEDIA MODERATION (Section 12) ═══
@@ -8542,120 +8490,6 @@ function deleteEcosystemBranch(id){
   if(!confirm('এই branch-টি মুছে ফেলতে চান? এটি ecosystem.html থেকেও সরে যাবে।')) return;
   db.collection('cities').doc(CITY).collection('ecosystemBranches').doc(id).delete()
     .then(function(){ showToast('Branch মুছে ফেলা হয়েছে','green'); loadEcosystemBranches(); })
-    .catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
-}
-
-// ═══════════════════ VOICE ORDERING — MEDICINE SCHEDULE REFERENCE ═══════════════════
-// DELTA Voice Ordering Architecture v3.2, Section 2.2 — root-level collection
-// (NOT city-scoped, since drug regulation doesn't vary by DELTA's delivery city).
-var allMedRefs = [];
-var medRefCurrentFilter = 'all';
-
-function loadMedRef(){
-  var wrap = document.getElementById('medRefListWrap');
-  wrap.innerHTML = '<div style="color:var(--muted);font-size:.82rem;">লোড হচ্ছে...</div>';
-  db.collection('medicineScheduleReference').get()
-    .then(function(snap){
-      allMedRefs = [];
-      snap.forEach(function(d){ allMedRefs.push(Object.assign({id:d.id}, d.data())); });
-      allMedRefs.sort(function(a,b){ return (a.name||'').localeCompare(b.name||'', 'bn'); });
-      renderMedRefList();
-    }).catch(function(e){
-      wrap.innerHTML = '<div style="color:var(--muted);font-size:.82rem;">লোড করতে সমস্যা হয়েছে: '+e.message+'</div>';
-    });
-}
-
-function filterMedRef(f){
-  medRefCurrentFilter = f;
-  renderMedRefList();
-}
-
-function renderMedRefList(){
-  var wrap = document.getElementById('medRefListWrap');
-  var countEl = document.getElementById('medRefCount');
-  var list = allMedRefs;
-  if(medRefCurrentFilter === 'OTC') list = list.filter(function(m){ return m.scheduleType === 'OTC'; });
-  if(medRefCurrentFilter === 'regulated') list = list.filter(function(m){ return m.scheduleType !== 'OTC'; });
-
-  if(countEl) countEl.textContent = '('+allMedRefs.length+'টি, '+
-    allMedRefs.filter(function(m){return m.scheduleType==='OTC';}).length+'টি OTC, '+
-    allMedRefs.filter(function(m){return m.scheduleType!=='OTC';}).length+'টি Regulated)';
-
-  if(!list.length){
-    wrap.innerHTML = '<div style="color:var(--muted);font-size:.82rem;">এখনো কোনো ওষুধ যোগ করা হয়নি।</div>';
-    return;
-  }
-  wrap.innerHTML = list.map(function(m){
-    var isOtc = m.scheduleType === 'OTC';
-    var badge = isOtc
-      ? '<span style="background:#eef9f0;color:#1a7a4c;font-size:.68rem;font-weight:700;padding:2px 9px;border-radius:10px;">✅ OTC</span>'
-      : '<span style="background:#fdeeec;color:#c0392b;font-size:.68rem;font-weight:700;padding:2px 9px;border-radius:10px;">🔴 Schedule '+m.scheduleType+'</span>';
-    var aliasText = (m.aliases||[]).join(', ');
-    return '<div style="display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px 14px;flex-wrap:wrap;">'+
-      '<div style="flex:1;min-width:150px;">'+
-        '<div style="font-weight:700;font-size:.88rem;color:var(--navy);">'+(m.name||'—')+'</div>'+
-        (aliasText ? '<div style="font-size:.72rem;color:var(--muted);margin-top:2px;">'+aliasText+'</div>' : '')+
-      '</div>'+
-      badge+
-      '<button class="btn-sm" style="background:var(--border);color:var(--charcoal);" onclick="editMedRef(\''+m.id+'\')">✏️ এডিট</button>'+
-      '<button class="btn-sm" style="background:#fdeeec;color:#c0392b;" onclick="deleteMedRef(\''+m.id+'\')">🗑️</button>'+
-    '</div>';
-  }).join('');
-}
-
-function resetMedRefForm(){
-  document.getElementById('medRefEditId').value = '';
-  document.getElementById('medRefName').value = '';
-  document.getElementById('medRefSchedule').value = 'OTC';
-  document.getElementById('medRefAliases').value = '';
-  document.getElementById('medRefFormTitle').textContent = '💊 নতুন ওষুধ যোগ করুন';
-}
-
-function editMedRef(id){
-  var m = allMedRefs.find(function(x){ return x.id===id; });
-  if(!m) return;
-  document.getElementById('medRefEditId').value = id;
-  document.getElementById('medRefName').value = m.name||'';
-  document.getElementById('medRefSchedule').value = m.scheduleType||'OTC';
-  document.getElementById('medRefAliases').value = (m.aliases||[]).join(', ');
-  document.getElementById('medRefFormTitle').textContent = '✏️ এডিট করুন — '+(m.name||'');
-  window.scrollTo({top:0, behavior:'smooth'});
-}
-
-function saveMedRef(){
-  var name = document.getElementById('medRefName').value.trim();
-  var scheduleType = document.getElementById('medRefSchedule').value;
-  var aliasesRaw = document.getElementById('medRefAliases').value.trim();
-  var editId = document.getElementById('medRefEditId').value;
-
-  if(!name){
-    showToast('ওষুধের নাম দিন','red'); return;
-  }
-  var aliases = aliasesRaw
-    ? aliasesRaw.split(',').map(function(a){ return a.trim().toLowerCase(); }).filter(Boolean)
-    : [];
-
-  var data = {
-    name: name,
-    scheduleType: scheduleType,
-    prescriptionRequired: scheduleType !== 'OTC',
-    aliases: aliases,
-    updatedAt: new Date().toISOString()
-  };
-
-  var ref = db.collection('medicineScheduleReference');
-  var p = editId ? ref.doc(editId).set(data, {merge:true}) : ref.add(data);
-  p.then(function(){
-    showToast(editId ? 'ওষুধ আপডেট হয়েছে ✅' : 'নতুন ওষুধ যোগ হয়েছে ✅','green');
-    resetMedRefForm();
-    loadMedRef();
-  }).catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
-}
-
-function deleteMedRef(id){
-  if(!confirm('এই ওষুধটি reference list থেকে মুছে ফেলতে চান? এটি মুছে ফেললে Voice Ordering এই ওষুধ আর চিনতে পারবে না।')) return;
-  db.collection('medicineScheduleReference').doc(id).delete()
-    .then(function(){ showToast('মুছে ফেলা হয়েছে','green'); loadMedRef(); })
     .catch(function(e){ showToast('সমস্যা: '+e.message,'red'); });
 }
 
