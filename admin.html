@@ -2328,6 +2328,8 @@ button,input,select{font-family:'DM Sans',sans-serif;}
         <button class="btn-sm" id="medSubFeatured" onclick="medSwitchSub('featured',this)">Featured Content</button>
         <button class="btn-sm" id="medSubBoosts" onclick="medSwitchSub('boosts',this)">Boost Management</button>
         <button class="btn-sm" id="medSubAudio" onclick="medSwitchSub('audio',this)">Audio Library</button>
+        <button class="btn-sm" id="medSubIndividual" onclick="medSwitchSub('individual',this)">Individual Sellers</button>
+        <button class="btn-sm" id="medSubCommission" onclick="medSwitchSub('commission',this)">Commission Rates</button>
       </div>
 
       <div id="medPanelQueue">
@@ -2353,6 +2355,31 @@ button,input,select{font-family:'DM Sans',sans-serif;}
           </div>
         </div>
         <div id="medAudioList" style="display:flex;flex-direction:column;gap:8px;"></div>
+      </div>
+
+      <!-- ── INDIVIDUAL SELLER MARKETPLACE — verification queue ── -->
+      <div id="medPanelIndividual" style="display:none;">
+        <p style="color:var(--muted);font-size:.8rem;margin-bottom:14px;">
+          Content-এর মাধ্যমে বিক্রি করা individual listing — এখানে category/commission ঠিক আছে কিনা যাচাই করে Approve করুন,
+          ভুল থাকলে বিক্রেতাকে ফোন করে সংশোধন করে দিন।
+        </p>
+        <div id="medIndividualList" style="display:flex;flex-direction:column;gap:10px;"></div>
+      </div>
+
+      <!-- ── COMMISSION RATES — per-category, plus pending "Talk to DELTA" requests ── -->
+      <div id="medPanelCommission" style="display:none;">
+        <div class="sec-title" style="font-size:.95rem;margin-bottom:10px;">Individual Listing সীমা</div>
+        <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;">
+          <input type="number" id="medMaxPrice" placeholder="সর্বোচ্চ মূল্য (৳)" style="flex:1;min-width:140px;padding:9px 12px;border-radius:8px;border:1.5px solid var(--border);">
+          <input type="number" id="medMaxListings" placeholder="একজনের সর্বোচ্চ active listing" style="flex:1;min-width:140px;padding:9px 12px;border-radius:8px;border:1.5px solid var(--border);">
+          <button class="btn-sm" style="background:var(--navy);color:#fff;" onclick="medSaveIndLimits()">Save</button>
+        </div>
+
+        <div class="sec-title" style="font-size:.95rem;margin-bottom:10px;">Category-ভিত্তিক Commission Rate</div>
+        <div id="medCommissionRatesList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:24px;"></div>
+
+        <div class="sec-title" style="font-size:.95rem;margin-bottom:10px;">💬 "DELTA-র সাথে কথা বলুন" — Pending Requests</div>
+        <div id="medTalkRequestsList" style="display:flex;flex-direction:column;gap:10px;"></div>
       </div>
     </div>
 
@@ -2600,7 +2627,7 @@ function medLoadStats(){
 }
 
 function medSwitchSub(sub, btn){
-  ['queue','reported','featured','boosts','audio'].forEach(function(s){
+  ['queue','reported','featured','boosts','audio','individual','commission'].forEach(function(s){
     document.getElementById('medPanel'+s.charAt(0).toUpperCase()+s.slice(1)).style.display = (s===sub)?'block':'none';
     document.getElementById('medSub'+s.charAt(0).toUpperCase()+s.slice(1)).classList.remove('active');
     document.getElementById('medSub'+s.charAt(0).toUpperCase()+s.slice(1)).style.cssText='';
@@ -2611,6 +2638,163 @@ function medSwitchSub(sub, btn){
   if(sub==='featured') medLoadFeaturedAdmin();
   if(sub==='boosts') medLoadBoosts();
   if(sub==='audio') medLoadAudio();
+  if(sub==='individual') medLoadIndividualQueue();
+  if(sub==='commission'){ medLoadCommissionRates(); medLoadTalkRequests(); medLoadIndLimits(); }
+}
+
+// ═══ INDIVIDUAL SELLER MARKETPLACE — verification queue ═══
+function medLoadIndividualQueue(){
+  var list = document.getElementById('medIndividualList');
+  list.innerHTML = '<div style="color:var(--muted);padding:20px;text-align:center;">লোড হচ্ছে...</div>';
+  medMc().where('listingType','==','individual').where('verificationStatus','==','pending_admin_review')
+    .orderBy('createdAt','asc').limit(50).get().then(function(snap){
+      if(snap.empty){ list.innerHTML='<div style="color:var(--muted);padding:20px;text-align:center;">কোনো pending individual listing নেই ✅</div>'; return; }
+      list.innerHTML='';
+      snap.forEach(function(doc){
+        var d = doc.data();
+        var thumb = d.thumbnailUrl || (d.mediaUrls&&d.mediaUrls[0]) || '';
+        var row = document.createElement('div'); row.className='req-card';
+        row.innerHTML =
+          '<div class="req-top"><div>'+
+            (thumb?'<img src="'+thumb+'" style="width:44px;height:44px;border-radius:8px;object-fit:cover;margin-right:8px;vertical-align:middle;">':'')+
+            '<b>'+(d.itemName||'—')+'</b> — ৳'+(d.price||0)+
+            '<div style="font-size:.78rem;color:var(--muted);">'+(d.authorDisplayName||'Unknown')+' · '+d.category+(d.subCategory?' / '+d.subCategory:'')+' · Commission: '+d.commissionRate+'%</div>'+
+            '<div style="font-size:.74rem;color:var(--muted);">📞 '+(d.sellerMobile||'—')+' · '+medTimeAgo(d.createdAt)+'</div>'+
+          '</div></div>'+
+          '<div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">'+
+            '<button class="btn-sm" style="background:#2e7d32;color:#fff;" onclick="medApproveIndividual(\''+doc.id+'\')">✅ Approve</button>'+
+            '<button class="btn-sm" style="background:#c0392b;color:#fff;" onclick="medFlagMismatch(\''+doc.id+'\')">📞 Category/Commission ভুল — Call করতে হবে</button>'+
+          '</div>'+
+          '<div id="medIndFix-'+doc.id+'" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);"></div>';
+        list.appendChild(row);
+      });
+    }).catch(function(e){
+      list.innerHTML = '<div style="color:var(--muted);padding:20px;text-align:center;">লোড করতে সমস্যা — Firestore index লাগতে পারে।</div>';
+      console.error(e);
+    });
+}
+function medApproveIndividual(id){
+  medMc().doc(id).update({status:'published', verificationStatus:'approved'}).then(function(){
+    showToast('Approve হয়েছে ✅','green'); medLoadIndividualQueue();
+  }).catch(function(e){ showToast('Error: '+e.message,'red'); });
+}
+function medFlagMismatch(id){
+  // Admin calls the seller (this step gets replaced by an AI Call Agent
+  // later — the phone icon and manual nature of this button is deliberate
+  // for v1) to confirm the correct category/commission, then corrects it
+  // here before approving — rather than silently rejecting the post.
+  var wrap = document.getElementById('medIndFix-'+id);
+  wrap.style.display = 'block';
+  wrap.innerHTML =
+    '<div style="font-size:.78rem;color:var(--muted);margin-bottom:8px;">বিক্রেতাকে ফোন করে সঠিক category ও commission নিশ্চিত করুন, তারপর এখানে বসিয়ে Approve করুন:</div>'+
+    '<select id="medIndFixCategory-'+id+'" style="padding:8px;border-radius:8px;border:1.5px solid var(--border);margin-bottom:6px;width:100%;"></select>'+
+    '<input type="number" id="medIndFixCommission-'+id+'" placeholder="সঠিক Commission %" style="padding:8px;border-radius:8px;border:1.5px solid var(--border);margin-bottom:6px;width:100%;">'+
+    '<button class="btn-sm" style="background:var(--navy);color:#fff;" onclick="medCorrectAndApprove(\''+id+'\')">সংশোধন করে Approve করুন</button>';
+  var sel = document.getElementById('medIndFixCategory-'+id);
+  DEFAULT_CATEGORIES.forEach(function(c){
+    var opt=document.createElement('option'); opt.value=c.key; opt.textContent=c.nameBn; sel.appendChild(opt);
+  });
+}
+function medCorrectAndApprove(id){
+  var category = document.getElementById('medIndFixCategory-'+id).value;
+  var commission = Number(document.getElementById('medIndFixCommission-'+id).value);
+  if(!commission){ showToast('সঠিক commission % দিন'); return; }
+  medMc().doc(id).update({
+    category: category, commissionRate: commission,
+    status:'published', verificationStatus:'approved_after_correction'
+  }).then(function(){
+    showToast('সংশোধন করে Approve হয়েছে ✅','green'); medLoadIndividualQueue();
+  }).catch(function(e){ showToast('Error: '+e.message,'red'); });
+}
+
+// ═══ INDIVIDUAL LISTING LIMITS (max price, max active listings) ═══
+function medLoadIndLimits(){
+  db.collection('platformConfig').doc('individualListingLimits').get().then(function(doc){
+    if(doc.exists){
+      document.getElementById('medMaxPrice').value = doc.data().maxPrice || '';
+      document.getElementById('medMaxListings').value = doc.data().maxActiveListings || '';
+    }
+  });
+}
+function medSaveIndLimits(){
+  var maxPrice = Number(document.getElementById('medMaxPrice').value);
+  var maxActiveListings = Number(document.getElementById('medMaxListings').value);
+  if(!maxPrice || !maxActiveListings){ showToast('দুটো মানই দিন'); return; }
+  db.collection('platformConfig').doc('individualListingLimits').set({
+    maxPrice: maxPrice, maxActiveListings: maxActiveListings
+  }, {merge:true}).then(function(){ showToast('সীমা সেভ হয়েছে ✅','green'); }).catch(function(e){ showToast('Error: '+e.message,'red'); });
+}
+
+// ═══ COMMISSION RATES — per category ═══
+function medLoadCommissionRates(){
+  var list = document.getElementById('medCommissionRatesList');
+  list.innerHTML = '<div style="color:var(--muted);padding:10px;">লোড হচ্ছে...</div>';
+  db.collection('individualSellerCommissionRates').get().then(function(snap){
+    var existing = {};
+    snap.forEach(function(doc){ existing[doc.id] = doc.data().commissionRate; });
+    list.innerHTML = '';
+    DEFAULT_CATEGORIES.forEach(function(c){
+      var row = document.createElement('div');
+      row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;';
+      row.innerHTML =
+        '<span style="flex:1;font-size:.85rem;">'+c.emoji+' '+c.nameBn+'</span>'+
+        '<input type="number" id="medComm-'+c.key+'" value="'+(existing[c.key]!=null?existing[c.key]:'')+'" placeholder="%" style="width:70px;padding:6px;border-radius:6px;border:1.5px solid var(--border);">'+
+        '<button class="btn-sm" style="background:var(--navy);color:#fff;" onclick="medSaveCommissionRate(\''+c.key+'\')">Save</button>';
+      list.appendChild(row);
+    });
+  });
+}
+function medSaveCommissionRate(categoryKey){
+  var rate = Number(document.getElementById('medComm-'+categoryKey).value);
+  if(!rate){ showToast('একটা valid % দিন'); return; }
+  db.collection('individualSellerCommissionRates').doc(categoryKey).set({
+    commissionRate: rate, decidedAt: new Date().toISOString(), decidedBy: auth.currentUser.uid
+  }).then(function(){ showToast('Commission সেভ হয়েছে ✅','green'); }).catch(function(e){ showToast('Error: '+e.message,'red'); });
+}
+
+// ═══ TALK TO DELTA — commission negotiation requests ═══
+function medLoadTalkRequests(){
+  var list = document.getElementById('medTalkRequestsList');
+  list.innerHTML = '<div style="color:var(--muted);padding:10px;">লোড হচ্ছে...</div>';
+  db.collection('talkToDeltaRequests').where('status','==','pending').orderBy('createdAt','asc').limit(50).get().then(function(snap){
+    if(snap.empty){ list.innerHTML='<div style="color:var(--muted);padding:10px;">কোনো pending request নেই ✅</div>'; return; }
+    list.innerHTML='';
+    snap.forEach(function(doc){
+      var d = doc.data();
+      var row = document.createElement('div'); row.className='req-card';
+      row.innerHTML =
+        '<div><b>'+(d.itemName||'—')+'</b> — category: '+d.category+(d.subCategory?' / '+d.subCategory:'')+
+        '<div style="font-size:.78rem;color:var(--muted);">'+medTimeAgo(d.createdAt)+'</div></div>'+
+        '<div style="display:flex;gap:8px;margin-top:8px;">'+
+          '<input type="number" id="medTalkRate-'+doc.id+'" placeholder="Commission %" style="width:110px;padding:8px;border-radius:8px;border:1.5px solid var(--border);">'+
+          '<button class="btn-sm" style="background:#2e7d32;color:#fff;" onclick="medSetCommissionForRequest(\''+doc.id+'\',\''+d.category+'\')">Commission ঠিক করুন</button>'+
+          '<button class="btn-sm" style="background:#c0392b;color:#fff;" onclick="medRejectTalkRequest(\''+doc.id+'\')">Reject</button>'+
+        '</div>';
+      list.appendChild(row);
+    });
+  });
+}
+function medSetCommissionForRequest(requestId, category){
+  var rate = Number(document.getElementById('medTalkRate-'+requestId).value);
+  if(!rate){ showToast('একটা valid % দিন'); return; }
+  // Sets the category-wide rate (so future sellers in this category see it
+  // directly, no more "unknown") AND resolves this specific request so the
+  // waiting user's real-time listener (create-studio.html) picks it up.
+  Promise.all([
+    db.collection('individualSellerCommissionRates').doc(category).set({
+      commissionRate: rate, decidedAt: new Date().toISOString(), decidedBy: auth.currentUser.uid
+    }),
+    db.collection('talkToDeltaRequests').doc(requestId).update({
+      status:'commission_set', decidedCommission: rate, decidedAt: new Date().toISOString()
+    })
+  ]).then(function(){
+    showToast('Commission ঠিক করা হয়েছে ✅','green'); medLoadTalkRequests(); medLoadCommissionRates();
+  }).catch(function(e){ showToast('Error: '+e.message,'red'); });
+}
+function medRejectTalkRequest(requestId){
+  db.collection('talkToDeltaRequests').doc(requestId).update({status:'rejected'}).then(function(){
+    showToast('Request reject করা হয়েছে','green'); medLoadTalkRequests();
+  }).catch(function(e){ showToast('Error: '+e.message,'red'); });
 }
 
 function medTimeAgo(iso){
