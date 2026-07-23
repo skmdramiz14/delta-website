@@ -1,4 +1,4 @@
-<!DOCTYPE html>              
+<!DOCTYPE html>   
 <html lang="bn">
 <head>
 <meta charset="UTF-8">
@@ -3985,6 +3985,20 @@ async function loadPincodeCityMap(){
   s.forEach(function(src){
     var el=document.createElement('script');
     el.src=src;
+    // ⚠️ CRITICAL FIX: without this, dynamically-created <script> tags are
+    // NOT guaranteed to execute in the order they were added — each one
+    // runs as soon as ITS download finishes, whichever order that happens
+    // to be (network-timing dependent). The Firebase v8 compat SDK requires
+    // strict order (app → auth → firestore → functions), since each later
+    // script expects window.firebase to already exist with the earlier
+    // modules attached. Without async=false, firebase-functions.js could
+    // occasionally execute before firebase-app.js finished, silently
+    // failing to attach itself — causing the intermittent real bug seen in
+    // testing: "firebase.functions is not a function", not every time, only
+    // when the race happened to go the wrong way. Setting async=false makes
+    // the browser execute them strictly in DOM-insertion order once each
+    // has downloaded, matching normal <script> tag behavior.
+    el.async=false;
     el.onload=function(){ n++; if(n===s.length) tryInit(); };
     el.onerror=function(){ hadError=true; n++; if(n===s.length) tryInit(); };
     document.head.appendChild(el);
@@ -8190,6 +8204,10 @@ function confirmVoiceOrderNo(){
 var voReturningToReview = false; // when true, confirmVoiceOrderYes() skips
   // straight to showFinalReview() instead of re-collecting delivery
   // details that were already gathered earlier this same session.
+var voRevalidationOverride = false; // PHASE 1 — set true right before calling
+  // placeVoiceOrder() again after the customer has explicitly accepted a
+  // disclosed price/stock change, so the revalidation check (which already
+  // ran once and showed the customer the change) doesn't loop asking again.
 
 function editVoiceOrderItems(){
   // Lets the customer change PRODUCTS from the final Review screen too —
@@ -8440,6 +8458,55 @@ function showFinalReview(){
   speakVoiceOrderText(reviewText, function(){ startVoiceOrderListening(); });
 }
 
+/**
+ * PHASE 1 — shows the customer exactly what changed (price/stock) between
+ * when the cart was built and this final moment, per the design doc's
+ * "never silently absorb, never silently repeat stale" rule. Customer can:
+ *   - proceed anyway (price changes only, nothing out of stock/removed)
+ *   - go back and adjust the cart themselves
+ * Out-of-stock/listing-removed items are NEVER silently proceeded past —
+ * those require the customer to actually remove/replace them first, since
+ * "proceed anyway" has no meaningful action for an item that no longer exists.
+ */
+function renderRevalidationNotice(revalItems, selectedItems){
+  var blockers = revalItems.filter(function(r){ return r.status==='out_of_stock' || r.status==='listing_removed'; });
+  var priceChanges = revalItems.filter(function(r){ return r.status==='price_changed'; });
+
+  var html = '<div class="vo-confirm-card">';
+  html += '<div class="vo-confirm-title">চূড়ান্ত পর্যায়ে কিছু পরিবর্তন পাওয়া গেছে</div>';
+
+  blockers.forEach(function(r){
+    html += '<div class="vo-item-row" style="color:#b00">'+
+      '<span class="vo-item-name">'+(r.label||'একটি item')+'</span>'+
+      '<span class="vo-item-qty">'+(r.status==='listing_removed' ? 'আর পাওয়া যাচ্ছে না' : 'Stock নেই')+'</span></div>';
+  });
+  priceChanges.forEach(function(r){
+    html += '<div class="vo-item-row">'+
+      '<span class="vo-item-name">'+(r.label||'একটি item')+'</span>'+
+      '<span class="vo-item-qty">₹'+r.expectedPrice+' → ₹'+r.currentPrice+'</span></div>';
+  });
+
+  html += '<div class="vo-action-row">';
+  if(blockers.length){
+    // Hard stop — customer must fix the cart themselves; "proceed anyway"
+    // is not offered because there is no valid action for a vanished item.
+    html += '<button class="vo-btn-yes" onclick="editVoiceOrderItems()">✏️ পণ্য ঠিক করি</button>';
+    html += '<button class="vo-btn-no" onclick="closeVoiceOrder()">✕ বাতিল করুন</button>';
+  } else {
+    // Price-only changes — customer can knowingly accept the new total.
+    html += '<button class="vo-btn-yes" onclick="acceptRevalidatedPricesAndRetry()">✓ নতুন দামে এগিয়ে যান</button>';
+    html += '<button class="vo-btn-no" onclick="editVoiceOrderItems()">✏️ পণ্য ঠিক করি</button>';
+  }
+  html += '</div></div>';
+
+  document.getElementById('voContent').innerHTML = html;
+}
+
+function acceptRevalidatedPricesAndRetry(){
+  voRevalidationOverride = true;
+  placeVoiceOrder();
+}
+
 async function placeVoiceOrder(){
   // Section 3.6 Golden Rule — this is the ONE place a voice order actually
   // becomes real, and only ever reached after the full review above.
@@ -8467,6 +8534,42 @@ async function placeVoiceOrder(){
     showToast('ন্যূনতম অর্ডার ₹'+MIN_ORDER+' — আরও ₹'+(MIN_ORDER-voSubtotal)+' যোগ করুন ⚠️');
     return;
   }
+
+  // ── PHASE 1 — Volatile Data Revalidation (design doc Section 5) ──
+  // "Persist meaning, revalidate reality": the conversation that built this
+  // cart may have taken minutes; a price/stock shown earlier must never be
+  // silently trusted at the actual moment of payment. This check happens
+  // UNCONDITIONALLY right before order placement — the single point where
+  // it matters most — rather than relying on any cache-age heuristic.
+  if(!voRevalidationOverride){
+    document.getElementById('voContent').innerHTML =
+      '<div class="vo-mic-stage"><div class="vo-status-text">দাম ও stock একবার নিশ্চিত করছি...</div></div>';
+    try{
+      var revalItems = selectedItems.map(function(c){
+        return {
+          productId: c.id,
+          sellerId: c.shopId,
+          expectedPrice: c.price||c.sellPrice||0,
+          label: c.nameBn||c.nameEn||c.name
+        };
+      });
+      var revalResult = await firebase.functions().httpsCallable('revalidateCartPricing')({
+        cityId: CITY, items: revalItems
+      });
+      var revalData = revalResult.data;
+      if(revalData && revalData.anyChanged){
+        renderRevalidationNotice(revalData.items, selectedItems);
+        return; // wait for customer's explicit response to the disclosed changes
+      }
+    }catch(e){
+      // Revalidation itself failing (network blip) should never silently
+      // block checkout — but it also must never silently proceed as if
+      // everything was confirmed fresh. Log and continue with the
+      // previously-known prices, same as before this feature existed.
+      console.error('Price/stock revalidation check failed, proceeding with last-known values:', e);
+    }
+  }
+  voRevalidationOverride = false; // reset for next time
 
   document.getElementById('voContent').innerHTML =
     '<div class="vo-mic-stage"><div class="vo-status-text">অর্ডার করা হচ্ছে...</div></div>';
