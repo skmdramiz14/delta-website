@@ -18,7 +18,7 @@ html,body{height:100%;background:#000;overflow:hidden;font-family:'DM Sans',sans
 .top-bar-row{display:flex;align-items:center;justify-content:space-between;}
 .back-btn{background:rgba(255,255,255,.12);border:none;color:#fff;width:32px;height:32px;border-radius:50%;font-size:1rem;cursor:pointer;}
 .top-title{color:#fff;font-weight:800;font-size:1rem;}
-.search-btn{background:none;border:none;color:#fff;font-size:1.05rem;}
+.search-btn{background:none;border:none;color:#fff;display:flex;align-items:center;justify-content:center;padding:4px;}
 
 .filter-chips{display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;}
 .filter-chips::-webkit-scrollbar{display:none;}
@@ -52,6 +52,7 @@ html,body{height:100%;background:#000;overflow:hidden;font-family:'DM Sans',sans
 
 .reel-bottom{position:absolute;left:0;right:0;bottom:0;padding:0 78px 14px 14px;z-index:15;color:#fff;}
 .creator-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.creator-avatar-mini{width:30px;height:30px;border-radius:50%;object-fit:cover;background:#333;flex-shrink:0;cursor:pointer;}
 .creator-name{font-weight:800;font-size:.92rem;display:flex;align-items:center;gap:4px;}
 .creator-badge-mini{font-size:.62rem;background:rgba(255,255,255,.18);padding:2px 7px;border-radius:8px;font-weight:700;}
 .follow-mini-btn{margin-left:6px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.4);color:#fff;padding:3px 11px;border-radius:14px;font-size:.7rem;font-weight:700;cursor:pointer;}
@@ -95,7 +96,7 @@ html,body{height:100%;background:#000;overflow:hidden;font-family:'DM Sans',sans
   <div class="top-bar-row">
     <button class="back-btn" onclick="history.back()">←</button>
     <div class="top-title">DELTA Reels</div>
-    <button class="search-btn">🔍</button>
+    <button class="search-btn"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></button>
   </div>
   <div class="filter-chips" id="filterChips">
     <div class="chip active" data-f="foryou">For You</div>
@@ -320,7 +321,11 @@ function buildReelSlide(id, d){
     '<div class="reel-gradient-bottom"></div>' +
     '<button class="mute-toggle" onclick="toggleMute(this)">🔊</button>' +
     '<div class="action-rail">' +
-      '<button class="action-btn" onclick="goToProfile(\''+d.authorUid+'\')"><img class="creator-avatar-rail" src="'+(d.authorAvatarUrl||'')+'" onerror="this.style.background=\'#333\'"></button>' +
+      '<button class="action-btn" onclick="goToProfile(\''+d.authorUid+'\')">'+
+        (d.authorAvatarUrl
+          ? '<img class="creator-avatar-rail" src="'+d.authorAvatarUrl+'">'
+          : '<div class="creator-avatar-rail" style="display:flex;align-items:center;justify-content:center;color:var(--orange);font-weight:800;font-size:1rem;">'+(d.authorDisplayName||'?').charAt(0).toUpperCase()+'</div>')+
+      '</button>' +
       '<button class="action-btn" id="likeBtn-'+id+'" onclick="toggleLike(\''+id+'\')">'+
         '<span class="action-icon" id="likeIcon-'+id+'"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg></span>'+
         '<span class="action-count" id="likeCount-'+id+'">0</span></button>' +
@@ -340,6 +345,9 @@ function buildReelSlide(id, d){
     '<div class="reel-bottom">' +
       starsHtml + verifiedHtml +
       '<div class="creator-row">' +
+        (d.authorAvatarUrl
+          ? '<img class="creator-avatar-mini" src="'+d.authorAvatarUrl+'" onclick="goToProfile(\''+d.authorUid+'\')">'
+          : '<div class="creator-avatar-mini" style="display:flex;align-items:center;justify-content:center;color:var(--orange);font-weight:800;font-size:.8rem;" onclick="goToProfile(\''+d.authorUid+'\')">'+(d.authorDisplayName||'?').charAt(0).toUpperCase()+'</div>')+
         '<span class="creator-name" onclick="goToProfile(\''+d.authorUid+'\')">'+(d.authorDisplayName||'Unknown')+' ✓</span>' +
         '<button class="follow-mini-btn" id="followBtn-'+id+'" onclick="toggleFollow(\''+d.authorUid+'\',\''+id+'\')">Follow</button>' +
       '</div>' +
