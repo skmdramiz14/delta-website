@@ -190,6 +190,22 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
     <div class="cs-preview-single" id="csPreviewSingle" style="display:none;"></div>
   </div>
 
+  <!-- ── CUSTOM THUMBNAIL (Reel/Video only) — without this, Discover/
+       Trending/Profile grids fall back to showing the video itself muted,
+       which works but a deliberately-chosen cover image looks better and
+       loads faster in those small preview tiles. ── -->
+  <div class="cs-section" id="csThumbSection" style="display:none;padding-top:0;">
+    <div class="cs-section-title">Cover / Thumbnail ছবি (ঐচ্ছিক)</div>
+    <div class="cs-hint" style="margin-bottom:8px;">না দিলে video-র প্রথম frame-ই দেখানো হবে Discover ও প্রোফাইলে</div>
+    <div class="cs-upload-zone" id="csThumbUploadZone" onclick="document.getElementById('csThumbFileInput').click()" style="padding:18px;">
+      <div class="cs-upload-icon" style="font-size:1.5rem;margin-bottom:4px;">🖼️</div>
+      <div class="cs-upload-text" style="font-size:.78rem;">ট্যাপ করে Cover ছবি বেছে নিন</div>
+    </div>
+    <input type="file" id="csThumbFileInput" class="cs-file-input" accept="image/*" onchange="handleThumbSelect(this)">
+    <div class="cs-upload-status" id="csThumbUploadStatus"></div>
+    <div class="cs-preview-single" id="csThumbPreview" style="display:none;max-height:160px;position:relative;"></div>
+  </div>
+
   <!-- ── CAPTION ── -->
   <div class="cs-section" style="padding-top:0;">
     <div class="cs-section-title" id="csCaptionLabel">ক্যাপশন</div>
@@ -240,12 +256,15 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
       </div>
       <div id="csCtaTypeWrap" style="display:none;margin-top:10px;">
         <div class="cs-section-title" style="font-size:.7rem;">Call-to-Action</div>
+        <!-- Deliberately NO "Call" or "WhatsApp" option — either would let a
+             customer contact the seller/creator directly, letting the
+             transaction happen off-platform where DELTA earns no
+             commission. Every CTA here keeps the customer inside DELTA's
+             own checkout/order flow. -->
         <select class="cs-input" id="csCtaTypeSelect">
           <option value="visit_shop">🏪 Visit Shop</option>
           <option value="view_product">🛒 View Product</option>
           <option value="order_now">📦 Order Now</option>
-          <option value="call">📞 Call</option>
-          <option value="whatsapp">💬 WhatsApp</option>
         </select>
       </div>
     </div>
@@ -279,6 +298,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
       <div id="csCommissionUnknownBox" style="display:none;"></div>
 
       <div id="csIndPriceWrap" style="display:none;">
+        <div class="cs-form-group"><label>স্টক (কয়টা আছে বিক্রির জন্য)</label>
+          <input type="number" class="cs-input" id="csIndStock" placeholder="যেমন: 5" min="1"></div>
         <div class="cs-form-group"><label>দাম (৳)</label>
           <input type="number" class="cs-input" id="csIndPrice" placeholder="0" min="1"></div>
         <div class="cs-form-group"><label>যোগাযোগের মোবাইল নম্বর</label>
@@ -321,6 +342,7 @@ var CITY = params.get('city') || (function(){ try{ return localStorage.getItem('
 var currentUser = null;
 var currentType = params.get('type') || 'post';
 var uploadedMedia = []; // [{url, type:'image'|'video'}]
+var uploadedThumbnail = null; // custom cover image URL for Reel/Video (optional)
 var pollOptionCount = 0;
 
 var TYPE_CONFIG = {
@@ -361,6 +383,7 @@ function selectType(type){
   document.getElementById('csPollSection').style.display = type==='post' ? 'block' : 'none';
   document.getElementById('csTagSection').style.display = (type==='post'||type==='reel') ? 'block' : 'none';
   document.getElementById('csIndSection').style.display = (type==='post'||type==='reel') ? 'block' : 'none';
+  document.getElementById('csThumbSection').style.display = (type==='reel'||type==='video') ? 'block' : 'none';
   document.getElementById('csModerationHint').textContent = type==='story'
     ? '📝 স্টোরি ২৪ ঘণ্টা পর নিজে থেকেই সরে যাবে। Submit করার পর review হয়ে তারপর দেখা যাবে।'
     : '📝 আপনার কনটেন্ট submit করার পর DELTA টিম review করবে, তারপর সবার জন্য দেখা যাবে।';
@@ -377,6 +400,11 @@ function selectType(type){
   document.getElementById('csProductPickWrap').style.display = 'none';
   document.getElementById('csCtaTypeWrap').style.display = 'none';
   resetIndPanel();
+  uploadedThumbnail = null;
+  document.getElementById('csThumbFileInput').value = '';
+  document.getElementById('csThumbPreview').style.display = 'none';
+  document.getElementById('csThumbPreview').innerHTML = '';
+  document.getElementById('csThumbUploadZone').style.display = 'block';
 }
 
 function showToast(msg){
@@ -447,6 +475,41 @@ async function uploadFiles(fileList){
   setTimeout(function(){ progWrap.style.display='none'; progFill.style.width='0'; }, 500);
   renderPreviews();
   updatePublishState();
+}
+
+async function handleThumbSelect(input){
+  var file = input.files[0];
+  input.value = '';
+  if(!file) return;
+  if(file.size > 10*1024*1024){ showToast('Cover ছবি সর্বোচ্চ 10MB হতে পারবে ⚠️'); return; }
+  var statusEl = document.getElementById('csThumbUploadStatus');
+  statusEl.textContent = 'আপলোড হচ্ছে...';
+  try{
+    var fd = new FormData();
+    fd.append('file', file); fd.append('upload_preset', PRESET); fd.append('cloud_name', CLOUD);
+    fd.append('folder', 'delta/media_content_thumbs');
+    var res = await fetch('https://api.cloudinary.com/v1_1/'+CLOUD+'/image/upload', {method:'POST', body:fd});
+    var data = await res.json();
+    if(data.secure_url){
+      uploadedThumbnail = data.secure_url;
+      var preview = document.getElementById('csThumbPreview');
+      preview.innerHTML = '<img src="'+data.secure_url+'" style="width:100%;max-height:160px;object-fit:contain;border-radius:10px;">'+
+        '<button class="cs-preview-remove" style="top:8px;right:8px;" onclick="removeThumb()">✕</button>';
+      preview.style.display = 'flex';
+      document.getElementById('csThumbUploadZone').style.display = 'none';
+    } else {
+      throw new Error(data.error ? data.error.message : 'Upload failed');
+    }
+  }catch(e){
+    showToast('Cover আপলোড ব্যর্থ হয়েছে: '+e.message);
+  }
+  statusEl.textContent = '';
+}
+function removeThumb(){
+  uploadedThumbnail = null;
+  document.getElementById('csThumbPreview').style.display = 'none';
+  document.getElementById('csThumbPreview').innerHTML = '';
+  document.getElementById('csThumbUploadZone').style.display = 'block';
 }
 
 function renderPreviews(){
@@ -745,6 +808,7 @@ function resetIndPanel(){
   document.getElementById('csCommissionUnknownBox').style.display = 'none';
   document.getElementById('csIndPriceWrap').style.display = 'none';
   document.getElementById('csIndPrice').value = '';
+  document.getElementById('csIndStock').value = '';
   document.getElementById('csIndMobile').value = '';
   _indAcceptedCommission = null; _indTalkRequestId = null;
 }
@@ -807,9 +871,11 @@ async function submitContent(){
     payload.expiresAt = new Date(Date.now() + 24*60*60*1000).toISOString();
   } else if(currentType==='reel'){
     payload.videoUrl = uploadedMedia[0] ? uploadedMedia[0].url : null;
+    if(uploadedThumbnail) payload.thumbnailUrl = uploadedThumbnail;
   } else if(currentType==='video'){
     payload.videoUrl = uploadedMedia[0] ? uploadedMedia[0].url : null;
     payload.videoTitle = document.getElementById('csVideoTitle').value.trim();
+    if(uploadedThumbnail) payload.thumbnailUrl = uploadedThumbnail;
   }
 
   // Commerce tag — Post/Reel only, only if a shop was actually selected via
@@ -834,9 +900,10 @@ async function submitContent(){
     }
     var itemName = document.getElementById('csIndItemName').value.trim();
     var price = Number(document.getElementById('csIndPrice').value);
+    var stock = Number(document.getElementById('csIndStock').value);
     var mobile = document.getElementById('csIndMobile').value.trim();
-    if(!itemName || !price || !mobile){
-      showToast('জিনিসের নাম, দাম এবং মোবাইল নম্বর — সবগুলো দিন');
+    if(!itemName || !price || !stock || !mobile){
+      showToast('জিনিসের নাম, স্টক, দাম এবং মোবাইল নম্বর — সবগুলো দিন');
       btn.disabled = false; btn.textContent = cfg.publishLabel;
       return;
     }
@@ -856,9 +923,10 @@ async function submitContent(){
     payload.category = _indAcceptedCommission.category;
     payload.subCategory = document.getElementById('csIndSubCategory').value.trim() || null;
     payload.price = price;
+    payload.stock = stock; // remaining units — orders decrement this, owner can edit it any time
     payload.commissionRate = _indAcceptedCommission.rate;
     payload.sellerMobile = mobile;
-    payload.saleStatus = 'available';
+    payload.saleStatus = 'available'; // derived from stock>0 from here on — see media-feed.html's order/restock logic
     payload.verificationStatus = 'pending_admin_review'; // separate from the generic content status field
   }
 
