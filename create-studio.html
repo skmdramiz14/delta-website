@@ -113,6 +113,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 .cs-poll-opt{display:flex;gap:8px;margin-bottom:8px;align-items:center;}
 .cs-poll-opt input{flex:1;}
 .cs-poll-opt-remove{background:none;border:none;color:var(--danger);font-size:1.1rem;cursor:pointer;padding:4px 8px;}
+.cs-thumb-mode-btn{flex:1;padding:9px 6px;border-radius:10px;border:1.5px solid var(--border);background:var(--white);
+  font-size:.76rem;font-weight:700;color:var(--charcoal);cursor:pointer;}
+.cs-thumb-mode-btn.active{background:var(--navy);border-color:var(--navy);color:#fff;}
 .cs-add-opt-btn{background:none;border:1.5px dashed var(--border);border-radius:10px;padding:8px;width:100%;
   font-size:.78rem;font-weight:700;color:var(--navy);cursor:pointer;margin-top:4px;}
 
@@ -197,12 +200,28 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
   <div class="cs-section" id="csThumbSection" style="display:none;padding-top:0;">
     <div class="cs-section-title">Cover / Thumbnail ছবি (ঐচ্ছিক)</div>
     <div class="cs-hint" style="margin-bottom:8px;">না দিলে video-র প্রথম frame-ই দেখানো হবে Discover ও প্রোফাইলে</div>
-    <div class="cs-upload-zone" id="csThumbUploadZone" onclick="document.getElementById('csThumbFileInput').click()" style="padding:18px;">
-      <div class="cs-upload-icon" style="font-size:1.5rem;margin-bottom:4px;">🖼️</div>
-      <div class="cs-upload-text" style="font-size:.78rem;">ট্যাপ করে Cover ছবি বেছে নিন</div>
+
+    <div style="display:flex;gap:8px;margin-bottom:10px;">
+      <button class="cs-thumb-mode-btn active" id="csThumbModeUpload" onclick="switchThumbMode('upload')">🖼️ ছবি Upload করুন</button>
+      <button class="cs-thumb-mode-btn" id="csThumbModeFrame" onclick="switchThumbMode('frame')">🎞️ Video থেকে বেছে নিন</button>
     </div>
-    <input type="file" id="csThumbFileInput" class="cs-file-input" accept="image/*" onchange="handleThumbSelect(this)">
-    <div class="cs-upload-status" id="csThumbUploadStatus"></div>
+
+    <div id="csThumbUploadMode">
+      <div class="cs-upload-zone" id="csThumbUploadZone" onclick="document.getElementById('csThumbFileInput').click()" style="padding:18px;">
+        <div class="cs-upload-icon" style="font-size:1.5rem;margin-bottom:4px;">🖼️</div>
+        <div class="cs-upload-text" style="font-size:.78rem;">ট্যাপ করে Cover ছবি বেছে নিন</div>
+      </div>
+      <input type="file" id="csThumbFileInput" class="cs-file-input" accept="image/*" onchange="handleThumbSelect(this)">
+      <div class="cs-upload-status" id="csThumbUploadStatus"></div>
+    </div>
+
+    <div id="csThumbFrameMode" style="display:none;">
+      <video id="csFramePickerVideo" style="width:100%;border-radius:10px;background:#000;max-height:220px;" muted playsinline></video>
+      <input type="range" id="csFrameScrubber" min="0" max="100" value="0" step="0.1" style="width:100%;margin-top:8px;" oninput="scrubFramePreview(this.value)">
+      <button class="cs-add-opt-btn" style="margin-top:8px;" onclick="captureVideoFrame()">✅ এই মুহূর্তটাই Cover হিসেবে নিন</button>
+      <div class="cs-upload-status" id="csFrameCaptureStatus"></div>
+    </div>
+
     <div class="cs-preview-single" id="csThumbPreview" style="display:none;max-height:160px;position:relative;"></div>
   </div>
 
@@ -405,6 +424,7 @@ function selectType(type){
   document.getElementById('csThumbPreview').style.display = 'none';
   document.getElementById('csThumbPreview').innerHTML = '';
   document.getElementById('csThumbUploadZone').style.display = 'block';
+  switchThumbMode('upload');
 }
 
 function showToast(msg){
@@ -475,6 +495,59 @@ async function uploadFiles(fileList){
   setTimeout(function(){ progWrap.style.display='none'; progFill.style.width='0'; }, 500);
   renderPreviews();
   updatePublishState();
+}
+
+function switchThumbMode(mode){
+  document.getElementById('csThumbModeUpload').classList.toggle('active', mode==='upload');
+  document.getElementById('csThumbModeFrame').classList.toggle('active', mode==='frame');
+  document.getElementById('csThumbUploadMode').style.display = mode==='upload' ? 'block' : 'none';
+  document.getElementById('csThumbFrameMode').style.display = mode==='frame' ? 'block' : 'none';
+  if(mode==='frame'){
+    var videoEl = document.getElementById('csFramePickerVideo');
+    var mainVideo = uploadedMedia.find(function(m){ return m.type==='video'; });
+    if(!mainVideo){
+      document.getElementById('csFrameCaptureStatus').textContent = 'আগে video upload করুন';
+      return;
+    }
+    if(videoEl.src !== mainVideo.url) videoEl.src = mainVideo.url;
+    videoEl.onloadedmetadata = function(){
+      document.getElementById('csFrameScrubber').max = videoEl.duration;
+    };
+  }
+}
+function scrubFramePreview(t){
+  var videoEl = document.getElementById('csFramePickerVideo');
+  videoEl.currentTime = Number(t);
+}
+async function captureVideoFrame(){
+  var videoEl = document.getElementById('csFramePickerVideo');
+  var statusEl = document.getElementById('csFrameCaptureStatus');
+  if(!videoEl.videoWidth){ statusEl.textContent = 'Video এখনো লোড হয়নি, একটু অপেক্ষা করুন'; return; }
+  statusEl.textContent = 'তৈরি হচ্ছে...';
+  try{
+    // Draw the video's CURRENT frame (wherever the scrubber left it) onto a
+    // canvas, then upload that as a real image — this is what lets someone
+    // pick an exact moment from their own video as the cover, rather than
+    // only being able to upload a completely separate image.
+    var canvas = document.createElement('canvas');
+    canvas.width = videoEl.videoWidth; canvas.height = videoEl.videoHeight;
+    canvas.getContext('2d').drawImage(videoEl, 0, 0, canvas.width, canvas.height);
+    var blob = await new Promise(function(resolve){ canvas.toBlob(resolve, 'image/jpeg', 0.9); });
+    var fd = new FormData();
+    fd.append('file', blob, 'frame.jpg'); fd.append('upload_preset', PRESET); fd.append('cloud_name', CLOUD);
+    fd.append('folder', 'delta/media_content_thumbs');
+    var res = await fetch('https://api.cloudinary.com/v1_1/'+CLOUD+'/image/upload', {method:'POST', body:fd});
+    var data = await res.json();
+    if(!data.secure_url) throw new Error(data.error ? data.error.message : 'Upload failed');
+    uploadedThumbnail = data.secure_url;
+    var preview = document.getElementById('csThumbPreview');
+    preview.innerHTML = '<img src="'+data.secure_url+'" style="width:100%;max-height:160px;object-fit:contain;border-radius:10px;">'+
+      '<button class="cs-preview-remove" style="top:8px;right:8px;" onclick="removeThumb()">✕</button>';
+    preview.style.display = 'flex';
+    statusEl.textContent = '✅ এই মুহূর্তটাই cover হিসেবে সেট হয়েছে';
+  }catch(e){
+    statusEl.textContent = 'ব্যর্থ হয়েছে: '+e.message;
+  }
 }
 
 async function handleThumbSelect(input){
