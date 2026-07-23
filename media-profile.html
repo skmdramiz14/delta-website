@@ -261,7 +261,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
     <div class="pp-form-group"><label>Display Name</label><input type="text" class="pp-form-input" id="editDisplayName"></div>
     <div class="pp-form-group"><label>Username</label><input type="text" class="pp-form-input" id="editUsername" placeholder="username"></div>
     <div class="pp-form-group"><label>Bio</label><textarea class="pp-form-textarea" id="editBio" rows="3"></textarea></div>
-    <div class="pp-form-group"><label>Location</label><input type="text" class="pp-form-input" id="editLocation"></div>
     <div class="pp-form-group">
       <label>Profile ছবি (DP)</label>
       <div id="editAvatarPreviewWrap" style="margin-bottom:8px;"></div>
@@ -418,17 +417,15 @@ async function loadProfile(){
     }
     var metaParts = [];
     // Auto-fetched, verified location — always reflects the real registered
-    // area (areaLabel/homeCity), distinct from the free-text bio "location"
-    // field below. Styled like a verified-location badge (Instagram/LinkedIn
-    // style) since it's a confirmed fact about the account, not a claim the
-    // user typed themselves.
+    // area (areaLabel/homeCity). This is the ONLY location shown on the
+    // profile now — the separate manual "Location" bio field was removed
+    // (Edit Profile) since it was redundant with this auto-fetched, always-
+    // accurate value.
     var verifiedLoc = profileData.areaLabel ||
       [profileData.homeCity, profileData.district, profileData.state].filter(Boolean).join(', ');
     if(verifiedLoc){
-      metaParts.push('<span style="color:var(--gold,#C9971F);font-weight:700;">📍 '+verifiedLoc+
-        ' <span style="font-size:.68rem;color:var(--muted);font-weight:400;">· নিবন্ধিত এলাকা</span></span>');
+      metaParts.push('<span style="color:var(--gold,#C9971F);font-weight:700;">📍 '+verifiedLoc+'</span>');
     }
-    if(profileData.location) metaParts.push('🏷️ '+profileData.location);
     if(profileData.shopCategory) metaParts.push('🏪 '+profileData.shopCategory);
     if(profileData.establishedYear) metaParts.push('📅 '+profileData.establishedYear+' থেকে');
     if(profileData.businessCategory) metaParts.push('🏷️ '+profileData.businessCategory);
@@ -891,7 +888,6 @@ function openEditProfile(){
   document.getElementById('editDisplayName').value = profileData.displayName || '';
   document.getElementById('editUsername').value = profileData.username || '';
   document.getElementById('editBio').value = profileData.bio || '';
-  document.getElementById('editLocation').value = profileData.location || '';
   document.getElementById('editAvatarUrl').value = profileData.avatarUrl || '';
   document.getElementById('editCoverUrl').value = profileData.coverUrl || '';
   document.getElementById('editAvatarFile').value = '';
@@ -923,7 +919,6 @@ async function saveProfileEdit(){
     displayName: document.getElementById('editDisplayName').value.trim(),
     username: document.getElementById('editUsername').value.trim().replace(/^@/,''),
     bio: document.getElementById('editBio').value.trim(),
-    location: document.getElementById('editLocation').value.trim(),
     avatarUrl: document.getElementById('editAvatarUrl').value.trim(),
     coverUrl: document.getElementById('editCoverUrl').value.trim(),
     links: {
