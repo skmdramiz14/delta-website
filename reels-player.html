@@ -38,6 +38,12 @@ html,body{height:100%;background:#000;overflow:hidden;font-family:'DM Sans',sans
 
 .unmute-hint{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:25;
   background:rgba(0,0,0,.5);border:none;border-radius:50%;width:56px;height:56px;font-size:1.6rem;cursor:pointer;}
+.tap-pause-icon{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:24;
+  width:64px;height:64px;filter:drop-shadow(0 2px 8px rgba(0,0,0,.5));pointer-events:none;
+  animation:tapPauseFade .5s ease-out forwards;}
+@keyframes tapPauseFade{0%{opacity:0;transform:translate(-50%,-50%) scale(.7);}20%{opacity:1;transform:translate(-50%,-50%) scale(1);}100%{opacity:0;}}
+.speed-badge{position:absolute;top:16px;right:50%;transform:translateX(50%);z-index:24;
+  background:rgba(0,0,0,.65);color:#fff;font-weight:800;font-size:.85rem;padding:6px 14px;border-radius:20px;pointer-events:none;}
 .mute-toggle{position:absolute;top:calc(env(safe-area-inset-top,0px) + 12px);right:12px;z-index:25;
   background:rgba(0,0,0,.4);border:none;color:#fff;width:34px;height:34px;border-radius:50%;
   display:flex;align-items:center;justify-content:center;font-size:1.05rem;cursor:pointer;}
@@ -246,9 +252,26 @@ function showNearbyNotice(){
   console.warn('Nearby filter: no geo-distance data on mediaContent yet — showing standard feed instead.');
 }
 
-function renderReels(docs){
+var _liveProfileCache = {}; // {uid: {avatarUrl, displayName}} — refreshed once per feed load
+async function renderReels(docs){
   var scroll = document.getElementById('reelScroll');
   scroll.innerHTML=''; scroll.style.display='block';
+
+  // Live profile lookup, not the frozen authorAvatarUrl/authorDisplayName
+  // saved on the content document at post time — otherwise changing your
+  // DP later would never be reflected on reels you posted before that
+  // change (every existing reel would keep showing the old picture forever).
+  var uniqueUids = Array.from(new Set(docs.map(function(item){ return item.data.authorUid; }).filter(Boolean)));
+  var uidsToFetch = uniqueUids.filter(function(uid){ return !_liveProfileCache[uid]; });
+  if(uidsToFetch.length){
+    try{
+      var profiles = await Promise.all(uidsToFetch.map(function(uid){ return db.collection('mediaProfiles').doc(uid).get(); }));
+      profiles.forEach(function(doc, i){
+        _liveProfileCache[uidsToFetch[i]] = doc.exists ? {avatarUrl: doc.data().avatarUrl, displayName: doc.data().displayName} : {};
+      });
+    }catch(e){ console.warn('Live profile fetch failed (non-fatal, falls back to post-time snapshot)', e); }
+  }
+
   docs.forEach(function(item){ scroll.appendChild(buildReelSlide(item.id, item.data)); });
 
   if(io) io.disconnect();
@@ -300,9 +323,76 @@ function bumpView(contentId){
   viewedThisSession[contentId] = true;
 }
 
+var _reelGesture = {downTime:0, downX:0, holdTimer:null, holding2x:false};
+function handleReelPointerDown(e, slide){
+  // Ignore presses that started on an actual control (like/comment/share/
+  // follow/mute/commerce buttons) — those already have their own onclick
+  // handlers, and shouldn't ALSO trigger pause or 2x-speed underneath them.
+  if(e.target.closest('.action-rail, .creator-row, .mute-toggle, .commerce-card, .follow-mini-btn')) return;
+  var vid = slide.querySelector('video');
+  if(!vid) return;
+  _reelGesture.downTime = Date.now();
+  _reelGesture.downX = e.clientX;
+  _reelGesture.holding2x = false;
+  var isRightSide = e.clientX > slide.getBoundingClientRect().width/2;
+  if(isRightSide){
+    _reelGesture.holdTimer = setTimeout(function(){
+      vid.playbackRate = 2;
+      _reelGesture.holding2x = true;
+      showSpeedBadge(slide, true);
+    }, 220); // short delay so a normal quick tap doesn't accidentally trigger 2x first
+  }
+}
+function handleReelPointerUp(e, slide){
+  if(e.target.closest('.action-rail, .creator-row, .mute-toggle, .commerce-card, .follow-mini-btn')) return;
+  clearTimeout(_reelGesture.holdTimer);
+  var vid = slide.querySelector('video');
+  if(!vid) return;
+  if(_reelGesture.holding2x){
+    // Was holding for 2x — release returns to normal speed, no play/pause toggle.
+    vid.playbackRate = 1;
+    _reelGesture.holding2x = false;
+    showSpeedBadge(slide, false);
+    return;
+  }
+  // A quick tap/release (never held long enough to trigger 2x) — toggle
+  // play/pause, same as Instagram/TikTok's single-tap gesture.
+  if(vid.paused){ vid.play().catch(function(){}); showPauseIcon(slide, false); }
+  else { vid.pause(); showPauseIcon(slide, true); }
+}
+function showPauseIcon(slide, isPaused){
+  var existing = slide.querySelector('.tap-pause-icon'); if(existing) existing.remove();
+  var icon = document.createElement('div');
+  icon.className = 'tap-pause-icon';
+  icon.innerHTML = isPaused
+    ? '<svg viewBox="0 0 24 24" fill="rgba(255,255,255,.9)"><path d="M8 5v14l11-7Z"/></svg>' // play icon shown while paused
+    : '<svg viewBox="0 0 24 24" fill="rgba(255,255,255,.9)"><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></svg>'; // pause icon shown while playing
+  slide.appendChild(icon);
+  setTimeout(function(){ icon.remove(); }, 500);
+}
+function showSpeedBadge(slide, show){
+  var existing = slide.querySelector('.speed-badge');
+  if(show && !existing){
+    var badge = document.createElement('div'); badge.className='speed-badge'; badge.textContent='2x ⏩';
+    slide.appendChild(badge);
+  } else if(!show && existing){
+    existing.remove();
+  }
+}
+
 function buildReelSlide(id, d){
   var slide = document.createElement('div');
   slide.className='reel-slide'; slide.dataset.contentId=id;
+  slide.addEventListener('pointerdown', function(e){ handleReelPointerDown(e, slide); });
+  slide.addEventListener('pointerup', function(e){ handleReelPointerUp(e, slide); });
+  slide.addEventListener('pointercancel', function(e){ handleReelPointerUp(e, slide); });
+
+  // Prefer the LIVE profile (fetched fresh in renderReels) over the frozen
+  // authorAvatarUrl/authorDisplayName snapshot saved at post-creation time —
+  // this is what makes a later DP/name change actually show up here too.
+  var liveProfile = _liveProfileCache[d.authorUid] || {};
+  var liveAvatarUrl = liveProfile.avatarUrl || d.authorAvatarUrl || '';
+  var liveDisplayName = liveProfile.displayName || d.authorDisplayName || 'Unknown';
 
   var mediaHtml = d.videoUrl
     ? '<video class="reel-media" id="video-'+id+'" src="'+d.videoUrl+'" loop playsinline></video>'
@@ -322,9 +412,9 @@ function buildReelSlide(id, d){
     '<button class="mute-toggle" onclick="toggleMute(this)">🔊</button>' +
     '<div class="action-rail">' +
       '<button class="action-btn" onclick="goToProfile(\''+d.authorUid+'\')">'+
-        (d.authorAvatarUrl
-          ? '<img class="creator-avatar-rail" src="'+d.authorAvatarUrl+'">'
-          : '<div class="creator-avatar-rail" style="display:flex;align-items:center;justify-content:center;color:var(--orange);font-weight:800;font-size:1rem;">'+(d.authorDisplayName||'?').charAt(0).toUpperCase()+'</div>')+
+        (liveAvatarUrl
+          ? '<img class="creator-avatar-rail" src="'+liveAvatarUrl+'">'
+          : '<div class="creator-avatar-rail" style="display:flex;align-items:center;justify-content:center;color:var(--orange);font-weight:800;font-size:1rem;">'+liveDisplayName.charAt(0).toUpperCase()+'</div>')+
       '</button>' +
       '<button class="action-btn" id="likeBtn-'+id+'" onclick="toggleLike(\''+id+'\')">'+
         '<span class="action-icon" id="likeIcon-'+id+'"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg></span>'+
@@ -345,10 +435,10 @@ function buildReelSlide(id, d){
     '<div class="reel-bottom">' +
       starsHtml + verifiedHtml +
       '<div class="creator-row">' +
-        (d.authorAvatarUrl
-          ? '<img class="creator-avatar-mini" src="'+d.authorAvatarUrl+'" onclick="goToProfile(\''+d.authorUid+'\')">'
-          : '<div class="creator-avatar-mini" style="display:flex;align-items:center;justify-content:center;color:var(--orange);font-weight:800;font-size:.8rem;" onclick="goToProfile(\''+d.authorUid+'\')">'+(d.authorDisplayName||'?').charAt(0).toUpperCase()+'</div>')+
-        '<span class="creator-name" onclick="goToProfile(\''+d.authorUid+'\')">'+(d.authorDisplayName||'Unknown')+' ✓</span>' +
+        (liveAvatarUrl
+          ? '<img class="creator-avatar-mini" src="'+liveAvatarUrl+'" onclick="goToProfile(\''+d.authorUid+'\')">'
+          : '<div class="creator-avatar-mini" style="display:flex;align-items:center;justify-content:center;color:var(--orange);font-weight:800;font-size:.8rem;" onclick="goToProfile(\''+d.authorUid+'\')">'+liveDisplayName.charAt(0).toUpperCase()+'</div>')+
+        '<span class="creator-name" onclick="goToProfile(\''+d.authorUid+'\')">'+liveDisplayName+' ✓</span>' +
         '<button class="follow-mini-btn" id="followBtn-'+id+'" onclick="toggleFollow(\''+d.authorUid+'\',\''+id+'\')">Follow</button>' +
       '</div>' +
       '<div class="reel-caption clamped" id="caption-'+id+'" onclick="expandCaption(\''+id+'\')">'+(d.caption||'')+'</div>' +
