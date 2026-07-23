@@ -674,23 +674,41 @@ var INDIVIDUAL_CATEGORIES = [
 var _indAcceptedCommission = null; // {category, rate} once accepted
 var _indTalkRequestId = null;
 var INDIVIDUAL_LISTING_LIMITS = {maxPrice: 50000, maxActiveListings: 3}; // fallback defaults, overridden by platformConfig below
+var _isPremiumSeller = false; // Admin-granted only — see Firestore rules; never settable by the user themselves
 
-function populateIndCategoryDropdown(){
+async function populateIndCategoryDropdown(){
   var sel = document.getElementById('csIndCategorySelect');
   if(sel.options.length > 1) return; // already populated (auth state can fire more than once)
-  INDIVIDUAL_CATEGORIES.forEach(function(c){
+  var categories = INDIVIDUAL_CATEGORIES; // fallback if categoryConfig was never saved
+  try{
+    var doc = await db.collection('cities').doc(CITY).collection('settings').doc('categoryConfig').get();
+    if(doc.exists && doc.data().categories && doc.data().categories.length){
+      categories = doc.data().categories.slice().sort(function(a,b){ return (a.order||99)-(b.order||99); });
+    }
+  }catch(e){ console.warn('Could not load live categoryConfig, using fallback list', e); }
+  categories.forEach(function(c){
     var opt = document.createElement('option');
-    opt.value = c.key; opt.textContent = c.nameBn;
+    opt.value = c.key; opt.textContent = (c.emoji?c.emoji+' ':'')+c.nameBn;
     sel.appendChild(opt);
   });
 }
 async function loadIndividualListingLimits(){
   try{
     var doc = await db.collection('platformConfig').doc('individualListingLimits').get();
-    if(doc.exists){
-      INDIVIDUAL_LISTING_LIMITS.maxPrice = doc.data().maxPrice || INDIVIDUAL_LISTING_LIMITS.maxPrice;
-      INDIVIDUAL_LISTING_LIMITS.maxActiveListings = doc.data().maxActiveListings || INDIVIDUAL_LISTING_LIMITS.maxActiveListings;
+    var d = doc.exists ? doc.data() : {};
+    if(currentUser){
+      var myProfile = await db.collection('mediaProfiles').doc(currentUser.uid).get();
+      _isPremiumSeller = myProfile.exists && myProfile.data().isPremiumSeller === true;
     }
+    // Premium sellers (Admin-granted — see Firestore rules, never
+    // self-settable) get the higher premiumMaxPrice/premiumMaxActiveListings
+    // instead of the free-tier ones, if Admin has configured them.
+    INDIVIDUAL_LISTING_LIMITS.maxPrice = _isPremiumSeller
+      ? (d.premiumMaxPrice || d.maxPrice || INDIVIDUAL_LISTING_LIMITS.maxPrice)
+      : (d.maxPrice || INDIVIDUAL_LISTING_LIMITS.maxPrice);
+    INDIVIDUAL_LISTING_LIMITS.maxActiveListings = _isPremiumSeller
+      ? (d.premiumMaxActiveListings || d.maxActiveListings || INDIVIDUAL_LISTING_LIMITS.maxActiveListings)
+      : (d.maxActiveListings || INDIVIDUAL_LISTING_LIMITS.maxActiveListings);
   }catch(e){ console.warn('Could not load individual listing limits, using defaults', e); }
 }
 
@@ -787,7 +805,8 @@ function watchTalkToDeltaRequest(requestId, category){
 
 function updateIndLimitHint(){
   var hint = document.getElementById('csIndLimitHint');
-  hint.textContent = 'সর্বোচ্চ মূল্য ৳'+INDIVIDUAL_LISTING_LIMITS.maxPrice.toLocaleString('bn-BD')+
+  hint.textContent = (_isPremiumSeller ? '⭐ Premium — ' : '') +
+    'সর্বোচ্চ মূল্য ৳'+INDIVIDUAL_LISTING_LIMITS.maxPrice.toLocaleString('bn-BD')+
     ' — একসাথে সর্বোচ্চ '+INDIVIDUAL_LISTING_LIMITS.maxActiveListings+'টা active listing রাখা যাবে।';
 }
 
