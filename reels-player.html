@@ -48,9 +48,6 @@ html,body{height:100%;background:#000;overflow:hidden;font-family:'DM Sans',sans
 .pause-overlay-play svg{width:32px;height:32px;margin-left:3px;}
 .speed-badge{position:absolute;top:16px;right:50%;transform:translateX(50%);z-index:24;
   background:rgba(0,0,0,.65);color:#fff;font-weight:800;font-size:.85rem;padding:6px 14px;border-radius:20px;pointer-events:none;}
-.mute-toggle{position:absolute;top:calc(env(safe-area-inset-top,0px) + 12px);right:12px;z-index:25;
-  background:rgba(0,0,0,.4);border:none;color:#fff;width:34px;height:34px;border-radius:50%;
-  display:flex;align-items:center;justify-content:center;font-size:1.05rem;cursor:pointer;}
 
 .action-rail{position:absolute;right:8px;bottom:100px;display:flex;flex-direction:column;align-items:center;gap:19px;z-index:20;}
 .action-btn{background:none;border:none;color:#fff;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;}
@@ -333,7 +330,7 @@ function handleReelPointerDown(e, slide){
   // Ignore presses that started on an actual control (like/comment/share/
   // follow/mute/commerce buttons) — those already have their own onclick
   // handlers, and shouldn't ALSO trigger pause or 2x-speed underneath them.
-  if(e.target.closest('.action-rail, .creator-row, .mute-toggle, .commerce-card, .follow-mini-btn')) return;
+  if(e.target.closest('.action-rail, .creator-row, .commerce-card, .follow-mini-btn')) return;
   var vid = slide.querySelector('video');
   if(!vid) return;
   _reelGesture.downTime = Date.now();
@@ -344,12 +341,14 @@ function handleReelPointerDown(e, slide){
     _reelGesture.holdTimer = setTimeout(function(){
       vid.playbackRate = 2;
       _reelGesture.holding2x = true;
+      hidePauseOverlay(slide); // if it was paused, holding to fast-forward should resume it
+      if(vid.paused) vid.play().catch(function(){});
       showSpeedBadge(slide, true);
-    }, 220); // short delay so a normal quick tap doesn't accidentally trigger 2x first
+    }, 400); // long enough that a normal quick tap never accidentally triggers 2x
   }
 }
 function handleReelPointerUp(e, slide){
-  if(e.target.closest('.action-rail, .creator-row, .mute-toggle, .commerce-card, .follow-mini-btn, .pause-overlay')) return;
+  if(e.target.closest('.action-rail, .creator-row, .commerce-card, .follow-mini-btn, .pause-overlay')) return;
   clearTimeout(_reelGesture.holdTimer);
   var vid = slide.querySelector('video');
   if(!vid) return;
@@ -358,6 +357,7 @@ function handleReelPointerUp(e, slide){
     vid.playbackRate = 1;
     _reelGesture.holding2x = false;
     showSpeedBadge(slide, false);
+    hidePauseOverlay(slide); // defensive — should already be gone, but never leave a stale overlay behind
     return;
   }
   // A quick tap/release (never held long enough to trigger 2x) — toggle
@@ -380,7 +380,6 @@ function showPauseOverlay(slide, vid){
     e.stopPropagation();
     vid.muted = !vid.muted;
     e.currentTarget.textContent = vid.muted ? '🔇' : '🔊';
-    var muteBtn = slide.querySelector('.mute-toggle'); if(muteBtn) muteBtn.textContent = vid.muted ? '🔇' : '🔊';
   };
   overlay.querySelector('.pause-overlay-play').onclick = function(e){
     e.stopPropagation();
@@ -431,7 +430,6 @@ function buildReelSlide(id, d){
     mediaHtml +
     '<div class="reel-gradient-top"></div>' +
     '<div class="reel-gradient-bottom"></div>' +
-    '<button class="mute-toggle" onclick="toggleMute(this)">🔊</button>' +
     '<div class="action-rail">' +
       '<button class="action-btn" onclick="goToProfile(\''+d.authorUid+'\')">'+
         (liveAvatarUrl
@@ -554,14 +552,6 @@ function saveReel(id){
   iconEl.innerHTML = isSaved ? SAVE_OUTLINE : SAVE_FILLED;
   // Local-only for now — a real "saved" list needs its own Firestore
   // collection (not built yet), so this doesn't persist across sessions.
-}
-function toggleMute(btn){
-  var slide = btn.closest('.reel-slide');
-  var vid = slide.querySelector('video');
-  if(!vid) return;
-  vid.muted = !vid.muted;
-  btn.textContent = vid.muted ? '🔇' : '🔊';
-  var hint = slide.querySelector('.unmute-hint'); if(hint) hint.remove();
 }
 function expandCaption(id){
   var el = document.getElementById('caption-'+id);
