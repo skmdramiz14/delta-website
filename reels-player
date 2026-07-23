@@ -196,7 +196,31 @@ async function loadReels(){
 
     document.getElementById('loadingOverlay').style.display='none';
     if(!docs.length){ toastEmpty('এই ফিল্টারে কোনো content পাওয়া যায়নি'); return; }
-    renderReels(docs);
+
+    var deepLinkId = new URLSearchParams(location.search).get('id');
+    if(deepLinkId){
+      var idx = docs.findIndex(function(item){ return item.id===deepLinkId; });
+      if(idx > 0){
+        // Already loaded, just not first — move it to the front so the
+        // scroll-snap view opens on THIS reel, not whatever's newest.
+        var found = docs.splice(idx,1)[0];
+        docs.unshift(found);
+        renderReels(docs);
+      } else if(idx === -1){
+        // Not in this filter's top-40 (older, or a different filter) — fetch
+        // it directly by ID and prepend, rather than silently ignoring the
+        // link and just showing the generic feed instead.
+        mc().doc(deepLinkId).get().then(function(doc){
+          if(doc.exists) docs.unshift({id:doc.id, data:doc.data()});
+          renderReels(docs);
+        }).catch(function(){ renderReels(docs); });
+        return;
+      } else {
+        renderReels(docs);
+      }
+    } else {
+      renderReels(docs);
+    }
   }).catch(function(e){
     console.error(e);
     document.getElementById('loadingOverlay').style.display='none';
