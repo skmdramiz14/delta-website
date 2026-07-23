@@ -203,16 +203,18 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 </div>
 
 <div class="pp-cover" id="ppCover">
-  <button class="pp-cover-edit" id="ppCoverEditBtn" style="display:none;" onclick="openEditProfile()">✎ Edit cover</button>
+  <button class="pp-cover-edit" id="ppCoverEditBtn" style="display:none;" onclick="document.getElementById('quickCoverFile').click()">✎ Edit cover</button>
+  <input type="file" id="quickCoverFile" accept="image/*" style="display:none;" onchange="handleQuickCoverUpload(this)">
 </div>
 
 <div class="pp-header">
   <div class="pp-avatar-wrap">
     <img class="pp-avatar" id="ppAvatarImg" src="" style="display:none;" onerror="this.style.display='none'">
     <div class="pp-avatar-fallback" id="ppAvatarFallback">?</div>
-    <div class="pp-avatar-edit" id="ppAvatarEditBtn" style="display:none;" onclick="openEditProfile()">
+    <div class="pp-avatar-edit" id="ppAvatarEditBtn" style="display:none;" onclick="document.getElementById('quickAvatarFile').click()">
       <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4.5a2 2 0 0 1 3 3L7 18l-4 1 1-4Z"/></svg>
     </div>
+    <input type="file" id="quickAvatarFile" accept="image/*" style="display:none;" onchange="handleQuickAvatarUpload(this)">
   </div>
 
   <div class="pp-name-row">
@@ -844,6 +846,54 @@ function shareProfile(){
   var url = location.origin + location.pathname + '?uid='+PROFILE_UID+'&city='+CITY;
   if(navigator.share){ navigator.share({title:profileData.displayName||'DELTA Media Profile', url:url}).catch(function(){}); }
   else { navigator.clipboard.writeText(url).then(function(){ alert('Link copied!'); }).catch(function(){ alert(url); }); }
+}
+
+// ── QUICK avatar/cover upload — tapping the pencil/edit icon directly on
+// the photo itself uploads AND saves immediately, no need to open the full
+// Edit Profile modal first. The modal's own upload fields (above) remain
+// for when someone's already in there editing other things too. ──
+async function handleQuickAvatarUpload(input){
+  var file = input.files[0];
+  input.value = '';
+  if(!file || !currentUser) return;
+  if(file.size > 10*1024*1024){ alert('ছবি সর্বোচ্চ 10MB হতে পারবে'); return; }
+  try{
+    var fd = new FormData();
+    fd.append('file', file); fd.append('upload_preset', PRESET); fd.append('cloud_name', CLOUD);
+    fd.append('folder', 'delta/profile_images');
+    var res = await fetch('https://api.cloudinary.com/v1_1/'+CLOUD+'/image/upload', {method:'POST', body:fd});
+    var data = await res.json();
+    if(!data.secure_url) throw new Error(data.error ? data.error.message : 'Upload failed');
+    await db.collection('mediaProfiles').doc(currentUser.uid).set({avatarUrl:data.secure_url, updatedAt:new Date().toISOString()}, {merge:true});
+    profileData.avatarUrl = data.secure_url;
+    document.getElementById('ppAvatarImg').src = data.secure_url;
+    document.getElementById('ppAvatarImg').style.display = 'block';
+    document.getElementById('ppAvatarFallback').style.display = 'none';
+  }catch(e){
+    alert('Profile ছবি আপডেট করতে সমস্যা হয়েছে: '+e.message);
+  }
+}
+async function handleQuickCoverUpload(input){
+  var file = input.files[0];
+  input.value = '';
+  if(!file || !currentUser) return;
+  if(file.size > 10*1024*1024){ alert('ছবি সর্বোচ্চ 10MB হতে পারবে'); return; }
+  try{
+    var fd = new FormData();
+    fd.append('file', file); fd.append('upload_preset', PRESET); fd.append('cloud_name', CLOUD);
+    fd.append('folder', 'delta/profile_images');
+    var res = await fetch('https://api.cloudinary.com/v1_1/'+CLOUD+'/image/upload', {method:'POST', body:fd});
+    var data = await res.json();
+    if(!data.secure_url) throw new Error(data.error ? data.error.message : 'Upload failed');
+    await db.collection('mediaProfiles').doc(currentUser.uid).set({coverUrl:data.secure_url, updatedAt:new Date().toISOString()}, {merge:true});
+    profileData.coverUrl = data.secure_url;
+    var coverEl = document.getElementById('ppCover');
+    var existingImg = coverEl.querySelector('img');
+    if(existingImg) existingImg.src = data.secure_url;
+    else { var img = document.createElement('img'); img.src = data.secure_url; coverEl.prepend(img); }
+  }catch(e){
+    alert('Cover ছবি আপডেট করতে সমস্যা হয়েছে: '+e.message);
+  }
 }
 
 // ── Direct image upload (no Cloudinary account needed — uses DELTA's own,
