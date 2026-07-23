@@ -1780,10 +1780,13 @@ function loadStories(){
       wrap.innerHTML='';
       // Slot #0 — "Add Story", media-feed-only (homepage has no upload capability).
       var addItem = document.createElement('div'); addItem.className='story-item';
-      var avatarUrl = (currentUser && currentUser.photoURL) ? currentUser.photoURL : '';
+      // currentUser.photoURL (Firebase Auth's own profile photo) is never
+      // actually set anywhere in DELTA's registration flow, so it's always
+      // empty — the real, editable avatar lives in mediaProfiles/{uid}.
+      // avatarUrl instead (same fix already applied in create-studio.html).
       addItem.innerHTML =
         '<div class="story-add-ring">'+
-          (avatarUrl ? '<img src="'+avatarUrl+'">' : '')+
+          '<img id="storyAddAvatarImg" style="display:none;">'+
           '<div class="story-add-plus">+</div>'+
         '</div><div class="story-label">Add Story</div>';
       addItem.onclick = function(){
@@ -1791,6 +1794,13 @@ function loadStories(){
         location.href='create-studio.html?type=story&city='+CITY;
       };
       wrap.appendChild(addItem);
+      if(currentUser){
+        db.collection('mediaProfiles').doc(currentUser.uid).get().then(function(doc){
+          var avatarUrl = doc.exists ? doc.data().avatarUrl : '';
+          var imgEl = document.getElementById('storyAddAvatarImg');
+          if(avatarUrl && imgEl){ imgEl.src = avatarUrl; imgEl.style.display = 'block'; }
+        }).catch(function(e){ console.warn('Could not load own avatar for Add Story bubble', e); });
+      }
     }
   }
 
