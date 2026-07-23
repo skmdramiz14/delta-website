@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>DELTA Videos</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="delta-shared.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{overflow-x:hidden;max-width:100vw;}
+:root{
+  --navy:#10392D;--navy2:#1a4a3a;--orange:#C7A15A;--orange-dark:#b8925a;--orange-light:#F3EFE6;
+  --white:#fff;--cream:#F7F8FA;--border:#E7E9EC;--muted:#8A8F98;--charcoal:#1A1A1A;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charcoal);padding-bottom:30px;}
+
+.vh-nav{background:var(--white);padding:14px 16px;display:flex;align-items:center;gap:12px;
+  position:sticky;top:0;z-index:200;border-bottom:1px solid var(--border);}
+.vh-back{background:none;border:none;width:32px;height:32px;border-radius:8px;display:flex;align-items:center;
+  justify-content:center;cursor:pointer;color:var(--charcoal);flex-shrink:0;}
+.vh-back:hover{background:var(--cream);}
+.vh-title{font-family:'Playfair Display',serif;font-weight:800;font-size:1.1rem;color:var(--navy);flex:1;}
+.vh-search-input{flex:1;background:var(--cream);border:1px solid var(--border);border-radius:20px;
+  padding:8px 14px;font-size:.82rem;max-width:200px;}
+
+.vh-filter-row{display:flex;gap:8px;overflow-x:auto;padding:12px 16px;scrollbar-width:none;}
+.vh-filter-row::-webkit-scrollbar{display:none;}
+.vh-chip{flex-shrink:0;padding:7px 16px;border-radius:20px;font-size:.78rem;font-weight:700;
+  background:var(--white);border:1.5px solid var(--border);color:var(--charcoal);cursor:pointer;white-space:nowrap;}
+.vh-chip.active{background:var(--navy);border-color:var(--navy);color:#fff;}
+
+.vh-grid{display:grid;grid-template-columns:1fr;gap:16px;padding:4px 16px 20px;}
+@media(min-width:640px){ .vh-grid{grid-template-columns:1fr 1fr;} }
+.vh-card{background:var(--white);border-radius:16px;overflow:hidden;cursor:pointer;
+  box-shadow:0 1px 6px rgba(0,0,0,.05);transition:transform .12s;}
+.vh-card:active{transform:scale(.98);}
+.vh-thumb-wrap{position:relative;aspect-ratio:16/9;background:var(--border);overflow:hidden;}
+.vh-thumb-wrap img,.vh-thumb-wrap video{width:100%;height:100%;object-fit:cover;}
+.vh-duration-badge{position:absolute;bottom:6px;right:6px;background:rgba(0,0,0,.75);color:#fff;
+  font-size:.68rem;font-weight:700;padding:2px 6px;border-radius:5px;}
+.vh-play-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  background:rgba(0,0,0,.15);}
+.vh-play-overlay svg{width:44px;height:44px;filter:drop-shadow(0 2px 6px rgba(0,0,0,.4));}
+.vh-card-body{padding:12px;display:flex;gap:10px;}
+.vh-card-avatar{width:34px;height:34px;border-radius:50%;object-fit:cover;background:var(--navy);flex-shrink:0;}
+.vh-card-info{flex:1;min-width:0;}
+.vh-card-title{font-size:.86rem;font-weight:700;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;
+  -webkit-box-orient:vertical;overflow:hidden;margin-bottom:3px;}
+.vh-card-meta{font-size:.72rem;color:var(--muted);}
+
+.vh-empty{padding:60px 24px;text-align:center;color:var(--muted);font-size:.85rem;}
+
+/* ── PLAYER OVERLAY ── */
+.vh-player-overlay{position:fixed;inset:0;background:var(--cream);z-index:500;display:none;overflow-y:auto;}
+.vh-player-overlay.open{display:block;}
+.vh-player-video-wrap{background:#000;aspect-ratio:16/9;position:relative;}
+.vh-player-video-wrap video{width:100%;height:100%;object-fit:contain;}
+.vh-player-close{position:absolute;top:12px;left:12px;z-index:10;background:rgba(0,0,0,.5);color:#fff;
+  border:none;width:32px;height:32px;border-radius:50%;font-size:1rem;cursor:pointer;}
+.vh-player-body{padding:16px;}
+.vh-player-title{font-size:1.05rem;font-weight:800;line-height:1.4;margin-bottom:10px;}
+.vh-player-stats{font-size:.78rem;color:var(--muted);margin-bottom:14px;}
+.vh-player-creator-row{display:flex;align-items:center;gap:10px;padding:12px 0;border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);margin-bottom:14px;}
+.vh-player-creator-avatar{width:42px;height:42px;border-radius:50%;object-fit:cover;background:var(--navy);}
+.vh-player-creator-name{font-weight:700;font-size:.9rem;flex:1;}
+.vh-follow-btn{background:var(--navy);color:#fff;border:none;padding:8px 18px;border-radius:20px;
+  font-weight:700;font-size:.78rem;cursor:pointer;}
+.vh-follow-btn.following{background:var(--border);color:var(--charcoal);}
+.vh-player-actions{display:flex;gap:20px;margin-bottom:16px;}
+.vh-action-btn{background:none;border:none;display:flex;align-items:center;gap:6px;font-size:.82rem;
+  font-weight:700;color:var(--charcoal);cursor:pointer;}
+.vh-action-btn.liked{color:#e0245e;}
+.vh-player-caption{font-size:.84rem;line-height:1.6;color:var(--charcoal);margin-bottom:20px;}
+
+.vh-related-title{font-size:.78rem;font-weight:800;color:var(--navy);text-transform:uppercase;
+  letter-spacing:.04em;margin-bottom:12px;padding:0 16px;}
+.vh-related-list{padding:0 16px;display:flex;flex-direction:column;gap:12px;}
+.vh-related-card{display:flex;gap:10px;cursor:pointer;}
+.vh-related-thumb{width:120px;aspect-ratio:16/9;border-radius:10px;object-fit:cover;background:var(--border);flex-shrink:0;}
+.vh-related-info{flex:1;min-width:0;}
+.vh-related-name{font-size:.82rem;font-weight:700;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;
+  -webkit-box-orient:vertical;overflow:hidden;}
+.vh-related-meta{font-size:.7rem;color:var(--muted);margin-top:4px;}
+</style>
+</head>
+<body>
+
+<div class="vh-nav">
+  <button class="vh-back" onclick="history.length>1?history.back():location.href='media-feed.html'">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
+  <div class="vh-title" id="vhTitle">DELTA Videos</div>
+  <input type="text" class="vh-search-input" id="vhSearchInput" placeholder="🔍 খুঁজুন" oninput="filterVideos()">
+</div>
+
+<div class="vh-filter-row">
+  <div class="vh-chip active" data-f="all" onclick="setFilter('all',this)">সব</div>
+  <div class="vh-chip" data-f="trending" onclick="setFilter('trending',this)">🔥 Trending</div>
+  <div class="vh-chip" data-f="following" onclick="setFilter('following',this)">👤 Following</div>
+  <div class="vh-chip" data-f="nearby" onclick="setFilter('nearby',this)">📍 কাছাকাছি</div>
+</div>
+
+<div class="vh-grid" id="vhGrid">
+  <div class="vh-empty">লোড হচ্ছে...</div>
+</div>
+
+<!-- ── PLAYER OVERLAY ── -->
+<div class="vh-player-overlay" id="vhPlayerOverlay">
+  <div class="vh-player-video-wrap">
+    <button class="vh-player-close" onclick="closePlayer()">✕</button>
+    <video id="vhPlayerVideo" controls playsinline></video>
+  </div>
+  <div class="vh-player-body">
+    <div class="vh-player-title" id="vhPlayerTitle"></div>
+    <div class="vh-player-stats" id="vhPlayerStats"></div>
+    <div class="vh-player-creator-row">
+      <img class="vh-player-creator-avatar" id="vhPlayerAvatar" src="">
+      <div class="vh-player-creator-name" id="vhPlayerCreatorName"></div>
+      <button class="vh-follow-btn" id="vhPlayerFollowBtn" onclick="toggleVhFollow()">Follow</button>
+    </div>
+    <div class="vh-player-actions">
+      <button class="vh-action-btn" id="vhLikeBtn" onclick="toggleVhLike()">❤️ <span id="vhLikeCount">0</span></button>
+      <button class="vh-action-btn" onclick="shareVhVideo()">↗ Share</button>
+    </div>
+    <div class="vh-player-caption" id="vhPlayerCaption"></div>
+  </div>
+  <div class="vh-related-title">আরও ভিডিও</div>
+  <div class="vh-related-list" id="vhRelatedList"></div>
+</div>
+
+<script>
+var fbcfg = {
+  apiKey: "AIzaSyA6TrrnCMwv1aa1WPqGvTVWlnieB2pVOEU",
+  authDomain: "delta-platform-82fc0.firebaseapp.com",
+  projectId: "delta-platform-82fc0",
+  storageBucket: "delta-platform-82fc0.firebasestorage.app",
+  messagingSenderId: "444904180433",
+  appId: "1:444904180433:web:6706eba4d73a30cd67d3f0"
+};
+firebase.initializeApp(fbcfg);
+var auth = firebase.auth(), db = firebase.firestore();
+var params = new URLSearchParams(location.search);
+var CITY = params.get('city') || (function(){ try{ return localStorage.getItem('delta_city'); }catch(e){ return null; } })() || 'manteswar';
+var currentUser = null;
+var currentFilter = 'all';
+var _vhAllVideos = []; // [{id, data}] — cached for client-side search filtering
+var _vhCurrentPlayingId = null;
+var _vhCurrentPlayingData = null;
+var _vhMyFollowing = {}; // {uid: true} — who I follow, loaded once per session
+
+auth.onAuthStateChanged(function(u){
+  currentUser = u;
+  loadVideos();
+  var deepLinkId = params.get('id');
+  if(deepLinkId){
+    // Wait briefly for the initial grid load so "related videos" has data
+    // to pull from, then open the specific video directly by ID — arrived
+    // here via a deep-link from the profile grid or another page's "Video"
+    // card, not from browsing this hub itself.
+    setTimeout(function(){ openVideoById(deepLinkId); }, 900);
+  }
+});
+
+function setFilter(f, el){
+  currentFilter = f;
+  document.querySelectorAll('.vh-chip').forEach(function(c){ c.classList.remove('active'); });
+  el.classList.add('active');
+  loadVideos();
+}
+
+async function loadVideos(){
+  var grid = document.getElementById('vhGrid');
+  grid.innerHTML = '<div class="vh-empty">লোড হচ্ছে...</div>';
+  try{
+    var q = db.collection('cities').doc(CITY).collection('mediaContent')
+      .where('type','==','video').where('status','==','published');
+
+    if(currentFilter === 'following' && currentUser){
+      await loadMyFollowing();
+      var followedIds = Object.keys(_vhMyFollowing);
+      if(!followedIds.length){
+        grid.innerHTML = '<div class="vh-empty">আপনি এখনো কাউকে follow করেননি।<br>Follow করা creator-দের ভিডিও এখানে দেখা যাবে।</div>';
+        return;
+      }
+      // Firestore 'in' queries cap at 10 — good enough for a v1 "following" filter.
+      q = q.where('authorUid','in', followedIds.slice(0,10));
+    }
+
+    q = q.orderBy('createdAt','desc').limit(40);
+    var snap = await q.get();
+    _vhAllVideos = snap.docs.map(function(d){ return {id:d.id, data:d.data()}; });
+
+    if(currentFilter === 'trending'){
+      _vhAllVideos.sort(function(a,b){ return ((b.data.stats&&b.data.stats.views)||0) - ((a.data.stats&&a.data.stats.views)||0); });
+    }
+    // 'nearby' — no geo-distance data exists on mediaContent yet (same
+    // honest limitation already noted in reels-player.html); falls back to
+    // the standard newest-first list rather than pretending to filter.
+
+    renderVideoGrid(_vhAllVideos);
+  }catch(e){
+    console.error('Video load error (likely missing composite index)', e);
+    grid.innerHTML = '<div class="vh-empty">লোড করতে সমস্যা হয়েছে — সম্ভবত Firestore index তৈরি করা লাগবে। Console দেখুন।</div>';
+  }
+}
+
+async function loadMyFollowing(){
+  if(!currentUser || Object.keys(_vhMyFollowing).length) return;
+  try{
+    var snap = await db.collection('mediaProfiles').doc(currentUser.uid).collection('following').get();
+    snap.forEach(function(d){ _vhMyFollowing[d.id] = true; });
+  }catch(e){ console.warn('Could not load following list', e); }
+}
+
+function filterVideos(){
+  var q = document.getElementById('vhSearchInput').value.trim().toLowerCase();
+  if(!q){ renderVideoGrid(_vhAllVideos); return; }
+  renderVideoGrid(_vhAllVideos.filter(function(item){
+    return (item.data.videoTitle||'').toLowerCase().indexOf(q)>=0 ||
+      (item.data.authorDisplayName||'').toLowerCase().indexOf(q)>=0;
+  }));
+}
+
+function renderVideoGrid(items){
+  var grid = document.getElementById('vhGrid');
+  if(!items.length){ grid.innerHTML = '<div class="vh-empty">এখানে এখনও কোনো video নেই।</div>'; return; }
+  grid.innerHTML = '';
+  items.forEach(function(item){
+    var d = item.data;
+    var thumb = d.thumbnailUrl || '';
+    var card = document.createElement('div'); card.className = 'vh-card';
+    card.innerHTML =
+      '<div class="vh-thumb-wrap">'+
+        (thumb ? '<img src="'+thumb+'">' : (d.videoUrl ? '<video src="'+d.videoUrl+'" muted playsinline preload="metadata"></video>' : ''))+
+        '<div class="vh-play-overlay"><svg viewBox="0 0 24 24" fill="rgba(255,255,255,.9)"><circle cx="12" cy="12" r="11" fill="rgba(0,0,0,.35)"/><path d="M10 8l6 4-6 4V8Z" fill="#fff"/></svg></div>'+
+      '</div>'+
+      '<div class="vh-card-body">'+
+        (d.authorAvatarUrl ? '<img class="vh-card-avatar" src="'+d.authorAvatarUrl+'">' : '<div class="vh-card-avatar"></div>')+
+        '<div class="vh-card-info">'+
+          '<div class="vh-card-title">'+(d.videoTitle||d.caption||'—')+'</div>'+
+          '<div class="vh-card-meta">'+(d.authorDisplayName||'DELTA Creator')+' · 👁 '+((d.stats&&d.stats.views)||0)+'</div>'+
+        '</div>'+
+      '</div>';
+    card.onclick = function(){ openVideo(item.id, d); };
+    grid.appendChild(card);
+  });
+}
+
+function openVideoById(id){
+  var found = _vhAllVideos.find(function(item){ return item.id===id; });
+  if(found){ openVideo(found.id, found.data); return; }
+  // Not in the currently-loaded grid (different filter, or older than the
+  // 40-item cap) — fetch it directly by ID instead of giving up.
+  db.collection('cities').doc(CITY).collection('mediaContent').doc(id).get().then(function(doc){
+    if(doc.exists) openVideo(doc.id, doc.data());
+  }).catch(function(e){ console.warn('Deep-linked video fetch failed', e); });
+}
+
+function openVideo(id, d){
+  _vhCurrentPlayingId = id; _vhCurrentPlayingData = d;
+  var videoEl = document.getElementById('vhPlayerVideo');
+  videoEl.src = d.videoUrl || '';
+  videoEl.play().catch(function(){});
+  document.getElementById('vhPlayerTitle').textContent = d.videoTitle || d.caption || '—';
+  document.getElementById('vhPlayerStats').textContent = '👁 '+((d.stats&&d.stats.views)||0)+' views · '+timeAgoVh(d.createdAt);
+  document.getElementById('vhPlayerAvatar').src = d.authorAvatarUrl || '';
+  document.getElementById('vhPlayerCreatorName').textContent = d.authorDisplayName || 'DELTA Creator';
+  document.getElementById('vhPlayerCaption').textContent = d.caption || '';
+  document.getElementById('vhLikeCount').textContent = (d.stats&&d.stats.likes)||0;
+  document.getElementById('vhPlayerOverlay').classList.add('open');
+  refreshVhFollowBtn(d.authorUid);
+  refreshVhLikeBtn(id);
+  renderRelatedVideos(id);
+  bumpVhView(id);
+  history.pushState({vhOpen:true}, '', '?city='+CITY+'&id='+id);
+}
+window.addEventListener('popstate', function(){
+  if(document.getElementById('vhPlayerOverlay').classList.contains('open')) closePlayer(true);
+});
+function closePlayer(skipHistory){
+  document.getElementById('vhPlayerOverlay').classList.remove('open');
+  document.getElementById('vhPlayerVideo').pause();
+  document.getElementById('vhPlayerVideo').src = '';
+  if(!skipHistory) history.pushState({}, '', 'video-hub.html?city='+CITY);
+}
+
+function timeAgoVh(iso){
+  if(!iso) return '';
+  var diff = (Date.now() - new Date(iso).getTime())/1000;
+  if(diff < 3600) return Math.floor(diff/60)+' মিনিট আগে';
+  if(diff < 86400) return Math.floor(diff/3600)+' ঘণ্টা আগে';
+  return Math.floor(diff/86400)+' দিন আগে';
+}
+
+function bumpVhView(contentId){
+  // A viewer cannot write another author's stats.views field under current
+  // rules (author/admin only) — same honest limitation as reels-player.html.
+  // Real fix would be a Cloud Function incrementing this server-side.
+}
+
+async function refreshVhFollowBtn(authorUid){
+  var btn = document.getElementById('vhPlayerFollowBtn');
+  if(!currentUser || authorUid===currentUser.uid){ btn.style.display='none'; return; }
+  btn.style.display='inline-block';
+  try{
+    var doc = await db.collection('mediaProfiles').doc(authorUid).collection('followers').doc(currentUser.uid).get();
+    btn.textContent = doc.exists ? 'Following' : 'Follow';
+    btn.classList.toggle('following', doc.exists);
+  }catch(e){ console.warn(e); }
+}
+async function toggleVhFollow(){
+  if(!currentUser){ alert('লগইন করুন প্রথমে'); return; }
+  var authorUid = _vhCurrentPlayingData.authorUid;
+  var followerDoc = db.collection('mediaProfiles').doc(authorUid).collection('followers').doc(currentUser.uid);
+  var followingDoc = db.collection('mediaProfiles').doc(currentUser.uid).collection('following').doc(authorUid);
+  var existing = await followerDoc.get();
+  if(existing.exists){ await followerDoc.delete(); await followingDoc.delete(); }
+  else { await followerDoc.set({followedAt:new Date().toISOString()}); await followingDoc.set({followedAt:new Date().toISOString()}); }
+  refreshVhFollowBtn(authorUid);
+}
+
+async function refreshVhLikeBtn(contentId){
+  var btn = document.getElementById('vhLikeBtn');
+  if(!currentUser){ btn.classList.remove('liked'); return; }
+  try{
+    var doc = await db.collection('cities').doc(CITY).collection('mediaContent').doc(contentId).collection('likes').doc(currentUser.uid).get();
+    btn.classList.toggle('liked', doc.exists);
+  }catch(e){ console.warn(e); }
+}
+async function toggleVhLike(){
+  if(!currentUser){ alert('লগইন করুন প্রথমে'); return; }
+  var ref = db.collection('cities').doc(CITY).collection('mediaContent').doc(_vhCurrentPlayingId).collection('likes').doc(currentUser.uid);
+  var btn = document.getElementById('vhLikeBtn');
+  var countEl = document.getElementById('vhLikeCount');
+  var existing = await ref.get();
+  if(existing.exists){
+    await ref.delete();
+    btn.classList.remove('liked');
+    countEl.textContent = Math.max(0, Number(countEl.textContent)-1);
+  } else {
+    await ref.set({likedAt:new Date().toISOString()});
+    btn.classList.add('liked');
+    countEl.textContent = Number(countEl.textContent)+1;
+  }
+}
+function shareVhVideo(){
+  var url = location.origin+location.pathname+'?city='+CITY+'&id='+_vhCurrentPlayingId;
+  if(navigator.share){ navigator.share({title:_vhCurrentPlayingData.videoTitle||'DELTA Video', url:url}).catch(function(){}); }
+  else { navigator.clipboard.writeText(url); alert('লিংক কপি হয়েছে'); }
+}
+
+function renderRelatedVideos(excludeId){
+  var wrap = document.getElementById('vhRelatedList');
+  var related = _vhAllVideos.filter(function(item){ return item.id !== excludeId; }).slice(0, 8);
+  if(!related.length){ wrap.innerHTML = '<div style="color:var(--muted);font-size:.8rem;">আর কোনো ভিডিও নেই।</div>'; return; }
+  wrap.innerHTML = '';
+  related.forEach(function(item){
+    var d = item.data;
+    var thumb = d.thumbnailUrl || '';
+    var card = document.createElement('div'); card.className = 'vh-related-card';
+    card.innerHTML =
+      (thumb ? '<img class="vh-related-thumb" src="'+thumb+'">' : '<div class="vh-related-thumb"></div>')+
+      '<div class="vh-related-info">'+
+        '<div class="vh-related-name">'+(d.videoTitle||d.caption||'—')+'</div>'+
+        '<div class="vh-related-meta">'+(d.authorDisplayName||'DELTA Creator')+' · 👁 '+((d.stats&&d.stats.views)||0)+'</div>'+
+      '</div>';
+    card.onclick = function(){ openVideo(item.id, d); };
+    wrap.appendChild(card);
+  });
+}
+</script>
+</body>
+</html>
