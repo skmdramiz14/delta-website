@@ -36,12 +36,19 @@ html,body{height:100%;background:#000;overflow:hidden;font-family:'DM Sans',sans
 .reel-gradient-top{position:absolute;top:0;left:0;right:0;height:120px;background:linear-gradient(180deg,rgba(0,0,0,.5),transparent);pointer-events:none;}
 .reel-gradient-bottom{position:absolute;bottom:0;left:0;right:0;height:260px;background:linear-gradient(0deg,rgba(0,0,0,.85),transparent);pointer-events:none;}
 
-.action-rail{position:absolute;right:10px;bottom:190px;display:flex;flex-direction:column;align-items:center;gap:18px;z-index:20;}
-.action-btn{background:none;border:none;color:#fff;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;}
-.action-icon{width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;filter:drop-shadow(0 1px 3px rgba(0,0,0,.5));}
-.action-icon.liked{color:var(--red);}
-.action-count{font-size:.68rem;font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,.5);}
-.creator-avatar-rail{width:40px;height:40px;border-radius:50%;border:2px solid #fff;object-fit:cover;background:#333;}
+.unmute-hint{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:25;
+  background:rgba(0,0,0,.5);border:none;border-radius:50%;width:56px;height:56px;font-size:1.6rem;cursor:pointer;}
+.mute-toggle{position:absolute;top:calc(env(safe-area-inset-top,0px) + 12px);right:12px;z-index:25;
+  background:rgba(0,0,0,.4);border:none;color:#fff;width:34px;height:34px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:1.05rem;cursor:pointer;}
+
+.action-rail{position:absolute;right:8px;bottom:100px;display:flex;flex-direction:column;align-items:center;gap:19px;z-index:20;}
+.action-btn{background:none;border:none;color:#fff;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;}
+.action-icon{width:28px;height:28px;display:flex;align-items:center;justify-content:center;}
+.action-icon svg{width:27px;height:27px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.4));}
+.action-icon.liked svg{fill:var(--red);stroke:var(--red);}
+.action-count{font-size:.72rem;font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,.5);}
+.creator-avatar-rail{width:38px;height:38px;border-radius:50%;border:1.5px solid #fff;object-fit:cover;background:#333;margin-bottom:2px;}
 
 .reel-bottom{position:absolute;left:0;right:0;bottom:0;padding:0 78px 14px 14px;z-index:15;color:#fff;}
 .creator-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
@@ -249,7 +256,19 @@ function renderReels(docs){
       var vid = entry.target.querySelector('video');
       if(!vid) return;
       if(entry.isIntersecting && entry.intersectionRatio > 0.6){
-        vid.play().catch(function(){});
+        vid.muted = false;
+        var playPromise = vid.play();
+        if(playPromise){
+          playPromise.catch(function(){
+            // Some browsers block unmuted autoplay without a fresh user
+            // gesture — fall back to muted so the reel still auto-plays,
+            // and show a small "tap to unmute" hint instead of silently
+            // failing to play at all.
+            vid.muted = true;
+            vid.play().catch(function(){});
+            showUnmuteHint(entry.target);
+          });
+        }
         bumpView(entry.target.dataset.contentId);
       } else {
         vid.pause();
@@ -257,6 +276,19 @@ function renderReels(docs){
     });
   }, {threshold:[0,0.6,1]});
   scroll.querySelectorAll('.reel-slide').forEach(function(s){ io.observe(s); });
+}
+function showUnmuteHint(slideEl){
+  if(slideEl.querySelector('.unmute-hint')) return;
+  var hint = document.createElement('button');
+  hint.className = 'unmute-hint';
+  hint.innerHTML = '🔇';
+  hint.onclick = function(e){
+    e.stopPropagation();
+    var vid = slideEl.querySelector('video');
+    vid.muted = false;
+    hint.remove();
+  };
+  slideEl.appendChild(hint);
 }
 
 var viewedThisSession = {};
@@ -272,7 +304,7 @@ function buildReelSlide(id, d){
   slide.className='reel-slide'; slide.dataset.contentId=id;
 
   var mediaHtml = d.videoUrl
-    ? '<video class="reel-media" src="'+d.videoUrl+'" loop playsinline muted="false"></video>'
+    ? '<video class="reel-media" id="video-'+id+'" src="'+d.videoUrl+'" loop playsinline></video>'
     : '<img class="reel-media-img" src="'+((d.mediaUrls&&d.mediaUrls[0])||d.thumbnailUrl||'')+'">';
 
   var isReview = d.isReview && d.rating;
@@ -286,12 +318,24 @@ function buildReelSlide(id, d){
     mediaHtml +
     '<div class="reel-gradient-top"></div>' +
     '<div class="reel-gradient-bottom"></div>' +
+    '<button class="mute-toggle" onclick="toggleMute(this)">🔊</button>' +
     '<div class="action-rail">' +
       '<button class="action-btn" onclick="goToProfile(\''+d.authorUid+'\')"><img class="creator-avatar-rail" src="'+(d.authorAvatarUrl||'')+'" onerror="this.style.background=\'#333\'"></button>' +
-      '<button class="action-btn" id="likeBtn-'+id+'" onclick="toggleLike(\''+id+'\')"><span class="action-icon">🤍</span><span class="action-count" id="likeCount-'+id+'">0</span></button>' +
-      '<button class="action-btn" onclick="openComments(\''+id+'\')"><span class="action-icon">💬</span><span class="action-count" id="commentCount-'+id+'">0</span></button>' +
-      '<button class="action-btn" onclick="shareReel(\''+id+'\')"><span class="action-icon">↗️</span><span class="action-count">Share</span></button>' +
-      '<button class="action-btn" onclick="saveReel(\''+id+'\')"><span class="action-icon">🔖</span><span class="action-count">Save</span></button>' +
+      '<button class="action-btn" id="likeBtn-'+id+'" onclick="toggleLike(\''+id+'\')">'+
+        '<span class="action-icon" id="likeIcon-'+id+'"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg></span>'+
+        '<span class="action-count" id="likeCount-'+id+'">0</span></button>' +
+      '<button class="action-btn" onclick="openComments(\''+id+'\')">'+
+        '<span class="action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-8.9 8.4 9 9 0 0 1-3.1-.6L3 21l1.7-4.7A8.4 8.4 0 1 1 21 11.5Z"/></svg></span>'+
+        '<span class="action-count" id="commentCount-'+id+'">0</span></button>' +
+      '<button class="action-btn" onclick="shareReel(\''+id+'\')">'+
+        '<span class="action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7Z"/></svg></span>'+
+        '<span class="action-count">Share</span></button>' +
+      '<button class="action-btn" id="saveBtn-'+id+'" onclick="saveReel(\''+id+'\')">'+
+        '<span class="action-icon" id="saveIcon-'+id+'"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21 12 16l-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2Z"/></svg></span>'+
+        '<span class="action-count">Save</span></button>' +
+      '<button class="action-btn" onclick="showMoreOptions(\''+id+'\',\''+d.authorUid+'\')">'+
+        '<span class="action-icon"><svg viewBox="0 0 24 24" fill="#fff" stroke="none"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg></span>'+
+      '</button>' +
     '</div>' +
     '<div class="reel-bottom">' +
       starsHtml + verifiedHtml +
@@ -299,7 +343,7 @@ function buildReelSlide(id, d){
         '<span class="creator-name" onclick="goToProfile(\''+d.authorUid+'\')">'+(d.authorDisplayName||'Unknown')+' ✓</span>' +
         '<button class="follow-mini-btn" id="followBtn-'+id+'" onclick="toggleFollow(\''+d.authorUid+'\',\''+id+'\')">Follow</button>' +
       '</div>' +
-      '<div class="reel-caption clamped">'+(d.caption||'')+'</div>' +
+      '<div class="reel-caption clamped" id="caption-'+id+'" onclick="expandCaption(\''+id+'\')">'+(d.caption||'')+'</div>' +
       (d.tags&&d.tags.location ? '<div class="reel-loc">📍 '+d.tags.location+'</div>' : '<div class="reel-loc">📍 '+CITY.charAt(0).toUpperCase()+CITY.slice(1)+'</div>') +
       commerceCardHtml +
     '</div>';
@@ -335,13 +379,18 @@ function visitShopFromReel(shopId, productId){
 }
 function goToProfile(uid){ location.href='media-profile.html?uid='+uid+'&city='+CITY; }
 
+var HEART_FILLED = '<svg viewBox="0 0 24 24" fill="#e0245e" stroke="#e0245e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg>';
+var HEART_OUTLINE = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg>';
+var SAVE_FILLED = '<svg viewBox="0 0 24 24" fill="#fff" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21 12 16l-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2Z"/></svg>';
+var SAVE_OUTLINE = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21 12 16l-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2Z"/></svg>';
+
 function toggleLike(id){
   if(!currentUser){ alert('লগইন করুন প্রথমে'); return; }
   var ref = mc().doc(id).collection('likes').doc(currentUser.uid);
-  var btn = document.getElementById('likeBtn-'+id);
+  var iconEl = document.getElementById('likeIcon-'+id);
   ref.get().then(function(d){
-    if(d.exists){ ref.delete(); btn.querySelector('.action-icon').textContent='🤍'; btn.querySelector('.action-icon').classList.remove('liked'); }
-    else { ref.set({likedAt:new Date().toISOString()}); btn.querySelector('.action-icon').textContent='❤️'; btn.querySelector('.action-icon').classList.add('liked'); }
+    if(d.exists){ ref.delete(); iconEl.innerHTML = HEART_OUTLINE; }
+    else { ref.set({likedAt:new Date().toISOString()}); iconEl.innerHTML = HEART_FILLED; }
     refreshLikeCommentCounts(id);
   });
 }
@@ -370,11 +419,47 @@ function toggleFollow(targetUid, id){
 }
 
 function shareReel(id){
-  var url = location.origin+'/reels-player.html?content='+id+'&city='+CITY;
+  // Fixed to use the actual deep-link param this page reads (?id=), which
+  // previously said ?content= — a link built from that would never have
+  // actually opened the specific reel it claimed to.
+  var url = location.origin+'/reels-player.html?city='+CITY+'&id='+id;
   if(navigator.share){ navigator.share({url:url}).catch(function(){}); }
   else { navigator.clipboard&&navigator.clipboard.writeText(url); alert('Link copied'); }
 }
-function saveReel(id){ alert('Saved (local only — a real "saved" list needs its own collection, not built yet)'); }
+var _savedIds = {};
+function saveReel(id){
+  var iconEl = document.getElementById('saveIcon-'+id);
+  var isSaved = !!_savedIds[id];
+  _savedIds[id] = !isSaved;
+  iconEl.innerHTML = isSaved ? SAVE_OUTLINE : SAVE_FILLED;
+  // Local-only for now — a real "saved" list needs its own Firestore
+  // collection (not built yet), so this doesn't persist across sessions.
+}
+function toggleMute(btn){
+  var slide = btn.closest('.reel-slide');
+  var vid = slide.querySelector('video');
+  if(!vid) return;
+  vid.muted = !vid.muted;
+  btn.textContent = vid.muted ? '🔇' : '🔊';
+  var hint = slide.querySelector('.unmute-hint'); if(hint) hint.remove();
+}
+function expandCaption(id){
+  var el = document.getElementById('caption-'+id);
+  el.classList.toggle('clamped');
+}
+function showMoreOptions(id, authorUid){
+  var isMine = currentUser && currentUser.uid===authorUid;
+  if(isMine){
+    if(confirm('এই content-টা delete করতে চান?')){
+      mc().doc(id).delete().then(function(){ location.reload(); }).catch(function(e){ alert('Error: '+e.message); });
+    }
+  } else {
+    if(confirm('এই content-টা report করতে চান?')){
+      db.collection('mediaReports').add({contentId:id, reportedBy:currentUser?currentUser.uid:null, createdAt:new Date().toISOString()})
+        .then(function(){ alert('Report করা হয়েছে, ধন্যবাদ।'); }).catch(function(e){ alert('Error: '+e.message); });
+    }
+  }
+}
 
 function openComments(id){
   activeCommentContentId=id;
