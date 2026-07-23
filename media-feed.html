@@ -2757,6 +2757,29 @@ function renderPostCard(id, d, wrap, isPinned){
     card.appendChild(tagCard);
   }
 
+  // ── Individual Seller Marketplace card — "sell your own item" via
+  // content, distinct from the shop-tag card above (no existing shop
+  // inventory backs this; it's a one-off item, so ordering + "mark as
+  // sold" work differently). ──
+  if(d.listingType === 'individual'){
+    var indCard=document.createElement('div'); indCard.className='commerce-tag-card';
+    var isSold = d.saleStatus === 'sold';
+    var isMine = currentUser && d.authorUid===currentUser.uid;
+    indCard.innerHTML =
+      '<img class="commerce-tag-thumb" src="'+(d.thumbnailUrl||(d.mediaUrls&&d.mediaUrls[0])||'')+'">'+
+      '<div class="commerce-tag-info"><div class="commerce-tag-name">'+(d.itemName||'পণ্য')+'</div>'+
+      '<div style="font-size:.75rem;color:var(--muted);">৳'+(d.price||0)+'</div></div>'+
+      (isSold ? '<span class="btn-cta" style="background:var(--border);color:var(--muted);">বিক্রি হয়ে গেছে</span>'
+        : (isMine ? '<button class="btn-cta btn-cta-mark-sold">✅ বিক্রি হয়ে গেছে বলে দাও</button>'
+          : '<button class="btn-cta btn-cta-order-ind">📦 Order Now</button>'));
+    if(!isSold && isMine){
+      indCard.querySelector('.btn-cta-mark-sold').onclick=function(){ markIndividualListingSold(id); };
+    } else if(!isSold && !isMine){
+      indCard.querySelector('.btn-cta-order-ind').onclick=function(){ openIndividualOrderModal(id, d); };
+    }
+    card.appendChild(indCard);
+  }
+
   // ── Post Insights — OWNER ONLY (Section 11.4.1), never shown to public viewers ──
   if(currentUser && d.authorUid===currentUser.uid && d.stats){
     var ins=document.createElement('div'); ins.className='insights-row';
@@ -2793,6 +2816,56 @@ function handleCta(d){
 // this is a one-time transfer picked up the NEXT time index.html loads — same
 // behavior flash-sale already has today, not a live real-time-synced cart between
 // two open tabs.
+// ═══ INDIVIDUAL SELLER MARKETPLACE — mark sold + order flow ═══
+function markIndividualListingSold(contentId){
+  if(!confirm('এই জিনিসটা বিক্রি হয়ে গেছে বলে চিহ্নিত করবেন? এরপর আর কেউ Order করতে পারবে না।')) return;
+  db.collection('cities').doc(CITY).collection('mediaContent').doc(contentId).update({saleStatus:'sold'})
+    .then(function(){ showToastMf('বিক্রি হয়ে গেছে বলে চিহ্নিত করা হলো ✅'); loadFeed(); })
+    .catch(function(e){ alert('সমস্যা হয়েছে: '+e.message); });
+}
+function showToastMf(msg){
+  // media-feed.html has no generic showToast — reuse alert as the simplest
+  // honest fallback rather than inventing a whole new toast system here.
+  alert(msg);
+}
+var _indOrderContentId = null, _indOrderData = null;
+function openIndividualOrderModal(contentId, data){
+  if(!currentUser){ requireLogin(); return; }
+  _indOrderContentId = contentId; _indOrderData = data;
+  document.getElementById('indOrderItemName').textContent = data.itemName || 'পণ্য';
+  document.getElementById('indOrderPrice').textContent = '৳'+(data.price||0);
+  document.getElementById('indOrderAddress').value = '';
+  document.getElementById('indOrderMobile').value = '';
+  document.getElementById('indOrderModal').classList.add('open');
+}
+function closeIndividualOrderModal(){
+  document.getElementById('indOrderModal').classList.remove('open');
+}
+async function submitIndividualOrder(){
+  var address = document.getElementById('indOrderAddress').value.trim();
+  var mobile = document.getElementById('indOrderMobile').value.trim();
+  if(!address || !mobile){ alert('ঠিকানা এবং মোবাইল নম্বর দিন'); return; }
+  var d = _indOrderData;
+  var commission = Math.round((d.price||0) * (d.commissionRate||0) / 100);
+  try{
+    await db.collection('cities').doc(CITY).collection('individualListingOrders').add({
+      buyerUid: currentUser.uid, sellerUid: d.authorUid, contentId: _indOrderContentId,
+      itemName: d.itemName, price: d.price, commissionRate: d.commissionRate,
+      deltaCommission: commission, sellerReceives: (d.price||0) - commission,
+      deliveryAddress: address, buyerMobile: mobile, sellerMobile: d.sellerMobile || null,
+      status: 'pending', createdAt: new Date().toISOString()
+    });
+    // Auto mark sold — one-off items shouldn't keep accepting orders after
+    // the first one comes in (unlike shop inventory, which has real stock).
+    await db.collection('cities').doc(CITY).collection('mediaContent').doc(_indOrderContentId).update({saleStatus:'sold'});
+    closeIndividualOrderModal();
+    alert('অর্ডার সফল হয়েছে! বিক্রেতা ও DELTA আপনার সাথে যোগাযোগ করবে।');
+    loadFeed();
+  }catch(e){
+    alert('অর্ডার করতে সমস্যা হয়েছে: '+e.message);
+  }
+}
+
 async function addToSharedCart(shopId, productId, btnEl){
   if(!shopId || !productId){ alert('এই পণ্যটি সরাসরি shop-এর সাথে link করা নেই'); return; }
   var originalText = btnEl.textContent;
@@ -2933,6 +3006,22 @@ function timeAgo(iso){
     </div>
     <input type="text" id="svReplyInput" placeholder="মন্তব্য লিখুন..." style="width:100%;padding:10px 12px;border-radius:20px;border:1.5px solid var(--border);margin-bottom:10px;">
     <button onclick="sendSvReply()" style="width:100%;padding:11px;background:var(--navy);color:#fff;border:none;border-radius:10px;font-weight:700;">Send</button>
+  </div>
+</div>
+
+<!-- ── Individual Seller Marketplace — order modal (buyer's delivery info) ── -->
+<div class="sv-reply-modal" id="indOrderModal">
+  <div class="sv-reply-sheet">
+    <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+      <b>Order করুন</b><button onclick="closeIndividualOrderModal()" style="background:none;border:none;font-size:1.1rem;">✕</button>
+    </div>
+    <div style="margin-bottom:12px;padding:10px;background:var(--sand);border-radius:10px;">
+      <div id="indOrderItemName" style="font-weight:700;"></div>
+      <div id="indOrderPrice" style="color:var(--navy);font-weight:800;"></div>
+    </div>
+    <input type="text" id="indOrderAddress" placeholder="ডেলিভারি ঠিকানা" style="width:100%;padding:10px 12px;border-radius:10px;border:1.5px solid var(--border);margin-bottom:10px;">
+    <input type="tel" id="indOrderMobile" placeholder="মোবাইল নম্বর" style="width:100%;padding:10px 12px;border-radius:10px;border:1.5px solid var(--border);margin-bottom:10px;">
+    <button onclick="submitIndividualOrder()" style="width:100%;padding:11px;background:var(--navy);color:#fff;border:none;border-radius:10px;font-weight:700;">✅ Order Confirm করুন (COD)</button>
   </div>
 </div>
 
