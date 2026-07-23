@@ -700,6 +700,28 @@ function buildComposerHtml(){
   '</div>';
 }
 
+async function changeExistingThumbnail(contentId, inputEl){
+  var file = inputEl.files[0];
+  inputEl.value = '';
+  if(!file || !isOwner) return;
+  if(file.size > 10*1024*1024){ alert('ছবি সর্বোচ্চ 10MB হতে পারবে'); return; }
+  try{
+    var fd = new FormData();
+    fd.append('file', file); fd.append('upload_preset', PRESET); fd.append('cloud_name', CLOUD);
+    fd.append('folder', 'delta/media_content_thumbs');
+    var res = await fetch('https://api.cloudinary.com/v1_1/'+CLOUD+'/image/upload', {method:'POST', body:fd});
+    var data = await res.json();
+    if(!data.secure_url) throw new Error(data.error ? data.error.message : 'Upload failed');
+    await db.collection('cities').doc(CITY).collection('mediaContent').doc(contentId)
+      .update({thumbnailUrl: data.secure_url});
+    // Reload whichever tab is currently open so the new thumbnail shows
+    // immediately, rather than requiring a manual refresh.
+    loadContentGrid(activeTab==='reel'||activeTab==='video' ? activeTab : 'reel');
+  }catch(e){
+    alert('Thumbnail পরিবর্তন করতে সমস্যা হয়েছে: '+e.message);
+  }
+}
+
 async function togglePinPost(contentId){
   if(!isOwner) return;
   var newPinnedId = profileData.pinnedPostId===contentId ? null : contentId;
@@ -755,7 +777,9 @@ async function loadContentGrid(type){
         (isPinned ? '<span class="pp-grid-pin">📌</span>' : '')+
         (d.stats ? '<span class="pp-grid-stat">👁 '+(d.stats.views||0)+'</span>' : '')+
         (isOwner && d.status!=='published' ? '<span class="pp-grid-status">'+d.status+'</span>' : '')+
-        (isOwner && type==='post' ? '<span class="pp-grid-pin-toggle" onclick="event.stopPropagation();togglePinPost(\''+item.id+'\')">'+(isPinned?'📌':'📍')+'</span>' : '');
+        (isOwner && type==='post' ? '<span class="pp-grid-pin-toggle" onclick="event.stopPropagation();togglePinPost(\''+item.id+'\')">'+(isPinned?'📌':'📍')+'</span>' : '')+
+        (isOwner && (type==='reel'||type==='video') ? '<span class="pp-grid-pin-toggle" style="right:auto;left:6px;" onclick="event.stopPropagation();document.getElementById(\'thumbEdit-'+item.id+'\').click()">✏️</span>'
+          +'<input type="file" id="thumbEdit-'+item.id+'" accept="image/*" style="display:none;" onclick="event.stopPropagation()" onchange="event.stopPropagation();changeExistingThumbnail(\''+item.id+'\', this)">' : '');
       cell.onclick = function(){
         // Deep-link with the specific content ID so the destination page can
         // actually open/play THIS item — a bare redirect to the generic hub
