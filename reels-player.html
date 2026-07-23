@@ -30,7 +30,8 @@ html,body{height:100%;background:#000;overflow:hidden;font-family:'DM Sans',sans
 .reel-scroll::-webkit-scrollbar{display:none;}
 .reel-slide{position:relative;height:100vh;height:100dvh;scroll-snap-align:start;scroll-snap-stop:always;
   display:flex;align-items:center;justify-content:center;background:#0a0a0a;overflow:hidden;}
-.reel-media{width:100%;height:100%;object-fit:cover;}
+.reel-media{width:100%;height:100%;object-fit:cover;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;touch-action:manipulation;}
+.reel-slide{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;}
 .reel-media-img{width:100%;height:100%;object-fit:cover;}
 
 .reel-gradient-top{position:absolute;top:0;left:0;right:0;height:120px;background:linear-gradient(180deg,rgba(0,0,0,.5),transparent);pointer-events:none;}
@@ -38,10 +39,13 @@ html,body{height:100%;background:#000;overflow:hidden;font-family:'DM Sans',sans
 
 .unmute-hint{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:25;
   background:rgba(0,0,0,.5);border:none;border-radius:50%;width:56px;height:56px;font-size:1.6rem;cursor:pointer;}
-.tap-pause-icon{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:24;
-  width:64px;height:64px;filter:drop-shadow(0 2px 8px rgba(0,0,0,.5));pointer-events:none;
-  animation:tapPauseFade .5s ease-out forwards;}
-@keyframes tapPauseFade{0%{opacity:0;transform:translate(-50%,-50%) scale(.7);}20%{opacity:1;transform:translate(-50%,-50%) scale(1);}100%{opacity:0;}}
+.pause-overlay{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:24;
+  display:flex;flex-direction:column;align-items:center;gap:14px;}
+.pause-overlay-speaker{width:40px;height:40px;border-radius:50%;background:rgba(0,0,0,.45);border:none;
+  color:#fff;font-size:1.15rem;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.pause-overlay-play{width:66px;height:66px;border-radius:50%;background:rgba(0,0,0,.45);border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 2px 6px rgba(0,0,0,.4));}
+.pause-overlay-play svg{width:32px;height:32px;margin-left:3px;}
 .speed-badge{position:absolute;top:16px;right:50%;transform:translateX(50%);z-index:24;
   background:rgba(0,0,0,.65);color:#fff;font-weight:800;font-size:.85rem;padding:6px 14px;border-radius:20px;pointer-events:none;}
 .mute-toggle{position:absolute;top:calc(env(safe-area-inset-top,0px) + 12px);right:12px;z-index:25;
@@ -281,6 +285,7 @@ async function renderReels(docs){
       if(!vid) return;
       if(entry.isIntersecting && entry.intersectionRatio > 0.6){
         vid.muted = false;
+        hidePauseOverlay(entry.target);
         var playPromise = vid.play();
         if(playPromise){
           playPromise.catch(function(){
@@ -344,7 +349,7 @@ function handleReelPointerDown(e, slide){
   }
 }
 function handleReelPointerUp(e, slide){
-  if(e.target.closest('.action-rail, .creator-row, .mute-toggle, .commerce-card, .follow-mini-btn')) return;
+  if(e.target.closest('.action-rail, .creator-row, .mute-toggle, .commerce-card, .follow-mini-btn, .pause-overlay')) return;
   clearTimeout(_reelGesture.holdTimer);
   var vid = slide.querySelector('video');
   if(!vid) return;
@@ -357,18 +362,35 @@ function handleReelPointerUp(e, slide){
   }
   // A quick tap/release (never held long enough to trigger 2x) — toggle
   // play/pause, same as Instagram/TikTok's single-tap gesture.
-  if(vid.paused){ vid.play().catch(function(){}); showPauseIcon(slide, false); }
-  else { vid.pause(); showPauseIcon(slide, true); }
+  if(vid.paused){ vid.play().catch(function(){}); hidePauseOverlay(slide); }
+  else { vid.pause(); showPauseOverlay(slide, vid); }
 }
-function showPauseIcon(slide, isPaused){
-  var existing = slide.querySelector('.tap-pause-icon'); if(existing) existing.remove();
-  var icon = document.createElement('div');
-  icon.className = 'tap-pause-icon';
-  icon.innerHTML = isPaused
-    ? '<svg viewBox="0 0 24 24" fill="rgba(255,255,255,.9)"><path d="M8 5v14l11-7Z"/></svg>' // play icon shown while paused
-    : '<svg viewBox="0 0 24 24" fill="rgba(255,255,255,.9)"><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></svg>'; // pause icon shown while playing
-  slide.appendChild(icon);
-  setTimeout(function(){ icon.remove(); }, 500);
+function showPauseOverlay(slide, vid){
+  // Matches Instagram's paused-state overlay exactly: a small speaker icon
+  // (toggles mute on tap) sitting just above a larger play button (resumes
+  // on tap) — both stay visible the whole time the video is paused, not a
+  // brief flash-and-fade like a generic "tap feedback" icon would be.
+  hidePauseOverlay(slide);
+  var overlay = document.createElement('div');
+  overlay.className = 'pause-overlay';
+  overlay.innerHTML =
+    '<button class="pause-overlay-speaker">'+(vid.muted?'🔇':'🔊')+'</button>'+
+    '<button class="pause-overlay-play"><svg viewBox="0 0 24 24" fill="rgba(255,255,255,.95)"><path d="M8 5v14l11-7Z"/></svg></button>';
+  overlay.querySelector('.pause-overlay-speaker').onclick = function(e){
+    e.stopPropagation();
+    vid.muted = !vid.muted;
+    e.currentTarget.textContent = vid.muted ? '🔇' : '🔊';
+    var muteBtn = slide.querySelector('.mute-toggle'); if(muteBtn) muteBtn.textContent = vid.muted ? '🔇' : '🔊';
+  };
+  overlay.querySelector('.pause-overlay-play').onclick = function(e){
+    e.stopPropagation();
+    vid.play().catch(function(){});
+    hidePauseOverlay(slide);
+  };
+  slide.appendChild(overlay);
+}
+function hidePauseOverlay(slide){
+  var existing = slide.querySelector('.pause-overlay'); if(existing) existing.remove();
 }
 function showSpeedBadge(slide, show){
   var existing = slide.querySelector('.speed-badge');
@@ -395,7 +417,7 @@ function buildReelSlide(id, d){
   var liveDisplayName = liveProfile.displayName || d.authorDisplayName || 'Unknown';
 
   var mediaHtml = d.videoUrl
-    ? '<video class="reel-media" id="video-'+id+'" src="'+d.videoUrl+'" loop playsinline></video>'
+    ? '<video class="reel-media" id="video-'+id+'" src="'+d.videoUrl+'" loop playsinline oncontextmenu="return false" controlsList="nodownload noremoteplayback" disablePictureInPicture></video>'
     : '<img class="reel-media-img" src="'+((d.mediaUrls&&d.mediaUrls[0])||d.thumbnailUrl||'')+'">';
 
   var isReview = d.isReview && d.rating;
