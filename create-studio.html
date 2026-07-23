@@ -95,7 +95,16 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 .cs-switch input:checked + .cs-switch-track{background:var(--navy);}
 .cs-switch input:checked + .cs-switch-track:before{transform:translateX(18px);}
 
-.cs-poll-panel,.cs-tag-panel{display:none;padding-top:12px;}
+.cs-poll-panel,.cs-tag-panel,.cs-ind-panel{display:none;padding-top:12px;}
+.cs-commission-box{border-radius:12px;padding:14px;margin:10px 0;font-size:.82rem;line-height:1.6;}
+.cs-commission-box.known{background:var(--orange-light);border:1.5px solid var(--orange);}
+.cs-commission-box.unknown{background:#fdf3e7;border:1.5px solid #e8b96a;}
+.cs-commission-rate{font-weight:800;color:var(--navy);font-size:1rem;}
+.cs-commission-accept-row{display:flex;align-items:center;gap:8px;margin-top:10px;}
+.cs-commission-accept-row input[type=checkbox]{width:18px;height:18px;}
+.cs-talk-delta-btn{width:100%;background:var(--navy);color:#fff;border:none;border-radius:10px;
+  padding:11px;font-weight:700;font-size:.82rem;cursor:pointer;margin-top:8px;}
+.cs-talk-delta-status{font-size:.78rem;color:var(--navy);font-weight:700;margin-top:8px;}
 .cs-shop-result,.cs-product-result{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;
   cursor:pointer;border:1.5px solid var(--border);margin-bottom:6px;background:var(--white);}
 .cs-shop-result.selected,.cs-product-result.selected{border-color:var(--navy);background:var(--orange-light);}
@@ -216,7 +225,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
        missing piece, since nothing could ever set d.tags before. ── -->
   <div class="cs-section" id="csTagSection" style="display:none;padding-top:0;">
     <div class="cs-toggle-row">
-      <div class="cs-toggle-label">🏪 দোকান/পণ্য ট্যাগ করুন</div>
+      <div class="cs-toggle-label">🏪 কোনো দোকানের পণ্য ট্যাগ করুন</div>
       <label class="cs-switch">
         <input type="checkbox" id="csTagToggle" onchange="toggleTagPanel()">
         <span class="cs-switch-track"></span>
@@ -238,6 +247,43 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
           <option value="call">📞 Call</option>
           <option value="whatsapp">💬 WhatsApp</option>
         </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SELL YOUR OWN ITEM (Individual Seller Marketplace) — for anyone,
+       shop-registered or not, selling something that isn't an existing
+       marketplace listing. "everyone is a seller and everyone is a buyer."
+       Category commission must be accepted (or negotiated via "Talk to
+       DELTA") before a price/CTA can be attached. ── -->
+  <div class="cs-section" id="csIndSection" style="display:none;padding-top:0;">
+    <div class="cs-toggle-row">
+      <div class="cs-toggle-label">💰 নিজের জিনিস বিক্রি করুন (নতুন)</div>
+      <label class="cs-switch">
+        <input type="checkbox" id="csIndToggle" onchange="toggleIndPanel()">
+        <span class="cs-switch-track"></span>
+      </label>
+    </div>
+    <div class="cs-ind-panel" id="csIndPanel">
+      <div class="cs-form-group"><label>এই জিনিসটার নাম</label>
+        <input type="text" class="cs-input" id="csIndItemName" placeholder="যেমন: সেকেন্ড-হ্যান্ড সাইকেল"></div>
+      <div class="cs-form-group"><label>Category *</label>
+        <select class="cs-input" id="csIndCategorySelect" onchange="checkCategoryCommission()">
+          <option value="">-- বেছে নিন --</option>
+        </select>
+      </div>
+      <div class="cs-form-group"><label>Sub-category (ঐচ্ছিক)</label>
+        <input type="text" class="cs-input" id="csIndSubCategory" placeholder="আরও নির্দিষ্ট করে লিখুন"></div>
+
+      <div id="csCommissionKnownBox" style="display:none;"></div>
+      <div id="csCommissionUnknownBox" style="display:none;"></div>
+
+      <div id="csIndPriceWrap" style="display:none;">
+        <div class="cs-form-group"><label>দাম (৳)</label>
+          <input type="number" class="cs-input" id="csIndPrice" placeholder="0" min="1"></div>
+        <div class="cs-form-group"><label>যোগাযোগের মোবাইল নম্বর</label>
+          <input type="tel" class="cs-input" id="csIndMobile" placeholder="98XXXXXXXX"></div>
+        <div class="cs-hint" id="csIndLimitHint"></div>
       </div>
     </div>
   </div>
@@ -294,6 +340,8 @@ auth.onAuthStateChanged(function(u){
   document.getElementById('csAuthGate').style.display='none';
   document.getElementById('csForm').style.display='block';
   selectType(currentType);
+  populateIndCategoryDropdown();
+  loadIndividualListingLimits();
 });
 
 function selectType(type){
@@ -312,6 +360,7 @@ function selectType(type){
   document.getElementById('csVideoTitleSection').style.display = type==='video' ? 'block' : 'none';
   document.getElementById('csPollSection').style.display = type==='post' ? 'block' : 'none';
   document.getElementById('csTagSection').style.display = (type==='post'||type==='reel') ? 'block' : 'none';
+  document.getElementById('csIndSection').style.display = (type==='post'||type==='reel') ? 'block' : 'none';
   document.getElementById('csModerationHint').textContent = type==='story'
     ? '📝 স্টোরি ২৪ ঘণ্টা পর নিজে থেকেই সরে যাবে। Submit করার পর review হয়ে তারপর দেখা যাবে।'
     : '📝 আপনার কনটেন্ট submit করার পর DELTA টিম review করবে, তারপর সবার জন্য দেখা যাবে।';
@@ -327,6 +376,7 @@ function selectType(type){
   document.getElementById('csShopResultsWrap').innerHTML = '';
   document.getElementById('csProductPickWrap').style.display = 'none';
   document.getElementById('csCtaTypeWrap').style.display = 'none';
+  resetIndPanel();
 }
 
 function showToast(msg){
@@ -545,6 +595,160 @@ function selectProductForTag(productId, name, categoryId){
   document.getElementById('csCtaTypeSelect').value = _selectedTagProduct ? 'view_product' : 'visit_shop';
 }
 
+// ═══ SELL YOUR OWN ITEM — Individual Seller Marketplace ═══
+var INDIVIDUAL_CATEGORIES = [
+  {key:'all',nameBn:'সব'},{key:'grocery',nameBn:'মুদিখানা'},{key:'foodbeverage',nameBn:'খাদ্য ও পানীয়'},
+  {key:'pharmacy',nameBn:'ওষুধ'},{key:'fashion',nameBn:'ফ্যাশন'},{key:'electronics',nameBn:'ইলেকট্রনিক্স'},
+  {key:'beauty',nameBn:'বিউটি'},{key:'homekitchen',nameBn:'হোম ও কিচেন'},{key:'hardware',nameBn:'হার্ডওয়্যার'},
+  {key:'agriculture',nameBn:'কৃষি'},{key:'booksstationery',nameBn:'বই ও স্টেশনারি'},{key:'pets',nameBn:'পোষা প্রাণী'},
+  {key:'flowersgifts',nameBn:'ফুল ও উপহার'},{key:'automotive',nameBn:'যানবাহন'},{key:'healthcare',nameBn:'স্বাস্থ্যসেবা'},
+  {key:'education',nameBn:'শিক্ষা'},{key:'financialservices',nameBn:'আর্থিক সেবা'},{key:'travel',nameBn:'ভ্রমণ'},
+  {key:'localservices',nameBn:'স্থানীয় সেবা'},{key:'professionalservices',nameBn:'পেশাদার সেবা'},{key:'events',nameBn:'ইভেন্ট'},
+  {key:'rentals',nameBn:'ভাড়া'},{key:'realestate',nameBn:'রিয়েল এস্টেট'},{key:'jobs',nameBn:'চাকরি'},
+  {key:'govtutilities',nameBn:'সরকারি সেবা'},{key:'digitalproducts',nameBn:'ডিজিটাল পণ্য'},{key:'livestock',nameBn:'পশুপালন'},
+  {key:'arts',nameBn:'শিল্প'},{key:'remarket',nameBn:'রিমার্কেট (সেকেন্ড-হ্যান্ড)'}
+];
+var _indAcceptedCommission = null; // {category, rate} once accepted
+var _indTalkRequestId = null;
+var INDIVIDUAL_LISTING_LIMITS = {maxPrice: 50000, maxActiveListings: 3}; // fallback defaults, overridden by platformConfig below
+
+function populateIndCategoryDropdown(){
+  var sel = document.getElementById('csIndCategorySelect');
+  if(sel.options.length > 1) return; // already populated (auth state can fire more than once)
+  INDIVIDUAL_CATEGORIES.forEach(function(c){
+    var opt = document.createElement('option');
+    opt.value = c.key; opt.textContent = c.nameBn;
+    sel.appendChild(opt);
+  });
+}
+async function loadIndividualListingLimits(){
+  try{
+    var doc = await db.collection('platformConfig').doc('individualListingLimits').get();
+    if(doc.exists){
+      INDIVIDUAL_LISTING_LIMITS.maxPrice = doc.data().maxPrice || INDIVIDUAL_LISTING_LIMITS.maxPrice;
+      INDIVIDUAL_LISTING_LIMITS.maxActiveListings = doc.data().maxActiveListings || INDIVIDUAL_LISTING_LIMITS.maxActiveListings;
+    }
+  }catch(e){ console.warn('Could not load individual listing limits, using defaults', e); }
+}
+
+function toggleIndPanel(){
+  var on = document.getElementById('csIndToggle').checked;
+  document.getElementById('csIndPanel').style.display = on ? 'block' : 'none';
+  if(on){
+    // Mutually exclusive with tagging an existing shop/product — a post is
+    // either about an existing marketplace listing or a brand-new personal
+    // item, not both at once.
+    document.getElementById('csTagToggle').checked = false;
+    toggleTagPanel();
+  }
+}
+
+async function checkCategoryCommission(){
+  var category = document.getElementById('csIndCategorySelect').value;
+  var knownBox = document.getElementById('csCommissionKnownBox');
+  var unknownBox = document.getElementById('csCommissionUnknownBox');
+  var priceWrap = document.getElementById('csIndPriceWrap');
+  knownBox.style.display = 'none'; unknownBox.style.display = 'none'; priceWrap.style.display = 'none';
+  _indAcceptedCommission = null; _indTalkRequestId = null;
+  if(!category) return;
+
+  try{
+    var doc = await db.collection('individualSellerCommissionRates').doc(category).get();
+    if(doc.exists && doc.data().commissionRate != null){
+      var rate = doc.data().commissionRate;
+      knownBox.className = 'cs-commission-box known';
+      knownBox.innerHTML =
+        '<div>এই category-র জন্য DELTA-র commission: <span class="cs-commission-rate">'+rate+'%</span></div>'+
+        '<div class="cs-commission-accept-row">'+
+          '<input type="checkbox" id="csAcceptCommission" onchange="onAcceptCommission('+rate+',\''+category+'\')">'+
+          '<label for="csAcceptCommission">আমি এই commission-এ রাজি</label>'+
+        '</div>';
+      knownBox.style.display = 'block';
+    } else {
+      unknownBox.className = 'cs-commission-box unknown';
+      unknownBox.innerHTML =
+        '<div>এই category-র জন্য এখনো commission ঠিক করা হয়নি।</div>'+
+        '<button class="cs-talk-delta-btn" onclick="requestTalkToDelta()">💬 DELTA-র সাথে কথা বলুন</button>'+
+        '<div id="csTalkDeltaStatus"></div>';
+      unknownBox.style.display = 'block';
+    }
+  }catch(e){
+    console.error('Commission check failed', e);
+    showToast('Commission check করতে সমস্যা হয়েছে');
+  }
+}
+
+function onAcceptCommission(rate, category){
+  var checked = document.getElementById('csAcceptCommission').checked;
+  _indAcceptedCommission = checked ? {category:category, rate:rate} : null;
+  document.getElementById('csIndPriceWrap').style.display = checked ? 'block' : 'none';
+  updateIndLimitHint();
+}
+
+async function requestTalkToDelta(){
+  if(!currentUser) return;
+  var category = document.getElementById('csIndCategorySelect').value;
+  var subCategory = document.getElementById('csIndSubCategory').value.trim();
+  var itemName = document.getElementById('csIndItemName').value.trim();
+  var statusEl = document.getElementById('csTalkDeltaStatus');
+  if(!itemName){ showToast('আগে জিনিসটার নাম লিখুন'); return; }
+  try{
+    var ref = await db.collection('talkToDeltaRequests').add({
+      uid: currentUser.uid, itemName: itemName, category: category, subCategory: subCategory||null,
+      status: 'pending', createdAt: new Date().toISOString()
+    });
+    _indTalkRequestId = ref.id;
+    statusEl.innerHTML = '<div class="cs-talk-delta-status">✅ অনুরোধ পাঠানো হয়েছে — DELTA শীঘ্রই commission ঠিক করে আপনাকে জানাবে। এই request-এর status পরে "আমার Requests"-এ দেখতে পারবেন।</div>';
+    // Poll once now, and let them recheck later — real-time listener would
+    // be nicer but this keeps the v1 scope simple and predictable.
+    watchTalkToDeltaRequest(ref.id, category);
+  }catch(e){
+    showToast('Request পাঠাতে সমস্যা হয়েছে: '+e.message);
+  }
+}
+function watchTalkToDeltaRequest(requestId, category){
+  db.collection('talkToDeltaRequests').doc(requestId).onSnapshot(function(doc){
+    if(!doc.exists) return;
+    var d = doc.data();
+    var statusEl = document.getElementById('csTalkDeltaStatus');
+    if(!statusEl) return; // panel closed/switched since
+    if(d.status === 'commission_set'){
+      statusEl.innerHTML = '<div class="cs-talk-delta-status">🎉 DELTA commission ঠিক করে দিয়েছে: <b>'+d.decidedCommission+'%</b> — এখন আবার category বেছে নিন।</div>';
+      // Refresh the category check so the now-decided rate shows properly.
+      setTimeout(function(){ checkCategoryCommission(); }, 1200);
+    } else if(d.status === 'rejected'){
+      statusEl.innerHTML = '<div class="cs-talk-delta-status" style="color:#c0392b;">এই category-তে আপাতত বিক্রি সম্ভব না বলে DELTA জানিয়েছে।</div>';
+    }
+  });
+}
+
+function updateIndLimitHint(){
+  var hint = document.getElementById('csIndLimitHint');
+  hint.textContent = 'সর্বোচ্চ মূল্য ৳'+INDIVIDUAL_LISTING_LIMITS.maxPrice.toLocaleString('bn-BD')+
+    ' — একসাথে সর্বোচ্চ '+INDIVIDUAL_LISTING_LIMITS.maxActiveListings+'টা active listing রাখা যাবে।';
+}
+
+async function countActiveIndividualListings(){
+  var snap = await db.collection('cities').doc(CITY).collection('mediaContent')
+    .where('authorUid','==',currentUser.uid).where('listingType','==','individual')
+    .where('saleStatus','==','available').get();
+  return snap.size;
+}
+
+function resetIndPanel(){
+  document.getElementById('csIndToggle').checked = false;
+  document.getElementById('csIndPanel').style.display = 'none';
+  document.getElementById('csIndItemName').value = '';
+  document.getElementById('csIndCategorySelect').value = '';
+  document.getElementById('csIndSubCategory').value = '';
+  document.getElementById('csCommissionKnownBox').style.display = 'none';
+  document.getElementById('csCommissionUnknownBox').style.display = 'none';
+  document.getElementById('csIndPriceWrap').style.display = 'none';
+  document.getElementById('csIndPrice').value = '';
+  document.getElementById('csIndMobile').value = '';
+  _indAcceptedCommission = null; _indTalkRequestId = null;
+}
+
 // ── SUBMIT ──
 async function submitContent(){
   if(!currentUser) return;
@@ -617,6 +821,45 @@ async function submitContent(){
       categoryId: _selectedTagProduct ? _selectedTagProduct.categoryId : _selectedTagShop.shopName
     };
     payload.ctaType = document.getElementById('csCtaTypeSelect').value;
+  }
+
+  // Individual Seller Marketplace — "sell your own item" flow. Only attached
+  // if commission was actually accepted (never trust the toggle alone —
+  // someone could enable it, then never tick the accept box).
+  if((currentType==='post' || currentType==='reel') && document.getElementById('csIndToggle').checked){
+    if(!_indAcceptedCommission){
+      showToast('আগে commission-এ রাজি হয়ে টিক দিন, অথবা DELTA-র সাথে কথা বলে commission ঠিক করুন');
+      btn.disabled = false; btn.textContent = cfg.publishLabel;
+      return;
+    }
+    var itemName = document.getElementById('csIndItemName').value.trim();
+    var price = Number(document.getElementById('csIndPrice').value);
+    var mobile = document.getElementById('csIndMobile').value.trim();
+    if(!itemName || !price || !mobile){
+      showToast('জিনিসের নাম, দাম এবং মোবাইল নম্বর — সবগুলো দিন');
+      btn.disabled = false; btn.textContent = cfg.publishLabel;
+      return;
+    }
+    if(price > INDIVIDUAL_LISTING_LIMITS.maxPrice){
+      showToast('সর্বোচ্চ ৳'+INDIVIDUAL_LISTING_LIMITS.maxPrice.toLocaleString('bn-BD')+' পর্যন্ত দাম দেওয়া যাবে');
+      btn.disabled = false; btn.textContent = cfg.publishLabel;
+      return;
+    }
+    var activeCount = await countActiveIndividualListings();
+    if(activeCount >= INDIVIDUAL_LISTING_LIMITS.maxActiveListings){
+      showToast('একসাথে সর্বোচ্চ '+INDIVIDUAL_LISTING_LIMITS.maxActiveListings+'টা active listing রাখা যায় — একটা বিক্রি/বন্ধ করে আবার চেষ্টা করুন');
+      btn.disabled = false; btn.textContent = cfg.publishLabel;
+      return;
+    }
+    payload.listingType = 'individual';
+    payload.itemName = itemName;
+    payload.category = _indAcceptedCommission.category;
+    payload.subCategory = document.getElementById('csIndSubCategory').value.trim() || null;
+    payload.price = price;
+    payload.commissionRate = _indAcceptedCommission.rate;
+    payload.sellerMobile = mobile;
+    payload.saleStatus = 'available';
+    payload.verificationStatus = 'pending_admin_review'; // separate from the generic content status field
   }
 
   try{
