@@ -2759,22 +2759,26 @@ function renderPostCard(id, d, wrap, isPinned){
 
   // ── Individual Seller Marketplace card — "sell your own item" via
   // content, distinct from the shop-tag card above (no existing shop
-  // inventory backs this; it's a one-off item, so ordering + "mark as
-  // sold" work differently). ──
+  // inventory backs this). Stock-driven: stockLeft<=0 is what actually
+  // means "out of stock", not a separately-tracked flag that could drift
+  // out of sync — this is why restocking (owner edits stock back up)
+  // automatically un-hides the Order Now button with no extra "un-sold"
+  // step needed. Falls back to treating legacy saleStatus-only listings
+  // (created before this stock field existed) as stock:1/0.
   if(d.listingType === 'individual'){
+    var stockLeft = (d.stock != null) ? d.stock : (d.saleStatus==='sold' ? 0 : 1);
     var indCard=document.createElement('div'); indCard.className='commerce-tag-card';
-    var isSold = d.saleStatus === 'sold';
     var isMine = currentUser && d.authorUid===currentUser.uid;
     indCard.innerHTML =
       '<img class="commerce-tag-thumb" src="'+(d.thumbnailUrl||(d.mediaUrls&&d.mediaUrls[0])||'')+'">'+
       '<div class="commerce-tag-info"><div class="commerce-tag-name">'+(d.itemName||'পণ্য')+'</div>'+
-      '<div style="font-size:.75rem;color:var(--muted);">৳'+(d.price||0)+'</div></div>'+
-      (isSold ? '<span class="btn-cta" style="background:var(--border);color:var(--muted);">বিক্রি হয়ে গেছে</span>'
-        : (isMine ? '<button class="btn-cta btn-cta-mark-sold">✅ বিক্রি হয়ে গেছে বলে দাও</button>'
-          : '<button class="btn-cta btn-cta-order-ind">📦 Order Now</button>'));
-    if(!isSold && isMine){
-      indCard.querySelector('.btn-cta-mark-sold').onclick=function(){ markIndividualListingSold(id); };
-    } else if(!isSold && !isMine){
+      '<div style="font-size:.75rem;color:var(--muted);">৳'+(d.price||0)+' · স্টক: '+Math.max(0,stockLeft)+'</div></div>'+
+      (stockLeft <= 0 ? '<span class="btn-cta" style="background:var(--border);color:var(--muted);">স্টক শেষ</span>' : '')+
+      (isMine ? '<button class="btn-cta btn-cta-edit-stock">✏️ স্টক পরিবর্তন</button>'
+        : (stockLeft > 0 ? '<button class="btn-cta btn-cta-order-ind">📦 Order Now</button>' : ''));
+    if(isMine){
+      indCard.querySelector('.btn-cta-edit-stock').onclick=function(){ editIndividualListingStock(id, stockLeft); };
+    } else if(stockLeft > 0){
       indCard.querySelector('.btn-cta-order-ind').onclick=function(){ openIndividualOrderModal(id, d); };
     }
     card.appendChild(indCard);
@@ -2795,14 +2799,19 @@ function renderPostCard(id, d, wrap, isPinned){
 }
 
 function ctaLabel(cta){
-  var map={view_product:'🛒 View Product',visit_shop:'🏪 Visit Shop',order_now:'📦 Order Now',book_service:'📅 Book Service',call:'📞 Call',whatsapp:'💬 WhatsApp',view_branch:'📍 Branch',get_quote:'💬 Get Quote',none:'View'};
+  // Deliberately no 'call'/'whatsapp' entries — those let a customer contact
+  // the seller directly and negotiate/complete the sale off-platform,
+  // where DELTA never sees the commission. Every CTA keeps them inside
+  // DELTA's own shop/checkout pages.
+  var map={view_product:'🛒 View Product',visit_shop:'🏪 Visit Shop',order_now:'📦 Order Now',book_service:'📅 Book Service',view_branch:'📍 Branch',get_quote:'💬 Get Quote',none:'View'};
   return map[cta]||'View';
 }
 function handleCta(d){
+  // No branch for 'whatsapp'/'call' on purpose — even if a piece of old
+  // content somehow still has that value, it falls through to the normal
+  // shop redirect below rather than opening an external contact channel.
   if(d.ctaType==='visit_shop' || d.ctaType==='view_product'){
     location.href='shop.html?id='+d.tags.shopId+'&city='+CITY+(d.tags.productId?('&product='+d.tags.productId):'');
-  } else if(d.ctaType==='whatsapp'){
-    window.open('https://wa.me/?text='+encodeURIComponent('আগ্রহী: '+(d.caption||'')),'_blank');
   } else {
     location.href='shop.html?id='+(d.tags.shopId||'')+'&city='+CITY;
   }
@@ -2817,10 +2826,20 @@ function handleCta(d){
 // behavior flash-sale already has today, not a live real-time-synced cart between
 // two open tabs.
 // ═══ INDIVIDUAL SELLER MARKETPLACE — mark sold + order flow ═══
-function markIndividualListingSold(contentId){
-  if(!confirm('এই জিনিসটা বিক্রি হয়ে গেছে বলে চিহ্নিত করবেন? এরপর আর কেউ Order করতে পারবে না।')) return;
-  db.collection('cities').doc(CITY).collection('mediaContent').doc(contentId).update({saleStatus:'sold'})
-    .then(function(){ showToastMf('বিক্রি হয়ে গেছে বলে চিহ্নিত করা হলো ✅'); loadFeed(); })
+function editIndividualListingStock(contentId, currentStock){
+  var input = prompt('নতুন স্টক সংখ্যা লিখুন (এখন আছে: '+currentStock+')\n0 লিখলে "স্টক শেষ" দেখাবে।', currentStock);
+  if(input === null) return; // cancelled
+  var newStock = Number(input);
+  if(isNaN(newStock) || newStock < 0){ alert('একটা সঠিক সংখ্যা (0 বা তার বেশি) দিন'); return; }
+  db.collection('cities').doc(CITY).collection('mediaContent').doc(contentId)
+    .update({stock:newStock, saleStatus: newStock>0 ? 'available' : 'sold'})
+    .then(function(){
+      // Restocking (0 → positive) automatically un-hides the Order Now
+      // button on next render — no separate "un-sold" step needed, since
+      // the card is driven entirely by the stock number itself.
+      showToastMf(newStock>0 ? 'স্টক আপডেট হয়েছে ✅ ('+newStock+' available)' : 'স্টক শেষ হিসেবে সেভ হয়েছে');
+      loadFeed();
+    })
     .catch(function(e){ alert('সমস্যা হয়েছে: '+e.message); });
 }
 function showToastMf(msg){
@@ -2847,22 +2866,38 @@ async function submitIndividualOrder(){
   if(!address || !mobile){ alert('ঠিকানা এবং মোবাইল নম্বর দিন'); return; }
   var d = _indOrderData;
   var commission = Math.round((d.price||0) * (d.commissionRate||0) / 100);
+  var contentRef = db.collection('cities').doc(CITY).collection('mediaContent').doc(_indOrderContentId);
+
   try{
-    await db.collection('cities').doc(CITY).collection('individualListingOrders').add({
-      buyerUid: currentUser.uid, sellerUid: d.authorUid, contentId: _indOrderContentId,
-      itemName: d.itemName, price: d.price, commissionRate: d.commissionRate,
-      deltaCommission: commission, sellerReceives: (d.price||0) - commission,
-      deliveryAddress: address, buyerMobile: mobile, sellerMobile: d.sellerMobile || null,
-      status: 'pending', createdAt: new Date().toISOString()
+    // Transaction, not a plain read-then-write — otherwise two buyers
+    // ordering within the same moment could BOTH succeed even though only
+    // one unit was actually left in stock (a classic overselling race
+    // condition). This reads the current stock and decrements it
+    // atomically, aborting if someone else already took the last one.
+    await db.runTransaction(async function(tx){
+      var freshDoc = await tx.get(contentRef);
+      var freshData = freshDoc.data();
+      var currentStock = (freshData.stock != null) ? freshData.stock : (freshData.saleStatus==='sold' ? 0 : 1);
+      if(currentStock <= 0){
+        throw new Error('দুঃখিত, এইমাত্র স্টক শেষ হয়ে গেছে — আরেকজন হয়তো একটু আগেই order করেছেন।');
+      }
+      var newStock = currentStock - 1;
+      tx.update(contentRef, {stock:newStock, saleStatus: newStock>0 ? 'available' : 'sold'});
+      var orderRef = db.collection('cities').doc(CITY).collection('individualListingOrders').doc();
+      tx.set(orderRef, {
+        buyerUid: currentUser.uid, sellerUid: d.authorUid, contentId: _indOrderContentId,
+        itemName: d.itemName, price: d.price, commissionRate: d.commissionRate,
+        deltaCommission: commission, sellerReceives: (d.price||0) - commission,
+        deliveryAddress: address, buyerMobile: mobile, sellerMobile: d.sellerMobile || null,
+        status: 'pending', createdAt: new Date().toISOString()
+      });
     });
-    // Auto mark sold — one-off items shouldn't keep accepting orders after
-    // the first one comes in (unlike shop inventory, which has real stock).
-    await db.collection('cities').doc(CITY).collection('mediaContent').doc(_indOrderContentId).update({saleStatus:'sold'});
     closeIndividualOrderModal();
     alert('অর্ডার সফল হয়েছে! বিক্রেতা ও DELTA আপনার সাথে যোগাযোগ করবে।');
     loadFeed();
   }catch(e){
-    alert('অর্ডার করতে সমস্যা হয়েছে: '+e.message);
+    alert(e.message || 'অর্ডার করতে সমস্যা হয়েছে');
+    loadFeed(); // refresh so the now-stale "Order Now" button reflects real stock
   }
 }
 
