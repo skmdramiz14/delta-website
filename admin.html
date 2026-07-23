@@ -2387,11 +2387,29 @@ button,input,select{font-family:'DM Sans',sans-serif;}
 
       <!-- ── COMMISSION RATES — per-category, plus pending "Talk to DELTA" requests ── -->
       <div id="medPanelCommission" style="display:none;">
-        <div class="sec-title" style="font-size:.95rem;margin-bottom:10px;">Individual Listing সীমা</div>
-        <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;">
+        <div class="sec-title" style="font-size:.95rem;margin-bottom:10px;">Individual Listing সীমা (Free tier)</div>
+        <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
           <input type="number" id="medMaxPrice" placeholder="সর্বোচ্চ মূল্য (৳)" style="flex:1;min-width:140px;padding:9px 12px;border-radius:8px;border:1.5px solid var(--border);">
           <input type="number" id="medMaxListings" placeholder="একজনের সর্বোচ্চ active listing" style="flex:1;min-width:140px;padding:9px 12px;border-radius:8px;border:1.5px solid var(--border);">
           <button class="btn-sm" style="background:var(--navy);color:#fff;" onclick="medSaveIndLimits()">Save</button>
+        </div>
+
+        <div class="sec-title" style="font-size:.95rem;margin-bottom:10px;">⭐ Premium Tier সীমা</div>
+        <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;">
+          <input type="number" id="medPremiumMaxPrice" placeholder="Premium সর্বোচ্চ মূল্য (৳)" style="flex:1;min-width:140px;padding:9px 12px;border-radius:8px;border:1.5px solid var(--orange);">
+          <input type="number" id="medPremiumMaxListings" placeholder="Premium সর্বোচ্চ active listing" style="flex:1;min-width:140px;padding:9px 12px;border-radius:8px;border:1.5px solid var(--orange);">
+          <button class="btn-sm" style="background:var(--orange);color:#fff;" onclick="medSaveIndLimits()">Save</button>
+        </div>
+
+        <div class="sec-title" style="font-size:.95rem;margin-bottom:10px;">⭐ Premium Seller Grant করুন</div>
+        <p style="color:var(--muted);font-size:.78rem;margin-bottom:8px;">
+          User নিজে থেকে Premium সেট করতে পারে না (Firestore rules-এ আটকানো) — শুধু এখান থেকেই Admin দিতে পারবে।
+          Payment আপাতত সরাসরি DELTA-র সাথে কথা বলে/manually হচ্ছে (online payment gateway আসার আগে পর্যন্ত)।
+        </p>
+        <div style="display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap;">
+          <input type="text" id="medPremiumUid" placeholder="User-এর UID (mediaProfiles document ID)" style="flex:1;min-width:200px;padding:9px 12px;border-radius:8px;border:1.5px solid var(--border);">
+          <button class="btn-sm" style="background:#2e7d32;color:#fff;" onclick="medGrantPremium(true)">⭐ Premium দিন</button>
+          <button class="btn-sm" style="background:#c0392b;color:#fff;" onclick="medGrantPremium(false)">Premium সরান</button>
         </div>
 
         <div class="sec-title" style="font-size:.95rem;margin-bottom:10px;">Category-ভিত্তিক Commission Rate</div>
@@ -2768,8 +2786,15 @@ function medFlagMismatch(id){
     '<input type="number" id="medIndFixCommission-'+id+'" placeholder="সঠিক Commission %" style="padding:8px;border-radius:8px;border:1.5px solid var(--border);margin-bottom:6px;width:100%;">'+
     '<button class="btn-sm" style="background:var(--navy);color:#fff;" onclick="medCorrectAndApprove(\''+id+'\')">সংশোধন করে Approve করুন</button>';
   var sel = document.getElementById('medIndFixCategory-'+id);
-  DEFAULT_CATEGORIES.forEach(function(c){
-    var opt=document.createElement('option'); opt.value=c.key; opt.textContent=c.nameBn; sel.appendChild(opt);
+  db.collection('cities').doc(CITY).collection('settings').doc('categoryConfig').get().then(function(doc){
+    var categories = (doc.exists && doc.data().categories && doc.data().categories.length) ? doc.data().categories : DEFAULT_CATEGORIES;
+    categories.slice().sort(function(a,b){ return (a.order||99)-(b.order||99); }).forEach(function(c){
+      var opt=document.createElement('option'); opt.value=c.key; opt.textContent=(c.emoji||'')+' '+(c.nameBn||c.key); sel.appendChild(opt);
+    });
+  }).catch(function(){
+    DEFAULT_CATEGORIES.forEach(function(c){
+      var opt=document.createElement('option'); opt.value=c.key; opt.textContent=c.nameBn; sel.appendChild(opt);
+    });
   });
 }
 function medCorrectAndApprove(id){
@@ -2790,35 +2815,69 @@ function medLoadIndLimits(){
     if(doc.exists){
       document.getElementById('medMaxPrice').value = doc.data().maxPrice || '';
       document.getElementById('medMaxListings').value = doc.data().maxActiveListings || '';
+      document.getElementById('medPremiumMaxPrice').value = doc.data().premiumMaxPrice || '';
+      document.getElementById('medPremiumMaxListings').value = doc.data().premiumMaxActiveListings || '';
     }
   });
 }
 function medSaveIndLimits(){
   var maxPrice = Number(document.getElementById('medMaxPrice').value);
   var maxActiveListings = Number(document.getElementById('medMaxListings').value);
-  if(!maxPrice || !maxActiveListings){ showToast('দুটো মানই দিন'); return; }
-  db.collection('platformConfig').doc('individualListingLimits').set({
-    maxPrice: maxPrice, maxActiveListings: maxActiveListings
-  }, {merge:true}).then(function(){ showToast('সীমা সেভ হয়েছে ✅','green'); }).catch(function(e){ showToast('Error: '+e.message,'red'); });
+  if(!maxPrice || !maxActiveListings){ showToast('আগে Free tier-এর দুটো মানই দিন'); return; }
+  var update = {maxPrice: maxPrice, maxActiveListings: maxActiveListings};
+  var premiumMaxPrice = Number(document.getElementById('medPremiumMaxPrice').value);
+  var premiumMaxActiveListings = Number(document.getElementById('medPremiumMaxListings').value);
+  if(premiumMaxPrice) update.premiumMaxPrice = premiumMaxPrice;
+  if(premiumMaxActiveListings) update.premiumMaxActiveListings = premiumMaxActiveListings;
+  db.collection('platformConfig').doc('individualListingLimits').set(update, {merge:true})
+    .then(function(){ showToast('সীমা সেভ হয়েছে ✅','green'); }).catch(function(e){ showToast('Error: '+e.message,'red'); });
+}
+
+// ═══ PREMIUM SELLER — Admin-only grant/revoke (Firestore rules block the
+// user from ever setting this on themselves) ═══
+function medGrantPremium(grant){
+  var uid = document.getElementById('medPremiumUid').value.trim();
+  if(!uid){ showToast('User-এর UID দিন'); return; }
+  db.collection('mediaProfiles').doc(uid).set({isPremiumSeller: grant}, {merge:true})
+    .then(function(){
+      showToast(grant ? '⭐ Premium দেওয়া হয়েছে ✅' : 'Premium সরানো হয়েছে', 'green');
+      document.getElementById('medPremiumUid').value = '';
+    }).catch(function(e){ showToast('Error: '+e.message,'red'); });
 }
 
 // ═══ COMMISSION RATES — per category ═══
 function medLoadCommissionRates(){
   var list = document.getElementById('medCommissionRatesList');
   list.innerHTML = '<div style="color:var(--muted);padding:10px;">লোড হচ্ছে...</div>';
-  db.collection('individualSellerCommissionRates').get().then(function(snap){
+  // Reads the SAME categoryConfig doc that the "🏷️ Category Management" tab
+  // edits — adding/renaming a category there now automatically shows up
+  // here too, rather than this panel keeping its own separate, hardcoded
+  // category list that could silently drift out of sync.
+  Promise.all([
+    db.collection('cities').doc(CITY).collection('settings').doc('categoryConfig').get(),
+    db.collection('individualSellerCommissionRates').get()
+  ]).then(function(results){
+    var catDoc = results[0], rateSnap = results[1];
+    var categories = (catDoc.exists && catDoc.data().categories && catDoc.data().categories.length)
+      ? catDoc.data().categories : DEFAULT_CATEGORIES; // fallback only if Category Management was never saved yet
     var existing = {};
-    snap.forEach(function(doc){ existing[doc.id] = doc.data().commissionRate; });
+    rateSnap.forEach(function(doc){ existing[doc.id] = doc.data().commissionRate; });
     list.innerHTML = '';
-    DEFAULT_CATEGORIES.forEach(function(c){
+    categories.slice().sort(function(a,b){ return (a.order||99)-(b.order||99); }).forEach(function(c){
       var row = document.createElement('div');
       row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;';
       row.innerHTML =
-        '<span style="flex:1;font-size:.85rem;">'+c.emoji+' '+c.nameBn+'</span>'+
+        '<span style="flex:1;font-size:.85rem;">'+(c.emoji||'🏷️')+' '+(c.nameBn||c.key)+'</span>'+
         '<input type="number" id="medComm-'+c.key+'" value="'+(existing[c.key]!=null?existing[c.key]:'')+'" placeholder="%" style="width:70px;padding:6px;border-radius:6px;border:1.5px solid var(--border);">'+
         '<button class="btn-sm" style="background:var(--navy);color:#fff;" onclick="medSaveCommissionRate(\''+c.key+'\')">Save</button>';
       list.appendChild(row);
     });
+    if(!categories.length){
+      list.innerHTML = '<div style="color:var(--muted);padding:10px;">এখনো কোনো category নেই — আগে "🏷️ Category Management" ট্যাব থেকে category যোগ করুন।</div>';
+    }
+  }).catch(function(e){
+    console.error(e);
+    list.innerHTML = '<div style="color:var(--muted);padding:10px;">লোড করতে সমস্যা হয়েছে।</div>';
   });
 }
 function medSaveCommissionRate(categoryKey){
