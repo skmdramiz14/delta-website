@@ -2329,6 +2329,7 @@ button,input,select{font-family:'DM Sans',sans-serif;}
         <button class="btn-sm" id="medSubBoosts" onclick="medSwitchSub('boosts',this)">Boost Management</button>
         <button class="btn-sm" id="medSubAudio" onclick="medSwitchSub('audio',this)">Audio Library</button>
         <button class="btn-sm" id="medSubIndividual" onclick="medSwitchSub('individual',this)">Individual Sellers</button>
+        <button class="btn-sm" id="medSubApproved" onclick="medSwitchSub('approved',this)">Approved Content</button>
         <button class="btn-sm" id="medSubCommission" onclick="medSwitchSub('commission',this)">Commission Rates</button>
       </div>
 
@@ -2364,6 +2365,24 @@ button,input,select{font-family:'DM Sans',sans-serif;}
           ভুল থাকলে বিক্রেতাকে ফোন করে সংশোধন করে দিন।
         </p>
         <div id="medIndividualList" style="display:flex;flex-direction:column;gap:10px;"></div>
+      </div>
+
+      <!-- ── APPROVED CONTENT — everything currently live, with a Disable
+           button so Admin can take anything down at any moment after the
+           fact (a report, a complaint, a mistake noticed later — approving
+           once shouldn't mean losing the ability to reverse it). ── -->
+      <div id="medPanelApproved" style="display:none;">
+        <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+          <select id="medApprovedTypeFilter" onchange="medLoadApprovedContent()" style="padding:8px 12px;border-radius:8px;border:1.5px solid var(--border);">
+            <option value="">সব ধরনের content</option>
+            <option value="post">Post</option>
+            <option value="reel">Reel</option>
+            <option value="story">Story</option>
+            <option value="video">Video</option>
+          </select>
+          <input type="text" id="medApprovedSearch" placeholder="creator-এর নাম দিয়ে খুঁজুন..." oninput="medFilterApprovedList()" style="flex:1;min-width:160px;padding:8px 12px;border-radius:8px;border:1.5px solid var(--border);">
+        </div>
+        <div id="medApprovedList" style="display:flex;flex-direction:column;gap:10px;"></div>
       </div>
 
       <!-- ── COMMISSION RATES — per-category, plus pending "Talk to DELTA" requests ── -->
@@ -2627,7 +2646,7 @@ function medLoadStats(){
 }
 
 function medSwitchSub(sub, btn){
-  ['queue','reported','featured','boosts','audio','individual','commission'].forEach(function(s){
+  ['queue','reported','featured','boosts','audio','individual','approved','commission'].forEach(function(s){
     document.getElementById('medPanel'+s.charAt(0).toUpperCase()+s.slice(1)).style.display = (s===sub)?'block':'none';
     document.getElementById('medSub'+s.charAt(0).toUpperCase()+s.slice(1)).classList.remove('active');
     document.getElementById('medSub'+s.charAt(0).toUpperCase()+s.slice(1)).style.cssText='';
@@ -2639,7 +2658,65 @@ function medSwitchSub(sub, btn){
   if(sub==='boosts') medLoadBoosts();
   if(sub==='audio') medLoadAudio();
   if(sub==='individual') medLoadIndividualQueue();
+  if(sub==='approved') medLoadApprovedContent();
   if(sub==='commission'){ medLoadCommissionRates(); medLoadTalkRequests(); medLoadIndLimits(); }
+}
+
+// ═══ APPROVED CONTENT — view everything live, disable anything at any time ═══
+var _medApprovedCache = []; // [{id, data}] — kept client-side so search filtering doesn't need a new query every keystroke
+function medLoadApprovedContent(){
+  var list = document.getElementById('medApprovedList');
+  list.innerHTML = '<div style="color:var(--muted);padding:20px;text-align:center;">লোড হচ্ছে...</div>';
+  var typeFilter = document.getElementById('medApprovedTypeFilter').value;
+  var q = medMc().where('status','==','published');
+  if(typeFilter) q = q.where('type','==',typeFilter);
+  q.orderBy('createdAt','desc').limit(100).get().then(function(snap){
+    _medApprovedCache = snap.docs.map(function(d){ return {id:d.id, data:d.data()}; });
+    if(!_medApprovedCache.length){ list.innerHTML='<div style="color:var(--muted);padding:20px;text-align:center;">এখনো কোনো approved content নেই।</div>'; return; }
+    renderMedApprovedList(_medApprovedCache);
+  }).catch(function(e){
+    list.innerHTML = '<div style="color:var(--muted);padding:20px;text-align:center;">লোড করতে সমস্যা — Firestore index লাগতে পারে।</div>';
+    console.error(e);
+  });
+}
+function medFilterApprovedList(){
+  var q = document.getElementById('medApprovedSearch').value.trim().toLowerCase();
+  if(!q){ renderMedApprovedList(_medApprovedCache); return; }
+  renderMedApprovedList(_medApprovedCache.filter(function(item){
+    return (item.data.authorDisplayName||'').toLowerCase().indexOf(q) >= 0;
+  }));
+}
+function renderMedApprovedList(items){
+  var list = document.getElementById('medApprovedList');
+  if(!items.length){ list.innerHTML='<div style="color:var(--muted);padding:20px;text-align:center;">কিছু পাওয়া যায়নি।</div>'; return; }
+  list.innerHTML='';
+  items.forEach(function(item){
+    var d = item.data;
+    var thumb = d.thumbnailUrl || (d.mediaUrls&&d.mediaUrls[0]) || '';
+    var row = document.createElement('div'); row.className='req-card';
+    row.innerHTML =
+      '<div class="req-top"><div>'+
+        (thumb?'<img src="'+thumb+'" style="width:44px;height:44px;border-radius:8px;object-fit:cover;margin-right:8px;vertical-align:middle;">':'')+
+        '<b>'+(d.authorDisplayName||'Unknown')+'</b> · '+d.type+
+        (d.itemName ? ' — '+d.itemName+' (৳'+(d.price||0)+')' : '')+
+        '<div style="font-size:.76rem;color:var(--muted);">'+(d.caption? (d.caption.slice(0,80)) : '')+'</div>'+
+        '<div style="font-size:.74rem;color:var(--muted);">'+medTimeAgo(d.createdAt)+'</div>'+
+      '</div></div>'+
+      '<div style="display:flex;gap:8px;margin-top:8px;">'+
+        '<button class="btn-sm" style="background:#c0392b;color:#fff;" onclick="medDisableContent(\''+item.id+'\')">🚫 Disable করুন</button>'+
+      '</div>';
+    list.appendChild(row);
+  });
+}
+function medDisableContent(id){
+  if(!confirm('এই content-টা এখনই সবার জন্য বন্ধ (disable) করে দিতে চান?')) return;
+  // 'disabled_by_admin' — deliberately distinct from 'pending' (so it never
+  // reappears in the normal moderation queue as if awaiting first review)
+  // and distinct from 'rejected' (this was live and working, then actively
+  // taken down — a different history than something that never got approved).
+  medMc().doc(id).update({status:'disabled_by_admin'}).then(function(){
+    showToast('Content disable করা হয়েছে','green'); medLoadApprovedContent();
+  }).catch(function(e){ showToast('Error: '+e.message,'red'); });
 }
 
 // ═══ INDIVIDUAL SELLER MARKETPLACE — verification queue ═══
