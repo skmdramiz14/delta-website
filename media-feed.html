@@ -167,6 +167,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 .post-caption{padding:2px 14px 12px;font-size:.86rem;line-height:1.55;white-space:pre-wrap;}
 .post-media{width:100%;background:var(--cream);position:relative;}
 .post-media img,.post-media video{width:100%;max-height:520px;object-fit:cover;display:block;}
+.feed-video-mute{position:absolute;bottom:12px;right:12px;width:30px;height:30px;border-radius:50%;
+  background:rgba(0,0,0,.5);border:none;color:#fff;font-size:.9rem;display:flex;align-items:center;
+  justify-content:center;cursor:pointer;z-index:5;}
 .post-media-badge{position:absolute;top:10px;left:10px;background:rgba(0,0,0,.55);color:#fff;font-size:.65rem;font-weight:700;padding:3px 9px;border-radius:8px;text-transform:uppercase;}
 .carousel-dots{position:absolute;bottom:8px;left:0;right:0;display:flex;justify-content:center;gap:4px;}
 .carousel-dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.6);}
@@ -2680,6 +2683,37 @@ function badgeLabel(profile){
   return '';
 }
 
+// ═══ FEED VIDEO AUTOPLAY (Instagram/Facebook style) — a single shared
+// IntersectionObserver, not one per video, since the feed can have many
+// video posts and creating a separate observer for each would be wasteful.
+// Plays (muted) once a video is >60% visible, pauses once it scrolls mostly
+// out of view — exactly the same threshold/behavior as reels-player.html. ═══
+var _feedVideoObserver = null;
+function getFeedVideoObserver(){
+  if(_feedVideoObserver) return _feedVideoObserver;
+  _feedVideoObserver = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      var vid = entry.target;
+      if(entry.isIntersecting && entry.intersectionRatio > 0.6){
+        vid.play().catch(function(){}); // already muted, so autoplay is never blocked
+      } else {
+        vid.pause();
+      }
+    });
+  }, {threshold:[0, 0.6, 1]});
+  return _feedVideoObserver;
+}
+function observeFeedVideo(videoEl){
+  getFeedVideoObserver().observe(videoEl);
+}
+function toggleFeedVideoMute(btn){
+  var media = btn.closest('.post-media');
+  var vid = media.querySelector('video');
+  if(!vid) return;
+  vid.muted = !vid.muted;
+  btn.textContent = vid.muted ? '🔇' : '🔊';
+}
+
 function renderPostCard(id, d, wrap, isPinned){
   var card=document.createElement('div'); card.className='post-card';
 
@@ -2717,11 +2751,19 @@ function renderPostCard(id, d, wrap, isPinned){
   // ── Media ──
   var media=document.createElement('div'); media.className='post-media';
   if(d.videoUrl){
-    media.innerHTML='<video src="'+d.videoUrl+'" controls playsinline></video><div class="post-media-badge">'+d.type+'</div>';
+    // No native "controls" — Instagram/Facebook feed videos autoplay
+    // (muted, since browsers require that for autoplay without a user
+    // gesture) as they scroll into view, via the shared IntersectionObserver
+    // set up below. A small mute toggle replaces the native volume control.
+    media.innerHTML='<video class="feed-video" src="'+d.videoUrl+'" muted loop playsinline oncontextmenu="return false"></video>'+
+      '<button class="feed-video-mute" onclick="event.stopPropagation();toggleFeedVideoMute(this)">🔇</button>'+
+      '<div class="post-media-badge">'+d.type+'</div>';
   } else if(d.mediaUrls && d.mediaUrls.length){
     media.innerHTML='<img src="'+d.mediaUrls[0]+'">'+(d.mediaUrls.length>1?'<div class="post-media-badge">1/'+d.mediaUrls.length+'</div>':'');
   }
   if(media.innerHTML) card.appendChild(media);
+  var feedVideoEl = media.querySelector('.feed-video');
+  if(feedVideoEl) observeFeedVideo(feedVideoEl);
 
   // ── Poll (if postSubType==poll) ──
   if(d.postSubType==='poll' && d.pollOptions && d.pollOptions.length){
