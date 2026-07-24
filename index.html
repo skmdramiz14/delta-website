@@ -7972,25 +7972,38 @@ function startVoiceOrderListening(){
   voRecognition.interimResults = true;
 
   var voSilenceTimer = null;
-  var VO_SILENCE_MS = 1800; // how long to wait after the LAST bit of new
-    // speech before deciding the customer is actually finished — long
-    // enough for a natural thinking-pause, short enough not to feel laggy.
+  var voSpeechStarted = false; // tracks whether ANY speech has been detected
+    // yet in this session — the two phases below need very different
+    // durations, and conflating them was the bug: the customer needs real
+    // time to notice a prompt and START speaking (much longer than any
+    // reasonable mid-sentence pause), but once they're mid-sentence, a
+    // shorter pause is enough to mean they're actually done.
+  var VO_WARMUP_MS = 6000;   // time allowed BEFORE any speech is detected —
+    // covers reaction time after hearing/reading a prompt, e.g. right after
+    // "আবার বলুন" is tapped or a clarification question finishes speaking.
+  var VO_SILENCE_MS = 1800;  // time allowed AFTER the last bit of new speech
+    // before deciding the customer is actually finished — a natural
+    // thinking-pause mid-sentence, not a "did they even start yet" wait.
   function resetVoSilenceTimer(){
     if(voSilenceTimer) clearTimeout(voSilenceTimer);
+    var duration = voSpeechStarted ? VO_SILENCE_MS : VO_WARMUP_MS;
     voSilenceTimer = setTimeout(function(){
-      console.log('[DELTA-DIAG] silence timer elapsed — stopping recognition.');
+      console.log('[DELTA-DIAG] silence timer elapsed (phase:', voSpeechStarted?'post-speech':'warmup', ') — stopping recognition.');
       try{ voRecognition.stop(); }catch(e){}
-    }, VO_SILENCE_MS);
+    }, duration);
   }
-  resetVoSilenceTimer(); // start the clock even before the first word, in
-    // case the customer never says anything at all (falls through to the
-    // existing onerror/'no-speech' or empty-onend handling as before).
+  resetVoSilenceTimer(); // starts in the longer warm-up phase — only
+    // shortens to the tighter post-speech duration once onresult actually
+    // fires below, so a customer who needs a moment to start talking isn't
+    // cut off before they've said anything at all.
 
   voRecognition.onresult = function(e){
     var text = '';
     for(var i=0;i<e.results.length;i++){ text += e.results[i][0].transcript; }
     transcriptText.textContent = text;
     console.log('[DELTA-DIAG] onresult fired, interim text so far:', text);
+    voSpeechStarted = true; // switches resetVoSilenceTimer() to the shorter
+      // post-speech duration from this point onward in this session.
     resetVoSilenceTimer(); // customer is still actively speaking — push the
       // silence deadline forward instead of letting it lapse mid-sentence.
   };
