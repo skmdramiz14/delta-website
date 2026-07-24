@@ -8206,7 +8206,24 @@ function speakVoiceOrderText(text, onDone){
         var u = new SpeechSynthesisUtterance(text);
         u.lang = currentLang==='bn' ? 'bn-IN' : 'en-US';
         if(voice) u.voice = voice;
-        if(onDone){ u.onend = onDone; u.onerror = onDone; }
+        // ⚠️ CRITICAL BUG FIX: on some Android/Chrome versions, BOTH onend
+        // AND onerror can fire for the same utterance (a known Web Speech
+        // API quirk, more likely to surface with the cancel()+delayed-speak()
+        // sequence above). Without a guard, onDone ran TWICE — confirmed via
+        // production logs as the actual cause of startVoiceOrderListening()
+        // being called twice back-to-back after a clarification question was
+        // spoken, which aborted the first listening session and left the
+        // second one starting before the customer was ready to answer
+        // ("aborted" then "no-speech" errors, customer's answer never
+        // captured). This flag ensures onDone fires exactly once regardless
+        // of which event(s) actually fire.
+        var doneFired = false;
+        var fireDoneOnce = function(){
+          if(doneFired) return;
+          doneFired = true;
+          if(onDone) onDone();
+        };
+        if(onDone){ u.onend = fireDoneOnce; u.onerror = fireDoneOnce; }
         speechSynthesis.speak(u);
       }, 150);
     }catch(e){ if(onDone) onDone(); }
