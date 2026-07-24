@@ -357,7 +357,13 @@ function initReelGestures(slide){
   };
   var onMove = function(x, y){
     if(!_gesture.active || _gesture.slide!==slide) return;
-    var moved = Math.abs(x-_gesture.startX) > 12 || Math.abs(y-_gesture.startY) > 12;
+    // 12px was too sensitive — ordinary tap jitter (present in almost every
+    // real tap on a touchscreen) was crossing that threshold and cancelling
+    // the whole gesture, which is why plain pause/play stopped working too.
+    // A genuine scroll-to-next-reel swipe moves far more than this by the
+    // time the first touchmove event fires, so a larger threshold still
+    // catches real scrolls while leaving ordinary taps alone.
+    var moved = Math.abs(x-_gesture.startX) > 35 || Math.abs(y-_gesture.startY) > 35;
     if(moved){
       // Real finger movement — this is a scroll/swipe, not a stationary
       // tap or hold. Cancel everything immediately.
