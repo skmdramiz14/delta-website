@@ -333,20 +333,44 @@ function bumpView(contentId){
 // the screen, incorrectly triggering 2x mid-scroll. This version explicitly
 // tracks movement and cancels the whole gesture the instant real dragging
 // is detected, so only a genuinely stationary press ever counts as a hold.
-var _gesture = {active:false, startX:0, startY:0, holdTimer:null, is2x:false, slide:null, vid:null};
+var _gesture = {startX:0, startY:0, moved:false, holdTimer:null, is2x:false, slide:null, vid:null, suppressNextClick:false};
 
 function initReelGestures(slide){
-  var onStart = function(x, y, target){
-    if(target.closest && target.closest('.action-rail, .creator-row, .commerce-card, .follow-mini-btn, .pause-overlay')) return;
+  var isControl = function(target){
+    return target.closest && target.closest('.action-rail, .creator-row, .commerce-card, .follow-mini-btn, .pause-overlay');
+  };
+
+  // Play/pause uses a plain "click" event, not manual touch tracking —
+  // browsers ALREADY reliably suppress the click that would otherwise
+  // follow a touchstart/touchend if the finger moved (scrolling) or if it
+  // was a genuine long-press, so this is more robust than re-implementing
+  // that distinction by hand (which is what kept breaking: either it never
+  // fired, or it double-fired once for touch and again for a synthesized
+  // mouse/click event).
+  slide.addEventListener('click', function(e){
+    if(isControl(e.target)) return;
+    if(_gesture.suppressNextClick){ _gesture.suppressNextClick = false; return; } // 2x hold just ended — don't also toggle pause
     var vid = slide.querySelector('video');
     if(!vid) return;
+    if(vid.paused){ vid.play().catch(function(){}); hidePauseOverlay(slide); }
+    else { vid.pause(); showPauseOverlay(slide, vid); }
+  });
+
+  // 2x-hold is handled entirely separately via raw touch, only watching the
+  // right half of the screen, and only ever SETS _gesture.suppressNextClick
+  // when it actually engages — a normal tap never touches this path at all.
+  var onTouchStart = function(e){
+    if(isControl(e.target)) return;
+    var vid = slide.querySelector('video');
+    if(!vid) return;
+    var x = e.touches[0].clientX, y = e.touches[0].clientY;
     clearTimeout(_gesture.holdTimer);
-    _gesture.active = true; _gesture.startX = x; _gesture.startY = y;
+    _gesture.startX = x; _gesture.startY = y; _gesture.moved = false;
     _gesture.is2x = false; _gesture.slide = slide; _gesture.vid = vid;
     var isRightSide = x > slide.getBoundingClientRect().width/2;
     if(isRightSide){
       _gesture.holdTimer = setTimeout(function(){
-        if(!_gesture.active || _gesture.slide!==slide) return; // moved/ended/cancelled before this fired
+        if(_gesture.moved || _gesture.slide!==slide) return; // scrolled away before this fired
         _gesture.is2x = true;
         vid.playbackRate = 2;
         hidePauseOverlay(slide);
@@ -355,50 +379,35 @@ function initReelGestures(slide){
       }, 350);
     }
   };
-  var onMove = function(x, y){
-    if(!_gesture.active || _gesture.slide!==slide) return;
-    // 12px was too sensitive — ordinary tap jitter (present in almost every
-    // real tap on a touchscreen) was crossing that threshold and cancelling
-    // the whole gesture, which is why plain pause/play stopped working too.
-    // A genuine scroll-to-next-reel swipe moves far more than this by the
-    // time the first touchmove event fires, so a larger threshold still
-    // catches real scrolls while leaving ordinary taps alone.
-    var moved = Math.abs(x-_gesture.startX) > 35 || Math.abs(y-_gesture.startY) > 35;
-    if(moved){
-      // Real finger movement — this is a scroll/swipe, not a stationary
-      // tap or hold. Cancel everything immediately.
+  var onTouchMove = function(e){
+    if(_gesture.slide!==slide || _gesture.moved) return;
+    var x = e.touches[0].clientX, y = e.touches[0].clientY;
+    if(Math.abs(x-_gesture.startX) > 35 || Math.abs(y-_gesture.startY) > 35){
+      _gesture.moved = true;
       clearTimeout(_gesture.holdTimer);
-      if(_gesture.is2x){ _gesture.vid.playbackRate = 1; showSpeedBadge(slide, false); }
-      _gesture.active = false;
+      if(_gesture.is2x){ _gesture.vid.playbackRate = 1; showSpeedBadge(slide, false); _gesture.is2x = false; }
     }
   };
-  var onEnd = function(target){
-    if(!_gesture.active || _gesture.slide!==slide){ return; }
-    if(target && target.closest && target.closest('.action-rail, .creator-row, .commerce-card, .follow-mini-btn, .pause-overlay')){ _gesture.active=false; return; }
-    clearTimeout(_gesture.holdTimer);
-    var vid = _gesture.vid;
-    var wasHolding2x = _gesture.is2x;
-    _gesture.active = false; _gesture.is2x = false;
-    if(wasHolding2x){
-      vid.playbackRate = 1;
-      showSpeedBadge(slide, false);
-      hidePauseOverlay(slide);
-      return;
-    }
-    if(vid.paused){ vid.play().catch(function(){}); hidePauseOverlay(slide); }
-    else { vid.pause(); showPauseOverlay(slide, vid); }
-  };
-  var onCancel = function(){
+  var onTouchEnd = function(e){
     if(_gesture.slide!==slide) return;
     clearTimeout(_gesture.holdTimer);
-    if(_gesture.is2x && _gesture.vid){ _gesture.vid.playbackRate = 1; showSpeedBadge(slide, false); }
-    _gesture.active = false; _gesture.is2x = false;
+    if(_gesture.is2x){
+      _gesture.vid.playbackRate = 1;
+      showSpeedBadge(slide, false);
+      _gesture.is2x = false;
+      _gesture.suppressNextClick = true; // the click that follows this touchend must NOT also toggle pause
+    }
+  };
+  var onTouchCancel = function(){
+    if(_gesture.slide!==slide) return;
+    clearTimeout(_gesture.holdTimer);
+    if(_gesture.is2x && _gesture.vid){ _gesture.vid.playbackRate = 1; showSpeedBadge(slide, false); _gesture.is2x = false; }
   };
 
-  slide.addEventListener('touchstart', function(e){ onStart(e.touches[0].clientX, e.touches[0].clientY, e.target); }, {passive:true});
-  slide.addEventListener('touchmove', function(e){ onMove(e.touches[0].clientX, e.touches[0].clientY); }, {passive:true});
-  slide.addEventListener('touchend', function(e){ onEnd(e.target); });
-  slide.addEventListener('touchcancel', onCancel);
+  slide.addEventListener('touchstart', onTouchStart, {passive:true});
+  slide.addEventListener('touchmove', onTouchMove, {passive:true});
+  slide.addEventListener('touchend', onTouchEnd);
+  slide.addEventListener('touchcancel', onTouchCancel);
 }
 
 function showPauseOverlay(slide, vid){
