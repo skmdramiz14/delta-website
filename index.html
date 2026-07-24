@@ -1,4 +1,4 @@
-<!DOCTYPE html>     
+<!DOCTYPE html>   
 <html lang="bn">
 <head>
 <meta charset="UTF-8">
@@ -7941,6 +7941,7 @@ function resetVoiceOrderUI(){
 }
 
 function startVoiceOrderListening(){
+  console.log('[DELTA-DIAG] startVoiceOrderListening() called.');
   var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   if(!SpeechRecognition){
     showToast('এই browser এ voice support নেই। Chrome ব্যবহার করুন।');
@@ -7962,26 +7963,33 @@ function startVoiceOrderListening(){
     var text = '';
     for(var i=0;i<e.results.length;i++){ text += e.results[i][0].transcript; }
     transcriptText.textContent = text;
+    console.log('[DELTA-DIAG] onresult fired, interim text so far:', text);
   };
-  voRecognition.onerror = function(){
+  voRecognition.onerror = function(err){
+    console.log('[DELTA-DIAG] onerror fired:', err && err.error, err);
     micCircle.classList.remove('listening');
     // Section 3.11.1 — nothing heard
     statusText.textContent = 'আমি ঠিক শুনতে পারিনি। আরেকবার চেষ্টা করুন।';
   };
   voRecognition.onend = function(){
+    console.log('[DELTA-DIAG] onend fired. transcriptText was:', transcriptText.textContent);
     micCircle.classList.remove('listening');
     var finalText = transcriptText.textContent.trim();
     if(!finalText){
+      console.log('[DELTA-DIAG] finalText was EMPTY at onend — nothing to process.');
       statusText.textContent = 'আমি ঠিক শুনতে পারিনি। আরেকবার বলবেন?';
       return;
     }
+    console.log('[DELTA-DIAG] finalText captured, about to route:', finalText, '| voCheckoutState:', voCheckoutState);
     if(voCheckoutState){ handleCheckoutVoiceInput(finalText); return; }
     processVoiceOrderTranscript(finalText);
   };
   voRecognition.start();
+  console.log('[DELTA-DIAG] voRecognition.start() called.');
 }
 
 async function processVoiceOrderTranscript(transcript){
+  console.log('[DELTA-DIAG] processVoiceOrderTranscript() STARTED with:', transcript);
   var statusText = document.getElementById('voStatusText');
   statusText.textContent = 'বুঝার চেষ্টা করছি...';
 
@@ -7990,17 +7998,19 @@ async function processVoiceOrderTranscript(transcript){
     // the Cloud Function so nothing is lost if the connection drops
     // (Section 3.11.3 — resumable state).
     if(!voSessionId){
+      console.log('[DELTA-DIAG] creating new voiceOrderSessions doc...');
       var sessionRef = await db.collection('cities').doc(CITY).collection('voiceOrderSessions').add({
         uid: currentUser.uid, status:'processing',
         transcript:[{speaker:'customer', text:transcript, at:new Date().toISOString()}],
         createdAt:new Date().toISOString(), updatedAt:new Date().toISOString()
       });
       voSessionId = sessionRef.id;
+      console.log('[DELTA-DIAG] session doc created:', voSessionId);
     } else {
       db.collection('cities').doc(CITY).collection('voiceOrderSessions').doc(voSessionId).update({
         transcript: firebase.firestore.FieldValue.arrayUnion({speaker:'customer', text:transcript, at:new Date().toISOString()}),
         updatedAt:new Date().toISOString()
-      }).catch(function(){});
+      }).catch(function(err){ console.log('[DELTA-DIAG] session update failed (non-fatal):', err); });
     }
 
     // Section 3.2/3.2.1 — pass the PRIOR parsedItems so the Cloud Function
@@ -8010,8 +8020,11 @@ async function processVoiceOrderTranscript(transcript){
     var isCorrection = voInCorrectionMode;
     voInCorrectionMode = false; // consumed — only applies to this one turn
 
+    console.log('[DELTA-DIAG] checking firebase.functions exists?', typeof firebase.functions);
     var fn = firebase.functions().httpsCallable('voiceOrderUnderstand');
+    console.log('[DELTA-DIAG] about to CALL voiceOrderUnderstand Cloud Function...');
     var res = await fn({transcript:transcript, cityId:CITY, priorParsedItems:priorItems, isCorrection:isCorrection});
+    console.log('[DELTA-DIAG] Cloud Function RETURNED successfully:', res.data);
     voLastResult = res.data;
 
     await db.collection('cities').doc(CITY).collection('voiceOrderSessions').doc(voSessionId).update({
@@ -8025,6 +8038,7 @@ async function processVoiceOrderTranscript(transcript){
       renderVoiceOrderConfirmation(res.data);
     }
   }catch(e){
+    console.error('[DELTA-DIAG] processVoiceOrderTranscript CAUGHT AN ERROR:', e, '| e.code:', e.code, '| e.message:', e.message, '| e.details:', e.details);
     statusText.textContent = 'একটু সমস্যা হয়েছে। আবার চেষ্টা করুন।';
     showToast('Voice order error: '+e.message,'red');
   }
