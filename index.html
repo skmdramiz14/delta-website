@@ -7909,6 +7909,31 @@ var voSessionId = null;
 var voLastResult = null;
 var voFinished = false;
 var voInCorrectionMode = false;
+// ══════════════════════════════════════════════════════════════════════
+// ⚠️ ARCHITECTURAL FIX — voListeningGuard
+// ══════════════════════════════════════════════════════════════════════
+// Root-caused via production logs + call-stack tracing: startVoiceOrderListening()
+// is called from MANY places in this file — a manual tap on the mic circle
+// (every rendered screen has its own onclick="startVoiceOrderListening()"),
+// AND an automatic re-listen callback after DELTA finishes speaking a
+// question (renderClarificationQuestion, confirmVoiceOrderNo,
+// editVoiceOrderItems, askVoiceCheckoutQuestion all do this). If BOTH paths
+// fire close together — e.g. the customer taps the mic circle because
+// they're unsure it's actually listening, right as the auto-relisten
+// callback also fires — TWO SpeechRecognition sessions start nearly
+// simultaneously. The browser then aborts one of them, and depending on
+// exact timing, this manifested as: a customer's answer getting silently
+// dropped, the mic showing "শুনছি" indefinitely with no onresult ever
+// firing, or the same clarification question being asked repeatedly. This
+// was the single underlying cause behind several distinct-looking symptoms
+// chased individually today.
+//
+// The fix: ONE guard, checked at the top of startVoiceOrderListening() and
+// cleared only when a session genuinely ends (onend/onerror), makes "at
+// most one listening session active at a time" a hard invariant enforced
+// in ONE place — rather than trying to prevent every individual caller
+// from ever double-firing, which is fragile and easy to miss a spot.
+var voListeningGuard = false;
 
 function openVoiceOrder(){
   if(!currentUser){ showToast('অর্ডার করতে আগে লগইন করুন'); openAuth(); return; }
@@ -7916,6 +7941,7 @@ function openVoiceOrder(){
   voInCorrectionMode = false;
   voLastResult = null;
   voSessionId = null;
+  voListeningGuard = false; // fresh session — clear any stale guard state
   voCheckoutState = null; voCollectedAddr = null; voCollectedMobile = null; voCollectedPayment = 'cod'; voEditingSingleField = null; voReturningToReview = false;
   resetVoiceOrderUI();
   // Greeting — DELTA speaks first, before the customer taps the mic
@@ -7929,6 +7955,7 @@ function closeVoiceOrder(){
   document.getElementById('voOverlay').classList.remove('open');
   if(voRecognition){ try{ voRecognition.stop(); }catch(e){} }
   if(window.speechSynthesis) speechSynthesis.cancel();
+  voListeningGuard = false;
 }
 function resetVoiceOrderUI(){
   document.getElementById('voContent').innerHTML =
@@ -7943,11 +7970,21 @@ function resetVoiceOrderUI(){
 function startVoiceOrderListening(){
   console.log('[DELTA-DIAG] startVoiceOrderListening() called.');
   console.trace('[DELTA-DIAG] ^ call stack for the above call:');
+  // ⚠️ THE CORE FIX: if a listening session is already active, this call is
+  // almost certainly a duplicate (auto-relisten callback firing at the same
+  // moment as a manual mic tap, or vice versa) — ignore it rather than
+  // starting a second, competing SpeechRecognition session. This single
+  // check is what makes "at most one active session" a real invariant.
+  if(voListeningGuard){
+    console.log('[DELTA-DIAG] IGNORED — a listening session is already active (voListeningGuard is true).');
+    return;
+  }
   var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   if(!SpeechRecognition){
     showToast('এই browser এ voice support নেই। Chrome ব্যবহার করুন।');
     return;
   }
+  voListeningGuard = true;
   var micCircle = document.getElementById('voMicCircle');
   var statusText = document.getElementById('voStatusText');
   var transcriptText = document.getElementById('voTranscriptText');
@@ -7970,6 +8007,12 @@ function startVoiceOrderListening(){
   // end-of-speech timing, not directly configurable with continuous:false),
   // but a broken mic on every real user's phone is a far worse outcome than
   // occasionally needing to repeat a one-word clarification answer.
+  // NOTE: much of what LOOKED like "short answer gets cut off" in earlier
+  // testing may actually have been THIS session being silently killed by a
+  // second, competing session starting (the bug voListeningGuard now
+  // prevents) — worth re-testing the short-pause scenario now that only
+  // one session can ever be active, before assuming continuous mode is
+  // still needed at all.
   voRecognition.continuous = false;
   voRecognition.interimResults = true;
 
@@ -7981,12 +8024,19 @@ function startVoiceOrderListening(){
   };
   voRecognition.onerror = function(err){
     console.log('[DELTA-DIAG] onerror fired:', err && err.error, err);
+    voListeningGuard = false; // session genuinely ended — clear the guard
     micCircle.classList.remove('listening');
     // Section 3.11.1 — nothing heard
     statusText.textContent = 'আমি ঠিক শুনতে পারিনি। আরেকবার চেষ্টা করুন।';
   };
   voRecognition.onend = function(){
     console.log('[DELTA-DIAG] onend fired. transcriptText was (immediately):', transcriptText.textContent);
+    voListeningGuard = false; // session genuinely ended — clear the guard
+      // BEFORE the grace-delay setTimeout below, so that if routing this
+      // transcript leads to a NEW startVoiceOrderListening() call (e.g. an
+      // immediate auto-relisten for the next clarification), that new call
+      // is correctly treated as a fresh session, not blocked by a guard
+      // left over from the session that just legitimately ended.
     micCircle.classList.remove('listening');
     // ⚠️ Known Web Speech API race condition: on some browser/Android
     // combinations, particularly with continuous:false, the 'end' event can
