@@ -7972,17 +7972,31 @@ function startVoiceOrderListening(){
     statusText.textContent = 'আমি ঠিক শুনতে পারিনি। আরেকবার চেষ্টা করুন।';
   };
   voRecognition.onend = function(){
-    console.log('[DELTA-DIAG] onend fired. transcriptText was:', transcriptText.textContent);
+    console.log('[DELTA-DIAG] onend fired. transcriptText was (immediately):', transcriptText.textContent);
     micCircle.classList.remove('listening');
-    var finalText = transcriptText.textContent.trim();
-    if(!finalText){
-      console.log('[DELTA-DIAG] finalText was EMPTY at onend — nothing to process.');
-      statusText.textContent = 'আমি ঠিক শুনতে পারিনি। আরেকবার বলবেন?';
-      return;
-    }
-    console.log('[DELTA-DIAG] finalText captured, about to route:', finalText, '| voCheckoutState:', voCheckoutState);
-    if(voCheckoutState){ handleCheckoutVoiceInput(finalText); return; }
-    processVoiceOrderTranscript(finalText);
+    // ⚠️ Known Web Speech API race condition: on some browser/Android
+    // combinations, particularly with continuous:false, the 'end' event can
+    // fire a fraction of a second BEFORE the final 'result' event finishes
+    // updating the transcript — meaning transcriptText.textContent can
+    // still be empty or incomplete at the exact instant onend runs, even
+    // though the customer's speech WAS fully captured and about to arrive
+    // via onresult a moment later. A short grace delay here lets any
+    // last-moment onresult event land first, before we decide there's
+    // genuinely nothing to process. This was very likely the cause of
+    // "text is clearly visible, but DELTA still says it didn't hear
+    // anything" — the check was running just barely too early.
+    setTimeout(function(){
+      var finalText = transcriptText.textContent.trim();
+      console.log('[DELTA-DIAG] finalText after grace delay:', finalText);
+      if(!finalText){
+        console.log('[DELTA-DIAG] finalText was EMPTY even after grace delay — genuinely nothing captured.');
+        statusText.textContent = 'আমি ঠিক শুনতে পারিনি। আরেকবার বলবেন?';
+        return;
+      }
+      console.log('[DELTA-DIAG] finalText captured, about to route:', finalText, '| voCheckoutState:', voCheckoutState);
+      if(voCheckoutState){ handleCheckoutVoiceInput(finalText); return; }
+      processVoiceOrderTranscript(finalText);
+    }, 350);
   };
   voRecognition.start();
   console.log('[DELTA-DIAG] voRecognition.start() called.');
