@@ -325,46 +325,80 @@ function bumpView(contentId){
   viewedThisSession[contentId] = true;
 }
 
-var _reelGesture = {downTime:0, downX:0, holdTimer:null, holding2x:false};
-function handleReelPointerDown(e, slide){
-  // Ignore presses that started on an actual control (like/comment/share/
-  // follow/mute/commerce buttons) — those already have their own onclick
-  // handlers, and shouldn't ALSO trigger pause or 2x-speed underneath them.
-  if(e.target.closest('.action-rail, .creator-row, .commerce-card, .follow-mini-btn')) return;
-  var vid = slide.querySelector('video');
-  if(!vid) return;
-  _reelGesture.downTime = Date.now();
-  _reelGesture.downX = e.clientX;
-  _reelGesture.holding2x = false;
-  var isRightSide = e.clientX > slide.getBoundingClientRect().width/2;
-  if(isRightSide){
-    _reelGesture.holdTimer = setTimeout(function(){
-      vid.playbackRate = 2;
-      _reelGesture.holding2x = true;
-      hidePauseOverlay(slide); // if it was paused, holding to fast-forward should resume it
-      if(vid.paused) vid.play().catch(function(){});
-      showSpeedBadge(slide, true);
-    }, 400); // long enough that a normal quick tap never accidentally triggers 2x
-  }
+// ═══ TAP-TO-PAUSE / HOLD-RIGHT-FOR-2X — fresh rewrite ═══
+// Previous version used pointerdown/pointerup alone, with no movement
+// detection at all — meaning a normal SCROLL gesture (touch down, drag up
+// to snap to the next reel, touch up) could easily be misread as "holding
+// still" whenever the initial touch happened to land on the right half of
+// the screen, incorrectly triggering 2x mid-scroll. This version explicitly
+// tracks movement and cancels the whole gesture the instant real dragging
+// is detected, so only a genuinely stationary press ever counts as a hold.
+var _gesture = {active:false, startX:0, startY:0, holdTimer:null, is2x:false, slide:null, vid:null};
+
+function initReelGestures(slide){
+  var onStart = function(x, y, target){
+    if(target.closest && target.closest('.action-rail, .creator-row, .commerce-card, .follow-mini-btn, .pause-overlay')) return;
+    var vid = slide.querySelector('video');
+    if(!vid) return;
+    clearTimeout(_gesture.holdTimer);
+    _gesture.active = true; _gesture.startX = x; _gesture.startY = y;
+    _gesture.is2x = false; _gesture.slide = slide; _gesture.vid = vid;
+    var isRightSide = x > slide.getBoundingClientRect().width/2;
+    if(isRightSide){
+      _gesture.holdTimer = setTimeout(function(){
+        if(!_gesture.active || _gesture.slide!==slide) return; // moved/ended/cancelled before this fired
+        _gesture.is2x = true;
+        vid.playbackRate = 2;
+        hidePauseOverlay(slide);
+        if(vid.paused) vid.play().catch(function(){});
+        showSpeedBadge(slide, true);
+      }, 350);
+    }
+  };
+  var onMove = function(x, y){
+    if(!_gesture.active || _gesture.slide!==slide) return;
+    var moved = Math.abs(x-_gesture.startX) > 12 || Math.abs(y-_gesture.startY) > 12;
+    if(moved){
+      // Real finger movement — this is a scroll/swipe, not a stationary
+      // tap or hold. Cancel everything immediately.
+      clearTimeout(_gesture.holdTimer);
+      if(_gesture.is2x){ _gesture.vid.playbackRate = 1; showSpeedBadge(slide, false); }
+      _gesture.active = false;
+    }
+  };
+  var onEnd = function(target){
+    if(!_gesture.active || _gesture.slide!==slide){ return; }
+    if(target && target.closest && target.closest('.action-rail, .creator-row, .commerce-card, .follow-mini-btn, .pause-overlay')){ _gesture.active=false; return; }
+    clearTimeout(_gesture.holdTimer);
+    var vid = _gesture.vid;
+    var wasHolding2x = _gesture.is2x;
+    _gesture.active = false; _gesture.is2x = false;
+    if(wasHolding2x){
+      vid.playbackRate = 1;
+      showSpeedBadge(slide, false);
+      hidePauseOverlay(slide);
+      return;
+    }
+    if(vid.paused){ vid.play().catch(function(){}); hidePauseOverlay(slide); }
+    else { vid.pause(); showPauseOverlay(slide, vid); }
+  };
+  var onCancel = function(){
+    if(_gesture.slide!==slide) return;
+    clearTimeout(_gesture.holdTimer);
+    if(_gesture.is2x && _gesture.vid){ _gesture.vid.playbackRate = 1; showSpeedBadge(slide, false); }
+    _gesture.active = false; _gesture.is2x = false;
+  };
+
+  slide.addEventListener('touchstart', function(e){ onStart(e.touches[0].clientX, e.touches[0].clientY, e.target); }, {passive:true});
+  slide.addEventListener('touchmove', function(e){ onMove(e.touches[0].clientX, e.touches[0].clientY); }, {passive:true});
+  slide.addEventListener('touchend', function(e){ onEnd(e.target); });
+  slide.addEventListener('touchcancel', onCancel);
+  // Mouse fallback purely for desktop/browser testing — real devices use the touch events above.
+  slide.addEventListener('mousedown', function(e){ onStart(e.clientX, e.clientY, e.target); });
+  slide.addEventListener('mousemove', function(e){ onMove(e.clientX, e.clientY); });
+  slide.addEventListener('mouseup', function(e){ onEnd(e.target); });
 }
-function handleReelPointerUp(e, slide){
-  if(e.target.closest('.action-rail, .creator-row, .commerce-card, .follow-mini-btn, .pause-overlay')) return;
-  clearTimeout(_reelGesture.holdTimer);
-  var vid = slide.querySelector('video');
-  if(!vid) return;
-  if(_reelGesture.holding2x){
-    // Was holding for 2x — release returns to normal speed, no play/pause toggle.
-    vid.playbackRate = 1;
-    _reelGesture.holding2x = false;
-    showSpeedBadge(slide, false);
-    hidePauseOverlay(slide); // defensive — should already be gone, but never leave a stale overlay behind
-    return;
-  }
-  // A quick tap/release (never held long enough to trigger 2x) — toggle
-  // play/pause, same as Instagram/TikTok's single-tap gesture.
-  if(vid.paused){ vid.play().catch(function(){}); hidePauseOverlay(slide); }
-  else { vid.pause(); showPauseOverlay(slide, vid); }
-}
+
 function showPauseOverlay(slide, vid){
   // Matches Instagram's paused-state overlay exactly: a small speaker icon
   // (toggles mute on tap) sitting just above a larger play button (resumes
@@ -404,9 +438,7 @@ function showSpeedBadge(slide, show){
 function buildReelSlide(id, d){
   var slide = document.createElement('div');
   slide.className='reel-slide'; slide.dataset.contentId=id;
-  slide.addEventListener('pointerdown', function(e){ handleReelPointerDown(e, slide); });
-  slide.addEventListener('pointerup', function(e){ handleReelPointerUp(e, slide); });
-  slide.addEventListener('pointercancel', function(e){ handleReelPointerUp(e, slide); });
+  initReelGestures(slide);
 
   // Prefer the LIVE profile (fetched fresh in renderReels) over the frozen
   // authorAvatarUrl/authorDisplayName snapshot saved at post-creation time —
