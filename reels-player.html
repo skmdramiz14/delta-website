@@ -399,10 +399,6 @@ function initReelGestures(slide){
   slide.addEventListener('touchmove', function(e){ onMove(e.touches[0].clientX, e.touches[0].clientY); }, {passive:true});
   slide.addEventListener('touchend', function(e){ onEnd(e.target); });
   slide.addEventListener('touchcancel', onCancel);
-  // Mouse fallback purely for desktop/browser testing — real devices use the touch events above.
-  slide.addEventListener('mousedown', function(e){ onStart(e.clientX, e.clientY, e.target); });
-  slide.addEventListener('mousemove', function(e){ onMove(e.clientX, e.clientY); });
-  slide.addEventListener('mouseup', function(e){ onEnd(e.target); });
 }
 
 function showPauseOverlay(slide, vid){
