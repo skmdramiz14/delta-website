@@ -1,4 +1,4 @@
-<!DOCTYPE html>     
+<!DOCTYPE html>   
 <html lang="bn">
 <head>
 <meta charset="UTF-8">
@@ -7942,6 +7942,7 @@ function resetVoiceOrderUI(){
 
 function startVoiceOrderListening(){
   console.log('[DELTA-DIAG] startVoiceOrderListening() called.');
+  console.trace('[DELTA-DIAG] ^ call stack for the above call:');
   var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   if(!SpeechRecognition){
     showToast('এই browser এ voice support নেই। Chrome ব্যবহার করুন।');
@@ -8077,6 +8078,7 @@ function renderClarificationQuestion(result){
 }
 
 function renderVoiceOrderConfirmation(result){
+  console.log('[DELTA-DIAG] renderVoiceOrderConfirmation() called with result:', result);
   var items = result.parsedItems || [];
   var inScope = items.filter(function(i){ return i.interactionModel !== 'OUT_OF_SCOPE_V1'; });
   var outOfScope = items.filter(function(i){ return i.interactionModel === 'OUT_OF_SCOPE_V1'; });
