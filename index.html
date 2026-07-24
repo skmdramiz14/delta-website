@@ -7935,6 +7935,28 @@ var voInCorrectionMode = false;
 // from ever double-firing, which is fragile and easy to miss a spot.
 var voListeningGuard = false;
 
+// ⚠️ ARCHITECTURAL FIX — autoRelistenAfterSpeaking()
+// ══════════════════════════════════════════════════════════════════════
+// Root-caused via production logs: right after DELTA finishes speaking a
+// question (TTS), calling startVoiceOrderListening() IMMEDIATELY sometimes
+// results in an instant "no-speech" error — the recognition session starts,
+// but captures nothing at all, even though the customer answers right away.
+// Most likely cause: on mobile, switching the device's audio hardware from
+// OUTPUT mode (TTS just played through the speaker) to INPUT mode
+// (microphone for recognition) takes the OS a brief moment — if recognition
+// starts before that switch completes, the very beginning of the
+// customer's answer (sometimes the WHOLE short answer) is never actually
+// captured by the hardware, regardless of what the software does.
+// A short delay between "TTS finished" and "start listening" gives that
+// hardware handoff time to complete. This is applied in ONE place so every
+// call site (clarification, correction, checkout questions, review) gets
+// the fix consistently, the same design principle as voListeningGuard above.
+function autoRelistenAfterSpeaking(){
+  setTimeout(function(){
+    startVoiceOrderListening();
+  }, 400);
+}
+
 function openVoiceOrder(){
   if(!currentUser){ showToast('অর্ডার করতে আগে লগইন করুন'); openAuth(); return; }
   document.getElementById('voOverlay').classList.add('open');
@@ -8136,7 +8158,9 @@ function renderClarificationQuestion(result){
     '</div>';
   speakVoiceOrderText(question, function(){
     // auto re-listen right after DELTA finishes asking — no extra tap needed
-    startVoiceOrderListening();
+    // (400ms handoff delay applied inside autoRelistenAfterSpeaking, see its
+    // definition above for why this delay matters on mobile)
+    autoRelistenAfterSpeaking();
   });
 }
 
@@ -8308,7 +8332,7 @@ function confirmVoiceOrderNo(){
       '<div class="vo-transcript-text" id="voTranscriptText"></div>'+
       '<button class="vo-retry-btn" onclick="closeVoiceOrder()">✕ বন্ধ করুন</button>'+
     '</div>';
-  speakVoiceOrderText(question, function(){ startVoiceOrderListening(); });
+  speakVoiceOrderText(question, autoRelistenAfterSpeaking);
 }
 
 var voReturningToReview = false; // when true, confirmVoiceOrderYes() skips
@@ -8337,7 +8361,7 @@ function editVoiceOrderItems(){
       '<div class="vo-transcript-text" id="voTranscriptText"></div>'+
       '<button class="vo-retry-btn" onclick="closeVoiceOrder()">✕ বন্ধ করুন</button>'+
     '</div>';
-  speakVoiceOrderText(question, function(){ startVoiceOrderListening(); });
+  speakVoiceOrderText(question, autoRelistenAfterSpeaking);
 }
 
 async function confirmVoiceOrderYes(){
@@ -8441,7 +8465,7 @@ function askVoiceCheckoutQuestion(question){
       '<div class="vo-transcript-text" id="voTranscriptText"></div>'+
       '<button class="vo-retry-btn" onclick="closeVoiceOrder()">✕ বন্ধ করুন</button>'+
     '</div>';
-  speakVoiceOrderText(question, function(){ startVoiceOrderListening(); });
+  speakVoiceOrderText(question, autoRelistenAfterSpeaking);
 }
 
 var voEditingSingleField = null; // when set, collecting ONE field returns straight
@@ -8565,7 +8589,7 @@ function showFinalReview(){
         '<div class="vo-transcript-text" id="voTranscriptText"></div>'+
       '</div>'+
     '</div>';
-  speakVoiceOrderText(reviewText, function(){ startVoiceOrderListening(); });
+  speakVoiceOrderText(reviewText, autoRelistenAfterSpeaking);
 }
 
 /**
