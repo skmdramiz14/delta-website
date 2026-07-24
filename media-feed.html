@@ -170,6 +170,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 .feed-video-mute{position:absolute;bottom:12px;right:12px;width:30px;height:30px;border-radius:50%;
   background:rgba(0,0,0,.5);border:none;color:#fff;font-size:.9rem;display:flex;align-items:center;
   justify-content:center;cursor:pointer;z-index:5;}
+.feed-video-expand-hint{position:absolute;top:10px;right:10px;background:rgba(0,0,0,.5);color:#fff;
+  width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+  font-size:.85rem;pointer-events:none;}
 .post-media-badge{position:absolute;top:10px;left:10px;background:rgba(0,0,0,.55);color:#fff;font-size:.65rem;font-weight:700;padding:3px 9px;border-radius:8px;text-transform:uppercase;}
 .carousel-dots{position:absolute;bottom:8px;left:0;right:0;display:flex;justify-content:center;gap:4px;}
 .carousel-dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.6);}
@@ -2687,15 +2690,32 @@ function badgeLabel(profile){
 // IntersectionObserver, not one per video, since the feed can have many
 // video posts and creating a separate observer for each would be wasteful.
 // Plays (muted) once a video is >60% visible, pauses once it scrolls mostly
-// out of view — exactly the same threshold/behavior as reels-player.html. ═══
+// out of view — exactly the same threshold/behavior as reels-player.html.
+//
+// Sound is also globally exclusive, matching FB/Instagram: unmuting ANY
+// video immediately mutes every other one, and remembers that "sound on"
+// preference so the NEXT video that scrolls into view also starts
+// unmuted automatically — rather than requiring a fresh tap on every
+// single video as you scroll through the feed. ═══
 var _feedVideoObserver = null;
+var _feedAllVideos = []; // every <video> + its mute button currently in the feed, {vid, btn}
+var _feedSoundOn = false; // the user's last choice — carries forward to newly-visible videos
 function getFeedVideoObserver(){
   if(_feedVideoObserver) return _feedVideoObserver;
   _feedVideoObserver = new IntersectionObserver(function(entries){
     entries.forEach(function(entry){
       var vid = entry.target;
       if(entry.isIntersecting && entry.intersectionRatio > 0.6){
-        vid.play().catch(function(){}); // already muted, so autoplay is never blocked
+        vid.muted = !_feedSoundOn; // respect the user's last sound-on/off choice
+        var entryInfo = _feedAllVideos.find(function(v){ return v.vid===vid; });
+        if(entryInfo && entryInfo.btn) entryInfo.btn.textContent = vid.muted ? '🔇' : '🔊';
+        vid.play().catch(function(){
+          // If sound-on playback gets blocked for some reason, fall back to
+          // muted rather than failing to autoplay at all.
+          vid.muted = true;
+          if(entryInfo && entryInfo.btn) entryInfo.btn.textContent = '🔇';
+          vid.play().catch(function(){});
+        });
       } else {
         vid.pause();
       }
@@ -2703,7 +2723,8 @@ function getFeedVideoObserver(){
   }, {threshold:[0, 0.6, 1]});
   return _feedVideoObserver;
 }
-function observeFeedVideo(videoEl){
+function observeFeedVideo(videoEl, btnEl){
+  _feedAllVideos.push({vid:videoEl, btn:btnEl});
   getFeedVideoObserver().observe(videoEl);
 }
 function toggleFeedVideoMute(btn){
@@ -2712,6 +2733,18 @@ function toggleFeedVideoMute(btn){
   if(!vid) return;
   vid.muted = !vid.muted;
   btn.textContent = vid.muted ? '🔇' : '🔊';
+  _feedSoundOn = !vid.muted;
+  if(!vid.muted){
+    // Turning sound ON for this one — every other video in the feed mutes
+    // immediately, same as only one Reel/Instagram video ever plays with
+    // audio at a time.
+    _feedAllVideos.forEach(function(entry){
+      if(entry.vid !== vid && !entry.vid.muted){
+        entry.vid.muted = true;
+        if(entry.btn) entry.btn.textContent = '🔇';
+      }
+    });
+  }
 }
 
 function renderPostCard(id, d, wrap, isPinned){
@@ -2757,13 +2790,24 @@ function renderPostCard(id, d, wrap, isPinned){
     // set up below. A small mute toggle replaces the native volume control.
     media.innerHTML='<video class="feed-video" src="'+d.videoUrl+'" muted loop playsinline oncontextmenu="return false"></video>'+
       '<button class="feed-video-mute" onclick="event.stopPropagation();toggleFeedVideoMute(this)">🔇</button>'+
-      '<div class="post-media-badge">'+d.type+'</div>';
+      '<div class="post-media-badge">'+d.type+'</div>'+
+      '<div class="feed-video-expand-hint">⛶</div>';
+    // Tapping the video itself (not the mute button) opens the full,
+    // dedicated player — same as Instagram/Facebook: the feed only ever
+    // shows a small autoplay preview while scrolling, the full experience
+    // (2x-hold, comments, the Instagram-style pause overlay, etc.) lives in
+    // reels-player.html/video-hub.html, not duplicated here in the feed.
+    media.onclick = function(){
+      if(d.type==='reel') location.href='reels-player.html?city='+CITY+'&id='+id;
+      else location.href='video-hub.html?city='+CITY+'&id='+id;
+    };
+    media.style.cursor = 'pointer';
   } else if(d.mediaUrls && d.mediaUrls.length){
     media.innerHTML='<img src="'+d.mediaUrls[0]+'">'+(d.mediaUrls.length>1?'<div class="post-media-badge">1/'+d.mediaUrls.length+'</div>':'');
   }
   if(media.innerHTML) card.appendChild(media);
   var feedVideoEl = media.querySelector('.feed-video');
-  if(feedVideoEl) observeFeedVideo(feedVideoEl);
+  if(feedVideoEl) observeFeedVideo(feedVideoEl, media.querySelector('.feed-video-mute'));
 
   // ── Poll (if postSubType==poll) ──
   if(d.postSubType==='poll' && d.pollOptions && d.pollOptions.length){
