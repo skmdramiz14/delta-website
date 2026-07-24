@@ -1,4 +1,4 @@
-<!DOCTYPE html>    
+<!DOCTYPE html>   
 <html lang="bn">
 <head>
 <meta charset="UTF-8">
@@ -7957,23 +7957,53 @@ function startVoiceOrderListening(){
 
   voRecognition = new SpeechRecognition();
   voRecognition.lang = currentLang==='bn' ? 'bn-IN' : 'en-US';
-  voRecognition.continuous = false;
+  // ⚠️ BUG FIX: continuous:false made the browser's OWN internal
+  // end-of-speech detection stop listening after even a brief mid-sentence
+  // pause — confirmed via production logs: a customer answering "বাসমতি"
+  // to a clarification question got cut off after just "আমি চাই" (2 words)
+  // whenever they paused briefly before finishing the thought, forcing them
+  // to repeat the whole answer, sometimes several times. continuous:true
+  // stops the browser from ending on every small pause; WE now decide when
+  // the customer is actually done, via an explicit silence timer below —
+  // giving real thinking-pauses room (consistent with this document's
+  // "longer pause tolerance" principle) without waiting forever if the
+  // customer genuinely goes quiet.
+  voRecognition.continuous = true;
   voRecognition.interimResults = true;
+
+  var voSilenceTimer = null;
+  var VO_SILENCE_MS = 1800; // how long to wait after the LAST bit of new
+    // speech before deciding the customer is actually finished — long
+    // enough for a natural thinking-pause, short enough not to feel laggy.
+  function resetVoSilenceTimer(){
+    if(voSilenceTimer) clearTimeout(voSilenceTimer);
+    voSilenceTimer = setTimeout(function(){
+      console.log('[DELTA-DIAG] silence timer elapsed — stopping recognition.');
+      try{ voRecognition.stop(); }catch(e){}
+    }, VO_SILENCE_MS);
+  }
+  resetVoSilenceTimer(); // start the clock even before the first word, in
+    // case the customer never says anything at all (falls through to the
+    // existing onerror/'no-speech' or empty-onend handling as before).
 
   voRecognition.onresult = function(e){
     var text = '';
     for(var i=0;i<e.results.length;i++){ text += e.results[i][0].transcript; }
     transcriptText.textContent = text;
     console.log('[DELTA-DIAG] onresult fired, interim text so far:', text);
+    resetVoSilenceTimer(); // customer is still actively speaking — push the
+      // silence deadline forward instead of letting it lapse mid-sentence.
   };
   voRecognition.onerror = function(err){
     console.log('[DELTA-DIAG] onerror fired:', err && err.error, err);
+    if(voSilenceTimer) clearTimeout(voSilenceTimer);
     micCircle.classList.remove('listening');
     // Section 3.11.1 — nothing heard
     statusText.textContent = 'আমি ঠিক শুনতে পারিনি। আরেকবার চেষ্টা করুন।';
   };
   voRecognition.onend = function(){
     console.log('[DELTA-DIAG] onend fired. transcriptText was (immediately):', transcriptText.textContent);
+    if(voSilenceTimer) clearTimeout(voSilenceTimer);
     micCircle.classList.remove('listening');
     // ⚠️ Known Web Speech API race condition: on some browser/Android
     // combinations, particularly with continuous:false, the 'end' event can
