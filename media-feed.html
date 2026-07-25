@@ -2799,19 +2799,17 @@ function renderPostCard(id, d, wrap, isPinned){
         '<span class="caption-full-text" style="display:none;"></span><span class="caption-less-link" style="display:none;"> ...less</span>';
       cap.querySelector('.caption-short-text').textContent = shortText;
       cap.querySelector('.caption-full-text').textContent = d.caption;
-      cap.querySelector('.caption-more-link').onclick = function(e){
+      // The whole caption block toggles on tap — anywhere in the text, not
+      // just the small "...more"/"...less" words themselves, same as tapping
+      // a Facebook post's caption anywhere expands/collapses it.
+      cap.style.cursor = 'pointer';
+      cap.onclick = function(e){
         e.stopPropagation();
-        cap.querySelector('.caption-short-text').style.display = 'none';
-        cap.querySelector('.caption-more-link').style.display = 'none';
-        cap.querySelector('.caption-full-text').style.display = 'inline';
-        cap.querySelector('.caption-less-link').style.display = 'inline';
-      };
-      cap.querySelector('.caption-less-link').onclick = function(e){
-        e.stopPropagation();
-        cap.querySelector('.caption-full-text').style.display = 'none';
-        cap.querySelector('.caption-less-link').style.display = 'none';
-        cap.querySelector('.caption-short-text').style.display = 'inline';
-        cap.querySelector('.caption-more-link').style.display = 'inline';
+        var isCollapsed = cap.querySelector('.caption-more-link').style.display !== 'none';
+        cap.querySelector('.caption-short-text').style.display = isCollapsed ? 'none' : 'inline';
+        cap.querySelector('.caption-more-link').style.display = isCollapsed ? 'none' : 'inline';
+        cap.querySelector('.caption-full-text').style.display = isCollapsed ? 'inline' : 'none';
+        cap.querySelector('.caption-less-link').style.display = isCollapsed ? 'inline' : 'none';
       };
     } else {
       cap.textContent = d.caption;
