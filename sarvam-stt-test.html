@@ -140,17 +140,37 @@
           };
           reader.readAsDataURL(audioBlob);
         };
-        pipelineRecorder.start();
+        // ⚠️ FIX: intermittent "কিছু শোনা যায়নি" reported during real
+        // testing — most likely cause is the button being released before
+        // enough audio data was actually captured (especially for short
+        // utterances like just "চাল লাগবে"). Two changes address this:
+        // (1) start(250) explicitly requests a data chunk every 250ms
+        // rather than only at stop() — some browsers produce a usably
+        // empty/truncated blob without this. (2) recordStartTime tracks
+        // when recording began, so stopPipelineRecording can enforce a
+        // minimum hold duration before actually stopping, giving very
+        // quick releases a floor to work with.
+        pipelineRecorder.start(250);
+        window.pipelineRecordStartTime = Date.now();
         pipelineBtn.style.background = '#666';
         document.getElementById('pipelineStatus').textContent = 'শুনছি...';
       } catch (err){
         document.getElementById('pipelineStatus').textContent = 'Microphone access ব্যর্থ: ' + err.message;
       }
     }
+    var PIPELINE_MIN_HOLD_MS = 600; // don't stop before this much time has
+      // passed since start, regardless of how quickly the button is released
     function stopPipelineRecording(){
-      if (pipelineRecorder && pipelineRecorder.state !== 'inactive'){
+      if (!pipelineRecorder || pipelineRecorder.state === 'inactive') return;
+      var elapsed = Date.now() - (window.pipelineRecordStartTime || 0);
+      var doStop = function(){
         pipelineRecorder.stop();
         pipelineBtn.style.background = '#2e7d32';
+      };
+      if (elapsed < PIPELINE_MIN_HOLD_MS) {
+        setTimeout(doStop, PIPELINE_MIN_HOLD_MS - elapsed);
+      } else {
+        doStop();
       }
     }
     pipelineBtn.addEventListener('mousedown', startPipelineRecording);
