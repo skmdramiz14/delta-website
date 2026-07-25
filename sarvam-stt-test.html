@@ -129,7 +129,16 @@
                 document.getElementById('pipelineResult').textContent = JSON.stringify(d, null, 2);
                 return;
               }
-              var timingText = d.timings.totalMs ? (' (' + d.timings.totalMs + 'ms)') : '';
+              var t = d.timings || {};
+              var timingParts = [];
+              if (t.sttMs) timingParts.push('STT:' + t.sttMs + 'ms');
+              if (t.groqMs) timingParts.push('Groq:' + t.groqMs + 'ms');
+              if (t.safetyGateMs) timingParts.push('Safety:' + t.safetyGateMs + 'ms');
+              if (t.responseGenMs) timingParts.push('Response-gen:' + t.responseGenMs + 'ms');
+              if (t.ttsMs) timingParts.push('TTS:' + t.ttsMs + 'ms');
+              var timingText = t.totalMs
+                ? (' (মোট ' + t.totalMs + 'ms — ' + timingParts.join(', ') + ')')
+                : '';
               var waitingNote = pipelineSessionState && pipelineSessionState.waitingForAnswerTo
                 ? '\n\n⏳ এখনো উত্তরের অপেক্ষায় — আবার বাটন চেপে উত্তর দাও।'
                 : (pipelineSessionState === null ? '\n\n✓ সব clarification শেষ।' : '');
