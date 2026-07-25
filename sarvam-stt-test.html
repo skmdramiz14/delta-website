@@ -35,6 +35,18 @@
   <div id="ttsStatus"></div>
   <audio id="ttsAudio" controls style="display:none; margin-top:10px;"></audio>
 
+  <hr style="margin:30px 0;">
+  <h3>Groq — Current Model List</h3>
+  <button id="listModelsBtn" disabled>📋 Groq Model List দেখো</button>
+  <div id="modelsResult" style="text-align:left; background:#f5f5f5; padding:16px; border-radius:8px; margin-top:10px; white-space:pre-wrap; font-family:monospace; font-size:12px; display:none; max-height:200px; overflow-y:auto;"></div>
+
+  <hr style="margin:30px 0;">
+  <h3>Groq — Extraction Test</h3>
+  <input type="text" id="extractText" value="আমার ১ কেজি চাল আর ৫০০ গ্রাম মিষ্টি দই লাগবে" style="width:90%; padding:10px; font-size:16px;">
+  <br><br>
+  <button id="extractBtn" disabled>🧠 বের করো</button>
+  <div id="extractResult" style="text-align:left; background:#f5f5f5; padding:16px; border-radius:8px; margin-top:10px; white-space:pre-wrap; font-family:monospace; font-size:13px; display:none;"></div>
+
   <!-- Firebase SDKs — same version as the main DELTA site -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
@@ -64,8 +76,38 @@
       authStatusEl.textContent = '✓ প্রস্তুত। বাটন চেপে ধরে বাংলায় কিছু বলুন।';
       recordBtn.disabled = false;
       document.getElementById('ttsBtn').disabled = false;
+      document.getElementById('listModelsBtn').disabled = false;
+      document.getElementById('extractBtn').disabled = false;
     }).catch(function(err){
       authStatusEl.textContent = '✗ Login ব্যর্থ: ' + err.message;
+    });
+
+    document.getElementById('listModelsBtn').addEventListener('click', async function(){
+      var el = document.getElementById('modelsResult');
+      el.style.display = 'block';
+      el.textContent = 'লোড হচ্ছে...';
+      try {
+        var fn = firebase.functions().httpsCallable('listGroqModels');
+        var res = await fn({});
+        el.textContent = res.data.modelIds.join('\n');
+      } catch (err) {
+        el.textContent = 'Error: ' + err.message;
+      }
+    });
+
+    document.getElementById('extractBtn').addEventListener('click', async function(){
+      var el = document.getElementById('extractResult');
+      var text = document.getElementById('extractText').value;
+      el.style.display = 'block';
+      el.textContent = 'প্রসেস হচ্ছে...';
+      try {
+        var fn = firebase.functions().httpsCallable('testGroqExtraction');
+        var res = await fn({transcript: text});
+        el.textContent = JSON.stringify(res.data.extracted, null, 2) +
+          '\n\n(' + res.data.elapsedMs + 'ms লেগেছে)';
+      } catch (err) {
+        el.textContent = 'Error: ' + err.message;
+      }
     });
 
     document.getElementById('ttsBtn').addEventListener('click', async function(){
