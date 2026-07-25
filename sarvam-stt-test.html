@@ -27,6 +27,14 @@
   <div id="status"></div>
   <div id="result"></div>
 
+  <hr style="margin:30px 0;">
+  <h3>TTS Test (Bulbul)</h3>
+  <input type="text" id="ttsText" value="নমস্কার! আজকে আপনার কী প্রয়োজন?" style="width:90%; padding:10px; font-size:16px;">
+  <br><br>
+  <button id="ttsBtn" disabled>🔊 শোনো</button>
+  <div id="ttsStatus"></div>
+  <audio id="ttsAudio" controls style="display:none; margin-top:10px;"></audio>
+
   <!-- Firebase SDKs — same version as the main DELTA site -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
@@ -36,7 +44,7 @@
     // DELTA's index.html — copy it from there, it's not secret, it's
     // meant to be public in client-side code).
     var firebaseConfig = {
-      apiKey: "AIzaSyA6TrrnCMwv1aa1WPqGvTVWlnieB2pVOEU",
+      apiKey: "PASTE_YOUR_API_KEY_HERE",
       authDomain: "delta-platform-82fc0.firebaseapp.com",
       projectId: "delta-platform-82fc0",
       // ...rest of your config from index.html's firebase.initializeApp() call
@@ -55,8 +63,31 @@
     firebase.auth().signInAnonymously().then(function(){
       authStatusEl.textContent = '✓ প্রস্তুত। বাটন চেপে ধরে বাংলায় কিছু বলুন।';
       recordBtn.disabled = false;
+      document.getElementById('ttsBtn').disabled = false;
     }).catch(function(err){
       authStatusEl.textContent = '✗ Login ব্যর্থ: ' + err.message;
+    });
+
+    document.getElementById('ttsBtn').addEventListener('click', async function(){
+      var ttsStatus = document.getElementById('ttsStatus');
+      var ttsAudio = document.getElementById('ttsAudio');
+      var text = document.getElementById('ttsText').value;
+      ttsStatus.textContent = 'তৈরি হচ্ছে...';
+      ttsAudio.style.display = 'none';
+      try {
+        var fn = firebase.functions().httpsCallable('testSarvamTTS');
+        var res = await fn({text: text, languageCode: 'bn-IN'});
+        if (!res.data.audioBase64) {
+          ttsStatus.textContent = '✗ কোনো audio পাওয়া যায়নি';
+          return;
+        }
+        ttsAudio.src = 'data:audio/wav;base64,' + res.data.audioBase64;
+        ttsAudio.style.display = 'block';
+        ttsAudio.play();
+        ttsStatus.textContent = '✓ সম্পন্ন (' + res.data.elapsedMs + 'ms লেগেছে)';
+      } catch (err){
+        ttsStatus.textContent = '✗ Error: ' + err.message;
+      }
     });
 
     async function startRecording(){
