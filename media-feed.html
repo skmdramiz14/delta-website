@@ -2700,6 +2700,14 @@ function badgeLabel(profile){
 var _feedVideoObserver = null;
 var _feedAllVideos = []; // every <video> + its mute button currently in the feed, {vid, btn}
 var _feedSoundOn = false; // the user's last choice — carries forward to newly-visible videos
+var _feedViewedThisSession = {};
+function bumpFeedView(contentId){
+  if(!contentId || _feedViewedThisSession[contentId]) return;
+  _feedViewedThisSession[contentId] = true;
+  db.collection('cities').doc(CITY).collection('mediaContent').doc(contentId)
+    .update({'stats.views': firebase.firestore.FieldValue.increment(1)})
+    .catch(function(e){ console.warn('Feed view count update failed (non-fatal)', e); });
+}
 function getFeedVideoObserver(){
   if(_feedVideoObserver) return _feedVideoObserver;
   _feedVideoObserver = new IntersectionObserver(function(entries){
@@ -2709,6 +2717,7 @@ function getFeedVideoObserver(){
         vid.muted = !_feedSoundOn; // respect the user's last sound-on/off choice
         var entryInfo = _feedAllVideos.find(function(v){ return v.vid===vid; });
         if(entryInfo && entryInfo.btn) entryInfo.btn.textContent = vid.muted ? '🔇' : '🔊';
+        bumpFeedView(vid.dataset.contentId);
         vid.play().catch(function(){
           // If sound-on playback gets blocked for some reason, fall back to
           // muted rather than failing to autoplay at all.
@@ -2788,7 +2797,7 @@ function renderPostCard(id, d, wrap, isPinned){
     // (muted, since browsers require that for autoplay without a user
     // gesture) as they scroll into view, via the shared IntersectionObserver
     // set up below. A small mute toggle replaces the native volume control.
-    media.innerHTML='<video class="feed-video" src="'+d.videoUrl+'" muted loop playsinline oncontextmenu="return false"></video>'+
+    media.innerHTML='<video class="feed-video" data-content-id="'+id+'" src="'+d.videoUrl+'" muted loop playsinline oncontextmenu="return false"></video>'+
       '<button class="feed-video-mute" onclick="event.stopPropagation();toggleFeedVideoMute(this)">🔇</button>'+
       '<div class="post-media-badge">'+d.type+'</div>'+
       '<div class="feed-video-expand-hint">⛶</div>';
@@ -2846,9 +2855,9 @@ function renderPostCard(id, d, wrap, isPinned){
       '<div class="commerce-tag-info"><div class="commerce-tag-name">'+(d.tags.categoryId||'পণ্য')+'</div></div>'+
       (d.tags.productId ? '<button class="btn-cta btn-cta-cart" title="Add to Cart">🛒</button>' : '')+
       '<button class="btn-cta">'+ctaLabel(d.ctaType)+'</button>';
-    tagCard.querySelector('.btn-cta:last-child').onclick=function(){ handleCta(d); };
+    tagCard.querySelector('.btn-cta:last-child').onclick=function(){ handleCta(d, id); };
     if(d.tags.productId){
-      tagCard.querySelector('.btn-cta-cart').onclick=function(e){ addToSharedCart(d.tags.shopId, d.tags.productId, e.target); };
+      tagCard.querySelector('.btn-cta-cart').onclick=function(e){ addToSharedCart(d.tags.shopId, d.tags.productId, e.target, id); };
     }
     card.appendChild(tagCard);
   }
@@ -2902,7 +2911,12 @@ function ctaLabel(cta){
   var map={view_product:'🛒 View Product',visit_shop:'🏪 Visit Shop',order_now:'📦 Order Now',book_service:'📅 Book Service',view_branch:'📍 Branch',get_quote:'💬 Get Quote',none:'View'};
   return map[cta]||'View';
 }
-function handleCta(d){
+function handleCta(d, contentId){
+  if(contentId){
+    db.collection('cities').doc(CITY).collection('mediaContent').doc(contentId)
+      .update({'stats.clickThroughs': firebase.firestore.FieldValue.increment(1)})
+      .catch(function(e){ console.warn('Click-through count update failed (non-fatal)', e); });
+  }
   // No branch for 'whatsapp'/'call' on purpose — even if a piece of old
   // content somehow still has that value, it falls through to the normal
   // shop redirect below rather than opening an external contact channel.
@@ -2997,7 +3011,7 @@ async function submitIndividualOrder(){
   }
 }
 
-async function addToSharedCart(shopId, productId, btnEl){
+async function addToSharedCart(shopId, productId, btnEl, contentId){
   if(!shopId || !productId){ alert('এই পণ্যটি সরাসরি shop-এর সাথে link করা নেই'); return; }
   var originalText = btnEl.textContent;
   btnEl.textContent = '…';
@@ -3023,6 +3037,11 @@ async function addToSharedCart(shopId, productId, btnEl){
     }
     localStorage.setItem('delta_cart', JSON.stringify(existing));
     updateSharedCartBadge();
+    if(contentId){
+      db.collection('cities').doc(CITY).collection('mediaContent').doc(contentId)
+        .update({'stats.cartAdds': firebase.firestore.FieldValue.increment(1)})
+        .catch(function(e){ console.warn('Cart-add count update failed (non-fatal)', e); });
+    }
     btnEl.textContent = '✓';
     btnEl.style.background = 'var(--green2)'; btnEl.style.color='#fff';
     setTimeout(function(){ btnEl.textContent = originalText; btnEl.style.background=''; btnEl.style.color=''; }, 1500);
