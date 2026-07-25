@@ -150,7 +150,20 @@
         // when recording began, so stopPipelineRecording can enforce a
         // minimum hold duration before actually stopping, giving very
         // quick releases a floor to work with.
-        pipelineRecorder.start(250);
+        // ⚠️ REVERTED: start(250) was tried to fix intermittent "nothing
+        // heard" on short utterances, but confirmed via Firebase Logs to
+        // have caused a WORSE, consistent failure instead — "Failed to
+        // read the file, please check the audio format." Most likely
+        // cause: multiple WebM chunks from periodic ondataavailable
+        // events don't reliably concatenate into one valid container the
+        // way a single chunk from a plain stop()-triggered blob does.
+        // Reverting to plain start() (single blob, produced at stop()) —
+        // this is what worked correctly in the standalone STT test
+        // earlier. The minimum-hold-duration fix below (which doesn't
+        // touch the audio format, only timing) stays, since that
+        // addresses the original short-utterance issue without this
+        // side effect.
+        pipelineRecorder.start();
         window.pipelineRecordStartTime = Date.now();
         pipelineBtn.style.background = '#666';
         document.getElementById('pipelineStatus').textContent = 'শুনছি...';
