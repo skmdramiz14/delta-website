@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DELTA — Sarvam STT Test</title>
+<style>
+  body { font-family: sans-serif; max-width: 500px; margin: 40px auto; padding: 0 20px; text-align: center; }
+  button { font-size: 18px; padding: 16px 32px; border-radius: 50px; border: none; cursor: pointer; margin: 10px; }
+  #recordBtn { background: #d32f2f; color: white; }
+  #recordBtn.recording { background: #666; animation: pulse 1s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.5;} }
+  #status { margin: 20px 0; font-size: 16px; color: #555; }
+  #result { text-align: left; background: #f5f5f5; padding: 16px; border-radius: 8px; margin-top: 20px; white-space: pre-wrap; font-family: monospace; font-size: 13px; display: none; }
+  #loginBox { margin-bottom: 20px; }
+</style>
+</head>
+<body>
+  <h2>Sarvam STT — Isolated Test</h2>
+  <p>এই পাতাটা <b>শুধু test করার জন্য</b> — DELTA-র মূল সাইটের অংশ না।</p>
+
+  <div id="loginBox">
+    <p id="authStatus">Login হচ্ছে...</p>
+  </div>
+
+  <button id="recordBtn" disabled>🎤 চেপে ধরে বলুন</button>
+  <div id="status"></div>
+  <div id="result"></div>
+
+  <!-- Firebase SDKs — same version as the main DELTA site -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-functions.js"></script>
+  <script>
+    // ⚠️ REPLACE THIS with your actual Firebase config (same one used in
+    // DELTA's index.html — copy it from there, it's not secret, it's
+    // meant to be public in client-side code).
+    var firebaseConfig = {
+      apiKey: "AIzaSyA6TrrnCMwv1aa1WPqGvTVWlnieB2pVOEU",
+      authDomain: "delta-platform-82fc0.firebaseapp.com",
+      projectId: "delta-platform-82fc0",
+      // ...rest of your config from index.html's firebase.initializeApp() call
+    };
+    firebase.initializeApp(firebaseConfig);
+
+    var recordBtn = document.getElementById('recordBtn');
+    var statusEl = document.getElementById('status');
+    var resultEl = document.getElementById('result');
+    var authStatusEl = document.getElementById('authStatus');
+    var mediaRecorder, audioChunks = [];
+
+    // Sign in anonymously for this isolated test — avoids needing to log
+    // into a real DELTA account just to test STT. (The real voice-ordering
+    // pipeline will use the customer's actual logged-in session.)
+    firebase.auth().signInAnonymously().then(function(){
+      authStatusEl.textContent = '✓ প্রস্তুত। বাটন চেপে ধরে বাংলায় কিছু বলুন।';
+      recordBtn.disabled = false;
+    }).catch(function(err){
+      authStatusEl.textContent = '✗ Login ব্যর্থ: ' + err.message;
+    });
+
+    async function startRecording(){
+      resultEl.style.display = 'none';
+      audioChunks = [];
+      try {
+        var stream = await navigator.mediaDevices.getUserMedia({audio: true});
+        mediaRecorder = new MediaRecorder(stream);
+        mediaRecorder.ondataavailable = function(e){ audioChunks.push(e.data); };
+        mediaRecorder.onstop = async function(){
+          statusEl.textContent = 'Sarvam-এ পাঠানো হচ্ছে...';
+          var audioBlob = new Blob(audioChunks, {type: 'audio/webm'});
+          var reader = new FileReader();
+          reader.onloadend = async function(){
+            var base64Audio = reader.result.split(',')[1]; // strip the data: URL prefix
+            try {
+              var fn = firebase.functions().httpsCallable('testSarvamSTT');
+              var res = await fn({audioBase64: base64Audio, languageCode: 'bn-IN'});
+              statusEl.textContent = '✓ সম্পন্ন (' + res.data.elapsedMs + 'ms লেগেছে)';
+              resultEl.style.display = 'block';
+              resultEl.textContent =
+                'Transcript: ' + (res.data.transcript || '(কিছু পাওয়া যায়নি)') + '\n' +
+                'Language: ' + res.data.languageCode + '\n' +
+                'Confidence: ' + res.data.languageProbability + '\n' +
+                'Time: ' + res.data.elapsedMs + 'ms';
+            } catch (err){
+              statusEl.textContent = '✗ Error';
+              resultEl.style.display = 'block';
+              resultEl.textContent = 'Error: ' + err.message;
+            }
+          };
+          reader.readAsDataURL(audioBlob);
+        };
+        mediaRecorder.start();
+        recordBtn.classList.add('recording');
+        statusEl.textContent = 'শুনছি... (ছাড়লে থামবে)';
+      } catch (err){
+        statusEl.textContent = 'Microphone access ব্যর্থ: ' + err.message;
+      }
+    }
+
+    function stopRecording(){
+      if (mediaRecorder && mediaRecorder.state !== 'inactive'){
+        mediaRecorder.stop();
+        recordBtn.classList.remove('recording');
+      }
+    }
+
+    // Press-and-hold interaction — mousedown/touchstart to start, mouseup/
+    // touchend to stop. Simple, unambiguous for a one-off test page.
+    recordBtn.addEventListener('mousedown', startRecording);
+    recordBtn.addEventListener('touchstart', function(e){ e.preventDefault(); startRecording(); });
+    recordBtn.addEventListener('mouseup', stopRecording);
+    recordBtn.addEventListener('touchend', function(e){ e.preventDefault(); stopRecording(); });
+  </script>
+</body>
+</html>
