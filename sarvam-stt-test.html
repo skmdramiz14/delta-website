@@ -94,6 +94,10 @@
     // ── Full pipeline test — press-and-hold, same pattern as the STT test ──
     var pipelineRecorder, pipelineChunks = [];
     var pipelineBtn = document.getElementById('pipelineBtn');
+    var pipelineSessionState = null; // ⚠️ PHASE 6 multi-turn: remembers
+      // pending clarifications between calls, so answering "বাসমতি" after
+      // being asked "বাসমতি না সাধারণ?" gets routed correctly on the NEXT
+      // recording, instead of being treated as a fresh order every time.
 
     async function startPipelineRecording(){
       document.getElementById('pipelineResult').style.display = 'none';
@@ -104,30 +108,37 @@
         pipelineRecorder = new MediaRecorder(stream);
         pipelineRecorder.ondataavailable = function(e){ pipelineChunks.push(e.data); };
         pipelineRecorder.onstop = async function(){
-          document.getElementById('pipelineStatus').textContent = 'সম্পূর্ণ pipeline চলছে (STT → Groq → Safety Gate → TTS)... এটা কয়েক সেকেন্ড লাগতে পারে।';
+          document.getElementById('pipelineStatus').textContent = 'সম্পূর্ণ pipeline চলছে...';
           var audioBlob = new Blob(pipelineChunks, {type: 'audio/webm'});
           var reader = new FileReader();
           reader.onloadend = async function(){
             var base64Audio = reader.result.split(',')[1];
             try {
               var fn = firebase.functions().httpsCallable('testFullPipeline');
-              var res = await fn({audioBase64: base64Audio, cityId: 'manteswar'});
+              var res = await fn({
+                audioBase64: base64Audio,
+                cityId: 'manteswar',
+                sessionState: pipelineSessionState, // pass along whatever we're
+                                                      // currently waiting on, if anything
+              });
               var d = res.data;
+              pipelineSessionState = d.sessionState || null; // remember for next turn
               if (!d.success) {
                 document.getElementById('pipelineStatus').textContent = '✗ থেমে গেছে ধাপ: ' + d.stage;
                 document.getElementById('pipelineResult').style.display = 'block';
                 document.getElementById('pipelineResult').textContent = JSON.stringify(d, null, 2);
                 return;
               }
-              document.getElementById('pipelineStatus').textContent =
-                '✓ সম্পন্ন (মোট ' + d.timings.totalMs + 'ms — STT:' + d.timings.sttMs +
-                'ms, Groq:' + d.timings.groqMs + 'ms, Safety:' + d.timings.safetyGateMs +
-                'ms, TTS:' + d.timings.ttsMs + 'ms)';
+              var timingText = d.timings.totalMs ? (' (' + d.timings.totalMs + 'ms)') : '';
+              var waitingNote = pipelineSessionState && pipelineSessionState.waitingForAnswerTo
+                ? '\n\n⏳ এখনো উত্তরের অপেক্ষায় — আবার বাটন চেপে উত্তর দাও।'
+                : (pipelineSessionState === null ? '\n\n✓ সব clarification শেষ।' : '');
+              document.getElementById('pipelineStatus').textContent = '✓ সম্পন্ন' + timingText;
               document.getElementById('pipelineResult').style.display = 'block';
               document.getElementById('pipelineResult').textContent =
                 'শুনেছে: ' + d.transcript + '\n\n' +
-                'জবাব: ' + d.responseText + '\n\n' +
-                'বিস্তারিত:\n' + JSON.stringify(d.processedItems, null, 2);
+                'জবাব: ' + d.responseText + waitingNote +
+                (d.processedItems ? '\n\nবিস্তারিত:\n' + JSON.stringify(d.processedItems, null, 2) : '');
               if (d.audioReplyBase64) {
                 var audioEl = document.getElementById('pipelineAudio');
                 audioEl.src = 'data:audio/wav;base64,' + d.audioReplyBase64;
