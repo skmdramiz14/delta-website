@@ -319,10 +319,11 @@ function showUnmuteHint(slideEl){
 
 var viewedThisSession = {};
 function bumpView(contentId){
-  // A viewer cannot write another author's stats.views field under current rules
-  // (author/admin only, per the earlier flagged gap). Tracked locally per session
-  // for now; a Cloud Function is the real fix.
+  if(viewedThisSession[contentId]) return; // once per session per reel, not every re-render/scroll-back
   viewedThisSession[contentId] = true;
+  mc().doc(contentId).update({'stats.views': firebase.firestore.FieldValue.increment(1)}).catch(function(e){
+    console.warn('View count update failed (non-fatal)', e);
+  });
 }
 
 // ═══ TAP-TO-PAUSE / HOLD-RIGHT-FOR-2X — fresh rewrite ═══
