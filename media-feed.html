@@ -166,6 +166,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 
 .post-caption{padding:2px 14px 12px;font-size:.86rem;line-height:1.55;white-space:pre-wrap;}
 .caption-more-link{color:var(--muted);font-weight:700;cursor:pointer;white-space:nowrap;}
+.caption-less-link{color:var(--muted);font-weight:700;cursor:pointer;white-space:nowrap;}
 .post-media{width:100%;background:var(--cream);position:relative;}
 .post-media img,.post-media video{width:100%;max-height:520px;object-fit:cover;display:block;}
 .feed-video-mute{position:absolute;bottom:12px;right:12px;width:30px;height:30px;border-radius:50%;
@@ -2790,10 +2791,12 @@ function renderPostCard(id, d, wrap, isPinned){
   // photo/video/reel far down the card before anyone even sees it. ──
   if(d.caption){
     var cap=document.createElement('div'); cap.className='post-caption';
-    var CAPTION_TRUNCATE_LENGTH = 150;
+    var CAPTION_TRUNCATE_LENGTH = 100;
     if(d.caption.length > CAPTION_TRUNCATE_LENGTH){
       var shortText = d.caption.slice(0, CAPTION_TRUNCATE_LENGTH);
-      cap.innerHTML = '<span class="caption-short-text"></span><span class="caption-more-link"> ...more</span><span class="caption-full-text" style="display:none;"></span>';
+      cap.innerHTML =
+        '<span class="caption-short-text"></span><span class="caption-more-link"> ...more</span>'+
+        '<span class="caption-full-text" style="display:none;"></span><span class="caption-less-link" style="display:none;"> ...less</span>';
       cap.querySelector('.caption-short-text').textContent = shortText;
       cap.querySelector('.caption-full-text').textContent = d.caption;
       cap.querySelector('.caption-more-link').onclick = function(e){
@@ -2801,6 +2804,14 @@ function renderPostCard(id, d, wrap, isPinned){
         cap.querySelector('.caption-short-text').style.display = 'none';
         cap.querySelector('.caption-more-link').style.display = 'none';
         cap.querySelector('.caption-full-text').style.display = 'inline';
+        cap.querySelector('.caption-less-link').style.display = 'inline';
+      };
+      cap.querySelector('.caption-less-link').onclick = function(e){
+        e.stopPropagation();
+        cap.querySelector('.caption-full-text').style.display = 'none';
+        cap.querySelector('.caption-less-link').style.display = 'none';
+        cap.querySelector('.caption-short-text').style.display = 'inline';
+        cap.querySelector('.caption-more-link').style.display = 'inline';
       };
     } else {
       cap.textContent = d.caption;
