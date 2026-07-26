@@ -327,6 +327,33 @@ var activeTab = 'post';
 
 function requireLogin(){ alert('Login to engage, share and grow.\n\n☰ মেনু থেকে লগইন করুন।'); }
 
+// Self-heal (loadProfile below) previously always assumed the missing
+// profile belonged to a customer — an existing SELLER visiting their own
+// "আমার DELTA Media" page for the first time would get wrongly created as
+// roles:['customer','creator'] with no linkedSellerId at all. This checks
+// cities/{city}/sellers/{uid} across every known city (from the small,
+// top-level cityConfig collection — same discovery pattern already used in
+// index.html/discover-people.html) before falling back to customer shape.
+// CITY is checked first as a fast path since most sellers live there today.
+async function findSellerAcrossCities(uid){
+  try{
+    var fast = await db.collection('cities').doc(CITY).collection('sellers').doc(uid).get();
+    if(fast.exists) return {city:CITY, data:fast.data()};
+    var citySnap = await db.collection('cityConfig').get();
+    var otherCities = citySnap.docs.map(function(d){return d.id;}).filter(function(id){return id!==CITY;});
+    var results = await Promise.all(otherCities.map(function(c){
+      return db.collection('cities').doc(c).collection('sellers').doc(uid).get()
+        .then(function(doc){ return {city:c, doc:doc}; })
+        .catch(function(){ return {city:c, doc:null}; });
+    }));
+    var match = results.find(function(r){ return r.doc && r.doc.exists; });
+    return match ? {city:match.city, data:match.doc.data()} : null;
+  }catch(e){
+    console.warn('findSellerAcrossCities failed (non-fatal, falls back to customer shape)', e);
+    return null;
+  }
+}
+
 function expandBio(el){
   var bioEl = document.getElementById('ppBio');
   bioEl.textContent = bioEl.getAttribute('data-full');
@@ -376,22 +403,41 @@ async function loadProfile(){
       // Self-heal for accounts created before mediaProfiles auto-creation was
       // added to the sign-up flow — build a basic profile now rather than
       // showing "Profile not found" forever on someone's own page.
-      var isVerified = !!localStorage.getItem('delta_verified_pincode');
-      var pendingPincode = isVerified ? null : (localStorage.getItem('delta_last_unserved_pincode') || null);
-      var geoFields = {city:null, district:null, state:null, country:null};
-      if(isVerified){
-        var geo = await getCityGeo(CITY);
-        geoFields = {city:CITY, district:geo.district, state:geo.state, country:geo.country};
+      // Check seller FIRST — an existing seller's own shop record is the
+      // stronger signal of their real identity than any customer geo guess.
+      var sellerMatch = await findSellerAcrossCities(currentUser.uid);
+      var basicProfile;
+      if(sellerMatch){
+        var sd = sellerMatch.data;
+        basicProfile = {
+          uid: currentUser.uid, displayName: sd.shopName || currentUser.displayName || 'DELTA Seller',
+          bio:'', avatarUrl:'', coverUrl:'',
+          roles:['seller','creator'], linkedSellerId: currentUser.uid,
+          followerCount:0, followingCount:0, postCount:0,
+          primaryBadge:'seller', isVerified:false,
+          businessCategory: sd.category || null,
+          homeCity: sellerMatch.city, areaLabel: sd.area || sellerMatch.city,
+          homeCity_lower: sellerMatch.city ? sellerMatch.city.toLowerCase() : null,
+          createdAt:new Date().toISOString(), updatedAt:new Date().toISOString()
+        };
+      } else {
+        var isVerified = !!localStorage.getItem('delta_verified_pincode');
+        var pendingPincode = isVerified ? null : (localStorage.getItem('delta_last_unserved_pincode') || null);
+        var geoFields = {city:null, district:null, state:null, country:null};
+        if(isVerified){
+          var geo = await getCityGeo(CITY);
+          geoFields = {city:CITY, district:geo.district, state:geo.state, country:geo.country};
+        }
+        basicProfile = {
+          uid: currentUser.uid, displayName: currentUser.displayName || 'DELTA User',
+          bio:'', avatarUrl:'', coverUrl:'', roles:['customer','creator'],
+          linkedCustomerId: currentUser.uid, followerCount:0, followingCount:0, postCount:0,
+          primaryBadge:'customer_creator', isVerified:false,
+          homeCity:geoFields.city, district:geoFields.district, state:geoFields.state, country:geoFields.country,
+          pendingPincode: pendingPincode,
+          createdAt:new Date().toISOString(), updatedAt:new Date().toISOString()
+        };
       }
-      var basicProfile = {
-        uid: currentUser.uid, displayName: currentUser.displayName || 'DELTA User',
-        bio:'', avatarUrl:'', coverUrl:'', roles:['customer','creator'],
-        linkedCustomerId: currentUser.uid, followerCount:0, followingCount:0, postCount:0,
-        primaryBadge:'customer_creator', isVerified:false,
-        homeCity:geoFields.city, district:geoFields.district, state:geoFields.state, country:geoFields.country,
-        pendingPincode: pendingPincode,
-        createdAt:new Date().toISOString(), updatedAt:new Date().toISOString()
-      };
       await db.collection('mediaProfiles').doc(PROFILE_UID).set(basicProfile);
       profileData = basicProfile;
     } else {
