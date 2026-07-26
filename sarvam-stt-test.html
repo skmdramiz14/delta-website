@@ -55,6 +55,14 @@
   <div id="pipelineResult" style="text-align:left; background:#f5f5f5; padding:16px; border-radius:8px; margin-top:10px; white-space:pre-wrap; font-family:monospace; font-size:13px; display:none;"></div>
   <audio id="pipelineAudio" controls style="display:none; margin-top:10px; width:100%;"></audio>
 
+  <hr style="margin:30px 0; border-top: 3px solid #1565c0;">
+  <h3>🤖 Agentic Pipeline Test (Tool-Calling — একই বাক্যে একাধিক কাজ)</h3>
+  <p style="font-size:14px; color:#666;">"চাল বাদ দাও, লঙ্কা যোগ করো, কত হয়েছে বলো" — এই ধরনের জটিল, মিশ্র request test করার জন্য।</p>
+  <button id="agenticBtn" disabled style="background:#1565c0; color:white; font-size:20px; padding:20px 40px;">🎙️ Agentic Order বলো</button>
+  <div id="agenticStatus" style="margin:15px 0; font-size:16px;"></div>
+  <div id="agenticResult" style="text-align:left; background:#f5f5f5; padding:16px; border-radius:8px; margin-top:10px; white-space:pre-wrap; font-family:monospace; font-size:13px; display:none;"></div>
+  <audio id="agenticAudio" controls style="display:none; margin-top:10px; width:100%;"></audio>
+
   <!-- Firebase SDKs — same version as the main DELTA site -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
@@ -87,6 +95,7 @@
       document.getElementById('listModelsBtn').disabled = false;
       document.getElementById('extractBtn').disabled = false;
       document.getElementById('pipelineBtn').disabled = false;
+      document.getElementById('agenticBtn').disabled = false;
     }).catch(function(err){
       authStatusEl.textContent = '✗ Login ব্যর্থ: ' + err.message;
     });
@@ -210,6 +219,79 @@
     pipelineBtn.addEventListener('touchstart', function(e){ e.preventDefault(); startPipelineRecording(); });
     pipelineBtn.addEventListener('mouseup', stopPipelineRecording);
     pipelineBtn.addEventListener('touchend', function(e){ e.preventDefault(); stopPipelineRecording(); });
+
+    // ── Agentic pipeline test — separate session state from the
+    // state-machine pipeline above, same recording pattern. ──
+    var agenticRecorder, agenticChunks = [];
+    var agenticBtn = document.getElementById('agenticBtn');
+    var agenticSessionState = null;
+
+    async function startAgenticRecording(){
+      document.getElementById('agenticResult').style.display = 'none';
+      document.getElementById('agenticAudio').style.display = 'none';
+      agenticChunks = [];
+      try {
+        var stream = await navigator.mediaDevices.getUserMedia({audio: true});
+        agenticRecorder = new MediaRecorder(stream);
+        agenticRecorder.ondataavailable = function(e){ agenticChunks.push(e.data); };
+        agenticRecorder.onstop = async function(){
+          document.getElementById('agenticStatus').textContent = 'Agentic pipeline চলছে...';
+          var audioBlob = new Blob(agenticChunks, {type: 'audio/webm'});
+          var reader = new FileReader();
+          reader.onloadend = async function(){
+            var base64Audio = reader.result.split(',')[1];
+            try {
+              var fn = firebase.functions().httpsCallable('testAgenticPipeline');
+              var res = await fn({audioBase64: base64Audio, cityId: 'manteswar', sessionState: agenticSessionState});
+              var d = res.data;
+              agenticSessionState = d.sessionState || null;
+              if (!d.success) {
+                document.getElementById('agenticStatus').textContent = '✗ থেমে গেছে ধাপ: ' + d.stage;
+                document.getElementById('agenticResult').style.display = 'block';
+                document.getElementById('agenticResult').textContent = JSON.stringify(d, null, 2);
+                return;
+              }
+              var t = d.timings || {};
+              var timingText = t.totalMs ? (' (মোট ' + t.totalMs + 'ms — STT:' + t.sttMs + 'ms, Agentic:' + (t.agenticMs||0) + 'ms, TTS:' + (t.ttsMs||0) + 'ms)') : '';
+              document.getElementById('agenticStatus').textContent = '✓ সম্পন্ন' + timingText;
+              document.getElementById('agenticResult').style.display = 'block';
+              document.getElementById('agenticResult').textContent =
+                'শুনেছে: ' + d.transcript + '\n\n' +
+                'জবাব: ' + d.responseText + '\n\n' +
+                'বর্তমান কার্ট:\n' + JSON.stringify((agenticSessionState && agenticSessionState.cart) || d.cart || [], null, 2) +
+                (d.orderIds ? '\n\norderIds: ' + JSON.stringify(d.orderIds) : '');
+              if (d.audioReplyBase64) {
+                var audioEl = document.getElementById('agenticAudio');
+                audioEl.src = 'data:audio/wav;base64,' + d.audioReplyBase64;
+                audioEl.style.display = 'block';
+                audioEl.play();
+              }
+            } catch (err){
+              document.getElementById('agenticStatus').textContent = '✗ Error: ' + err.message;
+            }
+          };
+          reader.readAsDataURL(audioBlob);
+        };
+        agenticRecorder.start();
+        window.agenticRecordStartTime = Date.now();
+        agenticBtn.style.background = '#666';
+        document.getElementById('agenticStatus').textContent = 'শুনছি...';
+      } catch (err){
+        document.getElementById('agenticStatus').textContent = 'Microphone access ব্যর্থ: ' + err.message;
+      }
+    }
+    var AGENTIC_MIN_HOLD_MS = 600;
+    function stopAgenticRecording(){
+      if (!agenticRecorder || agenticRecorder.state === 'inactive') return;
+      var elapsed = Date.now() - (window.agenticRecordStartTime || 0);
+      var doStop = function(){ agenticRecorder.stop(); agenticBtn.style.background = '#1565c0'; };
+      if (elapsed < AGENTIC_MIN_HOLD_MS) setTimeout(doStop, AGENTIC_MIN_HOLD_MS - elapsed);
+      else doStop();
+    }
+    agenticBtn.addEventListener('mousedown', startAgenticRecording);
+    agenticBtn.addEventListener('touchstart', function(e){ e.preventDefault(); startAgenticRecording(); });
+    agenticBtn.addEventListener('mouseup', stopAgenticRecording);
+    agenticBtn.addEventListener('touchend', function(e){ e.preventDefault(); stopAgenticRecording(); });
 
     document.getElementById('listModelsBtn').addEventListener('click', async function(){
       var el = document.getElementById('modelsResult');
