@@ -2737,9 +2737,14 @@ function observeFeedVideo(videoEl, btnEl){
   _feedAllVideos.push({vid:videoEl, btn:btnEl});
   getFeedVideoObserver().observe(videoEl);
 }
-function openImageLightbox(url){
+function openImageLightbox(url, avatarUrl, name, caption){
   document.getElementById('lightboxImg').src = url;
   document.getElementById('lightboxImg').style.transform = '';
+  document.getElementById('lightboxAvatar').src = avatarUrl || '';
+  document.getElementById('lightboxName').textContent = name || '';
+  var capEl = document.getElementById('lightboxCaption');
+  if(caption){ capEl.textContent = caption; capEl.style.display = 'block'; }
+  else { capEl.style.display = 'none'; }
   document.getElementById('imageLightbox').style.opacity = '1';
   document.getElementById('imageLightbox').style.display = 'flex';
 }
@@ -2751,22 +2756,22 @@ function closeImageLightbox(){
 }
 (function setupLightboxSwipe(){
   var startY = 0, dragging = false;
-  var lightbox, img;
+  var lightbox, img, wrap;
   document.addEventListener('DOMContentLoaded', function(){
     lightbox = document.getElementById('imageLightbox');
     img = document.getElementById('lightboxImg');
-    lightbox.addEventListener('touchstart', function(e){
-      if(e.target !== img) return; // swipe-to-dismiss only starts from the image itself
+    wrap = document.getElementById('lightboxImgWrap');
+    wrap.addEventListener('touchstart', function(e){
       startY = e.touches[0].clientY;
       dragging = true;
     }, {passive:true});
-    lightbox.addEventListener('touchmove', function(e){
+    wrap.addEventListener('touchmove', function(e){
       if(!dragging) return;
       var dy = e.touches[0].clientY - startY;
       img.style.transform = 'translateY('+dy+'px)';
       lightbox.style.opacity = Math.max(0.3, 1 - Math.abs(dy)/400);
     }, {passive:true});
-    lightbox.addEventListener('touchend', function(e){
+    wrap.addEventListener('touchend', function(e){
       if(!dragging) return;
       dragging = false;
       var dy = e.changedTouches[0].clientY - startY;
@@ -2889,7 +2894,7 @@ function renderPostCard(id, d, wrap, isPinned){
     // scroll doesn't jump around post to post — but that means what's
     // shown here is NEVER the real, full image. Tapping opens it at its
     // actual size, same as Facebook's photo lightbox.
-    media.onclick = function(){ openImageLightbox(d.mediaUrls[0]); };
+    media.onclick = function(){ openImageLightbox(d.mediaUrls[0], d.authorAvatarUrl, d.authorDisplayName, d.caption); };
   }
   if(media.innerHTML) card.appendChild(media);
   var feedVideoEl = media.querySelector('.feed-video');
@@ -3255,14 +3260,21 @@ function timeAgo(iso){
 <!-- ── IMAGE LIGHTBOX — the feed shows a cropped preview (object-fit:cover)
      so scrolling stays smooth and predictable; this shows the real, full
      image at its natural size instead, same as tapping a Facebook photo.
-     z-index raised well above everything else (bottom-nav was ALSO 900,
-     which is why it was bleeding through before — equal z-index meant DOM
-     order was deciding the stacking, not the semantics of "this covers
-     everything"). Swipe up or down far enough dismisses it, same as
-     Facebook's lightbox gesture. ── -->
-<div id="imageLightbox" onclick="closeImageLightbox()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:3000;align-items:center;justify-content:center;">
-  <button onclick="closeImageLightbox()" style="position:absolute;top:16px;right:16px;background:rgba(255,255,255,.15);border:none;color:#fff;width:36px;height:36px;border-radius:50%;font-size:1.2rem;cursor:pointer;z-index:2;">✕</button>
-  <img id="lightboxImg" src="" style="max-width:100%;max-height:100%;object-fit:contain;transition:transform .1s;">
+     Creator name + caption are shown as part of the lightbox itself (top
+     header bar + bottom caption strip), not left to accidentally bleed
+     through from the feed underneath — z-index raised well above
+     everything else (bottom-nav was ALSO 900, which is why it bled through
+     before). Swipe up or down far enough dismisses it. ── -->
+<div id="imageLightbox" style="display:none;position:fixed;inset:0;background:#000;z-index:3000;flex-direction:column;">
+  <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:rgba(0,0,0,.85);flex-shrink:0;">
+    <img id="lightboxAvatar" src="" style="width:36px;height:36px;border-radius:50%;object-fit:cover;background:#333;">
+    <div id="lightboxName" style="color:#fff;font-weight:700;font-size:.88rem;flex:1;"></div>
+    <button onclick="closeImageLightbox()" style="background:rgba(255,255,255,.15);border:none;color:#fff;width:32px;height:32px;border-radius:50%;font-size:1.1rem;cursor:pointer;">✕</button>
+  </div>
+  <div id="lightboxImgWrap" onclick="closeImageLightbox()" style="flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;min-height:0;">
+    <img id="lightboxImg" src="" style="max-width:100%;max-height:100%;object-fit:contain;transition:transform .1s;">
+  </div>
+  <div id="lightboxCaption" style="color:#fff;font-size:.82rem;line-height:1.5;padding:12px 14px;background:rgba(0,0,0,.85);flex-shrink:0;display:none;"></div>
 </div>
 
 </body>
