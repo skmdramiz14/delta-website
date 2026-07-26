@@ -258,6 +258,7 @@
               document.getElementById('agenticResult').textContent =
                 'শুনেছে: ' + d.transcript + '\n\n' +
                 'জবাব: ' + d.responseText + '\n\n' +
+                (d._debugGrounding ? '⚠️ DEBUG — verification ব্যর্থ হয়েছিল:\n' + JSON.stringify(d._debugGrounding, null, 2) + '\n\n' : '') +
                 'বর্তমান কার্ট:\n' + JSON.stringify((agenticSessionState && agenticSessionState.cart) || d.cart || [], null, 2) +
                 (d.orderIds ? '\n\norderIds: ' + JSON.stringify(d.orderIds) : '');
               if (d.audioReplyBase64) {
