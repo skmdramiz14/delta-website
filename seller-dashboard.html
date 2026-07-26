@@ -2109,7 +2109,8 @@ function doRegister(){
   }
   btn.disabled=true; btn.textContent='নিবন্ধন হচ্ছে...';
   auth.createUserWithEmailAndPassword(email,pass).then(function(cr){
-    return sellerRef(cr.user.uid).set({
+    var newUid = cr.user.uid;
+    return sellerRef(newUid).set({
       shopName:shop, ownerName:owner, mobile:phone, area:area,
       category:primaryCat,
       categories:categories,
@@ -2122,6 +2123,28 @@ function doRegister(){
       rating:0, totalOrders:0,
       language:'bn',
       createdAt:new Date().toISOString()
+    }).then(function(){
+      // Identity Bridge — Global User Identity Architecture: every account,
+      // seller or customer, gets a top-level mediaProfiles/{uid} doc keyed
+      // to the same Firebase Auth UID, so DELTA Media's profile page,
+      // Discover People, and follow system all find this seller too.
+      // (Previously only customer registration in index.html did this —
+      // seller registration here never created one. See Scope Doc §1.2/§8.)
+      return db.collection('mediaProfiles').doc(newUid).set({
+        uid: newUid, displayName: shop, bio:'', avatarUrl:'', coverUrl:'',
+        roles:['seller','creator'], linkedSellerId: newUid,
+        followerCount:0, followingCount:0, postCount:0,
+        primaryBadge:'seller', isVerified:false,
+        businessCategory: primaryCat,
+        homeCity: CITY, areaLabel: area,
+        homeCity_lower: CITY ? CITY.toLowerCase() : null,
+        createdAt:new Date().toISOString(), updatedAt:new Date().toISOString()
+      }).catch(function(e){
+        // Non-fatal: seller account + shop doc already succeeded above.
+        // We don't want a mediaProfiles write hiccup to block registration
+        // entirely and leave the person stuck with no account at all.
+        console.warn('mediaProfiles creation failed (seller account still created)', e);
+      });
     });
   }).then(function(){
     showToast('নিবন্ধন সফল! Dashboard লোড হচ্ছে...','green');
