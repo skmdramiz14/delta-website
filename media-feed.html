@@ -2277,6 +2277,23 @@ async function loadFeed(){
       console.info('No real posts yet — showing demo feed so the full experience is visible. Disappears automatically once real content exists.');
     }
 
+    // Deep-link from media-profile.html's Posts tab (?openPostId=<id>) —
+    // without this, arriving here just showed the generic feed and silently
+    // ignored which specific post was actually requested.
+    var openPostId = new URLSearchParams(location.search).get('openPostId');
+    if(openPostId && !usingDemo){
+      var idx = docs.findIndex(function(item){ return item.id===openPostId; });
+      if(idx > 0){
+        var found = docs.splice(idx,1)[0];
+        docs.unshift(found);
+      } else if(idx === -1){
+        try{
+          var deepDoc = await db.collection('cities').doc(CITY).collection('mediaContent').doc(openPostId).get();
+          if(deepDoc.exists) docs.unshift({id:deepDoc.id, data:deepDoc.data()});
+        }catch(e){ console.warn('Deep-linked post fetch failed', e); }
+      }
+    }
+
     // Live profile lookup, not the frozen authorAvatarUrl/authorDisplayName
     // saved on each post at creation time — otherwise a DP added AFTER an
     // old post was made never shows up on that post (same fix already
