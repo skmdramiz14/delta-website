@@ -291,6 +291,16 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
   </div>
 </div>
 
+<!-- ── POST DETAIL OVERLAY — opened directly from the Posts grid, Facebook-
+     style (view the post right where you are, no redirect to the feed). ── -->
+<div id="postDetailOverlay" style="display:none;position:fixed;inset:0;background:var(--cream);z-index:950;overflow-y:auto;">
+  <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--white);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:2;">
+    <button onclick="closePostDetailOverlay()" style="background:none;border:none;font-size:1.3rem;cursor:pointer;">←</button>
+    <div style="font-weight:800;color:var(--navy);">Post</div>
+  </div>
+  <div id="postDetailBody"></div>
+</div>
+
 <!-- Followers/Following list modal -->
 <div class="pp-modal-overlay" id="followListModal">
   <div class="pp-modal">
@@ -788,7 +798,7 @@ async function loadContentGrid(type){
         if(type==='reel') location.href='reels-player.html?city='+CITY+'&id='+item.id;
         else if(type==='video') location.href='video-hub.html?city='+CITY+'&id='+item.id;
         else if(type==='story') location.href='media-feed.html?city='+CITY+'&openStoryId='+item.id;
-        else location.href='media-feed.html?city='+CITY+'&openPostId='+item.id;
+        else openPostDetailOverlay(item.id, item.data); // Posts open right here, same as Facebook — no redirect to the feed at all
       };
       grid.appendChild(cell);
     });
@@ -1038,6 +1048,105 @@ function openFollowList(kind){
     });
 }
 function closeFollowList(){ document.getElementById('followListModal').classList.remove('open'); }
+
+// ═══ POST DETAIL OVERLAY — Facebook-style: view a post right from your
+// profile, no redirect to the feed at all. Reuses the exact same
+// likes/comments subcollections the feed already writes to. ═══
+function closePostDetailOverlay(){
+  document.getElementById('postDetailOverlay').style.display = 'none';
+  document.getElementById('postDetailBody').innerHTML = '';
+}
+async function openPostDetailOverlay(id, d){
+  var overlay = document.getElementById('postDetailOverlay');
+  var body = document.getElementById('postDetailBody');
+  overlay.style.display = 'block';
+  body.innerHTML = '<div class="pp-loading" style="padding:30px;">লোড হচ্ছে...</div>';
+  window.scrollTo(0,0);
+
+  var mediaHtml = '';
+  if(d.videoUrl) mediaHtml = '<video src="'+d.videoUrl+'" controls playsinline style="width:100%;max-height:520px;object-fit:cover;display:block;"></video>';
+  else if(d.mediaUrls && d.mediaUrls.length) mediaHtml = '<img src="'+d.mediaUrls[0]+'" style="width:100%;display:block;">';
+
+  var avatarUrl = profileData.avatarUrl || '';
+  var initial = (profileData.displayName||'?').charAt(0).toUpperCase();
+
+  body.innerHTML =
+    '<div style="background:var(--white);">'+
+      '<div style="display:flex;align-items:center;gap:10px;padding:14px 14px 10px;">'+
+        (avatarUrl ? '<img src="'+avatarUrl+'" style="width:40px;height:40px;border-radius:50%;object-fit:cover;">'
+          : '<div style="width:40px;height:40px;border-radius:50%;background:var(--sand);display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--navy);">'+initial+'</div>')+
+        '<div><div style="font-weight:800;font-size:.87rem;">'+(profileData.displayName||'Unknown')+'</div>'+
+        '<div style="font-size:.7rem;color:var(--muted);">'+timeAgo(d.createdAt)+'</div></div>'+
+      '</div>'+
+      (d.caption ? '<div style="padding:2px 14px 12px;font-size:.86rem;line-height:1.55;white-space:pre-wrap;">'+d.caption+'</div>' : '')+
+      mediaHtml+
+      '<div style="display:flex;align-items:center;gap:20px;padding:10px 14px;border-top:1px solid var(--border);">'+
+        '<button id="pdLikeBtn" onclick="pdToggleLike(\''+id+'\')" style="background:none;border:none;display:flex;align-items:center;gap:5px;font-size:.85rem;font-weight:700;cursor:pointer;">'+
+          '<span id="pdLikeIcon">🤍</span> <span id="pdLikeCount">0</span></button>'+
+        '<div style="display:flex;align-items:center;gap:5px;font-size:.85rem;font-weight:700;">💬 <span id="pdCommentCount">0</span></div>'+
+      '</div>'+
+    '</div>'+
+    '<div id="pdCommentsList" style="padding:12px 14px;display:flex;flex-direction:column;gap:12px;"></div>'+
+    '<div style="display:flex;gap:8px;padding:12px 14px;background:var(--white);border-top:1px solid var(--border);position:sticky;bottom:0;">'+
+      '<input type="text" id="pdCommentInput" placeholder="একটা মন্তব্য লিখুন..." style="flex:1;padding:9px 14px;border-radius:20px;border:1.5px solid var(--border);">'+
+      '<button onclick="pdSendComment(\''+id+'\')" style="background:var(--navy);color:#fff;border:none;padding:0 16px;border-radius:20px;font-weight:700;cursor:pointer;">Send</button>'+
+    '</div>';
+
+  pdLoadLikeState(id);
+  pdLoadComments(id);
+}
+function pdMc(id){ return db.collection('cities').doc(CITY).collection('mediaContent').doc(id); }
+async function pdLoadLikeState(id){
+  try{
+    var likesSnap = await pdMc(id).collection('likes').get();
+    document.getElementById('pdLikeCount').textContent = likesSnap.size;
+    if(currentUser){
+      var mine = await pdMc(id).collection('likes').doc(currentUser.uid).get();
+      document.getElementById('pdLikeIcon').textContent = mine.exists ? '❤️' : '🤍';
+    }
+  }catch(e){ console.warn('Post detail like load error', e); }
+}
+async function pdToggleLike(id){
+  if(!currentUser){ requireLogin(); return; }
+  var ref = pdMc(id).collection('likes').doc(currentUser.uid);
+  var existing = await ref.get();
+  if(existing.exists) await ref.delete(); else await ref.set({likedAt:new Date().toISOString()});
+  pdLoadLikeState(id);
+}
+async function pdLoadComments(id){
+  var wrap = document.getElementById('pdCommentsList');
+  try{
+    var snap = await pdMc(id).collection('comments').orderBy('createdAt','desc').limit(50).get();
+    document.getElementById('pdCommentCount').textContent = snap.size;
+    if(snap.empty){ wrap.innerHTML = '<div style="color:var(--muted);font-size:.8rem;text-align:center;padding:10px 0;">এখনো কোনো মন্তব্য নেই।</div>'; return; }
+    wrap.innerHTML = snap.docs.map(function(doc){
+      var c = doc.data();
+      return '<div><b style="font-size:.82rem;">'+(c.authorName||'Unknown')+'</b> '+
+        '<span style="font-size:.82rem;">'+(c.text||'')+'</span></div>';
+    }).join('');
+  }catch(e){
+    console.warn('Post detail comments load error', e);
+    wrap.innerHTML = '<div style="color:var(--muted);font-size:.8rem;">মন্তব্য লোড করা যাচ্ছে না।</div>';
+  }
+}
+async function pdSendComment(id){
+  if(!currentUser){ requireLogin(); return; }
+  var input = document.getElementById('pdCommentInput');
+  var text = input.value.trim();
+  if(!text) return;
+  input.value = '';
+  try{
+    // profileData is the PROFILE BEING VIEWED, not necessarily the person
+    // typing this comment — fetch the actual commenter's own name instead.
+    var myDoc = await db.collection('mediaProfiles').doc(currentUser.uid).get();
+    var myName = myDoc.exists ? (myDoc.data().displayName || 'DELTA User') : 'DELTA User';
+    await pdMc(id).collection('comments').add({
+      authorUid: currentUser.uid, authorName: myName,
+      text: text, createdAt: new Date().toISOString()
+    });
+    pdLoadComments(id);
+  }catch(e){ alert('মন্তব্য পাঠাতে সমস্যা হয়েছে: '+e.message); }
+}
 
 auth.onAuthStateChanged(function(u){
   currentUser = u;
