@@ -609,7 +609,11 @@ function showMoreOptions(id, authorUid){
     }
   } else {
     if(confirm('এই content-টা report করতে চান?')){
-      db.collection('mediaReports').add({contentId:id, reportedBy:currentUser?currentUser.uid:null, createdAt:new Date().toISOString()})
+      // city is denormalized here (this page already resolves CITY correctly
+      // from the URL param/localStorage, unlike admin.html's old hardcoded
+      // constant) so Admin's Reported panel can look up the right
+      // cities/{city}/mediaContent/{id} path later, instead of guessing.
+      db.collection('mediaReports').add({contentId:id, city:CITY, reportedBy:currentUser?currentUser.uid:null, createdAt:new Date().toISOString()})
         .then(function(){ alert('Report করা হয়েছে, ধন্যবাদ।'); }).catch(function(e){ alert('Error: '+e.message); });
     }
   }
