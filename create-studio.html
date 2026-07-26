@@ -180,7 +180,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
     <div class="cs-upload-zone" id="csUploadZone" onclick="document.getElementById('csFileInput').click()">
       <div class="cs-upload-icon">📤</div>
       <div class="cs-upload-text" id="csUploadText">ট্যাপ করে ছবি/ভিডিও বেছে নিন</div>
-      <div class="cs-upload-sub" id="csUploadSub">JPG, PNG, MP4 — সর্বোচ্চ 50MB</div>
+      <div class="cs-upload-sub" id="csUploadSub">JPG, PNG, MP4 — সর্বোচ্চ 200MB</div>
     </div>
     <input type="file" id="csFileInput" class="cs-file-input" accept="image/*,video/*" onchange="handleFileSelect(this)">
 
@@ -465,8 +465,8 @@ async function uploadFiles(fileList){
 
   for(var i=0;i<files.length;i++){
     var file = files[i];
-    if(file.size > 50*1024*1024){
-      showToast(file.name+' — সাইজ 50MB-এর বেশি, বাদ দেওয়া হলো ⚠️');
+    if(file.size > 200*1024*1024){
+      showToast(file.name+' — সাইজ 200MB-এর বেশি, বাদ দেওয়া হলো ⚠️');
       continue;
     }
     var isVideo = file.type.indexOf('video')===0;
