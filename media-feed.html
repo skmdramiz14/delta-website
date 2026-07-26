@@ -154,6 +154,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 .post-head{display:flex;align-items:center;gap:10px;padding:14px 14px 10px;}
 .post-avatar{width:40px;height:40px;border-radius:50%;background:var(--cream);object-fit:cover;flex-shrink:0;
   border:2px solid var(--orange);box-shadow:0 0 0 2px rgba(199,161,90,.15);}
+.post-avatar-fallback{display:flex;align-items:center;justify-content:center;color:var(--navy);font-weight:800;font-size:1.05rem;}
 .post-author{flex:1;min-width:0;}
 .post-author-name{font-weight:800;font-size:.87rem;color:var(--charcoal);display:flex;align-items:center;gap:4px;}
 .post-author-meta{font-size:.7rem;color:var(--muted);}
@@ -2818,8 +2819,11 @@ function renderPostCard(id, d, wrap, isPinned){
 
   // ── Header ──
   var head=document.createElement('div'); head.className='post-head';
+  var authorInitial = (d.authorDisplayName||'?').charAt(0).toUpperCase();
   head.innerHTML =
-    '<img class="post-avatar" src="'+(d.authorAvatarUrl||'')+'" onerror="this.style.display=\'none\'">'+
+    (d.authorAvatarUrl
+      ? '<img class="post-avatar" src="'+d.authorAvatarUrl+'" onerror="this.outerHTML=\'<div class=&quot;post-avatar post-avatar-fallback&quot;>'+authorInitial+'</div>\'">'
+      : '<div class="post-avatar post-avatar-fallback">'+authorInitial+'</div>')+
     '<div class="post-author"><div class="post-author-name">'+(d.authorDisplayName||'Unknown')+'</div>'+
     '<div class="post-author-meta">'+timeAgo(d.createdAt)+'</div></div>'+
     (isPinned ? '<span class="pinned-post-badge">📌 Pinned</span>' : '');
