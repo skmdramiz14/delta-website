@@ -2204,6 +2204,7 @@ var DEMO_MF_POSTS = [
   }}
 ];
 
+var _mfLiveProfileCache = {}; // {uid: {avatarUrl, displayName}} — refreshed as new authors appear in the feed
 async function loadFeed(){
   var wrap=document.getElementById('feedWrap');
   wrap.innerHTML = '<div class="loading-state">লোড হচ্ছে...</div>';
@@ -2275,6 +2276,25 @@ async function loadFeed(){
       docs = DEMO_MF_POSTS.slice();
       console.info('No real posts yet — showing demo feed so the full experience is visible. Disappears automatically once real content exists.');
     }
+
+    // Live profile lookup, not the frozen authorAvatarUrl/authorDisplayName
+    // saved on each post at creation time — otherwise a DP added AFTER an
+    // old post was made never shows up on that post (same fix already
+    // applied in reels-player.html).
+    if(!usingDemo){
+      var allDocsForProfiles = pinnedPost ? docs.concat([pinnedPost]) : docs;
+      var uniqueAuthorUids = Array.from(new Set(allDocsForProfiles.map(function(item){ return item.data.authorUid; }).filter(Boolean)));
+      var uidsToFetch = uniqueAuthorUids.filter(function(uid){ return !_mfLiveProfileCache[uid]; });
+      if(uidsToFetch.length){
+        try{
+          var profileDocs = await Promise.all(uidsToFetch.map(function(uid){ return db.collection('mediaProfiles').doc(uid).get(); }));
+          profileDocs.forEach(function(doc, i){
+            _mfLiveProfileCache[uidsToFetch[i]] = doc.exists ? {avatarUrl: doc.data().avatarUrl, displayName: doc.data().displayName} : {};
+          });
+        }catch(e){ console.warn('Live profile fetch failed (non-fatal, falls back to post-time snapshot)', e); }
+      }
+    }
+
     if(pinnedPost) renderPostCard(pinnedPost.id, pinnedPost.data, wrap, true);
     if(!docs.length && !pinnedPost){
       document.getElementById('emptyState').querySelector('div:last-child').textContent = activeSort==='following' ? 'আপনি এখনও কাউকে follow করেননি' : 'এখনও কোনো published content নেই';
@@ -2817,14 +2837,21 @@ function toggleFeedVideoMute(btn){
 function renderPostCard(id, d, wrap, isPinned){
   var card=document.createElement('div'); card.className='post-card';
 
+  // Prefer the LIVE profile over the frozen authorAvatarUrl/authorDisplayName
+  // snapshot saved at post-creation time — this is what makes a DP added
+  // AFTER an old post was made actually show up on that post too.
+  var liveProfile = _mfLiveProfileCache[d.authorUid] || {};
+  var liveAvatarUrl = liveProfile.avatarUrl || d.authorAvatarUrl || '';
+  var liveDisplayName = liveProfile.displayName || d.authorDisplayName || 'Unknown';
+
   // ── Header ──
   var head=document.createElement('div'); head.className='post-head';
-  var authorInitial = (d.authorDisplayName||'?').charAt(0).toUpperCase();
+  var authorInitial = liveDisplayName.charAt(0).toUpperCase();
   head.innerHTML =
-    (d.authorAvatarUrl
-      ? '<img class="post-avatar" src="'+d.authorAvatarUrl+'" onerror="this.outerHTML=\'<div class=&quot;post-avatar post-avatar-fallback&quot;>'+authorInitial+'</div>\'">'
+    (liveAvatarUrl
+      ? '<img class="post-avatar" src="'+liveAvatarUrl+'" onerror="this.outerHTML=\'<div class=&quot;post-avatar post-avatar-fallback&quot;>'+authorInitial+'</div>\'">'
       : '<div class="post-avatar post-avatar-fallback">'+authorInitial+'</div>')+
-    '<div class="post-author"><div class="post-author-name">'+(d.authorDisplayName||'Unknown')+'</div>'+
+    '<div class="post-author"><div class="post-author-name">'+liveDisplayName+'</div>'+
     '<div class="post-author-meta">'+timeAgo(d.createdAt)+'</div></div>'+
     (isPinned ? '<span class="pinned-post-badge">📌 Pinned</span>' : '');
   var followBtn=document.createElement('button'); followBtn.className='post-follow-btn'; followBtn.textContent='+ Follow';
@@ -2904,7 +2931,7 @@ function renderPostCard(id, d, wrap, isPinned){
     // scroll doesn't jump around post to post — but that means what's
     // shown here is NEVER the real, full image. Tapping opens it at its
     // actual size, same as Facebook's photo lightbox.
-    media.onclick = function(){ openImageLightbox(d.mediaUrls[0], d.authorAvatarUrl, d.authorDisplayName, d.caption); };
+    media.onclick = function(){ openImageLightbox(d.mediaUrls[0], liveAvatarUrl, liveDisplayName, d.caption); };
   }
   if(media.innerHTML) card.appendChild(media);
   var feedVideoEl = media.querySelector('.feed-video');
