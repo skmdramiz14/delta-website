@@ -2739,12 +2739,48 @@ function observeFeedVideo(videoEl, btnEl){
 }
 function openImageLightbox(url){
   document.getElementById('lightboxImg').src = url;
+  document.getElementById('lightboxImg').style.transform = '';
+  document.getElementById('imageLightbox').style.opacity = '1';
   document.getElementById('imageLightbox').style.display = 'flex';
 }
 function closeImageLightbox(){
   document.getElementById('imageLightbox').style.display = 'none';
+  document.getElementById('imageLightbox').style.opacity = '1';
   document.getElementById('lightboxImg').src = '';
+  document.getElementById('lightboxImg').style.transform = '';
 }
+(function setupLightboxSwipe(){
+  var startY = 0, dragging = false;
+  var lightbox, img;
+  document.addEventListener('DOMContentLoaded', function(){
+    lightbox = document.getElementById('imageLightbox');
+    img = document.getElementById('lightboxImg');
+    lightbox.addEventListener('touchstart', function(e){
+      if(e.target !== img) return; // swipe-to-dismiss only starts from the image itself
+      startY = e.touches[0].clientY;
+      dragging = true;
+    }, {passive:true});
+    lightbox.addEventListener('touchmove', function(e){
+      if(!dragging) return;
+      var dy = e.touches[0].clientY - startY;
+      img.style.transform = 'translateY('+dy+'px)';
+      lightbox.style.opacity = Math.max(0.3, 1 - Math.abs(dy)/400);
+    }, {passive:true});
+    lightbox.addEventListener('touchend', function(e){
+      if(!dragging) return;
+      dragging = false;
+      var dy = e.changedTouches[0].clientY - startY;
+      if(Math.abs(dy) > 100){
+        // Swiped far enough — dismiss, returning to wherever the feed was.
+        closeImageLightbox();
+      } else {
+        // Not far enough — snap back to normal position.
+        img.style.transform = '';
+        lightbox.style.opacity = '1';
+      }
+    });
+  });
+})();
 
 function toggleFeedVideoMute(btn){
   var media = btn.closest('.post-media');
@@ -3218,10 +3254,15 @@ function timeAgo(iso){
 
 <!-- ── IMAGE LIGHTBOX — the feed shows a cropped preview (object-fit:cover)
      so scrolling stays smooth and predictable; this shows the real, full
-     image at its natural size instead, same as tapping a Facebook photo. ── -->
-<div id="imageLightbox" onclick="closeImageLightbox()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:900;align-items:center;justify-content:center;">
+     image at its natural size instead, same as tapping a Facebook photo.
+     z-index raised well above everything else (bottom-nav was ALSO 900,
+     which is why it was bleeding through before — equal z-index meant DOM
+     order was deciding the stacking, not the semantics of "this covers
+     everything"). Swipe up or down far enough dismisses it, same as
+     Facebook's lightbox gesture. ── -->
+<div id="imageLightbox" onclick="closeImageLightbox()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:3000;align-items:center;justify-content:center;">
   <button onclick="closeImageLightbox()" style="position:absolute;top:16px;right:16px;background:rgba(255,255,255,.15);border:none;color:#fff;width:36px;height:36px;border-radius:50%;font-size:1.2rem;cursor:pointer;z-index:2;">✕</button>
-  <img id="lightboxImg" src="" style="max-width:100%;max-height:100%;object-fit:contain;">
+  <img id="lightboxImg" src="" style="max-width:100%;max-height:100%;object-fit:contain;transition:transform .1s;">
 </div>
 
 </body>
