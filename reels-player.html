@@ -179,7 +179,7 @@ async function loadReels(){
   document.getElementById('emptyOverlay').style.display='none';
   document.getElementById('reelScroll').style.display='none';
 
-  var q = mc().where('status','==','published').where('type','in',['reel','video']);
+  var q = mc().where('status','==','published').where('type','==','reel');
 
   if(activeFilter==='following'){
     if(!currentUser){ toastEmpty('Following দেখতে লগইন করুন'); return; }
