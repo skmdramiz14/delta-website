@@ -2653,7 +2653,31 @@ function goTab(tab, btn){
 }
 
 // ═══ DELTA MEDIA MODERATION (Section 12) ═══
-function medMc(){ return db.collection('cities').doc(CITY).collection('mediaContent'); }
+// mediaContent is genuinely city-scoped (cities/{city}/mediaContent/{id}) —
+// unlike mediaProfiles, which is now a global top-level collection. A
+// hardcoded CITY constant here previously meant: (1) any city other than
+// Manteswar was completely invisible to every moderation panel below —
+// pending content from another city would sit stuck forever, never even
+// appearing in the queue, and (2) any accidental write would target the
+// wrong path entirely if CITY was ever wrong for a given piece of content.
+// Fix: query with collectionGroup('mediaContent') so every city's content
+// shows up in one query, and cache each doc's real .ref as it's rendered so
+// approve/reject/disable/feature actions always write back to the document's
+// ACTUAL path — never a path reconstructed from the hardcoded CITY.
+// ⚠️ Requires a new Firestore Collection Group index on mediaContent for
+// (status ASC, createdAt ASC/DESC) and (listingType, verificationStatus,
+// createdAt) — same field combinations as before, just re-created with
+// scope "Collection group" instead of "Collection" in the Firebase Console.
+var _medContentRefs = {};
+function medMc(){ return db.collectionGroup('mediaContent'); }
+function medRef(id){
+  if(_medContentRefs[id]) return _medContentRefs[id];
+  // Fallback only — means this id was never rendered through one of the
+  // queries below in this session. Keeps old behavior as a last resort
+  // rather than throwing, but logs it so it isn't a silent wrong-city write.
+  console.warn('medRef: no cached ref for "'+id+'", falling back to CITY-scoped path (may be wrong city)');
+  return db.collection('cities').doc(CITY).collection('mediaContent').doc(id);
+}
 
 function medLoadStats(){
   medMc().get().then(function(s){ document.getElementById('medStatTotal').textContent=s.size; });
@@ -2689,6 +2713,7 @@ function medLoadApprovedContent(){
   var q = medMc().where('status','==','published');
   if(typeFilter) q = q.where('type','==',typeFilter);
   q.orderBy('createdAt','desc').limit(100).get().then(function(snap){
+    snap.docs.forEach(function(d){ _medContentRefs[d.id] = d.ref; });
     _medApprovedCache = snap.docs.map(function(d){ return {id:d.id, data:d.data()}; });
     if(!_medApprovedCache.length){ list.innerHTML='<div style="color:var(--muted);padding:20px;text-align:center;">এখনো কোনো approved content নেই।</div>'; return; }
     renderMedApprovedList(_medApprovedCache);
@@ -2732,7 +2757,7 @@ function medDisableContent(id){
   // reappears in the normal moderation queue as if awaiting first review)
   // and distinct from 'rejected' (this was live and working, then actively
   // taken down — a different history than something that never got approved).
-  medMc().doc(id).update({status:'disabled_by_admin'}).then(function(){
+  medRef(id).update({status:'disabled_by_admin'}).then(function(){
     showToast('Content disable করা হয়েছে','green'); medLoadApprovedContent();
   }).catch(function(e){ showToast('Error: '+e.message,'red'); });
 }
@@ -2746,6 +2771,7 @@ function medLoadIndividualQueue(){
       if(snap.empty){ list.innerHTML='<div style="color:var(--muted);padding:20px;text-align:center;">কোনো pending individual listing নেই ✅</div>'; return; }
       list.innerHTML='';
       snap.forEach(function(doc){
+        _medContentRefs[doc.id] = doc.ref;
         var d = doc.data();
         var thumb = d.thumbnailUrl || (d.mediaUrls&&d.mediaUrls[0]) || '';
         var row = document.createElement('div'); row.className='req-card';
@@ -2769,7 +2795,7 @@ function medLoadIndividualQueue(){
     });
 }
 function medApproveIndividual(id){
-  medMc().doc(id).update({status:'published', verificationStatus:'approved'}).then(function(){
+  medRef(id).update({status:'published', verificationStatus:'approved'}).then(function(){
     showToast('Approve হয়েছে ✅','green'); medLoadIndividualQueue();
   }).catch(function(e){ showToast('Error: '+e.message,'red'); });
 }
@@ -2801,7 +2827,7 @@ function medCorrectAndApprove(id){
   var category = document.getElementById('medIndFixCategory-'+id).value;
   var commission = Number(document.getElementById('medIndFixCommission-'+id).value);
   if(!commission){ showToast('সঠিক commission % দিন'); return; }
-  medMc().doc(id).update({
+  medRef(id).update({
     category: category, commissionRate: commission,
     status:'published', verificationStatus:'approved_after_correction'
   }).then(function(){
@@ -2947,6 +2973,7 @@ function medLoadQueue(){
     if(snap.empty){ list.innerHTML='<div style="color:var(--muted);padding:20px;text-align:center;">কোনো pending content নেই ✅</div>'; return; }
     list.innerHTML='';
     snap.forEach(function(doc){
+      _medContentRefs[doc.id] = doc.ref;
       var d=doc.data();
       var thumb=d.thumbnailUrl||(d.mediaUrls&&d.mediaUrls[0])||'';
       var row=document.createElement('div'); row.className='req-card';
@@ -2966,7 +2993,7 @@ function medLoadQueue(){
 }
 
 function medModerateContent(id, newStatus){
-  medMc().doc(id).update({status:newStatus, updatedAt:new Date().toISOString()})
+  medRef(id).update({status:newStatus, updatedAt:new Date().toISOString()})
     .then(function(){ medLoadQueue(); medLoadStats(); })
     .catch(function(e){ alert('Error: '+e.message); });
 }
@@ -2988,9 +3015,17 @@ function medLoadReported(){
         '<button class="btn-sm" style="background:var(--sand);color:var(--navy);" id="medDismiss-'+doc.id+'">Dismiss</button>'+
         '</div></div>';
       list.appendChild(row);
-      document.getElementById('medView-'+doc.id).onclick=function(){ window.open('media-feed.html?content='+r.contentId+'&city='+CITY,'_blank'); };
+      // The report only ever stored contentId, never the content's own city
+      // or a ref — nothing here fetched the actual mediaContent doc yet, so
+      // there's no cached ref to fall back on either. r.city is a
+      // denormalized field written at report-creation time (reels-player.html)
+      // specifically so this lookup can target the right city; older reports
+      // created before that field existed fall back to CITY, same as before.
+      var reportedContentCity = r.city || CITY;
+      document.getElementById('medView-'+doc.id).onclick=function(){ window.open('media-feed.html?content='+r.contentId+'&city='+reportedContentCity,'_blank'); };
       document.getElementById('medRemove-'+doc.id).onclick=function(){
-        medMc().doc(r.contentId).update({status:'removed',updatedAt:new Date().toISOString()});
+        db.collection('cities').doc(reportedContentCity).collection('mediaContent').doc(r.contentId)
+          .update({status:'removed',updatedAt:new Date().toISOString()});
         doc.ref.update({status:'resolved'}).then(function(){ medLoadReported(); medLoadStats(); });
       };
       document.getElementById('medDismiss-'+doc.id).onclick=function(){ doc.ref.update({status:'dismissed'}).then(function(){ medLoadReported(); medLoadStats(); }); };
@@ -3004,6 +3039,7 @@ function medLoadFeaturedAdmin(){
     list.innerHTML='';
     if(snap.empty){ list.innerHTML='<div style="color:var(--muted);padding:20px;text-align:center;">কোনো published content নেই</div>'; return; }
     snap.forEach(function(doc){
+      _medContentRefs[doc.id] = doc.ref;
       var d=doc.data();
       var row=document.createElement('div'); row.className='req-card';
       row.innerHTML =
@@ -3012,7 +3048,7 @@ function medLoadFeaturedAdmin(){
         '<label style="display:flex;align-items:center;gap:6px;font-size:.8rem;"><input type="checkbox" id="medFeat-'+doc.id+'" '+(d.adminFeatured?'checked':'')+'> Featured</label></div>';
       list.appendChild(row);
       document.getElementById('medFeat-'+doc.id).onchange=function(e){
-        medMc().doc(doc.id).update({adminFeatured:e.target.checked, updatedAt:new Date().toISOString()});
+        medRef(doc.id).update({adminFeatured:e.target.checked, updatedAt:new Date().toISOString()});
       };
     });
   }).catch(function(e){ list.innerHTML='<div style="color:var(--muted);padding:20px;">লোড করতে সমস্যা: '+e.message+'</div>'; });
