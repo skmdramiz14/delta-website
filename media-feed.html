@@ -149,9 +149,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 .filter-chip.active{background:var(--navy);color:#fff;border-color:var(--navy);box-shadow:0 2px 8px rgba(16,57,45,.35);}
 .filter-chip:not(.active):hover{background:rgba(255,255,255,.1);border-color:var(--orange);}
 
-.feed-wrap{max-width:520px;margin:0 auto;padding:14px 12px;}
-.post-card{background:var(--sand);margin-bottom:16px;border-radius:16px;border:1px solid var(--border);
-  box-shadow:0 4px 16px rgba(0,0,0,.18);overflow:hidden;}
+.feed-wrap{max-width:520px;margin:0 auto;padding:14px 0;}
+.post-card{background:var(--sand);margin-bottom:8px;border-bottom:8px solid var(--cream);}
 .post-head{display:flex;align-items:center;gap:10px;padding:14px 14px 10px;}
 .post-avatar{width:40px;height:40px;border-radius:50%;background:var(--cream);object-fit:cover;flex-shrink:0;
   border:2px solid var(--orange);box-shadow:0 0 0 2px rgba(199,161,90,.15);}
@@ -2738,6 +2737,15 @@ function observeFeedVideo(videoEl, btnEl){
   _feedAllVideos.push({vid:videoEl, btn:btnEl});
   getFeedVideoObserver().observe(videoEl);
 }
+function openImageLightbox(url){
+  document.getElementById('lightboxImg').src = url;
+  document.getElementById('imageLightbox').style.display = 'flex';
+}
+function closeImageLightbox(){
+  document.getElementById('imageLightbox').style.display = 'none';
+  document.getElementById('lightboxImg').src = '';
+}
+
 function toggleFeedVideoMute(btn){
   var media = btn.closest('.post-media');
   var vid = media.querySelector('video');
@@ -2840,6 +2848,12 @@ function renderPostCard(id, d, wrap, isPinned){
     media.style.cursor = 'pointer';
   } else if(d.mediaUrls && d.mediaUrls.length){
     media.innerHTML='<img src="'+d.mediaUrls[0]+'">'+(d.mediaUrls.length>1?'<div class="post-media-badge">1/'+d.mediaUrls.length+'</div>':'');
+    media.style.cursor = 'pointer';
+    // Feed preview crops to a fixed aspect ratio (object-fit:cover) so the
+    // scroll doesn't jump around post to post — but that means what's
+    // shown here is NEVER the real, full image. Tapping opens it at its
+    // actual size, same as Facebook's photo lightbox.
+    media.onclick = function(){ openImageLightbox(d.mediaUrls[0]); };
   }
   if(media.innerHTML) card.appendChild(media);
   var feedVideoEl = media.querySelector('.feed-video');
@@ -3200,6 +3214,14 @@ function timeAgo(iso){
     <input type="tel" id="indOrderMobile" placeholder="মোবাইল নম্বর" style="width:100%;padding:10px 12px;border-radius:10px;border:1.5px solid var(--border);margin-bottom:10px;">
     <button onclick="submitIndividualOrder()" style="width:100%;padding:11px;background:var(--navy);color:#fff;border:none;border-radius:10px;font-weight:700;">✅ Order Confirm করুন (COD)</button>
   </div>
+</div>
+
+<!-- ── IMAGE LIGHTBOX — the feed shows a cropped preview (object-fit:cover)
+     so scrolling stays smooth and predictable; this shows the real, full
+     image at its natural size instead, same as tapping a Facebook photo. ── -->
+<div id="imageLightbox" onclick="closeImageLightbox()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:900;align-items:center;justify-content:center;">
+  <button onclick="closeImageLightbox()" style="position:absolute;top:16px;right:16px;background:rgba(255,255,255,.15);border:none;color:#fff;width:36px;height:36px;border-radius:50%;font-size:1.2rem;cursor:pointer;z-index:2;">✕</button>
+  <img id="lightboxImg" src="" style="max-width:100%;max-height:100%;object-fit:contain;">
 </div>
 
 </body>
