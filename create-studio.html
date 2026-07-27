@@ -391,6 +391,12 @@ var params = new URLSearchParams(location.search);
 var CITY = params.get('city') || (function(){ try{ return localStorage.getItem('delta_city'); }catch(e){ return null; } })() || 'manteswar';
 var currentUser = null;
 var currentType = params.get('type') || 'post';
+// Which entry point this Create session was opened from — determines where
+// the published content shows up beyond its own type-based home (see the
+// content-visibility architecture: DELTA Video's own + tags everything
+// 'video_hub' so Shorts/Posts/Live created there stay out of Reels/Feed's
+// normal sections and only show in DELTA Video + Feed).
+var CREATED_FROM = params.get('from') || 'main_feed'; // 'main_feed' | 'video_hub' | 'reels_section'
 var uploadedMedia = []; // [{url, type:'image'|'video'}]
 var uploadedThumbnail = null; // custom cover image URL for Reel/Video (optional)
 var pollOptionCount = 0;
@@ -1005,6 +1011,7 @@ async function submitContent(){
     authorDisplayName: authorName,
     authorAvatarUrl: authorAvatar,
     type: currentType,
+    createdFrom: CREATED_FROM, // 'main_feed' | 'video_hub' | 'reels_section' — drives content-visibility rules downstream
     status: 'pending', // moderation queue — client can never self-publish (Firestore rules enforce this too)
     caption: caption,
     createdAt: new Date().toISOString(),
