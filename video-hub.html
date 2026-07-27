@@ -197,7 +197,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 </div>
 
 <div class="vh-shorts-row" id="vhShortsRow" style="display:none;">
-  <div class="vh-shorts-title">🎬 DELTA Reels</div>
+  <div class="vh-shorts-title">⚡ DELTA Shorts</div>
   <div class="vh-shorts-scroll" id="vhShortsScroll"></div>
 </div>
 <div class="vh-section-divider" id="vhShortsDivider" style="display:none;"></div>
@@ -225,7 +225,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20c0-4 3.5-6 8-6s8 2 8 6" stroke-linecap="round"/><circle cx="12" cy="7" r="4"/></svg>
     ফলো
   </button>
-  <button class="vh-bn-item" onclick="location.href='media-profile.html?city='+CITY">
+  <button class="vh-bn-item" onclick="goToMyProfile()">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.5 3.5-7 8-7s8 2.5 8 7" stroke-linecap="round"/></svg>
     প্রোফাইল
   </button>
@@ -339,11 +339,12 @@ auth.onAuthStateChanged(function(u){
   }
 });
 
-// ── Shorts bridge row — mirrors how YouTube's own Home feed surfaces Shorts
-// inline rather than keeping them in a fully separate app section. DELTA
-// Reels and DELTA TV are branded surfaces of the same mediaContent
-// collection (Master Doc §17), so this just pulls type=='reel' content and
-// deep-links into reels-player.html — no new collection or schema needed. ──
+// ── Shorts bridge row — mirrors how YouTube's own Home feed surfaces
+// Shorts inline. Originally this pulled ALL type=='reel' content (a bug —
+// it showed real Reels here too, contradicting the finalized architecture
+// where DELTA Video must only ever show its OWN Shorts). Now correctly
+// scoped to createdFrom=='video_hub' only, and deep-links back into
+// video-hub.html itself, not reels-player.html. ──
 async function loadShortsRow(){
   if(IS_DEMO){
     var demoScroll = document.getElementById('vhShortsScroll');
@@ -352,7 +353,7 @@ async function loadShortsRow(){
       var d = item.data;
       var card = document.createElement('div'); card.className = 'vh-short-card';
       card.innerHTML = '<img src="'+d.thumbnailUrl+'"><div class="vh-short-views">👁 '+d.stats.views+'</div>';
-      card.onclick = function(){ alert('Demo mode — reels-player.html-এ যেত (id: '+item.id+')'); };
+      card.onclick = function(){ alert('Demo mode — video-hub.html-এই থাকতো (id: '+item.id+')'); };
       demoScroll.appendChild(card);
     });
     document.getElementById('vhShortsRow').style.display = 'block';
@@ -360,8 +361,12 @@ async function loadShortsRow(){
     return;
   }
   try{
+    // This row previously showed ALL reels, including real Reels from
+    // Reels section/Media Feed — that directly contradicted the finalized
+    // content-visibility architecture (DELTA Video must never surface a
+    // Reel, only its OWN Shorts). Filtering by createdFrom fixes it.
     var snap = await db.collection('cities').doc(CITY).collection('mediaContent')
-      .where('type','==','reel').where('status','==','published')
+      .where('type','==','reel').where('createdFrom','==','video_hub').where('status','==','published')
       .orderBy('createdAt','desc').limit(12).get();
     if(snap.empty) return; // stays hidden — no fake/empty row shown
     var scroll = document.getElementById('vhShortsScroll');
@@ -373,7 +378,7 @@ async function loadShortsRow(){
       card.innerHTML =
         (thumb ? '<img src="'+thumb+'">' : (d.videoUrl ? '<video src="'+d.videoUrl+'" muted playsinline preload="metadata"></video>' : ''))+
         '<div class="vh-short-views">👁 '+((d.stats&&d.stats.views)||0)+'</div>';
-      card.onclick = function(){ location.href = 'reels-player.html?city='+CITY+'&id='+doc.id; };
+      card.onclick = function(){ location.href = 'video-hub.html?city='+CITY+'&id='+doc.id; };
       scroll.appendChild(card);
     });
     document.getElementById('vhShortsRow').style.display = 'block';
@@ -383,6 +388,11 @@ async function loadShortsRow(){
 
 function openCreateSheet(){ document.getElementById('vhCreateSheetOverlay').classList.add('open'); }
 function closeCreateSheet(){ document.getElementById('vhCreateSheetOverlay').classList.remove('open'); }
+
+function goToMyProfile(){
+  if(!currentUser){ alert('আগে লগইন করুন'); return; }
+  location.href = 'media-profile.html?uid='+currentUser.uid+'&city='+CITY;
+}
 
 function setMainTab(tab, el){
   document.querySelectorAll('.vh-maintab').forEach(function(t){ t.classList.remove('active'); });
