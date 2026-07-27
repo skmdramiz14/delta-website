@@ -134,6 +134,22 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 .cs-auth-gate-btn{background:var(--navy);color:#fff;border:none;padding:12px 28px;border-radius:24px;
   font-weight:700;font-size:.85rem;cursor:pointer;margin-top:12px;}
 
+/* ── LISTING LIMIT MODAL (bottom sheet) ── */
+.cs-limit-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:998;display:none;
+  align-items:flex-end;justify-content:center;}
+.cs-limit-modal.open{display:flex;}
+.cs-limit-sheet{background:#fff;width:100%;max-width:480px;border-radius:20px 20px 0 0;
+  padding:26px 22px calc(22px + env(safe-area-inset-bottom,0px));text-align:center;}
+.cs-limit-icon{font-size:2.2rem;margin-bottom:10px;}
+.cs-limit-title{font-family:'Playfair Display',serif;font-weight:800;font-size:1.1rem;color:var(--navy);margin-bottom:6px;}
+.cs-limit-sub{font-size:.85rem;color:var(--muted);line-height:1.6;margin-bottom:20px;}
+.cs-limit-premium-btn{width:100%;background:linear-gradient(135deg,var(--orange),var(--orange-dark));color:var(--navy);
+  border:none;padding:14px;border-radius:24px;font-weight:800;font-size:.9rem;cursor:pointer;margin-bottom:10px;}
+.cs-limit-premium-btn:disabled{opacity:.6;cursor:not-allowed;}
+.cs-limit-cancel-btn{width:100%;background:var(--cream);color:var(--charcoal);border:1.5px solid var(--border);
+  padding:13px;border-radius:24px;font-weight:700;font-size:.85rem;cursor:pointer;}
+.cs-limit-note{font-size:.68rem;color:var(--muted);margin-top:12px;}
+
 .cs-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--charcoal);
   color:#fff;padding:11px 20px;border-radius:24px;font-size:.8rem;font-weight:600;z-index:1000;
   transition:transform .25s;box-shadow:0 4px 16px rgba(0,0,0,.2);}
@@ -342,6 +358,21 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 </div>
 
 <div class="cs-toast" id="csToast"></div>
+
+<!-- Shown instead of a plain toast when someone hits the free-tier active
+     listing cap (Individual Seller Marketplace) — gives them a real choice
+     (request Premium, or cancel and go manage their existing listings)
+     rather than just a dead-end error message. -->
+<div class="cs-limit-modal" id="csLimitModal">
+  <div class="cs-limit-sheet">
+    <div class="cs-limit-icon">🛍️</div>
+    <div class="cs-limit-title">Listing limit শেষ</div>
+    <div class="cs-limit-sub" id="csLimitSub">একসাথে সর্বোচ্চ <span id="csLimitCount">7</span>টা active listing রাখা যায় — একটা বিক্রি বা বন্ধ করে আবার চেষ্টা করুন, অথবা unlimited product বিক্রি করতে Premium Subscription নিন।</div>
+    <button class="cs-limit-premium-btn" id="csLimitPremiumBtn" onclick="requestPremiumInterest()">⭐ Premium Subscription নিন</button>
+    <button class="cs-limit-cancel-btn" onclick="closeListingLimitModal()">বাতিল করুন</button>
+    <div class="cs-limit-note">Request পাঠানোর পর DELTA টিম যোগাযোগ করে Premium চালু করে দেবে।</div>
+  </div>
+</div>
 
 <script>
 var fbcfg = {
@@ -746,7 +777,7 @@ var INDIVIDUAL_CATEGORIES = [
 ];
 var _indAcceptedCommission = null; // {category, rate} once accepted
 var _indTalkRequestId = null;
-var INDIVIDUAL_LISTING_LIMITS = {maxPrice: 50000, maxActiveListings: 3}; // fallback defaults, overridden by platformConfig below
+var INDIVIDUAL_LISTING_LIMITS = {maxPrice: 50000, maxActiveListings: 7}; // fallback defaults, overridden by platformConfig below
 var _isPremiumSeller = false; // Admin-granted only — see Firestore rules; never settable by the user themselves
 
 async function populateIndCategoryDropdown(){
@@ -783,6 +814,46 @@ async function loadIndividualListingLimits(){
       ? (d.premiumMaxActiveListings || d.maxActiveListings || INDIVIDUAL_LISTING_LIMITS.maxActiveListings)
       : (d.maxActiveListings || INDIVIDUAL_LISTING_LIMITS.maxActiveListings);
   }catch(e){ console.warn('Could not load individual listing limits, using defaults', e); }
+}
+
+function showListingLimitModal(){
+  document.getElementById('csLimitCount').textContent = INDIVIDUAL_LISTING_LIMITS.maxActiveListings;
+  document.getElementById('csLimitModal').classList.add('open');
+}
+function closeListingLimitModal(){
+  document.getElementById('csLimitModal').classList.remove('open');
+}
+// Individual Seller's isPremiumSeller flag is Admin-granted only (Firestore
+// rules block a user from ever setting it on themselves — see admin.html's
+// medGrantPremium()). There's no self-service billing yet, so clicking
+// "Premium Subscription নিন" here does two things: (1) logs a request Admin
+// can act on immediately without hunting for the person's UID, and (2) opens
+// premium-upgrade.html in a new tab so they can see what Premium looks like
+// while they wait — closing the loop on both sides instead of a dead end.
+async function requestPremiumInterest(){
+  if(!currentUser){ showToast('আগে লগইন করুন'); return; }
+  var btn = document.getElementById('csLimitPremiumBtn');
+  btn.disabled = true; btn.textContent = 'পাঠানো হচ্ছে...';
+  try{
+    var myProfile = await db.collection('mediaProfiles').doc(currentUser.uid).get();
+    var pd = myProfile.exists ? myProfile.data() : {};
+    await db.collection('premiumInterestRequests').add({
+      uid: currentUser.uid,
+      displayName: pd.displayName || currentUser.displayName || 'Unknown',
+      mobile: pd.mobile || null,
+      reason: 'individual_listing_limit',
+      currentActiveListings: INDIVIDUAL_LISTING_LIMITS.maxActiveListings,
+      status: 'pending',
+      createdAt: new Date().toISOString()
+    });
+    closeListingLimitModal();
+    showToast('Request পাঠানো হয়েছে ✅ DELTA টিম শীঘ্রই যোগাযোগ করবে');
+    window.open('premium-upgrade.html', '_blank');
+  }catch(e){
+    showToast('Request পাঠাতে সমস্যা হয়েছে: '+e.message);
+  }finally{
+    btn.disabled = false; btn.textContent = '⭐ Premium Subscription নিন';
+  }
 }
 
 function toggleIndPanel(){
@@ -1006,7 +1077,7 @@ async function submitContent(){
     }
     var activeCount = await countActiveIndividualListings();
     if(activeCount >= INDIVIDUAL_LISTING_LIMITS.maxActiveListings){
-      showToast('একসাথে সর্বোচ্চ '+INDIVIDUAL_LISTING_LIMITS.maxActiveListings+'টা active listing রাখা যায় — একটা বিক্রি/বন্ধ করে আবার চেষ্টা করুন');
+      showListingLimitModal();
       btn.disabled = false; btn.textContent = cfg.publishLabel;
       return;
     }
