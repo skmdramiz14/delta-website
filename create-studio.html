@@ -178,11 +178,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
     <div class="cs-type-tab" data-type="post" onclick="selectType('post')">
       <div class="cs-type-icon">🖼️</div><div class="cs-type-label">পোস্ট</div>
     </div>
-    <div class="cs-type-tab" data-type="story" onclick="selectType('story')">
+    <div class="cs-type-tab" data-type="story" id="csTabStory" onclick="selectType('story')">
       <div class="cs-type-icon">⭐</div><div class="cs-type-label">স্টোরি</div>
     </div>
-    <div class="cs-type-tab" data-type="reel" onclick="selectType('reel')">
-      <div class="cs-type-icon">🎬</div><div class="cs-type-label">রিল</div>
+    <div class="cs-type-tab" data-type="reel" id="csTabReel" onclick="selectType('reel')">
+      <div class="cs-type-icon">🎬</div><div class="cs-type-label" id="csTabReelLabel">রিল</div>
     </div>
     <div class="cs-type-tab" data-type="video" onclick="selectType('video')">
       <div class="cs-type-icon">📹</div><div class="cs-type-label">ভিডিও</div>
@@ -417,10 +417,29 @@ auth.onAuthStateChanged(function(u){
   }
   document.getElementById('csAuthGate').style.display='none';
   document.getElementById('csForm').style.display='block';
+  applyCreatedFromTabRestrictions();
   selectType(currentType);
   populateIndCategoryDropdown();
   loadIndividualListingLimits();
 });
+
+// DELTA Video's own + button previously landed here and showed the exact
+// same 4 tabs (Post/Story/Reel/Video) as Media Feed's + button — making the
+// two entry points feel identical, which is the opposite of what the
+// content-visibility architecture calls for. DELTA Video only ever makes
+// Video/Shorts/Post (no Story — that's Feed-only), and its "Reel" tab is
+// actually Shorts (same type:'reel' under the hood, different createdFrom
+// and different meaning), so it's relabeled here rather than left showing
+// "রিল" like a real Reel would.
+function applyCreatedFromTabRestrictions(){
+  if(CREATED_FROM === 'video_hub'){
+    document.getElementById('csTabStory').style.display = 'none';
+    document.getElementById('csTabReelLabel').textContent = 'শর্টস';
+    document.querySelector('#csTabReel .cs-type-icon').textContent = '⚡';
+    // Live isn't built yet — no tab added for it; DELTA Video's own action
+    // sheet already tells the person that honestly instead of pretending here.
+  }
+}
 
 function selectType(type){
   currentType = type;
@@ -428,8 +447,9 @@ function selectType(type){
     t.classList.toggle('active', t.getAttribute('data-type')===type);
   });
   var cfg = TYPE_CONFIG[type];
-  document.getElementById('csTitle').textContent = cfg.title;
-  document.getElementById('csPublishBtn').textContent = cfg.publishLabel;
+  var isShortsContext = (type==='reel' && CREATED_FROM==='video_hub');
+  document.getElementById('csTitle').textContent = isShortsContext ? 'শর্টস তৈরি করুন' : cfg.title;
+  document.getElementById('csPublishBtn').textContent = isShortsContext ? 'শর্টস পোস্ট করুন' : cfg.publishLabel;
   document.getElementById('csUploadText').textContent = cfg.uploadText;
   document.getElementById('csCaptionLabel').textContent = cfg.captionLabel;
   document.getElementById('csCaption').placeholder = type==='story' ? 'কিছু লিখতে চান? (ঐচ্ছিক)' : 'কী নিয়ে এই পোস্ট?';
