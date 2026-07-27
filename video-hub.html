@@ -16,22 +16,70 @@ html,body{overflow-x:hidden;max-width:100vw;}
   --navy:#10392D;--navy2:#1a4a3a;--orange:#C7A15A;--orange-dark:#b8925a;--orange-light:#F3EFE6;
   --white:#fff;--cream:#F7F8FA;--border:#E7E9EC;--muted:#8A8F98;--charcoal:#1A1A1A;
 }
-body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charcoal);padding-bottom:30px;}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charcoal);padding-bottom:64px;}
 
-.vh-nav{background:var(--white);padding:14px 16px;display:flex;align-items:center;gap:12px;
+/* ── TOP BAR — logo, notifications, search ── */
+.vh-topbar{background:var(--white);padding:12px 16px;display:flex;align-items:center;gap:10px;
   position:sticky;top:0;z-index:200;border-bottom:1px solid var(--border);}
-.vh-back{background:none;border:none;width:32px;height:32px;border-radius:8px;display:flex;align-items:center;
-  justify-content:center;cursor:pointer;color:var(--charcoal);flex-shrink:0;}
-.vh-back:hover{background:var(--cream);}
-.vh-title{font-family:'Playfair Display',serif;font-weight:800;font-size:1.1rem;color:var(--navy);flex:1;}
-.vh-search-input{flex:1;background:var(--cream);border:1px solid var(--border);border-radius:20px;
-  padding:8px 14px;font-size:.82rem;max-width:200px;}
+.vh-logo{font-family:'Playfair Display',serif;font-weight:900;font-size:1.3rem;color:var(--navy);
+  display:flex;align-items:center;gap:6px;flex:1;cursor:pointer;white-space:nowrap;}
+.vh-logo-mark{color:var(--orange);}
+.vh-logo em{color:var(--orange);font-style:normal;}
+.vh-topbar-btn{background:none;border:none;width:38px;height:38px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;cursor:pointer;color:var(--navy);flex-shrink:0;position:relative;}
+.vh-topbar-btn:active{background:var(--cream);}
+.vh-notif-dot{position:absolute;top:7px;right:8px;width:7px;height:7px;border-radius:50%;background:#e0245e;
+  border:1.5px solid #fff;}
+.vh-search-expand{display:flex;align-items:center;background:var(--cream);border:1.5px solid var(--border);
+  border-radius:22px;padding:0 6px 0 14px;flex:1;max-width:0;overflow:hidden;transition:max-width .22s ease;}
+.vh-search-expand.open{max-width:320px;margin-left:2px;}
+.vh-search-expand input{border:none;background:none;outline:none;flex:1;font-size:.85rem;padding:9px 0;
+  font-family:'DM Sans',sans-serif;color:var(--charcoal);min-width:0;}
+.vh-search-expand button{background:none;border:none;color:var(--muted);cursor:pointer;padding:6px;flex-shrink:0;}
+
+/* ── MAIN TABS — হোম / ফলো / DELTA Official (this content model has no
+   movies/TV catalog, so the third tab surfaces Admin/Official curated
+   content instead — same structural role YouTube's "Movies & TV" plays
+   (a distinct, curated-not-social pillar), adapted to what DELTA actually is) ── */
+.vh-maintabs{display:flex;background:var(--white);border-bottom:1px solid var(--border);position:sticky;top:61px;z-index:190;}
+.vh-maintab{flex:1;text-align:center;padding:13px 4px 11px;font-size:.82rem;font-weight:700;color:var(--muted);
+  cursor:pointer;border-bottom:2.5px solid transparent;}
+.vh-maintab.active{color:var(--navy);border-bottom-color:var(--orange);}
 
 .vh-filter-row{display:flex;gap:8px;overflow-x:auto;padding:12px 16px;scrollbar-width:none;}
 .vh-filter-row::-webkit-scrollbar{display:none;}
 .vh-chip{flex-shrink:0;padding:7px 16px;border-radius:20px;font-size:.78rem;font-weight:700;
   background:var(--white);border:1.5px solid var(--border);color:var(--charcoal);cursor:pointer;white-space:nowrap;}
 .vh-chip.active{background:var(--navy);border-color:var(--navy);color:#fff;}
+
+/* ── BOTTOM NAV — fixed, 5 icons ── */
+.vh-bottomnav{position:fixed;bottom:0;left:0;right:0;background:var(--white);border-top:1px solid var(--border);
+  display:flex;align-items:center;z-index:250;padding-bottom:env(safe-area-inset-bottom,0px);}
+.vh-bn-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 2px 7px;
+  cursor:pointer;color:var(--muted);font-size:.62rem;font-weight:700;background:none;border:none;}
+.vh-bn-item svg{width:22px;height:22px;}
+.vh-bn-item.active{color:var(--navy);}
+.vh-bn-create{width:40px;height:28px;background:var(--navy);border-radius:8px;display:flex;align-items:center;
+  justify-content:center;color:#fff;margin-bottom:2px;}
+.vh-bn-create svg{width:18px;height:18px;}
+
+/* ── CREATE ACTION-SHEET — tapping + shows a type picker instead of
+   guessing what someone wants to make (matches YouTube's own Create flow) ── */
+.vh-create-sheet-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:600;display:none;
+  align-items:flex-end;justify-content:center;}
+.vh-create-sheet-overlay.open{display:flex;}
+.vh-create-sheet{background:#fff;width:100%;max-width:480px;border-radius:20px 20px 0 0;
+  padding:10px 8px calc(14px + env(safe-area-inset-bottom,0px));}
+.vh-create-sheet-handle{width:36px;height:4px;background:var(--border);border-radius:3px;margin:4px auto 12px;}
+.vh-create-opt{display:flex;align-items:center;gap:14px;padding:14px 16px;cursor:pointer;border-radius:12px;}
+.vh-create-opt:active{background:var(--cream);}
+.vh-create-opt-icon{width:42px;height:42px;border-radius:50%;background:var(--orange-light);display:flex;
+  align-items:center;justify-content:center;font-size:1.15rem;flex-shrink:0;}
+.vh-create-opt-text{flex:1;}
+.vh-create-opt-title{font-weight:700;font-size:.9rem;color:var(--charcoal);}
+.vh-create-opt-sub{font-size:.74rem;color:var(--muted);margin-top:1px;}
+.vh-create-opt.disabled{opacity:.5;}
+.vh-create-opt.disabled .vh-create-opt-sub{color:var(--orange-dark);font-weight:700;}
 
 .vh-shorts-row{padding:14px 16px 6px;}
 .vh-shorts-title{font-size:.82rem;font-weight:800;color:var(--navy);margin-bottom:10px;display:flex;align-items:center;gap:6px;}
@@ -61,6 +109,23 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 .vh-card-title{font-size:.9rem;font-weight:700;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;
   -webkit-box-orient:vertical;overflow:hidden;margin-bottom:3px;}
 .vh-card-meta{font-size:.74rem;color:var(--muted);}
+
+/* ── COMMUNITY POST CARD — DELTA Video's own Posts (createdFrom==video_hub)
+   render differently from a video card: image + caption + a YouTube-style
+   like/dislike/share/comment row, no thumbnail-play-overlay, no duration. ── */
+.vh-post-card{padding:14px 16px;}
+.vh-post-head{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.vh-post-avatar{width:36px;height:36px;border-radius:50%;object-fit:cover;background:var(--navy);flex-shrink:0;}
+.vh-post-authorname{font-weight:700;font-size:.86rem;}
+.vh-post-time{font-size:.72rem;color:var(--muted);}
+.vh-post-caption{font-size:.86rem;line-height:1.55;margin-bottom:10px;white-space:pre-wrap;}
+.vh-post-img{width:100%;border-radius:12px;object-fit:cover;max-height:420px;margin-bottom:10px;}
+.vh-post-actions{display:flex;align-items:center;gap:18px;}
+.vh-post-action{display:flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;
+  color:var(--charcoal);font-size:.8rem;font-weight:700;padding:4px;}
+.vh-post-action svg{width:19px;height:19px;}
+.vh-post-action.liked{color:#2e7d32;}
+.vh-post-action.disliked{color:#c0392b;}
 
 .vh-empty{padding:60px 24px;text-align:center;color:var(--muted);font-size:.85rem;line-height:1.7;}
 .vh-empty-btn{display:inline-block;margin-top:14px;background:var(--navy);color:#fff;border:none;
@@ -102,18 +167,32 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 </head>
 <body>
 
-<div class="vh-nav">
-  <button class="vh-back" onclick="history.length>1?history.back():location.href='media-feed.html'">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+<div class="vh-topbar">
+  <div class="vh-logo" onclick="history.length>1?history.back():location.href='media-feed.html'">
+    <span class="vh-logo-mark">△</span> DELTA <em>Videos</em>
+  </div>
+  <button class="vh-topbar-btn" onclick="showComingSoonToast()" title="Notifications">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" stroke-linecap="round" stroke-linejoin="round"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+    <span class="vh-notif-dot"></span>
   </button>
-  <div class="vh-title" id="vhTitle">DELTA Videos</div>
-  <input type="text" class="vh-search-input" id="vhSearchInput" placeholder="🔍 খুঁজুন" oninput="filterVideos()">
+  <div class="vh-search-expand" id="vhSearchExpand">
+    <input type="text" id="vhSearchInput" placeholder="খুঁজুন" oninput="filterVideos()">
+    <button onclick="toggleVhSearch()">✕</button>
+  </div>
+  <button class="vh-topbar-btn" onclick="toggleVhSearch()" title="Search">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3" stroke-linecap="round"/></svg>
+  </button>
 </div>
 
-<div class="vh-filter-row">
+<div class="vh-maintabs">
+  <div class="vh-maintab active" data-t="home" onclick="setMainTab('home',this)">হোম</div>
+  <div class="vh-maintab" data-t="following" onclick="setMainTab('following',this)">ফলো</div>
+  <div class="vh-maintab" data-t="official" onclick="setMainTab('official',this)">DELTA Official</div>
+</div>
+
+<div class="vh-filter-row" id="vhSubFilterRow">
   <div class="vh-chip active" data-f="all" onclick="setFilter('all',this)">সব</div>
   <div class="vh-chip" data-f="trending" onclick="setFilter('trending',this)">🔥 Trending</div>
-  <div class="vh-chip" data-f="following" onclick="setFilter('following',this)">👤 Following</div>
   <div class="vh-chip" data-f="nearby" onclick="setFilter('nearby',this)">📍 কাছাকাছি</div>
 </div>
 
@@ -128,6 +207,52 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 </div>
 
 <!-- ── PLAYER OVERLAY ── -->
+<div class="vh-bottomnav">
+  <button class="vh-bn-item active" id="vhBnHome" onclick="location.href='video-hub.html?city='+CITY">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10.5L12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>
+    হোম
+  </button>
+  <button class="vh-bn-item" onclick="location.href='reels-player.html?city='+CITY">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M10 9l5 3-5 3V9Z" fill="currentColor" stroke="none"/></svg>
+    শর্টস
+  </button>
+  <button class="vh-bn-item" onclick="openCreateSheet()" style="color:var(--navy);">
+    <span class="vh-bn-create">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>
+    </span>
+  </button>
+  <button class="vh-bn-item" onclick="setMainTab('following', document.querySelector('.vh-maintab[data-t=following]'))">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20c0-4 3.5-6 8-6s8 2 8 6" stroke-linecap="round"/><circle cx="12" cy="7" r="4"/></svg>
+    ফলো
+  </button>
+  <button class="vh-bn-item" onclick="location.href='media-profile.html?city='+CITY">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.5 3.5-7 8-7s8 2.5 8 7" stroke-linecap="round"/></svg>
+    প্রোফাইল
+  </button>
+</div>
+
+<div class="vh-create-sheet-overlay" id="vhCreateSheetOverlay" onclick="if(event.target===this)closeCreateSheet()">
+  <div class="vh-create-sheet">
+    <div class="vh-create-sheet-handle"></div>
+    <div class="vh-create-opt" onclick="location.href='create-studio.html?type=video&from=video_hub&city='+CITY">
+      <div class="vh-create-opt-icon">🎥</div>
+      <div class="vh-create-opt-text"><div class="vh-create-opt-title">Video</div><div class="vh-create-opt-sub">লম্বা ভিডিও (DELTA TV)</div></div>
+    </div>
+    <div class="vh-create-opt" onclick="location.href='create-studio.html?type=reel&from=video_hub&city='+CITY">
+      <div class="vh-create-opt-icon">⚡</div>
+      <div class="vh-create-opt-text"><div class="vh-create-opt-title">Shorts</div><div class="vh-create-opt-sub">শুধু DELTA Video-তেই থাকবে (Reels-এ যাবে না)</div></div>
+    </div>
+    <div class="vh-create-opt disabled" onclick="alert('Live শীঘ্রই আসছে')">
+      <div class="vh-create-opt-icon">🔴</div>
+      <div class="vh-create-opt-text"><div class="vh-create-opt-title">Live</div><div class="vh-create-opt-sub">শীঘ্রই আসছে</div></div>
+    </div>
+    <div class="vh-create-opt" onclick="location.href='create-studio.html?type=post&from=video_hub&city='+CITY">
+      <div class="vh-create-opt-icon">📝</div>
+      <div class="vh-create-opt-text"><div class="vh-create-opt-title">Post</div><div class="vh-create-opt-sub">YouTube Community Post-এর মতো — DELTA Video + Feed-এ দেখাবে</div></div>
+    </div>
+  </div>
+</div>
+
 <div class="vh-player-overlay" id="vhPlayerOverlay">
   <div class="vh-player-video-wrap">
     <button class="vh-player-close" onclick="closePlayer()">✕</button>
@@ -164,6 +289,7 @@ firebase.initializeApp(fbcfg);
 var auth = firebase.auth(), db = firebase.firestore();
 var params = new URLSearchParams(location.search);
 var CITY = params.get('city') || (function(){ try{ return localStorage.getItem('delta_city'); }catch(e){ return null; } })() || 'manteswar';
+var OFFICIAL_UID = 'j0KgzF3bRFa1e8kTlJThnStnhLs1'; // Admin UID (DELTA Master Document) — used for the "DELTA Official" tab
 // ── DEMO MODE — open this page as video-hub.html?demo=1 to preview the
 // design filled with sample data, completely bypassing Firestore. Remove
 // this block (and the two "if(IS_DEMO)" branches below) once real content
@@ -186,6 +312,7 @@ var DEMO_REELS = [
   {id:'reel5', data:{thumbnailUrl:'https://picsum.photos/seed/reelE/270/480', stats:{views:67}}}
 ];
 var currentUser = null;
+var _vhLiveProfileCache = {}; // {uid: {avatarUrl, displayName}} — refreshed as new authors appear
 var currentFilter = 'all';
 var _vhAllVideos = []; // [{id, data}] — cached for client-side search filtering
 var _vhCurrentPlayingId = null;
@@ -254,6 +381,37 @@ async function loadShortsRow(){
   }catch(e){ console.warn('Shorts row load failed (non-fatal)', e); }
 }
 
+function openCreateSheet(){ document.getElementById('vhCreateSheetOverlay').classList.add('open'); }
+function closeCreateSheet(){ document.getElementById('vhCreateSheetOverlay').classList.remove('open'); }
+
+function setMainTab(tab, el){
+  document.querySelectorAll('.vh-maintab').forEach(function(t){ t.classList.remove('active'); });
+  el.classList.add('active');
+  document.getElementById('vhBnHome').classList.toggle('active', tab==='home');
+  var subRow = document.getElementById('vhSubFilterRow');
+  if(tab === 'home'){
+    subRow.style.display = 'flex';
+    // Re-select whatever sub-filter (সব/Trending/কাছাকাছি) was last active
+    // under হোম, defaulting to সব the first time.
+    var activeChip = subRow.querySelector('.vh-chip.active') || subRow.querySelector('.vh-chip[data-f="all"]');
+    setFilter(activeChip.dataset.f, activeChip);
+  } else {
+    subRow.style.display = 'none';
+    setFilter(tab, el); // 'following' or 'official' — no sub-filter chips underneath
+  }
+}
+
+function toggleVhSearch(){
+  var box = document.getElementById('vhSearchExpand');
+  box.classList.toggle('open');
+  if(box.classList.contains('open')) document.getElementById('vhSearchInput').focus();
+  else { document.getElementById('vhSearchInput').value=''; filterVideos(); }
+}
+
+function showComingSoonToast(){
+  alert('Notifications শীঘ্রই আসছে');
+}
+
 function setFilter(f, el){
   currentFilter = f;
   document.querySelectorAll('.vh-chip').forEach(function(c){ c.classList.remove('active'); });
@@ -276,23 +434,45 @@ async function loadVideos(){
     return;
   }
   try{
-    var q = db.collection('cities').doc(CITY).collection('mediaContent')
-      .where('type','==','video').where('status','==','published');
+    var base = db.collection('cities').doc(CITY).collection('mediaContent').where('status','==','published');
+    var followedIds = null;
 
     if(currentFilter === 'following' && currentUser){
       await loadMyFollowing();
-      var followedIds = Object.keys(_vhMyFollowing);
+      followedIds = Object.keys(_vhMyFollowing);
       if(!followedIds.length){
         grid.innerHTML = '<div class="vh-empty">আপনি এখনো কাউকে follow করেননি।<br>Follow করা creator-দের ভিডিও এখানে দেখা যাবে।</div>';
         return;
       }
-      // Firestore 'in' queries cap at 10 — good enough for a v1 "following" filter.
-      q = q.where('authorUid','in', followedIds.slice(0,10));
+    } else if(currentFilter === 'following' && !currentUser){
+      grid.innerHTML = '<div class="vh-empty">Follow করা creator-দের ভিডিও দেখতে আগে লগইন করুন।</div>';
+      return;
     }
 
-    q = q.orderBy('createdAt','desc').limit(40);
-    var snap = await q.get();
-    _vhAllVideos = snap.docs.map(function(d){ return {id:d.id, data:d.data()}; });
+    // DELTA Video's feed is a merge of THREE distinct queries, not one —
+    // this is the content-visibility architecture worked out with the
+    // founder: (1) every Video regardless of where it was made, (2) Posts
+    // made specifically from DELTA Video's own + button (its "Community
+    // Post" equivalent — a plain Feed-made Post never appears here), and
+    // (3) Shorts made specifically from DELTA Video's own + button (these
+    // are deliberately NOT the same thing as a Reel made in Reels section
+    // or Media Feed — see reels-player.html's matching exclusion).
+    // Firestore's compat SDK can't OR across different field values in one
+    // query, so these run in parallel and get merged client-side.
+    function scoped(q){
+      if(currentFilter === 'official') return q.where('authorUid','==', OFFICIAL_UID);
+      if(followedIds) return q.where('authorUid','in', followedIds.slice(0,10));
+      return q;
+    }
+    var videoQ = scoped(base.where('type','==','video')).orderBy('createdAt','desc').limit(40).get();
+    var ownPostQ = scoped(base.where('type','==','post').where('createdFrom','==','video_hub')).orderBy('createdAt','desc').limit(20).get();
+    var ownShortsQ = scoped(base.where('type','==','reel').where('createdFrom','==','video_hub')).orderBy('createdAt','desc').limit(20).get();
+
+    var results = await Promise.all([videoQ, ownPostQ, ownShortsQ]);
+    var merged = [];
+    results.forEach(function(snap){ snap.docs.forEach(function(d){ merged.push({id:d.id, data:d.data()}); }); });
+    merged.sort(function(a,b){ return new Date(b.data.createdAt) - new Date(a.data.createdAt); });
+    _vhAllVideos = merged.slice(0, 40);
 
     if(currentFilter === 'trending'){
       _vhAllVideos.sort(function(a,b){ return ((b.data.stats&&b.data.stats.views)||0) - ((a.data.stats&&a.data.stats.views)||0); });
@@ -300,6 +480,22 @@ async function loadVideos(){
     // 'nearby' — no geo-distance data exists on mediaContent yet (same
     // honest limitation already noted in reels-player.html); falls back to
     // the standard newest-first list rather than pretending to filter.
+
+    // Live profile lookup, not the frozen authorAvatarUrl/authorDisplayName
+    // snapshot saved on each video at upload time — otherwise a name/DP set
+    // or changed AFTER an old video was uploaded never shows up on that
+    // video (same fix already applied in media-feed.html and reels-player.html;
+    // this page had simply never gotten it).
+    var uniqueAuthorUids = Array.from(new Set(_vhAllVideos.map(function(item){ return item.data.authorUid; }).filter(Boolean)));
+    var uidsToFetch = uniqueAuthorUids.filter(function(uid){ return !_vhLiveProfileCache[uid]; });
+    if(uidsToFetch.length){
+      try{
+        var profileDocs = await Promise.all(uidsToFetch.map(function(uid){ return db.collection('mediaProfiles').doc(uid).get(); }));
+        profileDocs.forEach(function(doc, i){
+          _vhLiveProfileCache[uidsToFetch[i]] = doc.exists ? {avatarUrl: doc.data().avatarUrl, displayName: doc.data().displayName} : {};
+        });
+      }catch(e){ console.warn('Live profile fetch failed (non-fatal, falls back to upload-time snapshot)', e); }
+    }
 
     renderVideoGrid(_vhAllVideos);
   }catch(e){
@@ -339,7 +535,11 @@ function renderVideoGrid(items){
   grid.innerHTML = '';
   items.forEach(function(item){
     var d = item.data;
+    if(d.type === 'post'){ grid.appendChild(buildCommunityPostCard(item)); return; }
     var thumb = d.thumbnailUrl || '';
+    var liveProfile = _vhLiveProfileCache[d.authorUid] || {};
+    var liveAvatarUrl = liveProfile.avatarUrl || d.authorAvatarUrl || '';
+    var liveDisplayName = liveProfile.displayName || d.authorDisplayName || 'DELTA Creator';
     var mins = d.duration ? Math.floor(d.duration/60)+':'+String(Math.floor(d.duration%60)).padStart(2,'0') : null;
     var card = document.createElement('div'); card.className = 'vh-card';
     card.innerHTML =
@@ -349,10 +549,10 @@ function renderVideoGrid(items){
         '<div class="vh-play-overlay"><svg viewBox="0 0 24 24" fill="rgba(255,255,255,.9)"><circle cx="12" cy="12" r="11" fill="rgba(0,0,0,.35)"/><path d="M10 8l6 4-6 4V8Z" fill="#fff"/></svg></div>'+
       '</div>'+
       '<div class="vh-card-body">'+
-        (d.authorAvatarUrl ? '<img class="vh-card-avatar" src="'+d.authorAvatarUrl+'">' : '<div class="vh-card-avatar"></div>')+
+        (liveAvatarUrl ? '<img class="vh-card-avatar" src="'+liveAvatarUrl+'">' : '<div class="vh-card-avatar"></div>')+
         '<div class="vh-card-info">'+
           '<div class="vh-card-title">'+(d.videoTitle||d.caption||'—')+'</div>'+
-          '<div class="vh-card-meta">'+(d.authorDisplayName||'DELTA Creator')+' · 👁 '+((d.stats&&d.stats.views)||0)+' · '+timeAgoVh(d.createdAt)+'</div>'+
+          '<div class="vh-card-meta">'+liveDisplayName+' · 👁 '+((d.stats&&d.stats.views)||0)+' · '+timeAgoVh(d.createdAt)+'</div>'+
         '</div>'+
       '</div>';
     card.onclick = function(){ openVideo(item.id, d); };
@@ -360,26 +560,106 @@ function renderVideoGrid(items){
   });
 }
 
+// ── Community Post card (YouTube Community Post equivalent) — only for
+// content created via DELTA Video's own + button with type=='post'. Unlike
+// a video, this renders its like/dislike/share/comment row directly inline
+// in the feed (no full-screen player needed for a text+image post). ──
+function buildCommunityPostCard(item){
+  var d = item.data;
+  var liveProfile = _vhLiveProfileCache[d.authorUid] || {};
+  var liveAvatarUrl = liveProfile.avatarUrl || d.authorAvatarUrl || '';
+  var liveDisplayName = liveProfile.displayName || d.authorDisplayName || 'DELTA Creator';
+  var img = (d.mediaUrls && d.mediaUrls[0]) || '';
+  var card = document.createElement('div'); card.className = 'vh-card vh-post-card';
+  card.innerHTML =
+    '<div class="vh-post-head">'+
+      (liveAvatarUrl ? '<img class="vh-post-avatar" src="'+liveAvatarUrl+'">' : '<div class="vh-post-avatar"></div>')+
+      '<div><div class="vh-post-authorname">'+liveDisplayName+'</div><div class="vh-post-time">'+timeAgoVh(d.createdAt)+'</div></div>'+
+    '</div>'+
+    (d.caption ? '<div class="vh-post-caption">'+d.caption+'</div>' : '')+
+    (img ? '<img class="vh-post-img" src="'+img+'">' : '')+
+    '<div class="vh-post-actions">'+
+      '<button class="vh-post-action" id="vhPostLike-'+item.id+'">👍 <span>'+((d.stats&&d.stats.likes)||0)+'</span></button>'+
+      '<button class="vh-post-action" id="vhPostDislike-'+item.id+'">👎</button>'+
+      '<button class="vh-post-action" onclick="sharePostCard(\''+item.id+'\')">↗ Share</button>'+
+      '<button class="vh-post-action">💬 '+((d.stats&&d.stats.comments)||0)+'</button>'+
+    '</div>';
+  var likeBtn = card.querySelector('#vhPostLike-'+item.id);
+  var dislikeBtn = card.querySelector('#vhPostDislike-'+item.id);
+  likeBtn.onclick = function(){ togglePostReaction(item.id, 'likes', likeBtn, dislikeBtn); };
+  dislikeBtn.onclick = function(){ togglePostReaction(item.id, 'dislikes', dislikeBtn, likeBtn); };
+  refreshPostReactionState(item.id, likeBtn, dislikeBtn);
+  return card;
+}
+
+async function refreshPostReactionState(contentId, likeBtn, dislikeBtn){
+  if(!currentUser) return;
+  try{
+    var ref = db.collection('cities').doc(CITY).collection('mediaContent').doc(contentId);
+    var likeDoc = await ref.collection('likes').doc(currentUser.uid).get();
+    var dislikeDoc = await ref.collection('dislikes').doc(currentUser.uid).get();
+    likeBtn.classList.toggle('liked', likeDoc.exists);
+    dislikeBtn.classList.toggle('disliked', dislikeDoc.exists);
+  }catch(e){ console.warn(e); }
+}
+
+// Liking and disliking are mutually exclusive — same as YouTube's own
+// behavior — so setting one always clears the other first.
+async function togglePostReaction(contentId, kind, activeBtn, otherBtn){
+  if(!currentUser){ alert('আগে লগইন করুন'); return; }
+  var ref = db.collection('cities').doc(CITY).collection('mediaContent').doc(contentId);
+  var otherKind = kind === 'likes' ? 'dislikes' : 'likes';
+  var mine = ref.collection(kind).doc(currentUser.uid);
+  var otherMine = ref.collection(otherKind).doc(currentUser.uid);
+  var existing = await mine.get();
+  if(existing.exists){
+    await mine.delete();
+    activeBtn.classList.remove(kind==='likes'?'liked':'disliked');
+  } else {
+    await mine.set({createdAt:new Date().toISOString()});
+    activeBtn.classList.add(kind==='likes'?'liked':'disliked');
+    var otherExisting = await otherMine.get();
+    if(otherExisting.exists){ await otherMine.delete(); otherBtn.classList.remove(otherKind==='likes'?'liked':'disliked'); }
+  }
+}
+
+function sharePostCard(contentId){
+  var url = location.origin+location.pathname+'?city='+CITY+'&id='+contentId;
+  if(navigator.share){ navigator.share({title:'DELTA Video Post', url:url}).catch(function(){}); }
+  else { navigator.clipboard.writeText(url); alert('লিংক কপি হয়েছে'); }
+}
+
 function openVideoById(id){
   var found = _vhAllVideos.find(function(item){ return item.id===id; });
   if(found){ openVideo(found.id, found.data); return; }
   // Not in the currently-loaded grid (different filter, or older than the
   // 40-item cap) — fetch it directly by ID instead of giving up.
-  db.collection('cities').doc(CITY).collection('mediaContent').doc(id).get().then(function(doc){
-    if(doc.exists) openVideo(doc.id, doc.data());
+  db.collection('cities').doc(CITY).collection('mediaContent').doc(id).get().then(async function(doc){
+    if(!doc.exists) return;
+    var d = doc.data();
+    if(d.authorUid && !_vhLiveProfileCache[d.authorUid]){
+      try{
+        var pDoc = await db.collection('mediaProfiles').doc(d.authorUid).get();
+        _vhLiveProfileCache[d.authorUid] = pDoc.exists ? {avatarUrl: pDoc.data().avatarUrl, displayName: pDoc.data().displayName} : {};
+      }catch(e){ console.warn('Live profile fetch failed for deep-linked video', e); }
+    }
+    openVideo(doc.id, d);
   }).catch(function(e){ console.warn('Deep-linked video fetch failed', e); });
 }
 
 function openVideo(id, d){
   _vhCurrentPlayingId = id; _vhCurrentPlayingData = d;
+  var liveProfile = _vhLiveProfileCache[d.authorUid] || {};
+  var liveAvatarUrl = liveProfile.avatarUrl || d.authorAvatarUrl || '';
+  var liveDisplayName = liveProfile.displayName || d.authorDisplayName || 'DELTA Creator';
   var videoEl = document.getElementById('vhPlayerVideo');
   videoEl.src = d.videoUrl || '';
   videoEl.poster = d.thumbnailUrl || '';
   videoEl.play().catch(function(){});
   document.getElementById('vhPlayerTitle').textContent = d.videoTitle || d.caption || '—';
   document.getElementById('vhPlayerStats').textContent = '👁 '+((d.stats&&d.stats.views)||0)+' views · '+timeAgoVh(d.createdAt);
-  document.getElementById('vhPlayerAvatar').src = d.authorAvatarUrl || '';
-  document.getElementById('vhPlayerCreatorName').textContent = d.authorDisplayName || 'DELTA Creator';
+  document.getElementById('vhPlayerAvatar').src = liveAvatarUrl;
+  document.getElementById('vhPlayerCreatorName').textContent = liveDisplayName;
   document.getElementById('vhPlayerCaption').textContent = d.caption || '';
   document.getElementById('vhLikeCount').textContent = (d.stats&&d.stats.likes)||0;
   document.getElementById('vhPlayerOverlay').classList.add('open');
@@ -472,12 +752,14 @@ function renderRelatedVideos(excludeId){
   related.forEach(function(item){
     var d = item.data;
     var thumb = d.thumbnailUrl || '';
+    var liveProfile = _vhLiveProfileCache[d.authorUid] || {};
+    var liveDisplayName = liveProfile.displayName || d.authorDisplayName || 'DELTA Creator';
     var card = document.createElement('div'); card.className = 'vh-related-card';
     card.innerHTML =
       (thumb ? '<img class="vh-related-thumb" src="'+thumb+'">' : '<div class="vh-related-thumb"></div>')+
       '<div class="vh-related-info">'+
         '<div class="vh-related-name">'+(d.videoTitle||d.caption||'—')+'</div>'+
-        '<div class="vh-related-meta">'+(d.authorDisplayName||'DELTA Creator')+' · 👁 '+((d.stats&&d.stats.views)||0)+'</div>'+
+        '<div class="vh-related-meta">'+liveDisplayName+' · 👁 '+((d.stats&&d.stats.views)||0)+'</div>'+
       '</div>';
     card.onclick = function(){ openVideo(item.id, d); };
     wrap.appendChild(card);
