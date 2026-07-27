@@ -523,6 +523,23 @@ body.dark-mode .pu-plan, body.dark-mode .pu-sheet{ background:var(--sand); color
 body.dark-mode .filter-row, body.dark-mode #sortRow .filter-chip{ background:var(--sand); }
 body.dark-mode .mh-nav-item .mhi{ background:var(--border); }
 .sm-foot{padding:14px 18px;font-size:.65rem;color:var(--muted);text-align:center;border-top:1px solid var(--border);}
+
+/* ── CREATE ACTION-SHEET — tapping + shows a type picker (Post/Video/
+   Shorts/Story) instead of always assuming Post, matching the same picker
+   added to video-hub.html for consistency across entry points. ── */
+.mf-create-sheet-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:600;display:none;
+  align-items:flex-end;justify-content:center;}
+.mf-create-sheet-overlay.open{display:flex;}
+.mf-create-sheet{background:var(--sand);width:100%;max-width:480px;border-radius:20px 20px 0 0;
+  padding:10px 8px calc(14px + env(safe-area-inset-bottom,0px));}
+.mf-create-sheet-handle{width:36px;height:4px;background:var(--border);border-radius:3px;margin:4px auto 12px;}
+.mf-create-opt{display:flex;align-items:center;gap:14px;padding:14px 16px;cursor:pointer;border-radius:12px;}
+.mf-create-opt:active{background:var(--cream);}
+.mf-create-opt-icon{width:42px;height:42px;border-radius:50%;background:var(--cream);display:flex;
+  align-items:center;justify-content:center;font-size:1.15rem;flex-shrink:0;}
+.mf-create-opt-text{flex:1;}
+.mf-create-opt-title{font-weight:700;font-size:.9rem;color:var(--charcoal);}
+.mf-create-opt-sub{font-size:.74rem;color:var(--muted);margin-top:1px;}
 </style>
 </head>
 <body>
@@ -550,7 +567,7 @@ body.dark-mode .mh-nav-item .mhi{ background:var(--border); }
        here (see nav-icons below) — direct buyer/seller chat risks off-platform
        deals that bypass DELTA's checkout and commission entirely. -->
   <div class="nav-icons-left">
-    <button class="nav-icon-btn" onclick="location.href='create-studio.html?city='+CITY" title="Create">
+    <button class="nav-icon-btn" onclick="openMfCreateSheet()" title="Create">
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
     </button>
     <button class="nav-icon-btn" onclick="toggleMobileSearch()" title="Search">
@@ -1799,7 +1816,7 @@ function loadStories(){
         '</div><div class="story-label">Add Story</div>';
       addItem.onclick = function(){
         if(!currentUser){ requireLogin(); return; }
-        location.href='create-studio.html?type=story&city='+CITY;
+        location.href='create-studio.html?type=story&from=main_feed&city='+CITY;
       };
       wrap.appendChild(addItem);
       if(currentUser){
@@ -3257,6 +3274,9 @@ function toggleFollowFromFeed(targetUid, btn){
 
 function openContentDetail(id){ location.href='media-feed.html?content='+id+'&city='+CITY; }
 
+function openMfCreateSheet(){ document.getElementById('mfCreateSheetOverlay').classList.add('open'); }
+function closeMfCreateSheet(){ document.getElementById('mfCreateSheetOverlay').classList.remove('open'); }
+
 function timeAgo(iso){
   if(!iso) return '';
   var diff = (Date.now()-new Date(iso).getTime())/1000;
@@ -3267,6 +3287,28 @@ function timeAgo(iso){
 </script>
 
 <!-- ═══ STORY VIEWER — full-screen, local to DELTA Media (no redirect) ═══ -->
+<div class="mf-create-sheet-overlay" id="mfCreateSheetOverlay" onclick="if(event.target===this)closeMfCreateSheet()">
+  <div class="mf-create-sheet">
+    <div class="mf-create-sheet-handle"></div>
+    <div class="mf-create-opt" onclick="location.href='create-studio.html?type=post&from=main_feed&city='+CITY">
+      <div class="mf-create-opt-icon">📝</div>
+      <div class="mf-create-opt-text"><div class="mf-create-opt-title">Post</div><div class="mf-create-opt-sub">ছবি বা লেখা — Feed-এ দেখা যাবে</div></div>
+    </div>
+    <div class="mf-create-opt" onclick="location.href='create-studio.html?type=story&from=main_feed&city='+CITY">
+      <div class="mf-create-opt-icon">⭕</div>
+      <div class="mf-create-opt-text"><div class="mf-create-opt-title">Story</div><div class="mf-create-opt-sub">২৪ ঘণ্টার জন্য — Stories row-এ দেখা যাবে</div></div>
+    </div>
+    <div class="mf-create-opt" onclick="location.href='create-studio.html?type=reel&from=main_feed&city='+CITY">
+      <div class="mf-create-opt-icon">⚡</div>
+      <div class="mf-create-opt-text"><div class="mf-create-opt-title">Reel</div><div class="mf-create-opt-sub">ছোট ভিডিও — DELTA Reels-এ দেখা যাবে</div></div>
+    </div>
+    <div class="mf-create-opt" onclick="location.href='create-studio.html?type=video&from=main_feed&city='+CITY">
+      <div class="mf-create-opt-icon">🎥</div>
+      <div class="mf-create-opt-text"><div class="mf-create-opt-title">Video</div><div class="mf-create-opt-sub">লম্বা ভিডিও — DELTA TV-তে দেখা যাবে</div></div>
+    </div>
+  </div>
+</div>
+
 <div class="story-viewer-overlay" id="storyViewerOverlay">
   <div class="sv-progress-row" id="svProgressRow"></div>
   <div class="sv-header">
