@@ -197,6 +197,13 @@ async function loadReels(){
   q.orderBy('createdAt','desc').limit(40).get().then(function(snap){
     var docs = snap.docs.map(function(d){ return {id:d.id, data:d.data()}; });
 
+    // A "Short" made from DELTA Video's own + button is deliberately NOT
+    // the same thing as a Reel, even though both share type=='reel' — see
+    // the content-visibility architecture worked out with the founder.
+    // Client-side filter (not a .where() clause) so this doesn't need yet
+    // another composite index for a field most existing reels don't have.
+    docs = docs.filter(function(d){ return d.data.createdFrom !== 'video_hub'; });
+
     if(activeFilter==='following'){
       docs = docs.filter(function(d){ return followingSet.indexOf(d.data.authorUid)!==-1; });
     }
