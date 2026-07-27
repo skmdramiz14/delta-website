@@ -33,11 +33,21 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
   background:var(--white);border:1.5px solid var(--border);color:var(--charcoal);cursor:pointer;white-space:nowrap;}
 .vh-chip.active{background:var(--navy);border-color:var(--navy);color:#fff;}
 
-.vh-grid{display:grid;grid-template-columns:1fr;gap:16px;padding:4px 16px 20px;}
-@media(min-width:640px){ .vh-grid{grid-template-columns:1fr 1fr;} }
-.vh-card{background:var(--white);border-radius:16px;overflow:hidden;cursor:pointer;
-  box-shadow:0 1px 6px rgba(0,0,0,.05);transition:transform .12s;}
-.vh-card:active{transform:scale(.98);}
+.vh-shorts-row{padding:14px 16px 6px;}
+.vh-shorts-title{font-size:.82rem;font-weight:800;color:var(--navy);margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.vh-shorts-scroll{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px;}
+.vh-shorts-scroll::-webkit-scrollbar{display:none;}
+.vh-short-card{flex-shrink:0;width:112px;aspect-ratio:9/16;border-radius:12px;overflow:hidden;position:relative;
+  background:var(--navy);cursor:pointer;}
+.vh-short-card img,.vh-short-card video{width:100%;height:100%;object-fit:cover;}
+.vh-short-views{position:absolute;bottom:6px;left:6px;color:#fff;font-size:.65rem;font-weight:700;
+  text-shadow:0 1px 3px rgba(0,0,0,.6);display:flex;align-items:center;gap:3px;}
+.vh-section-divider{height:8px;background:var(--cream);border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-top:8px;}
+
+/* ── FEED — flush, edge-to-edge, continuous list (not a padded card grid) ── */
+.vh-grid{display:flex;flex-direction:column;}
+.vh-card{cursor:pointer;padding-bottom:14px;margin-bottom:14px;border-bottom:8px solid var(--cream);}
+.vh-card:last-child{border-bottom:none;}
 .vh-thumb-wrap{position:relative;aspect-ratio:16/9;background:var(--border);overflow:hidden;}
 .vh-thumb-wrap img,.vh-thumb-wrap video{width:100%;height:100%;object-fit:cover;}
 .vh-duration-badge{position:absolute;bottom:6px;right:6px;background:rgba(0,0,0,.75);color:#fff;
@@ -45,14 +55,16 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 .vh-play-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
   background:rgba(0,0,0,.15);}
 .vh-play-overlay svg{width:44px;height:44px;filter:drop-shadow(0 2px 6px rgba(0,0,0,.4));}
-.vh-card-body{padding:12px;display:flex;gap:10px;}
-.vh-card-avatar{width:34px;height:34px;border-radius:50%;object-fit:cover;background:var(--navy);flex-shrink:0;}
+.vh-card-body{padding:10px 16px 0;display:flex;gap:10px;}
+.vh-card-avatar{width:36px;height:36px;border-radius:50%;object-fit:cover;background:var(--navy);flex-shrink:0;margin-top:1px;}
 .vh-card-info{flex:1;min-width:0;}
-.vh-card-title{font-size:.86rem;font-weight:700;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;
+.vh-card-title{font-size:.9rem;font-weight:700;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;
   -webkit-box-orient:vertical;overflow:hidden;margin-bottom:3px;}
-.vh-card-meta{font-size:.72rem;color:var(--muted);}
+.vh-card-meta{font-size:.74rem;color:var(--muted);}
 
-.vh-empty{padding:60px 24px;text-align:center;color:var(--muted);font-size:.85rem;}
+.vh-empty{padding:60px 24px;text-align:center;color:var(--muted);font-size:.85rem;line-height:1.7;}
+.vh-empty-btn{display:inline-block;margin-top:14px;background:var(--navy);color:#fff;border:none;
+  padding:11px 22px;border-radius:22px;font-weight:700;font-size:.82rem;cursor:pointer;text-decoration:none;}
 
 /* ── PLAYER OVERLAY ── */
 .vh-player-overlay{position:fixed;inset:0;background:var(--cream);z-index:500;display:none;overflow-y:auto;}
@@ -105,6 +117,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
   <div class="vh-chip" data-f="nearby" onclick="setFilter('nearby',this)">📍 কাছাকাছি</div>
 </div>
 
+<div class="vh-shorts-row" id="vhShortsRow" style="display:none;">
+  <div class="vh-shorts-title">🎬 DELTA Reels</div>
+  <div class="vh-shorts-scroll" id="vhShortsScroll"></div>
+</div>
+<div class="vh-section-divider" id="vhShortsDivider" style="display:none;"></div>
+
 <div class="vh-grid" id="vhGrid">
   <div class="vh-empty">লোড হচ্ছে...</div>
 </div>
@@ -146,6 +164,27 @@ firebase.initializeApp(fbcfg);
 var auth = firebase.auth(), db = firebase.firestore();
 var params = new URLSearchParams(location.search);
 var CITY = params.get('city') || (function(){ try{ return localStorage.getItem('delta_city'); }catch(e){ return null; } })() || 'manteswar';
+// ── DEMO MODE — open this page as video-hub.html?demo=1 to preview the
+// design filled with sample data, completely bypassing Firestore. Remove
+// this block (and the two "if(IS_DEMO)" branches below) once real content
+// exists and you no longer need it for visual testing. Never active unless
+// the URL param is explicitly present, so normal/production use is untouched. ──
+var IS_DEMO = params.get('demo') === '1';
+var DEMO_VIDEOS = [
+  {id:'demo1', data:{videoTitle:'রহিম সুইটস — তাজা রসগোল্লা তৈরির পুরো প্রক্রিয়া', authorDisplayName:'রহিম সুইটস', thumbnailUrl:'https://picsum.photos/seed/delta1/640/360', duration:225, createdAt:new Date(Date.now()-2*3600e3).toISOString(), stats:{views:1240,likes:88}}},
+  {id:'demo2', data:{videoTitle:'মন্তেশ্বর হাটের সকালের বাজার — DELTA Fresh ট্যুর', authorDisplayName:'DELTA Official', thumbnailUrl:'https://picsum.photos/seed/delta2/640/360', duration:512, createdAt:new Date(Date.now()-5*3600e3).toISOString(), stats:{views:3820,likes:210}}},
+  {id:'demo3', data:{videoTitle:'বিবেকানন্দ ভান্ডার — নতুন দোকান উদ্বোধন', authorDisplayName:'বিবেকানন্দ ভান্ডার', thumbnailUrl:'https://picsum.photos/seed/delta3/640/360', duration:98, createdAt:new Date(Date.now()-26*3600e3).toISOString(), stats:{views:645,likes:52}}},
+  {id:'demo4', data:{videoTitle:'মন্ডল ফার্মেসী — শীতে সুস্থ থাকার ৫টা টিপস', authorDisplayName:'মন্ডল ফার্মেসী', thumbnailUrl:'https://picsum.photos/seed/delta4/640/360', duration:340, createdAt:new Date(Date.now()-3*86400e3).toISOString(), stats:{views:2110,likes:134}}},
+  {id:'demo5', data:{videoTitle:'মিষ্টি মহল — পূজার স্পেশাল হাম্পার আনবক্সিং', authorDisplayName:'মিষ্টি মহল', thumbnailUrl:'https://picsum.photos/seed/delta5/640/360', duration:187, createdAt:new Date(Date.now()-6*86400e3).toISOString(), stats:{views:980,likes:71}}},
+  {id:'demo6', data:{videoTitle:'DELTA Bazaar কীভাবে কাজ করে — সম্পূর্ণ গাইড', authorDisplayName:'DELTA Official', thumbnailUrl:'https://picsum.photos/seed/delta6/640/360', duration:410, createdAt:new Date(Date.now()-9*86400e3).toISOString(), stats:{views:5430,likes:389}}}
+];
+var DEMO_REELS = [
+  {id:'reel1', data:{thumbnailUrl:'https://picsum.photos/seed/reelA/270/480', stats:{views:412}}},
+  {id:'reel2', data:{thumbnailUrl:'https://picsum.photos/seed/reelB/270/480', stats:{views:891}}},
+  {id:'reel3', data:{thumbnailUrl:'https://picsum.photos/seed/reelC/270/480', stats:{views:156}}},
+  {id:'reel4', data:{thumbnailUrl:'https://picsum.photos/seed/reelD/270/480', stats:{views:2033}}},
+  {id:'reel5', data:{thumbnailUrl:'https://picsum.photos/seed/reelE/270/480', stats:{views:67}}}
+];
 var currentUser = null;
 var currentFilter = 'all';
 var _vhAllVideos = []; // [{id, data}] — cached for client-side search filtering
@@ -155,7 +194,14 @@ var _vhMyFollowing = {}; // {uid: true} — who I follow, loaded once per sessio
 
 auth.onAuthStateChanged(function(u){
   currentUser = u;
+  if(IS_DEMO){
+    var banner = document.createElement('div');
+    banner.style.cssText = 'background:#b8925a;color:#fff;text-align:center;padding:6px;font-size:.72rem;font-weight:700;';
+    banner.textContent = '🧪 DEMO MODE — sample data only, not connected to Firestore';
+    document.body.insertBefore(banner, document.body.firstChild);
+  }
   loadVideos();
+  loadShortsRow();
   var deepLinkId = params.get('id');
   if(deepLinkId){
     // Wait briefly for the initial grid load so "related videos" has data
@@ -165,6 +211,48 @@ auth.onAuthStateChanged(function(u){
     setTimeout(function(){ openVideoById(deepLinkId); }, 900);
   }
 });
+
+// ── Shorts bridge row — mirrors how YouTube's own Home feed surfaces Shorts
+// inline rather than keeping them in a fully separate app section. DELTA
+// Reels and DELTA TV are branded surfaces of the same mediaContent
+// collection (Master Doc §17), so this just pulls type=='reel' content and
+// deep-links into reels-player.html — no new collection or schema needed. ──
+async function loadShortsRow(){
+  if(IS_DEMO){
+    var demoScroll = document.getElementById('vhShortsScroll');
+    demoScroll.innerHTML = '';
+    DEMO_REELS.forEach(function(item){
+      var d = item.data;
+      var card = document.createElement('div'); card.className = 'vh-short-card';
+      card.innerHTML = '<img src="'+d.thumbnailUrl+'"><div class="vh-short-views">👁 '+d.stats.views+'</div>';
+      card.onclick = function(){ alert('Demo mode — reels-player.html-এ যেত (id: '+item.id+')'); };
+      demoScroll.appendChild(card);
+    });
+    document.getElementById('vhShortsRow').style.display = 'block';
+    document.getElementById('vhShortsDivider').style.display = 'block';
+    return;
+  }
+  try{
+    var snap = await db.collection('cities').doc(CITY).collection('mediaContent')
+      .where('type','==','reel').where('status','==','published')
+      .orderBy('createdAt','desc').limit(12).get();
+    if(snap.empty) return; // stays hidden — no fake/empty row shown
+    var scroll = document.getElementById('vhShortsScroll');
+    scroll.innerHTML = '';
+    snap.forEach(function(doc){
+      var d = doc.data();
+      var thumb = d.thumbnailUrl || '';
+      var card = document.createElement('div'); card.className = 'vh-short-card';
+      card.innerHTML =
+        (thumb ? '<img src="'+thumb+'">' : (d.videoUrl ? '<video src="'+d.videoUrl+'" muted playsinline preload="metadata"></video>' : ''))+
+        '<div class="vh-short-views">👁 '+((d.stats&&d.stats.views)||0)+'</div>';
+      card.onclick = function(){ location.href = 'reels-player.html?city='+CITY+'&id='+doc.id; };
+      scroll.appendChild(card);
+    });
+    document.getElementById('vhShortsRow').style.display = 'block';
+    document.getElementById('vhShortsDivider').style.display = 'block';
+  }catch(e){ console.warn('Shorts row load failed (non-fatal)', e); }
+}
 
 function setFilter(f, el){
   currentFilter = f;
@@ -176,6 +264,17 @@ function setFilter(f, el){
 async function loadVideos(){
   var grid = document.getElementById('vhGrid');
   grid.innerHTML = '<div class="vh-empty">লোড হচ্ছে...</div>';
+  if(IS_DEMO){
+    // 'following'/'nearby' don't have meaningful demo behavior distinct from
+    // 'all' — real Firestore mode still filters properly; demo is for
+    // visual-layout testing only, not for testing filter logic itself.
+    _vhAllVideos = DEMO_VIDEOS.slice();
+    if(currentFilter === 'trending'){
+      _vhAllVideos = _vhAllVideos.slice().sort(function(a,b){ return b.data.stats.views - a.data.stats.views; });
+    }
+    renderVideoGrid(_vhAllVideos);
+    return;
+  }
   try{
     var q = db.collection('cities').doc(CITY).collection('mediaContent')
       .where('type','==','video').where('status','==','published');
@@ -228,22 +327,32 @@ function filterVideos(){
 
 function renderVideoGrid(items){
   var grid = document.getElementById('vhGrid');
-  if(!items.length){ grid.innerHTML = '<div class="vh-empty">এখানে এখনও কোনো video নেই।</div>'; return; }
+  if(!items.length){
+    var msg = currentFilter==='trending' ? 'এখনো কোনো ভিডিও trending হয়নি।'
+      : currentFilter==='nearby' ? 'কাছাকাছি এলাকায় এখনো কোনো ভিডিও নেই।'
+      : 'এখানে এখনও কোনো video নেই।<br>প্রথম video টা আপনিই আপলোড করে দেখুন!';
+    grid.innerHTML = '<div class="vh-empty">'+msg+
+      (currentFilter==='all' ? '<br><a class="vh-empty-btn" href="create-studio.html?city='+CITY+'">+ Video আপলোড করুন</a>' : '')+
+      '</div>';
+    return;
+  }
   grid.innerHTML = '';
   items.forEach(function(item){
     var d = item.data;
     var thumb = d.thumbnailUrl || '';
+    var mins = d.duration ? Math.floor(d.duration/60)+':'+String(Math.floor(d.duration%60)).padStart(2,'0') : null;
     var card = document.createElement('div'); card.className = 'vh-card';
     card.innerHTML =
       '<div class="vh-thumb-wrap">'+
         (thumb ? '<img src="'+thumb+'">' : (d.videoUrl ? '<video src="'+d.videoUrl+'" muted playsinline preload="metadata"></video>' : ''))+
+        (mins ? '<div class="vh-duration-badge">'+mins+'</div>' : '')+
         '<div class="vh-play-overlay"><svg viewBox="0 0 24 24" fill="rgba(255,255,255,.9)"><circle cx="12" cy="12" r="11" fill="rgba(0,0,0,.35)"/><path d="M10 8l6 4-6 4V8Z" fill="#fff"/></svg></div>'+
       '</div>'+
       '<div class="vh-card-body">'+
         (d.authorAvatarUrl ? '<img class="vh-card-avatar" src="'+d.authorAvatarUrl+'">' : '<div class="vh-card-avatar"></div>')+
         '<div class="vh-card-info">'+
           '<div class="vh-card-title">'+(d.videoTitle||d.caption||'—')+'</div>'+
-          '<div class="vh-card-meta">'+(d.authorDisplayName||'DELTA Creator')+' · 👁 '+((d.stats&&d.stats.views)||0)+'</div>'+
+          '<div class="vh-card-meta">'+(d.authorDisplayName||'DELTA Creator')+' · 👁 '+((d.stats&&d.stats.views)||0)+' · '+timeAgoVh(d.createdAt)+'</div>'+
         '</div>'+
       '</div>';
     card.onclick = function(){ openVideo(item.id, d); };
@@ -265,6 +374,7 @@ function openVideo(id, d){
   _vhCurrentPlayingId = id; _vhCurrentPlayingData = d;
   var videoEl = document.getElementById('vhPlayerVideo');
   videoEl.src = d.videoUrl || '';
+  videoEl.poster = d.thumbnailUrl || '';
   videoEl.play().catch(function(){});
   document.getElementById('vhPlayerTitle').textContent = d.videoTitle || d.caption || '—';
   document.getElementById('vhPlayerStats').textContent = '👁 '+((d.stats&&d.stats.views)||0)+' views · '+timeAgoVh(d.createdAt);
