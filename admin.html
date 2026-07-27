@@ -2412,6 +2412,13 @@ button,input,select{font-family:'DM Sans',sans-serif;}
           <button class="btn-sm" style="background:#c0392b;color:#fff;" onclick="medGrantPremium(false)">Premium সরান</button>
         </div>
 
+        <div class="sec-title" style="font-size:.95rem;margin-bottom:10px;">⭐ Premium আগ্রহী — Pending Requests</div>
+        <p style="color:var(--muted);font-size:.78rem;margin-bottom:8px;">
+          create-studio.html-এ listing limit-এ আটকে "Premium Subscription নিন" চাপলে এখানে আসে —
+          UID copy করার দরকার নেই, সরাসরি নিচের বাটনেই Grant করে দিন।
+        </p>
+        <div id="medPremiumRequestsList" style="display:flex;flex-direction:column;gap:10px;margin-bottom:24px;"></div>
+
         <div class="sec-title" style="font-size:.95rem;margin-bottom:10px;">Category-ভিত্তিক Commission Rate</div>
         <div id="medCommissionRatesList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:24px;"></div>
 
@@ -2701,7 +2708,7 @@ function medSwitchSub(sub, btn){
   if(sub==='audio') medLoadAudio();
   if(sub==='individual') medLoadIndividualQueue();
   if(sub==='approved') medLoadApprovedContent();
-  if(sub==='commission'){ medLoadCommissionRates(); medLoadTalkRequests(); medLoadIndLimits(); }
+  if(sub==='commission'){ medLoadCommissionRates(); medLoadTalkRequests(); medLoadIndLimits(); medLoadPremiumInterestRequests(); }
 }
 
 // ═══ APPROVED CONTENT — view everything live, disable anything at any time ═══
@@ -2915,6 +2922,43 @@ function medSaveCommissionRate(categoryKey){
 }
 
 // ═══ TALK TO DELTA — commission negotiation requests ═══
+// ═══ PREMIUM INTEREST REQUESTS — from create-studio.html's listing-limit
+// modal ("Premium Subscription নিন" button). Same idea as talkToDeltaRequests
+// above: turns a plain UID-lookup task into a one-click action. ═══
+function medLoadPremiumInterestRequests(){
+  var list = document.getElementById('medPremiumRequestsList');
+  list.innerHTML = '<div style="color:var(--muted);padding:10px;">লোড হচ্ছে...</div>';
+  db.collection('premiumInterestRequests').where('status','==','pending').orderBy('createdAt','asc').limit(50).get().then(function(snap){
+    if(snap.empty){ list.innerHTML='<div style="color:var(--muted);padding:10px;">কোনো pending request নেই ✅</div>'; return; }
+    list.innerHTML='';
+    snap.forEach(function(doc){
+      var d = doc.data();
+      var row = document.createElement('div'); row.className='req-card';
+      row.innerHTML =
+        '<div><b>'+(d.displayName||'Unknown')+'</b>'+(d.mobile?' — 📞 '+d.mobile:'')+
+        '<div style="font-size:.78rem;color:var(--muted);">UID: '+d.uid+' · listing limit ('+(d.currentActiveListings||'—')+') ছুঁয়ে ফেলেছে · '+medTimeAgo(d.createdAt)+'</div></div>'+
+        '<div style="display:flex;gap:8px;margin-top:8px;">'+
+          '<button class="btn-sm" style="background:#2e7d32;color:#fff;" onclick="medApprovePremiumInterest(\''+doc.id+'\',\''+d.uid+'\')">⭐ Grant Premium</button>'+
+          '<button class="btn-sm" style="background:#c0392b;color:#fff;" onclick="medDismissPremiumInterest(\''+doc.id+'\')">Dismiss</button>'+
+        '</div>';
+      list.appendChild(row);
+    });
+  });
+}
+function medApprovePremiumInterest(requestId, uid){
+  Promise.all([
+    db.collection('mediaProfiles').doc(uid).set({isPremiumSeller:true}, {merge:true}),
+    db.collection('premiumInterestRequests').doc(requestId).update({status:'granted', decidedAt:new Date().toISOString()})
+  ]).then(function(){
+    showToast('⭐ Premium দেওয়া হয়েছে ✅','green'); medLoadPremiumInterestRequests();
+  }).catch(function(e){ showToast('Error: '+e.message,'red'); });
+}
+function medDismissPremiumInterest(requestId){
+  db.collection('premiumInterestRequests').doc(requestId).update({status:'dismissed', decidedAt:new Date().toISOString()}).then(function(){
+    showToast('Dismiss করা হয়েছে','green'); medLoadPremiumInterestRequests();
+  }).catch(function(e){ showToast('Error: '+e.message,'red'); });
+}
+
 function medLoadTalkRequests(){
   var list = document.getElementById('medTalkRequestsList');
   list.innerHTML = '<div style="color:var(--muted);padding:10px;">লোড হচ্ছে...</div>';
