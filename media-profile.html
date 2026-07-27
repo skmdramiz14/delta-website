@@ -142,7 +142,38 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charco
 .pp-grid-status{position:absolute;top:6px;left:6px;font-size:.6rem;font-weight:800;padding:2px 7px;border-radius:7px;
   background:var(--gold);color:var(--navy);text-transform:uppercase;}
 
+.pp-grid-more{position:absolute;top:6px;right:6px;width:22px;height:22px;border-radius:50%;
+  background:rgba(0,0,0,.55);color:#fff;display:flex;align-items:center;justify-content:center;
+  font-size:.9rem;font-weight:900;cursor:pointer;line-height:1;}
+/* When a play badge is also present (reel/shorts/video), push it left so
+   it doesn't sit under the owner-only ⋮ menu button. */
+.pp-grid-badge:has(~ .pp-grid-more){right:30px;}
+.pp-content-menu{position:fixed;background:#fff;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.18);
+  z-index:700;overflow:hidden;min-width:170px;}
+.pp-content-menu-item{padding:12px 16px;font-size:.85rem;font-weight:700;cursor:pointer;color:var(--charcoal);
+  border-bottom:1px solid var(--border);}
+.pp-content-menu-item:last-child{border-bottom:none;}
+.pp-content-menu-item.danger{color:#c0392b;}
+.pp-content-menu-backdrop{position:fixed;inset:0;z-index:699;}
+
 .pp-empty{text-align:center;color:var(--muted);font-size:.85rem;padding:60px 20px;}
+
+/* ── TIMELINE TAB — Facebook-style mixed feed, everything this person has
+   posted (Post/Reel/Shorts/Video/Story) in one newest-first scroll, each
+   still tagged with what type it is. Real ranking logic (follower-weighted,
+   engagement-weighted, etc.) is intentionally deferred — see architecture
+   discussion — this is newest-first only for now. ── */
+.pp-tl-card{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:12px;margin-bottom:12px;cursor:pointer;}
+.pp-tl-type-chip{display:inline-block;font-size:.65rem;font-weight:800;padding:2px 9px;border-radius:9px;
+  background:var(--cream);color:var(--navy);text-transform:uppercase;margin-bottom:8px;}
+.pp-tl-media-row{display:flex;gap:10px;}
+.pp-tl-thumb{width:100px;aspect-ratio:1/1;border-radius:10px;object-fit:cover;background:var(--border);flex-shrink:0;position:relative;}
+.pp-tl-thumb.tall{aspect-ratio:9/16;}
+.pp-tl-play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.2rem;
+  filter:drop-shadow(0 1px 3px rgba(0,0,0,.5));}
+.pp-tl-info{flex:1;min-width:0;}
+.pp-tl-caption{font-size:.85rem;line-height:1.5;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:6px;}
+.pp-tl-meta{font-size:.72rem;color:var(--muted);}
 .pp-loading{text-align:center;color:var(--muted);font-size:.85rem;padding:60px 20px;}
 
 /* ── Reviews list ── */
@@ -323,7 +354,7 @@ var INITIAL_TAB = new URLSearchParams(location.search).get('tab');
 var currentUser = null;
 var profileData = null;
 var isOwner = false;
-var activeTab = 'post';
+var activeTab = 'timeline';
 
 function requireLogin(){ alert('Login to engage, share and grow.\n\n☰ মেনু থেকে লগইন করুন।'); }
 
@@ -515,7 +546,7 @@ async function loadProfile(){
     // Honor ?tab= from hamburger menu links
     if(INITIAL_TAB==='analytics' && isOwner) switchTab('analytics');
     else if(INITIAL_TAB==='saved' && isOwner) switchTab('saved');
-    else switchTab('post');
+    else switchTab('timeline');
 
   }catch(e){
     console.error('Profile load error', e);
@@ -711,8 +742,10 @@ function toggleFollowProfile(){
 
 function renderTabs(){
   var tabs = [
+    {id:'timeline', label:'সব'},
     {id:'post', label:'Posts'},
     {id:'reel', label:'Reels'},
+    {id:'shorts', label:'Shorts'},
     {id:'story', label:'Stories'},
     {id:'video', label:'Videos'},
     {id:'reviews', label:'Reviews'}
@@ -735,6 +768,7 @@ function switchTab(tab){
   if(tab==='analytics') return renderAnalytics();
   if(tab==='saved') return renderSavedPlaceholder();
   if(tab==='reviews') return loadReviews();
+  if(tab==='timeline') return loadTimelineFeed();
   loadContentGrid(tab);
 }
 
@@ -788,17 +822,85 @@ async function togglePinPost(contentId){
   }catch(e){ alert('Pin করতে সমস্যা হয়েছে: '+e.message); }
 }
 
+// ── Timeline tab — Facebook-style "everything this person made" mixed
+// feed. Firestore's 'in' operator lets us fetch post/reel/video/story in
+// ONE query (well under its 10-value cap) instead of 4 separate round
+// trips. Live isn't in this list yet since that section doesn't exist.
+async function loadTimelineFeed(){
+  var area = document.getElementById('ppContentArea');
+  area.innerHTML = '<div class="pp-loading">লোড হচ্ছে...</div>';
+  try{
+    var snap = await db.collection('cities').doc(CITY).collection('mediaContent')
+      .where('authorUid','==',PROFILE_UID)
+      .where('type','in',['post','reel','video','story'])
+      .get();
+    var docs = snap.docs.map(function(d){ return {id:d.id, data:d.data()}; })
+      .filter(function(item){ return item.data.status==='published' || isOwner; })
+      .sort(function(a,b){ return new Date(b.data.createdAt) - new Date(a.data.createdAt); }); // newest-first only for now — real ranking logic deferred
+
+    if(!docs.length){
+      area.innerHTML = '<div class="pp-empty">এখনও কিছু তৈরি করা হয়নি।'+(isOwner?'<br>Create Studio থেকে প্রথমটা বানিয়ে ফেলো।':'')+'</div>';
+      return;
+    }
+    area.innerHTML = '';
+    docs.forEach(function(item){ area.appendChild(buildTimelineCard(item)); });
+  }catch(e){
+    console.error('Timeline load error (likely missing composite index)', e);
+    area.innerHTML = '<div class="pp-empty">লোড করতে সমস্যা হয়েছে — সম্ভবত Firestore index তৈরি করা লাগবে।</div>';
+  }
+}
+
+function buildTimelineCard(item){
+  var d = item.data;
+  var isShorts = d.type==='reel' && d.createdFrom==='video_hub';
+  var typeLabel = d.type==='post' ? 'Post' : d.type==='story' ? 'Story' : d.type==='video' ? 'Video' : isShorts ? 'Shorts' : 'Reel';
+  var card = document.createElement('div'); card.className = 'pp-tl-card';
+  var thumb = d.thumbnailUrl || (d.mediaUrls && d.mediaUrls[0]) || '';
+  var hasMedia = d.type !== 'post' || thumb;
+  card.innerHTML =
+    '<div class="pp-tl-type-chip">'+typeLabel+'</div>'+
+    '<div class="pp-tl-media-row">'+
+      (hasMedia ? '<div class="pp-tl-thumb'+((d.type==='reel'||d.type==='story')?' tall':'')+'">'+
+        (thumb ? '<img src="'+thumb+'" style="width:100%;height:100%;object-fit:cover;border-radius:10px;">' : '')+
+        (d.type!=='post' ? '<span class="pp-tl-play">▶</span>' : '')+
+      '</div>' : '')+
+      '<div class="pp-tl-info">'+
+        (d.caption ? '<div class="pp-tl-caption">'+(d.videoTitle||d.caption)+'</div>' : '')+
+        '<div class="pp-tl-meta">👁 '+((d.stats&&d.stats.views)||0)+' · '+timeAgo(d.createdAt)+
+        (isOwner && d.status!=='published' ? ' · <b>'+d.status+'</b>' : '')+'</div>'+
+      '</div>'+
+    '</div>';
+  card.onclick = function(){
+    if(d.type==='reel' && !isShorts) location.href='reels-player.html?city='+CITY+'&id='+item.id;
+    else if(isShorts || d.type==='video') location.href='video-hub.html?city='+CITY+'&id='+item.id;
+    else if(d.type==='story') location.href='media-feed.html?city='+CITY+'&openStoryId='+item.id;
+    else openPostDetailOverlay(item.id, d);
+  };
+  return card;
+}
+
 async function loadContentGrid(type){
   var area = document.getElementById('ppContentArea');
   var composerHtml = (type==='post' && isOwner) ? buildComposerHtml() : '';
   try{
+    // "Shorts" isn't its own Firestore type — it's type=='reel' made from
+    // DELTA Video's own + button (createdFrom=='video_hub'). Query by the
+    // real type field, then split client-side so Reels and Shorts tabs
+    // never show each other's content, matching reels-player.html's own
+    // exclusion and video-hub.html's own inclusion of the same field.
+    var queryType = (type === 'shorts') ? 'reel' : type;
     var q = db.collection('cities').doc(CITY).collection('mediaContent')
-      .where('authorUid','==',PROFILE_UID).where('type','==',type);
+      .where('authorUid','==',PROFILE_UID).where('type','==',queryType);
     var snap = await q.get();
     var docs = snap.docs.map(function(d){ return {id:d.id, data:d.data()}; })
       .filter(function(item){
         if(item.data.status==='published') return true;
         return isOwner; // owner also sees their own draft/pending
+      })
+      .filter(function(item){
+        if(queryType !== 'reel') return true; // split only matters for reel/shorts
+        var isFromVideoHub = item.data.createdFrom === 'video_hub';
+        return type === 'shorts' ? isFromVideoHub : !isFromVideoHub;
       })
       .sort(function(a,b){
         // Pinned post always first (Post tab only — pinning a reel/video/
@@ -820,7 +922,7 @@ async function loadContentGrid(type){
       var d = item.data;
       var isPinned = type==='post' && item.id===profileData.pinnedPostId;
       var cell = document.createElement('div');
-      cell.className = 'pp-grid-item' + ((type==='reel'||type==='story') ? ' tall' : '');
+      cell.className = 'pp-grid-item' + ((type==='reel'||type==='shorts'||type==='story') ? ' tall' : '');
       // thumbnailUrl first, then a real image, then fall back to showing the
       // video itself (muted, first frame) — previously this only checked
       // thumbnailUrl/mediaUrls, leaving video-only stories/reels/videos with
@@ -829,20 +931,21 @@ async function loadContentGrid(type){
       cell.innerHTML =
         (thumb ? '<img src="'+thumb+'" onerror="this.style.display=\'none\'">'
           : (d.videoUrl ? '<video src="'+d.videoUrl+'" muted playsinline preload="metadata"></video>' : ''))+
-        (type==='reel' ? '<span class="pp-grid-badge">▶</span>' : (type==='video' ? '<span class="pp-grid-badge">▶</span>' : ''))+
+        ((type==='reel'||type==='shorts'||type==='video') ? '<span class="pp-grid-badge">▶</span>' : '')+
         (isPinned ? '<span class="pp-grid-pin">📌</span>' : '')+
         (d.stats ? '<span class="pp-grid-stat">👁 '+(d.stats.views||0)+'</span>' : '')+
         (isOwner && d.status!=='published' ? '<span class="pp-grid-status">'+d.status+'</span>' : '')+
         (isOwner && type==='post' ? '<span class="pp-grid-pin-toggle" onclick="event.stopPropagation();togglePinPost(\''+item.id+'\')">'+(isPinned?'📌':'📍')+'</span>' : '')+
-        (isOwner && (type==='reel'||type==='video') ? '<span class="pp-grid-pin-toggle" style="right:auto;left:6px;" onclick="event.stopPropagation();document.getElementById(\'thumbEdit-'+item.id+'\').click()">✏️</span>'
-          +'<input type="file" id="thumbEdit-'+item.id+'" accept="image/*" style="display:none;" onclick="event.stopPropagation()" onchange="event.stopPropagation();changeExistingThumbnail(\''+item.id+'\', this)">' : '');
+        (isOwner && (type==='reel'||type==='shorts'||type==='video') ? '<span class="pp-grid-pin-toggle" style="right:auto;left:6px;" onclick="event.stopPropagation();document.getElementById(\'thumbEdit-'+item.id+'\').click()">✏️</span>'
+          +'<input type="file" id="thumbEdit-'+item.id+'" accept="image/*" style="display:none;" onclick="event.stopPropagation()" onchange="event.stopPropagation();changeExistingThumbnail(\''+item.id+'\', this)">' : '')+
+        (isOwner ? '<span class="pp-grid-more" onclick="event.stopPropagation();openContentMenu(\''+item.id+'\',\''+type+'\',this)">⋮</span>' : '');
       cell.onclick = function(){
         // Deep-link with the specific content ID so the destination page can
         // actually open/play THIS item — a bare redirect to the generic hub
         // page (previous behaviour) never played anything, it just landed
         // on the default feed.
         if(type==='reel') location.href='reels-player.html?city='+CITY+'&id='+item.id;
-        else if(type==='video') location.href='video-hub.html?city='+CITY+'&id='+item.id;
+        else if(type==='shorts'||type==='video') location.href='video-hub.html?city='+CITY+'&id='+item.id;
         else if(type==='story') location.href='media-feed.html?city='+CITY+'&openStoryId='+item.id;
         else openPostDetailOverlay(item.id, item.data); // Posts open right here, same as Facebook — no redirect to the feed at all
       };
@@ -853,6 +956,59 @@ async function loadContentGrid(type){
     console.warn('Content grid load error (likely missing composite index)', e);
     area.innerHTML = '<div class="pp-empty">লোড করতে সমস্যা হয়েছে — সম্ভবত Firestore index তৈরি করা লাগবে।</div>';
   }
+}
+
+// ── Owner-only content menu (⋮) — Archive vs Delete, per the Soft Delete
+// Policy already documented in the Master Doc (§8.3) but never wired up to
+// any UI until now:
+//   Archive → status:'archived' — stays with the author, just hidden from
+//             public view; can't be un-archived from here yet (that's a
+//             reasonable next step, not blocking this one).
+//   Delete  → permanently removed. Confirmed twice given it's irreversible;
+//             likes/comments subcollections are intentionally left behind
+//             (Firestore doesn't cascade-delete) — orphaned but harmless,
+//             a Cloud Function cleanup is the correct long-term fix, not a
+//             client-side recursive delete.
+function openContentMenu(contentId, type, el){
+  closeContentMenu();
+  var rect = el.getBoundingClientRect();
+  var backdrop = document.createElement('div');
+  backdrop.className = 'pp-content-menu-backdrop';
+  backdrop.id = 'ppContentMenuBackdrop';
+  backdrop.onclick = closeContentMenu;
+  var menu = document.createElement('div');
+  menu.className = 'pp-content-menu';
+  menu.id = 'ppContentMenu';
+  var top = Math.min(rect.bottom + 4, window.innerHeight - 110);
+  var left = Math.min(rect.left, window.innerWidth - 180);
+  menu.style.top = top + 'px';
+  menu.style.left = left + 'px';
+  menu.innerHTML =
+    '<div class="pp-content-menu-item" onclick="archiveContent(\''+contentId+'\',\''+type+'\')">🗄 আর্কাইভ করুন</div>'+
+    '<div class="pp-content-menu-item danger" onclick="deleteContent(\''+contentId+'\',\''+type+'\')">🗑 মুছে ফেলুন</div>';
+  document.body.appendChild(backdrop);
+  document.body.appendChild(menu);
+}
+function closeContentMenu(){
+  var m = document.getElementById('ppContentMenu'); if(m) m.remove();
+  var b = document.getElementById('ppContentMenuBackdrop'); if(b) b.remove();
+}
+async function archiveContent(contentId, type){
+  closeContentMenu();
+  if(!confirm('এই content-টা আর্কাইভ করবেন? এটা আর কেউ public-এ দেখতে পাবে না, কিন্তু আপনার প্রোফাইলে থেকে যাবে।')) return;
+  try{
+    await db.collection('cities').doc(CITY).collection('mediaContent').doc(contentId).update({status:'archived'});
+    loadContentGrid(type);
+  }catch(e){ alert('Error: '+e.message); }
+}
+async function deleteContent(contentId, type){
+  closeContentMenu();
+  if(!confirm('এই content-টা স্থায়ীভাবে মুছে ফেলতে চান? এটা আর ফিরিয়ে আনা যাবে না।')) return;
+  if(!confirm('নিশ্চিত? এটাই শেষ নিশ্চিতকরণ — মুছে ফেলা হবে।')) return;
+  try{
+    await db.collection('cities').doc(CITY).collection('mediaContent').doc(contentId).delete();
+    loadContentGrid(type);
+  }catch(e){ alert('Error: '+e.message); }
 }
 
 async function loadReviews(){
