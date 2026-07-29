@@ -2375,7 +2375,7 @@ img{max-width:100%;height:auto;}
        this UNDERSTANDS a full sentence (product+quantity), confirms, and
        places an order. DELTA Voice Ordering Architecture v3.2. ═══ -->
   <div class="vo-entry-wrap">
-    <button class="vo-entry-btn" onclick="openVoiceOrder()">
+    <button class="vo-entry-btn" onclick="openDeltaVoiceLive()">
       <span class="vo-entry-icon">🎙️</span>
       <span class="vo-entry-text">
         <span class="lang-bn">বলুন, কী লাগবে?</span>
@@ -7957,6 +7957,11 @@ function autoRelistenAfterSpeaking(){
   }, 400);
 }
 
+// ⚠️ RETIRED (kept only as reference/fallback): the vo-entry-btn now calls
+// openDeltaVoiceLive() (Gemini Live pipeline) instead of this function.
+// Everything below (openVoiceOrder/startVoiceOrderListening/voiceOrderUnderstand
+// etc.) is UNUSED from the UI as of this integration but left intact in case
+// a rollback to the old browser-SpeechRecognition pipeline is ever needed.
 function openVoiceOrder(){
   if(!currentUser){ showToast('অর্ডার করতে আগে লগইন করুন'); openAuth(); return; }
   document.getElementById('voOverlay').classList.add('open');
@@ -10148,6 +10153,473 @@ function timeAgoStory(iso){
   if(diff<86400) return Math.floor(diff/3600)+'h';
   return Math.floor(diff/86400)+'d';
 }
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     DELTA VOICE ORDERING — GEMINI LIVE (replaces the old vo-entry-btn
+     SpeechRecognition+voiceOrderUnderstand pipeline as of this integration).
+     Opened via openDeltaVoiceLive(), called from the existing
+     .vo-entry-btn ("বলুন, কী লাগবে?") in the hero section.
+
+     ⚠️ Reuses index.html's ALREADY-INITIALIZED Firebase app (fbcfg/auth/db,
+     Firebase v8.10.1 compat, loaded by the dynamic loader above) — this
+     block deliberately does NOT load a second Firebase SDK or call
+     firebase.initializeApp() again (would throw "Firebase App named
+     '[DEFAULT]' already exists"). It also deliberately does NOT call
+     signInAnonymously() — openDeltaVoiceLive() requires the customer to
+     already be logged in via index.html's normal email/password flow
+     (same gate openVoiceOrder() used), so an already-signed-in customer's
+     session is never silently overwritten.
+
+     ⚠️ SECURITY NOTE: client-side Gemini API key — same accepted risk
+     already in place for this test pipeline.
+     ═══════════════════════════════════════════════════════════════════ -->
+
+<div id="deltaVoiceOverlay" style="display:none; position:fixed; inset:0; background:#F7F8FA; z-index:9999; flex-direction:column; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+
+  <!-- Header -->
+  <div style="display:flex; justify-content:space-between; align-items:center; padding:14px 16px; background:#fff; border-bottom:1px solid #EEF0F2;">
+    <div style="display:flex; align-items:center; gap:8px;">
+      <svg width="28" height="28" viewBox="0 0 24 24"><polygon points="12,2 22,20 2,20" fill="url(#deltaVoiceGrad)"/><defs><linearGradient id="deltaVoiceGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0FA968"/><stop offset="1" stop-color="#0B7EC9"/></linearGradient></defs></svg>
+      <span style="font-weight:700; font-size:19px; color:#1A2027; letter-spacing:-0.3px;">DELTA</span>
+    </div>
+    <div style="display:flex; align-items:center; gap:10px;">
+      <span id="deltaVoiceOnPill" style="display:flex; align-items:center; gap:5px; background:#E7F8EF; color:#0FA968; font-size:12px; font-weight:600; padding:5px 12px; border-radius:20px;">
+        <span id="deltaVoiceDot" style="width:7px; height:7px; border-radius:50%; background:#0FA968; display:inline-block;"></span> Voice On
+      </span>
+      <button id="deltaVoiceClose" style="background:none; border:none; font-size:22px; cursor:pointer; color:#8A929B; padding:2px 6px;">✕</button>
+    </div>
+  </div>
+
+  <!-- Location bar -->
+  <div style="padding:8px 16px; background:#fff; border-bottom:1px solid #EEF0F2; font-size:12.5px; color:#6B7280; display:flex; align-items:center; gap:5px;">
+    📍 Deliver to <b style="color:#1A2027;">Manteswar, Purba Bardhaman</b>
+  </div>
+
+  <!-- Status -->
+  <div id="deltaVoiceStatus" style="text-align:center; padding:8px; font-size:12.5px; color:#9CA3AF;">সংযোগ করা হচ্ছে...</div>
+
+  <!-- Conversation -->
+  <div id="deltaVoiceTranscript" style="flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:12px;"></div>
+
+  <!-- Product carousel (real catalog data) -->
+  <div id="deltaVoiceShowroom" style="display:none; padding:14px 16px 4px; background:#fff; border-top:1px solid #EEF0F2;"></div>
+
+  <!-- Quick-action chips -->
+  <div id="deltaVoiceChips" style="display:none; padding:0 16px 10px; display:flex; gap:8px; overflow-x:auto; background:#fff;"></div>
+
+  <!-- Cart summary strip (tap to expand) -->
+  <div id="deltaVoiceCart" style="display:none; padding:12px 16px; background:#fff; border-top:1px solid #EEF0F2; font-size:13.5px; color:#1A2027;"></div>
+
+  <!-- Bottom input bar -->
+  <div style="display:flex; align-items:center; gap:12px; padding:12px 16px 20px; background:#fff; border-top:1px solid #EEF0F2;">
+    <span style="font-size:20px; color:#9CA3AF;">⌨️</span>
+    <div style="flex:1; color:#B0B6BD; font-size:14px;">বলুন বা লিখুন...</div>
+    <label for="deltaVoiceImageInput" style="font-size:20px; color:#9CA3AF; cursor:pointer;">🖼️</label>
+    <input type="file" id="deltaVoiceImageInput" accept="image/*" capture="environment" style="display:none;">
+    <button id="deltaVoiceMic" disabled style="width:52px; height:52px; border-radius:50%; background:#0FA968; color:white; border:none; font-size:22px; cursor:pointer; box-shadow:0 3px 10px rgba(15,169,104,0.4); flex-shrink:0;">🎙️</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  var GEMINI_API_KEY = "AQ.Ab8RN6JRs1-TrXSJPNvnvGqJWBftJnm0oNbpf-hR7HkkgonHDw"; // ⚠️ REPLACE with your production key before real customer use
+
+  var ws = null, audioContext = null, micStream = null, processorNode = null;
+  var isRecording = false, cart = [], nextPlayTime = 0;
+  var lastUploadedImageUrl = null;
+  var INPUT_SAMPLE_RATE = 16000, OUTPUT_SAMPLE_RATE = 24000;
+
+  var overlay = document.getElementById('deltaVoiceOverlay');
+  var transcriptEl = document.getElementById('deltaVoiceTranscript');
+  var statusEl = document.getElementById('deltaVoiceStatus');
+  var showroomEl = document.getElementById('deltaVoiceShowroom');
+  var chipsEl = document.getElementById('deltaVoiceChips');
+  var cartEl = document.getElementById('deltaVoiceCart');
+  var micBtn = document.getElementById('deltaVoiceMic');
+  var dot = document.getElementById('deltaVoiceDot');
+
+  // ── Chat bubble rendering — consecutive fragments from the SAME
+  // speaker append into the SAME growing bubble; a new bubble only
+  // starts when the speaker actually changes (customer ↔ DELTA).
+  var lastBubbleWho = null, lastBubbleTextEl = null;
+
+  function addBubble(text, who) {
+    if (who === lastBubbleWho && lastBubbleTextEl) {
+      lastBubbleTextEl.textContent += (lastBubbleTextEl.textContent ? ' ' : '') + text;
+      transcriptEl.scrollTop = transcriptEl.scrollHeight;
+      return;
+    }
+    var row = document.createElement('div');
+    row.style.cssText = 'display:flex; ' + (who === 'customer' ? 'justify-content:flex-end;' : 'justify-content:flex-start; align-items:flex-end; gap:8px;');
+    if (who !== 'customer') {
+      var avatar = document.createElement('div');
+      avatar.style.cssText = 'width:26px; height:26px; border-radius:50%; background:linear-gradient(135deg,#0FA968,#0B7EC9); flex-shrink:0; display:flex; align-items:center; justify-content:center; color:#fff; font-size:12px; font-weight:700;';
+      avatar.textContent = 'D';
+      row.appendChild(avatar);
+    }
+    var b = document.createElement('div');
+    b.style.cssText = 'max-width:75%; padding:10px 14px; font-size:14px; line-height:1.5; ' +
+      (who === 'customer'
+        ? 'background:#E7F8EF; color:#1A2027; border-radius:16px 16px 4px 16px;'
+        : 'background:#fff; color:#1A2027; border:1px solid #EEF0F2; border-radius:16px 16px 16px 4px;');
+    b.textContent = text;
+    row.appendChild(b);
+    lastBubbleWho = who;
+    lastBubbleTextEl = b;
+    transcriptEl.appendChild(row);
+    transcriptEl.scrollTop = transcriptEl.scrollHeight;
+  }
+
+  function addImageBubble(dataUrl) {
+    var row = document.createElement('div');
+    row.style.cssText = 'display:flex; justify-content:flex-end;';
+    var b = document.createElement('div');
+    b.style.cssText = 'max-width:60%; border-radius:16px 16px 4px 16px; overflow:hidden;';
+    b.innerHTML = '<img src="' + dataUrl + '" style="width:100%; display:block;">';
+    row.appendChild(b);
+    transcriptEl.appendChild(row);
+    transcriptEl.scrollTop = transcriptEl.scrollHeight;
+    lastBubbleWho = null;
+    lastBubbleTextEl = null;
+  }
+
+  function renderProductCards(items, title) {
+    showroomEl.style.display = 'block';
+    var html = '<div style="font-size:13.5px; font-weight:700; color:#1A2027; margin-bottom:10px;">' + title + '</div>';
+    html += '<div style="display:flex; gap:10px; overflow-x:auto; padding-bottom:4px;">';
+    items.forEach(function (it) {
+      var thumb = it.imageUrl
+        ? '<img src="' + it.imageUrl + '" alt="' + (it.product || it.name || '') + '" style="width:100%; height:80px; object-fit:cover; display:block;" onerror="this.parentElement.innerHTML=\'🛍️\'; this.parentElement.style.cssText+=\'display:flex;align-items:center;justify-content:center;font-size:26px;\';">'
+        : '🛍️';
+      html += '<div style="flex-shrink:0; width:130px; background:#fff; border:1px solid #EEF0F2; border-radius:14px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.04);">' +
+        '<div style="height:80px; background:#F0F2F4; display:flex; align-items:center; justify-content:center; font-size:26px;">' + thumb + '</div>' +
+        '<div style="padding:8px 10px;">' +
+        '<div style="font-size:12px; font-weight:600; color:#1A2027; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">' + (it.product || it.name || it) + '</div>' +
+        (it.price ? '<div style="font-size:13px; font-weight:700; color:#0FA968; margin-top:2px;">₹' + it.price + (it.unit ? '/' + it.unit : '') + '</div>' : '') +
+        '</div></div>';
+    });
+    html += '</div>';
+    showroomEl.innerHTML = html;
+  }
+
+  function renderChips(options) {
+    chipsEl.style.display = 'flex';
+    chipsEl.innerHTML = options.map(function (o) {
+      return '<div style="flex-shrink:0; background:#fff; border:1px solid #D8DCE1; border-radius:20px; padding:7px 14px; font-size:12.5px; color:#374151; white-space:nowrap;">' + o + '</div>';
+    }).join('');
+  }
+
+  function updateCartDisplay() {
+    if (cart.length === 0) { cartEl.style.display = 'none'; return; }
+    cartEl.style.display = 'block';
+    var total = cart.reduce(function (s, i) { return s + (i.price || 0) * i.quantity; }, 0);
+    cartEl.innerHTML = '<div style="display:flex; justify-content:space-between; align-items:center;">' +
+      '<span>🛒 <b>' + cart.length + ' item' + (cart.length > 1 ? 's' : '') + '</b> — ' +
+      cart.map(function (i) { return i.matchedProduct + ' ×' + i.quantity + i.unit; }).join(', ') + '</span>' +
+      '<span style="font-weight:700; color:#0FA968;">₹' + total + '</span></div>';
+  }
+
+  // ── Audio plumbing ──
+  function resampleTo16k(float32Array, actualSampleRate) {
+    if (actualSampleRate === INPUT_SAMPLE_RATE) return float32Array;
+    var ratio = actualSampleRate / INPUT_SAMPLE_RATE;
+    var newLength = Math.round(float32Array.length / ratio);
+    var result = new Float32Array(newLength);
+    for (var i = 0; i < newLength; i++) {
+      var srcIndex = i * ratio, srcIndexFloor = Math.floor(srcIndex);
+      var srcIndexCeil = Math.min(srcIndexFloor + 1, float32Array.length - 1);
+      var frac = srcIndex - srcIndexFloor;
+      result[i] = float32Array[srcIndexFloor] * (1 - frac) + float32Array[srcIndexCeil] * frac;
+    }
+    return result;
+  }
+  function floatTo16BitPCM(float32Array) {
+    var buffer = new ArrayBuffer(float32Array.length * 2);
+    var view = new DataView(buffer);
+    for (var i = 0; i < float32Array.length; i++) {
+      var s = Math.max(-1, Math.min(1, float32Array[i]));
+      view.setInt16(i * 2, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+    }
+    return buffer;
+  }
+  function arrayBufferToBase64(buffer) {
+    var binary = '', bytes = new Uint8Array(buffer);
+    for (var i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
+    return window.btoa(binary);
+  }
+  function base64ToArrayBuffer(base64) {
+    var binary = window.atob(base64), bytes = new Uint8Array(binary.length);
+    for (var i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return bytes.buffer;
+  }
+  async function playPCM(base64Data) {
+    if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    var pcm16 = new Int16Array(base64ToArrayBuffer(base64Data));
+    var float32 = new Float32Array(pcm16.length);
+    for (var i = 0; i < pcm16.length; i++) float32[i] = pcm16[i] / 32768;
+    var audioBuffer = audioContext.createBuffer(1, float32.length, OUTPUT_SAMPLE_RATE);
+    audioBuffer.getChannelData(0).set(float32);
+    var source = audioContext.createBufferSource();
+    source.buffer = audioBuffer;
+    source.connect(audioContext.destination);
+    var startTime = Math.max(audioContext.currentTime, nextPlayTime);
+    source.start(startTime);
+    nextPlayTime = startTime + audioBuffer.duration;
+  }
+
+  var TOOL_DECLARATIONS = [{
+    function_declarations: [
+      {name: "add_item", description: "কাস্টমার যখন নতুন কোনো product কিনতে/কার্টে যোগ করতে চায়, তখন এটা ব্যবহার করো।",
+        parameters: {type: "OBJECT", properties: {itemName: {type: "STRING"}, quantity: {type: "NUMBER"}, unit: {type: "STRING"}}, required: ["itemName", "quantity", "unit"]}},
+      {name: "check_item_availability", description: "কাস্টমার শুধু জিজ্ঞাসা করলে — কিনতে না চাইলে — এটা ব্যবহার করো, add_item না।",
+        parameters: {type: "OBJECT", properties: {itemName: {type: "STRING"}}, required: ["itemName"]}},
+      {name: "list_available_products", description: "কাস্টমার শুধু ব্রাউজ করতে চাইলে এটা ব্যবহার করো।", parameters: {type: "OBJECT", properties: {}}},
+      {name: "request_unavailable_product", description: "Product not_found হলে এবং কাস্টমার আগ্রহী থাকলে এটা ব্যবহার করো।",
+        parameters: {type: "OBJECT", properties: {itemName: {type: "STRING"}, description: {type: "STRING"}, customerPhone: {type: "STRING"}, budgetMax: {type: "NUMBER"}}, required: ["itemName", "customerPhone"]}},
+      {name: "remove_item", description: "আগে যোগ করা item বাদ দিতে চাইলে এটা ব্যবহার করো।",
+        parameters: {type: "OBJECT", properties: {itemName: {type: "STRING"}}, required: ["itemName"]}},
+      {name: "modify_item_quantity", description: "quantity বদলাতে চাইলে এটা ব্যবহার করো।",
+        parameters: {type: "OBJECT", properties: {itemName: {type: "STRING"}, newQuantity: {type: "NUMBER"}, newUnit: {type: "STRING"}}, required: ["itemName", "newQuantity"]}},
+      {name: "get_cart_summary", description: "যখনই কোনো মোট দাম মুখে বলতে হবে (কাস্টমার জিজ্ঞাসা করুক বা নিজে থেকেই বলতে চাও), প্রতিবারই আগে এটা call করে real, হালনাগাদ দাম নাও — কখনো আগের turn থেকে মনে রেখে/অনুমান করে দাম বোলো না।", parameters: {type: "OBJECT", properties: {}}},
+      {name: "place_order", description: "ঠিকানা+মোবাইল+payment পাওয়ার পর অর্ডার confirm করতে এটা ব্যবহার করো।",
+        parameters: {type: "OBJECT", properties: {address: {type: "STRING"}, mobile: {type: "STRING"}, paymentMethod: {type: "STRING"}}, required: ["address", "mobile", "paymentMethod"]}},
+      {name: "show_confirmation", description: "Checkout-এর একদম শেষে, ঠিকানা+মোবাইল+payment — তিনটাই পাওয়ার পর, একবারই এটা call করো (type='final_summary', address ও phone ও paymentMethod সহ) — এটা ঠিকানা/মোবাইল/item/দাম/payment সবকিছু একসাথে screen-এ দেখাবে। এর আগে ঠিকানা/মোবাইল আলাদাভাবে মুখে repeat করে confirm কোরো না — শুধু এই একটামাত্র চূড়ান্ত summary-তেই confirm নাও।",
+        parameters: {
+          type: "OBJECT",
+          properties: {
+            type: {type: "STRING", description: "সবসময় 'final_summary'"},
+            address: {type: "STRING"},
+            phone: {type: "STRING"},
+            paymentMethod: {type: "STRING"},
+          },
+          required: ["type", "address", "phone", "paymentMethod"],
+        }},
+    ],
+  }];
+
+  var SYSTEM_INSTRUCTION = "তুমি DELTA, hyperlocal super-app voice assistant। ⚠️ কখনো tool-call syntax মুখে বলবে না। ⚠️ ভাষা: কাস্টমার যে ভাষায় প্রথম স্পষ্ট বাক্যটা বলে (এমনকি একটামাত্র বাক্যেও, একাধিকবার বলার অপেক্ষা না করে), DELTA-ও সাথে সাথে সেই একই ভাষায় (হিন্দি/ইংরেজি/বাংলা) জবাব দেবে — বাংলা 'ডিফল্ট' ভেবে জোর করে বাংলায় ফিরে যেয়ো না। শুধু সম্পূর্ণ মিশ্র/অস্পষ্ট বাক্যে বাংলা ব্যবহার করো। কথা সবসময় সংক্ষেপে, উষ্ণভাবে বলবে।\n\nনিয়ম (প্রতিটাই বাধ্যতামূলক, আজ বাস্তব test-এ প্রমাণিত):\n১. Product কিনতে চাইলে সাথে সাথেই add_item call করো — variety/দাম নিজে থেকে বলার আগে না, এমনকি সাধারণ জ্ঞান থেকেও না। itemName সবসময় বাংলা script-এ। ambiguous ফলাফলে candidateOptions থেকে real price/ধরন বলে জিজ্ঞাসা করো। যদি 'unit_mismatch' ফলাফল আসে (যেমন কোনো item-এ কেজি/লিটার বলা হয়েছে কিন্তু সেটা আসলে পিস-এ বিক্রি হয়), silently সেটা মেনে না নিয়ে সঠিক একক/পরিমাণ জিজ্ঞাসা করো।\n২. শুধু জিজ্ঞাসা করলে (কিনতে না চাইলে) check_item_availability, add_item না।\n৩. 'কী আছে' জিজ্ঞাসায় প্রথমে 'কী লাগবে বলুন' জিজ্ঞাসা করো — তালিকা বানিয়ে বোলো না। জোর করলে list_available_products, ফলাফল থেকে ৩-৪টা উদাহরণ মুখে, বাকিটা screen-এ।\n৪. not_found হলে থেমো না — নিজে থেকে বলো 'কখন লাগবে বলুন, ব্যবস্থা করার চেষ্টা করব'। একটা একটা করে (কখনো একসাথে না, আলাদা turn-এ): ধরন/ব্র্যান্ড/মডেল → বাজেট → ছবি (বলো 'নিচের ছবি-আইকনে পাঠান', WhatsApp না)। যদি কাস্টমার 'দাম কেমন হতে পারে' জিজ্ঞাসা করে, কখনো আন্দাজ করে সংখ্যা বোলো না — honestly বলো 'এটা আমাদের নিজস্ব catalog-এ নেই, তাই এখনই সঠিক দাম বলতে পারছি না, বাজার থেকে যাচাই করে সেলসম্যান জানাবেন', তারপর প্রশ্নে ফিরে যাও। সব তথ্য পাওয়ার পরই মোবাইল নিয়ে request_unavailable_product call করো — একাধিক item হলে প্রতিটার জন্য আলাদাভাবে।\n৫. মোট দাম মুখে বলার আগে প্রতিবারই get_cart_summary call করে real সংখ্যা নাও — আগের turn থেকে মনে রেখে/আন্দাজ করে বোলো না। ভুল হলে honestly স্বীকার করো, কখনো 'বাজারদর বদলায়' জাতীয় বানানো কারণ দিও না।\n৬. Checkout-এ ঠিকানা→মোবাইল→payment একে একে, প্রতিটা আলাদা turn-এ জিজ্ঞাসা করো (একসাথে না), কিন্তু প্রতিটা পাওয়ার সাথে সাথে আলাদাভাবে মুখে repeat/confirm কোরো না — শুধু 'ঠিক আছে' বলে পরের প্রশ্নে যাও। অনলাইন পেমেন্ট চাইলে honestly বলো এখনো শুধু নগদ চলছে। তিনটাই (ঠিকানা+মোবাইল+payment) পাওয়ার পর, একবারই show_confirmation(type:'final_summary', address, phone, paymentMethod) call করো — এটা সব তথ্য (item+দাম+ঠিকানা+মোবাইল+payment) একসাথে screen-এ দেখাবে। এরপর শুধু সংক্ষেপে মুখে বলো 'সব তথ্য স্ক্রিনে আছে, ঠিক থাকলে হ্যাঁ বলুন' — বিস্তারিত আবার মুখে না বলে। কাস্টমার হ্যাঁ বললে তবেই place_order call করো।";
+
+  function connect() {
+    statusEl.textContent = 'সংযোগ করার চেষ্টা হচ্ছে...';
+    dot.style.background = '#F59E0B';
+    var wsUrl = "wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent?key=" + GEMINI_API_KEY;
+    ws = new WebSocket(wsUrl);
+
+    ws.onopen = function () {
+      ws.send(JSON.stringify({
+        setup: {
+          model: "models/gemini-3.1-flash-live-preview",
+          generationConfig: {responseModalities: ["AUDIO"]},
+          systemInstruction: {parts: [{text: SYSTEM_INSTRUCTION}]},
+          tools: TOOL_DECLARATIONS,
+        },
+      }));
+      statusEl.textContent = '✓ সংযুক্ত! বাটন চেপে ধরে বলুন।';
+      dot.style.background = '#0FA968';
+      micBtn.disabled = false;
+    };
+
+    ws.onmessage = async function (event) {
+      var rawText = (event.data instanceof Blob) ? await event.data.text() : event.data;
+      var response;
+      try { response = JSON.parse(rawText); } catch (e) { return; }
+
+      // Proactively greet the customer once Gemini confirms setup is ready,
+      // personalized with their name (matches the old pipeline's greeting).
+      if (response.setupComplete) {
+        var firstName = (currentUser && currentUser.displayName ? currentUser.displayName : '').split(' ')[0];
+        var openLine = firstName
+          ? "(system: কাস্টমার ('" + firstName + "') এইমাত্র app-টা খুলেছে, কথা বলা শুরু করেনি — তুমি প্রথমে সংক্ষেপে তার নাম ধরে নমস্কার জানিয়ে জিজ্ঞাসা করো 'কী লাগবে বলুন')"
+          : "(system: কাস্টমার এইমাত্র app-টা খুলেছে, কথা বলা শুরু করেনি — তুমি প্রথমে সংক্ষেপে নমস্কার জানিয়ে জিজ্ঞাসা করো 'কী লাগবে বলুন')";
+        ws.send(JSON.stringify({
+          clientContent: {
+            turns: [{role: "user", parts: [{text: openLine}]}],
+            turnComplete: true,
+          },
+        }));
+        return;
+      }
+
+      if (response.serverContent) {
+        var sc = response.serverContent;
+        if (sc.interrupted) nextPlayTime = audioContext ? audioContext.currentTime : 0;
+        if (sc.modelTurn && sc.modelTurn.parts) {
+          sc.modelTurn.parts.forEach(function (part) { if (part.inlineData) playPCM(part.inlineData.data); });
+        }
+        if (sc.inputTranscription) addBubble(sc.inputTranscription.text, 'customer');
+        if (sc.outputTranscription) addBubble(sc.outputTranscription.text, 'delta');
+      }
+
+      if (response.toolCall && response.toolCall.functionCalls) {
+        // ALL function responses for one toolCall batch must arrive TOGETHER
+        // in a SINGLE toolResponse message (multi-item utterances break
+        // otherwise) — collect every response first, send once.
+        var functionResponses = [];
+
+        for (var i = 0; i < response.toolCall.functionCalls.length; i++) {
+          var fc = response.toolCall.functionCalls[i];
+          try {
+            if (fc.name === 'show_confirmation') {
+              showroomEl.style.display = 'block';
+              if (fc.args.type === 'final_summary') {
+                var total = cart.reduce(function (s, it) { return s + (it.price || 0) * it.quantity; }, 0);
+                showroomEl.innerHTML = '<div style="font-size:13px; color:#1A2027;"><b>🧾 অর্ডার নিশ্চিত করুন</b><br><br>' +
+                  '<b>পণ্য:</b><br>' + cart.map(function (it) { return it.matchedProduct + ' ×' + it.quantity + it.unit + ' — ₹' + (it.price * it.quantity); }).join('<br>') +
+                  '<br><b>মোট: ₹' + total + '</b><br><br>' +
+                  '<b>ঠিকানা:</b> ' + fc.args.address + '<br>' +
+                  '<b>মোবাইল:</b> ' + fc.args.phone + '<br>' +
+                  '<b>পেমেন্ট:</b> ' + fc.args.paymentMethod +
+                  '</div>';
+              }
+              functionResponses.push({id: fc.id, name: fc.name, response: {success: true}});
+              continue;
+            }
+
+            var toolArgs = fc.args;
+            if (fc.name === 'request_unavailable_product' && lastUploadedImageUrl) {
+              toolArgs = Object.assign({}, fc.args, {imageUrl: lastUploadedImageUrl});
+            }
+            var executeGeminiTool = firebase.functions().httpsCallable('executeGeminiTool');
+            var result = await executeGeminiTool({toolName: fc.name, args: toolArgs, cityId: (typeof CITY !== 'undefined' ? CITY : 'manteswar'), cart: cart});
+            if (result.data.cart) {
+              cart = result.data.cart;
+              updateCartDisplay();
+            }
+
+            if (fc.name === 'list_available_products' && result.data.sampleProducts) {
+              renderProductCards(result.data.sampleProducts.map(function (p) { return {product: p.name, price: p.price, imageUrl: p.imageUrl}; }), '📋 উপলব্ধ পণ্য');
+            } else if (fc.name === 'check_item_availability' && result.data.available && result.data.options) {
+              renderProductCards(result.data.options, fc.args.itemName);
+            } else if (fc.name === 'add_item' && result.data.reason === 'ambiguous' && result.data.candidateOptions) {
+              if (result.data.candidateOptionsDetailed) {
+                renderProductCards(result.data.candidateOptionsDetailed, 'কোনটা চান?');
+              } else {
+                renderChips(result.data.candidateOptions);
+              }
+            } else if (fc.name === 'request_unavailable_product' && result.data.success) {
+              showroomEl.style.display = 'block';
+              showroomEl.innerHTML = '<div style="font-size:13px; color:#0FA968; font-weight:600;">✅ Request পাঠানো হয়েছে — Request ID: ' + result.data.requestId + '</div>' +
+                (toolArgs.imageUrl ? '<img src="' + toolArgs.imageUrl + '" style="width:70px; height:70px; object-fit:cover; border-radius:8px; margin-top:8px;">' : '');
+              lastUploadedImageUrl = null;
+            }
+
+            functionResponses.push({id: fc.id, name: fc.name, response: result.data});
+          } catch (toolErr) {
+            console.error('Tool execution error:', toolErr);
+            functionResponses.push({id: fc.id, name: fc.name, response: {success: false, message: "internal error"}});
+          }
+        }
+
+        if (functionResponses.length > 0 && ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({toolResponse: {functionResponses: functionResponses}}));
+        }
+      }
+    };
+
+    ws.onerror = function (err) {
+      console.error('WebSocket error:', err);
+      statusEl.textContent = '✗ সংযোগ ব্যর্থ হয়েছে।'; dot.style.background = '#DC2626';
+    };
+    ws.onclose = function (event) {
+      console.log('WebSocket closed — code:', event.code, 'reason:', event.reason, 'wasClean:', event.wasClean);
+      statusEl.textContent = 'সংযোগ বন্ধ হয়ে গেছে। (code: ' + event.code + ')';
+      dot.style.background = '#DC2626'; micBtn.disabled = true;
+    };
+  }
+
+  async function startRecording() {
+    if (!ws || ws.readyState !== WebSocket.OPEN) return;
+    try {
+      micStream = await navigator.mediaDevices.getUserMedia({audio: {sampleRate: INPUT_SAMPLE_RATE, channelCount: 1}});
+      if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      var source = audioContext.createMediaStreamSource(micStream);
+      processorNode = audioContext.createScriptProcessor(4096, 1, 1);
+      source.connect(processorNode);
+      processorNode.connect(audioContext.destination);
+
+      processorNode.onaudioprocess = function (e) {
+        if (!isRecording) return;
+        var inputData = e.inputBuffer.getChannelData(0);
+        var resampled = resampleTo16k(inputData, audioContext.sampleRate);
+        var base64Data = arrayBufferToBase64(floatTo16BitPCM(resampled));
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({realtimeInput: {audio: {data: base64Data, mimeType: "audio/pcm;rate=" + INPUT_SAMPLE_RATE}}}));
+        }
+      };
+      isRecording = true;
+      micBtn.style.background = '#DC2626';
+    } catch (err) {
+      addBubble('মাইক্রোফোন সমস্যা: ' + err.message, 'delta');
+    }
+  }
+  function stopRecording() {
+    isRecording = false;
+    micBtn.style.background = '#0FA968';
+    if (micStream) micStream.getTracks().forEach(function (t) { t.stop(); });
+    if (processorNode) processorNode.disconnect();
+    if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({realtimeInput: {audioStreamEnd: true}}));
+  }
+
+  micBtn.addEventListener('mousedown', startRecording);
+  micBtn.addEventListener('touchstart', function (e) { e.preventDefault(); startRecording(); });
+  micBtn.addEventListener('mouseup', stopRecording);
+  micBtn.addEventListener('touchend', function (e) { e.preventDefault(); stopRecording(); });
+
+  // ⚠️ Entry point — called from the existing .vo-entry-btn ("বলুন, কী
+  // লাগবে?") in the hero section, replacing the old openVoiceOrder().
+  // Same login gate as the old pipeline: reuses index.html's own
+  // currentUser/auth — never signs in anonymously, never overwrites an
+  // already-logged-in customer's session.
+  window.openDeltaVoiceLive = function () {
+    if (!currentUser) { showToast('অর্ডার করতে আগে লগইন করুন'); openAuth(); return; }
+    overlay.style.display = 'flex';
+    if (!ws || ws.readyState !== WebSocket.OPEN) connect();
+  };
+
+  document.getElementById('deltaVoiceClose').addEventListener('click', function () {
+    overlay.style.display = 'none';
+    if (ws) ws.close();
+    if (isRecording) stopRecording();
+  });
+
+  // ── Cloudinary unsigned upload (same cloud_name/preset DELTA already
+  // uses for seller product photos) ──
+  async function uploadToCloudinary(file) {
+    var formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', 'delta_products');
+    var response = await fetch('https://api.cloudinary.com/v1_1/djthojcmy/image/upload', {
+      method: 'POST', body: formData,
+    });
+    var data = await response.json();
+    return data.secure_url || null;
+  }
+
+  document.getElementById('deltaVoiceImageInput').addEventListener('change', function (e) {
+    var file = e.target.files[0];
+    if (!file || !ws || ws.readyState !== WebSocket.OPEN) return;
+
+    var previewReader = new FileReader();
+    previewReader.onload = function () { addImageBubble(previewReader.result); };
+    previewReader.readAsDataURL(file);
+
+    var reader = new FileReader();
+    reader.onload = function () {
+      var base64Data = reader.result.split(',')[1];
+      ws.send(JSON.stringify({realtimeInput: {video: {data: base64Data, mimeType: file.type || "image/jpeg"}}}));
+    };
+    reader.readAsDataURL(file);
+
+    uploadToCloudinary(file).then(function (url) {
+      if (url) { lastUploadedImageUrl = url; console.log('Image uploaded to Cloudinary:', url); }
+    }).catch(function (err) {
+      console.error('Cloudinary upload failed:', err);
+    });
+
+    e.target.value = '';
+  });
+})();
 </script>
 </body>
 </html>
