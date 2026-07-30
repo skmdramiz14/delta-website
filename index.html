@@ -10161,18 +10161,17 @@ function timeAgoStory(iso){
      Opened via openDeltaVoiceLive(), called from the existing
      .vo-entry-btn ("বলুন, কী লাগবে?") in the hero section.
 
-     ⚠️ Reuses index.html's ALREADY-INITIALIZED Firebase app (fbcfg/auth/db,
+     ⚠️ ARCHITECTURE: the browser connects to OUR OWN geminiLiveProxy
+     Cloud Function (WebSocket), never to Gemini directly. No Gemini
+     credential of any kind reaches the browser — see gemini-live-proxy.js.
+     Reuses index.html's ALREADY-INITIALIZED Firebase app (fbcfg/auth/db,
      Firebase v8.10.1 compat, loaded by the dynamic loader above) — this
      block deliberately does NOT load a second Firebase SDK or call
      firebase.initializeApp() again (would throw "Firebase App named
-     '[DEFAULT]' already exists"). It also deliberately does NOT call
-     signInAnonymously() — openDeltaVoiceLive() requires the customer to
-     already be logged in via index.html's normal email/password flow
-     (same gate openVoiceOrder() used), so an already-signed-in customer's
-     session is never silently overwritten.
-
-     ⚠️ SECURITY NOTE: client-side Gemini API key — same accepted risk
-     already in place for this test pipeline.
+     '[DEFAULT]' already exists"). openDeltaVoiceLive() requires the
+     customer to already be logged in via index.html's normal
+     email/password flow (same gate openVoiceOrder() used) — their
+     Firebase ID token is what authenticates them to the proxy.
      ═══════════════════════════════════════════════════════════════════ -->
 
 <div id="deltaVoiceOverlay" style="display:none; position:fixed; inset:0; background:#F7F8FA; z-index:9999; flex-direction:column; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
@@ -10223,7 +10222,12 @@ function timeAgoStory(iso){
 
 <script>
 (function () {
-  var GEMINI_API_KEY = "AQ.Ab8RN6JRs1-TrXSJPNvnvGqJWBftJnm0oNbpf-hR7HkkgonHDw"; // ⚠️ REPLACE with your production key before real customer use
+  // ⚠️ No Gemini credential of any kind lives here — this file only
+  // talks to OUR OWN geminiLiveProxy Cloud Function (see connect()
+  // below), which holds the real key server-side and mints its own
+  // short-lived ephemeral token per session. Tool execution also moved
+  // server-side into that proxy; this file only renders what the proxy
+  // forwards back (see ws.onmessage's 'toolResult' handling).
 
   var ws = null, audioContext = null, micStream = null, processorNode = null;
   var isRecording = false, cart = [], nextPlayTime = 0;
@@ -10368,56 +10372,58 @@ function timeAgoStory(iso){
     nextPlayTime = startTime + audioBuffer.duration;
   }
 
-  var TOOL_DECLARATIONS = [{
-    function_declarations: [
-      {name: "add_item", description: "কাস্টমার যখন নতুন কোনো product কিনতে/কার্টে যোগ করতে চায়, তখন এটা ব্যবহার করো।",
-        parameters: {type: "OBJECT", properties: {itemName: {type: "STRING"}, quantity: {type: "NUMBER"}, unit: {type: "STRING"}}, required: ["itemName", "quantity", "unit"]}},
-      {name: "check_item_availability", description: "কাস্টমার শুধু জিজ্ঞাসা করলে — কিনতে না চাইলে — এটা ব্যবহার করো, add_item না।",
-        parameters: {type: "OBJECT", properties: {itemName: {type: "STRING"}}, required: ["itemName"]}},
-      {name: "list_available_products", description: "কাস্টমার শুধু ব্রাউজ করতে চাইলে এটা ব্যবহার করো।", parameters: {type: "OBJECT", properties: {}}},
-      {name: "request_unavailable_product", description: "Product not_found হলে এবং কাস্টমার আগ্রহী থাকলে এটা ব্যবহার করো।",
-        parameters: {type: "OBJECT", properties: {itemName: {type: "STRING"}, description: {type: "STRING"}, customerPhone: {type: "STRING"}, budgetMax: {type: "NUMBER"}}, required: ["itemName", "customerPhone"]}},
-      {name: "remove_item", description: "আগে যোগ করা item বাদ দিতে চাইলে এটা ব্যবহার করো।",
-        parameters: {type: "OBJECT", properties: {itemName: {type: "STRING"}}, required: ["itemName"]}},
-      {name: "modify_item_quantity", description: "quantity বদলাতে চাইলে এটা ব্যবহার করো।",
-        parameters: {type: "OBJECT", properties: {itemName: {type: "STRING"}, newQuantity: {type: "NUMBER"}, newUnit: {type: "STRING"}}, required: ["itemName", "newQuantity"]}},
-      {name: "get_cart_summary", description: "যখনই কোনো মোট দাম মুখে বলতে হবে (কাস্টমার জিজ্ঞাসা করুক বা নিজে থেকেই বলতে চাও), প্রতিবারই আগে এটা call করে real, হালনাগাদ দাম নাও — কখনো আগের turn থেকে মনে রেখে/অনুমান করে দাম বোলো না।", parameters: {type: "OBJECT", properties: {}}},
-      {name: "place_order", description: "ঠিকানা+মোবাইল+payment পাওয়ার পর অর্ডার confirm করতে এটা ব্যবহার করো।",
-        parameters: {type: "OBJECT", properties: {address: {type: "STRING"}, mobile: {type: "STRING"}, paymentMethod: {type: "STRING"}}, required: ["address", "mobile", "paymentMethod"]}},
-      {name: "show_confirmation", description: "Checkout-এর একদম শেষে, ঠিকানা+মোবাইল+payment — তিনটাই পাওয়ার পর, একবারই এটা call করো (type='final_summary', address ও phone ও paymentMethod সহ) — এটা ঠিকানা/মোবাইল/item/দাম/payment সবকিছু একসাথে screen-এ দেখাবে। এর আগে ঠিকানা/মোবাইল আলাদাভাবে মুখে repeat করে confirm কোরো না — শুধু এই একটামাত্র চূড়ান্ত summary-তেই confirm নাও।",
-        parameters: {
-          type: "OBJECT",
-          properties: {
-            type: {type: "STRING", description: "সবসময় 'final_summary'"},
-            address: {type: "STRING"},
-            phone: {type: "STRING"},
-            paymentMethod: {type: "STRING"},
-          },
-          required: ["type", "address", "phone", "paymentMethod"],
-        }},
-    ],
-  }];
+  // ⚠️ ARCHITECTURE CHANGE: this block now talks to OUR OWN backend
+  // proxy (geminiLiveProxy Cloud Function) instead of connecting to
+  // Gemini Live directly. No Gemini credential of any kind (permanent
+  // key or ephemeral token) ever reaches the browser — the proxy holds
+  // the real key server-side and mints its own short-lived token per
+  // session. Tool execution (add_item, place_order, etc.) also now
+  // happens server-side in the proxy; this file only renders whatever
+  // the proxy forwards back.
+  //
+  // ⚠️ REPLACE THIS after you deploy geminiLiveProxy — the exact URL is
+  // printed by `firebase deploy --only functions:geminiLiveProxy`.
+  // Typical 2nd-gen Cloud Functions URL shape (confirm against your own
+  // deploy output rather than assuming): https://<region>-<project-id>.cloudfunctions.net/geminiLiveProxy
+  var DELTA_VOICE_PROXY_URL = "wss://geminiliveproxy-wdhe4amoeq-uc.a.run.app";
 
-  var SYSTEM_INSTRUCTION = "তুমি DELTA, hyperlocal super-app voice assistant। ⚠️ কখনো tool-call syntax মুখে বলবে না। ⚠️ ভাষা: কাস্টমার যে ভাষায় প্রথম স্পষ্ট বাক্যটা বলে (এমনকি একটামাত্র বাক্যেও, একাধিকবার বলার অপেক্ষা না করে), DELTA-ও সাথে সাথে সেই একই ভাষায় (হিন্দি/ইংরেজি/বাংলা) জবাব দেবে — বাংলা 'ডিফল্ট' ভেবে জোর করে বাংলায় ফিরে যেয়ো না। শুধু সম্পূর্ণ মিশ্র/অস্পষ্ট বাক্যে বাংলা ব্যবহার করো। কথা সবসময় সংক্ষেপে, উষ্ণভাবে বলবে।\n\nনিয়ম (প্রতিটাই বাধ্যতামূলক, আজ বাস্তব test-এ প্রমাণিত):\n১. Product কিনতে চাইলে সাথে সাথেই add_item call করো — variety/দাম নিজে থেকে বলার আগে না, এমনকি সাধারণ জ্ঞান থেকেও না। itemName সবসময় বাংলা script-এ। ambiguous ফলাফলে candidateOptions থেকে real price/ধরন বলে জিজ্ঞাসা করো। যদি 'unit_mismatch' ফলাফল আসে (যেমন কোনো item-এ কেজি/লিটার বলা হয়েছে কিন্তু সেটা আসলে পিস-এ বিক্রি হয়), silently সেটা মেনে না নিয়ে সঠিক একক/পরিমাণ জিজ্ঞাসা করো।\n২. শুধু জিজ্ঞাসা করলে (কিনতে না চাইলে) check_item_availability, add_item না।\n৩. 'কী আছে' জিজ্ঞাসায় প্রথমে 'কী লাগবে বলুন' জিজ্ঞাসা করো — তালিকা বানিয়ে বোলো না। জোর করলে list_available_products, ফলাফল থেকে ৩-৪টা উদাহরণ মুখে, বাকিটা screen-এ।\n৪. not_found হলে থেমো না — নিজে থেকে বলো 'কখন লাগবে বলুন, ব্যবস্থা করার চেষ্টা করব'। একটা একটা করে (কখনো একসাথে না, আলাদা turn-এ): ধরন/ব্র্যান্ড/মডেল → বাজেট → ছবি (বলো 'নিচের ছবি-আইকনে পাঠান', WhatsApp না)। যদি কাস্টমার 'দাম কেমন হতে পারে' জিজ্ঞাসা করে, কখনো আন্দাজ করে সংখ্যা বোলো না — honestly বলো 'এটা আমাদের নিজস্ব catalog-এ নেই, তাই এখনই সঠিক দাম বলতে পারছি না, বাজার থেকে যাচাই করে সেলসম্যান জানাবেন', তারপর প্রশ্নে ফিরে যাও। সব তথ্য পাওয়ার পরই মোবাইল নিয়ে request_unavailable_product call করো — একাধিক item হলে প্রতিটার জন্য আলাদাভাবে।\n৫. মোট দাম মুখে বলার আগে প্রতিবারই get_cart_summary call করে real সংখ্যা নাও — আগের turn থেকে মনে রেখে/আন্দাজ করে বোলো না। ভুল হলে honestly স্বীকার করো, কখনো 'বাজারদর বদলায়' জাতীয় বানানো কারণ দিও না।\n৬. Checkout-এ ঠিকানা→মোবাইল→payment একে একে, প্রতিটা আলাদা turn-এ জিজ্ঞাসা করো (একসাথে না), কিন্তু প্রতিটা পাওয়ার সাথে সাথে আলাদাভাবে মুখে repeat/confirm কোরো না — শুধু 'ঠিক আছে' বলে পরের প্রশ্নে যাও। অনলাইন পেমেন্ট চাইলে honestly বলো এখনো শুধু নগদ চলছে। তিনটাই (ঠিকানা+মোবাইল+payment) পাওয়ার পর, একবারই show_confirmation(type:'final_summary', address, phone, paymentMethod) call করো — এটা সব তথ্য (item+দাম+ঠিকানা+মোবাইল+payment) একসাথে screen-এ দেখাবে। এরপর শুধু সংক্ষেপে মুখে বলো 'সব তথ্য স্ক্রিনে আছে, ঠিক থাকলে হ্যাঁ বলুন' — বিস্তারিত আবার মুখে না বলে। কাস্টমার হ্যাঁ বললে তবেই place_order call করো।";
-
-  function connect() {
+  async function connect() {
     statusEl.textContent = 'সংযোগ করার চেষ্টা হচ্ছে...';
     dot.style.background = '#F59E0B';
-    var wsUrl = "wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent?key=" + GEMINI_API_KEY;
+
+    if (!currentUser) { showToast('অর্ডার করতে আগে লগইন করুন'); openAuth(); return; }
+
+    var idToken;
+    try {
+      idToken = await currentUser.getIdToken();
+    } catch (tokenErr) {
+      console.error('Failed to get ID token:', tokenErr);
+      statusEl.textContent = '✗ সংযোগ শুরু করা যায়নি। আবার চেষ্টা করুন।';
+      dot.style.background = '#DC2626';
+      return;
+    }
+
+    var city = (typeof CITY !== 'undefined' ? CITY : 'manteswar');
+    var wsUrl = DELTA_VOICE_PROXY_URL + "?idToken=" + encodeURIComponent(idToken) + "&city=" + encodeURIComponent(city);
     ws = new WebSocket(wsUrl);
 
     ws.onopen = function () {
-      ws.send(JSON.stringify({
-        setup: {
-          model: "models/gemini-3.1-flash-live-preview",
-          generationConfig: {responseModalities: ["AUDIO"]},
-          systemInstruction: {parts: [{text: SYSTEM_INSTRUCTION}]},
-          tools: TOOL_DECLARATIONS,
-        },
-      }));
       statusEl.textContent = '✓ সংযুক্ত! বাটন চেপে ধরে বলুন।';
       dot.style.background = '#0FA968';
       micBtn.disabled = false;
+
+      // Proactively greet the customer — the proxy already sent Gemini
+      // its `setup` message server-side, so we only send the "customer
+      // just opened the app" trigger, same as the browser-direct
+      // version. This relays straight through the proxy to Gemini
+      // (it's not a toolCall, so the proxy just forwards it).
+      var firstName = (currentUser && currentUser.displayName ? currentUser.displayName : '').split(' ')[0];
+      var openLine = firstName
+        ? "(system: কাস্টমার ('" + firstName + "') এইমাত্র app-টা খুলেছে, কথা বলা শুরু করেনি — তুমি প্রথমে সংক্ষেপে তার নাম ধরে নমস্কার জানিয়ে জিজ্ঞাসা করো 'কী লাগবে বলুন')"
+        : "(system: কাস্টমার এইমাত্র app-টা খুলেছে, কথা বলা শুরু করেনি — তুমি প্রথমে সংক্ষেপে নমস্কার জানিয়ে জিজ্ঞাসা করো 'কী লাগবে বলুন')";
+      ws.send(JSON.stringify({
+        clientContent: {turns: [{role: "user", parts: [{text: openLine}]}], turnComplete: true},
+      }));
     };
 
     ws.onmessage = async function (event) {
@@ -10425,22 +10431,52 @@ function timeAgoStory(iso){
       var response;
       try { response = JSON.parse(rawText); } catch (e) { return; }
 
-      // Proactively greet the customer once Gemini confirms setup is ready,
-      // personalized with their name (matches the old pipeline's greeting).
-      if (response.setupComplete) {
-        var firstName = (currentUser && currentUser.displayName ? currentUser.displayName : '').split(' ')[0];
-        var openLine = firstName
-          ? "(system: কাস্টমার ('" + firstName + "') এইমাত্র app-টা খুলেছে, কথা বলা শুরু করেনি — তুমি প্রথমে সংক্ষেপে তার নাম ধরে নমস্কার জানিয়ে জিজ্ঞাসা করো 'কী লাগবে বলুন')"
-          : "(system: কাস্টমার এইমাত্র app-টা খুলেছে, কথা বলা শুরু করেনি — তুমি প্রথমে সংক্ষেপে নমস্কার জানিয়ে জিজ্ঞাসা করো 'কী লাগবে বলুন')";
-        ws.send(JSON.stringify({
-          clientContent: {
-            turns: [{role: "user", parts: [{text: openLine}]}],
-            turnComplete: true,
-          },
-        }));
+      // ── App-level messages from OUR proxy (not raw Gemini protocol) ──
+      if (response.type === 'error') {
+        addBubble('সমস্যা হয়েছে: ' + response.message, 'delta');
+        return;
+      }
+      if (response.type === 'geminiClosed') {
+        statusEl.textContent = 'সংযোগ বন্ধ হয়ে গেছে। (code: ' + response.code + ')';
+        dot.style.background = '#DC2626'; micBtn.disabled = true;
+        return;
+      }
+      if (response.type === 'toolResult') {
+        var toolName = response.toolName, toolArgs = response.args || {}, result = response.result || {};
+
+        if (result.cart) { cart = result.cart; updateCartDisplay(); }
+
+        if (toolName === 'show_confirmation') {
+          showroomEl.style.display = 'block';
+          if (toolArgs.type === 'final_summary') {
+            var total = cart.reduce(function (s, it) { return s + (it.price || 0) * it.quantity; }, 0);
+            showroomEl.innerHTML = '<div style="font-size:13px; color:#1A2027;"><b>🧾 অর্ডার নিশ্চিত করুন</b><br><br>' +
+              '<b>পণ্য:</b><br>' + cart.map(function (it) { return it.matchedProduct + ' ×' + it.quantity + it.unit + ' — ₹' + (it.price * it.quantity); }).join('<br>') +
+              '<br><b>মোট: ₹' + total + '</b><br><br>' +
+              '<b>ঠিকানা:</b> ' + toolArgs.address + '<br>' +
+              '<b>মোবাইল:</b> ' + toolArgs.phone + '<br>' +
+              '<b>পেমেন্ট:</b> ' + toolArgs.paymentMethod +
+              '</div>';
+          }
+        } else if (toolName === 'list_available_products' && result.sampleProducts) {
+          renderProductCards(result.sampleProducts.map(function (p) { return {product: p.name, price: p.price, imageUrl: p.imageUrl}; }), '📋 উপলব্ধ পণ্য');
+        } else if (toolName === 'check_item_availability' && result.available && result.options) {
+          renderProductCards(result.options, toolArgs.itemName);
+        } else if (toolName === 'add_item' && result.reason === 'ambiguous' && result.candidateOptions) {
+          if (result.candidateOptionsDetailed) {
+            renderProductCards(result.candidateOptionsDetailed, 'কোনটা চান?');
+          } else {
+            renderChips(result.candidateOptions);
+          }
+        } else if (toolName === 'request_unavailable_product' && result.success) {
+          showroomEl.style.display = 'block';
+          showroomEl.innerHTML = '<div style="font-size:13px; color:#0FA968; font-weight:600;">✅ Request পাঠানো হয়েছে — Request ID: ' + result.requestId + '</div>' +
+            (toolArgs.imageUrl ? '<img src="' + toolArgs.imageUrl + '" style="width:70px; height:70px; object-fit:cover; border-radius:8px; margin-top:8px;">' : '');
+        }
         return;
       }
 
+      // ── Raw Gemini protocol, relayed through the proxy unchanged ──
       if (response.serverContent) {
         var sc = response.serverContent;
         if (sc.interrupted) nextPlayTime = audioContext ? audioContext.currentTime : 0;
@@ -10450,71 +10486,6 @@ function timeAgoStory(iso){
         if (sc.inputTranscription) addBubble(sc.inputTranscription.text, 'customer');
         if (sc.outputTranscription) addBubble(sc.outputTranscription.text, 'delta');
       }
-
-      if (response.toolCall && response.toolCall.functionCalls) {
-        // ALL function responses for one toolCall batch must arrive TOGETHER
-        // in a SINGLE toolResponse message (multi-item utterances break
-        // otherwise) — collect every response first, send once.
-        var functionResponses = [];
-
-        for (var i = 0; i < response.toolCall.functionCalls.length; i++) {
-          var fc = response.toolCall.functionCalls[i];
-          try {
-            if (fc.name === 'show_confirmation') {
-              showroomEl.style.display = 'block';
-              if (fc.args.type === 'final_summary') {
-                var total = cart.reduce(function (s, it) { return s + (it.price || 0) * it.quantity; }, 0);
-                showroomEl.innerHTML = '<div style="font-size:13px; color:#1A2027;"><b>🧾 অর্ডার নিশ্চিত করুন</b><br><br>' +
-                  '<b>পণ্য:</b><br>' + cart.map(function (it) { return it.matchedProduct + ' ×' + it.quantity + it.unit + ' — ₹' + (it.price * it.quantity); }).join('<br>') +
-                  '<br><b>মোট: ₹' + total + '</b><br><br>' +
-                  '<b>ঠিকানা:</b> ' + fc.args.address + '<br>' +
-                  '<b>মোবাইল:</b> ' + fc.args.phone + '<br>' +
-                  '<b>পেমেন্ট:</b> ' + fc.args.paymentMethod +
-                  '</div>';
-              }
-              functionResponses.push({id: fc.id, name: fc.name, response: {success: true}});
-              continue;
-            }
-
-            var toolArgs = fc.args;
-            if (fc.name === 'request_unavailable_product' && lastUploadedImageUrl) {
-              toolArgs = Object.assign({}, fc.args, {imageUrl: lastUploadedImageUrl});
-            }
-            var executeGeminiTool = firebase.functions().httpsCallable('executeGeminiTool');
-            var result = await executeGeminiTool({toolName: fc.name, args: toolArgs, cityId: (typeof CITY !== 'undefined' ? CITY : 'manteswar'), cart: cart});
-            if (result.data.cart) {
-              cart = result.data.cart;
-              updateCartDisplay();
-            }
-
-            if (fc.name === 'list_available_products' && result.data.sampleProducts) {
-              renderProductCards(result.data.sampleProducts.map(function (p) { return {product: p.name, price: p.price, imageUrl: p.imageUrl}; }), '📋 উপলব্ধ পণ্য');
-            } else if (fc.name === 'check_item_availability' && result.data.available && result.data.options) {
-              renderProductCards(result.data.options, fc.args.itemName);
-            } else if (fc.name === 'add_item' && result.data.reason === 'ambiguous' && result.data.candidateOptions) {
-              if (result.data.candidateOptionsDetailed) {
-                renderProductCards(result.data.candidateOptionsDetailed, 'কোনটা চান?');
-              } else {
-                renderChips(result.data.candidateOptions);
-              }
-            } else if (fc.name === 'request_unavailable_product' && result.data.success) {
-              showroomEl.style.display = 'block';
-              showroomEl.innerHTML = '<div style="font-size:13px; color:#0FA968; font-weight:600;">✅ Request পাঠানো হয়েছে — Request ID: ' + result.data.requestId + '</div>' +
-                (toolArgs.imageUrl ? '<img src="' + toolArgs.imageUrl + '" style="width:70px; height:70px; object-fit:cover; border-radius:8px; margin-top:8px;">' : '');
-              lastUploadedImageUrl = null;
-            }
-
-            functionResponses.push({id: fc.id, name: fc.name, response: result.data});
-          } catch (toolErr) {
-            console.error('Tool execution error:', toolErr);
-            functionResponses.push({id: fc.id, name: fc.name, response: {success: false, message: "internal error"}});
-          }
-        }
-
-        if (functionResponses.length > 0 && ws.readyState === WebSocket.OPEN) {
-          ws.send(JSON.stringify({toolResponse: {functionResponses: functionResponses}}));
-        }
-      }
     };
 
     ws.onerror = function (err) {
@@ -10523,8 +10494,10 @@ function timeAgoStory(iso){
     };
     ws.onclose = function (event) {
       console.log('WebSocket closed — code:', event.code, 'reason:', event.reason, 'wasClean:', event.wasClean);
-      statusEl.textContent = 'সংযোগ বন্ধ হয়ে গেছে। (code: ' + event.code + ')';
-      dot.style.background = '#DC2626'; micBtn.disabled = true;
+      if (event.code !== 1000) {
+        statusEl.textContent = 'সংযোগ বন্ধ হয়ে গেছে। (code: ' + event.code + ')';
+        dot.style.background = '#DC2626'; micBtn.disabled = true;
+      }
     };
   }
 
@@ -10568,9 +10541,6 @@ function timeAgoStory(iso){
 
   // ⚠️ Entry point — called from the existing .vo-entry-btn ("বলুন, কী
   // লাগবে?") in the hero section, replacing the old openVoiceOrder().
-  // Same login gate as the old pipeline: reuses index.html's own
-  // currentUser/auth — never signs in anonymously, never overwrites an
-  // already-logged-in customer's session.
   window.openDeltaVoiceLive = function () {
     if (!currentUser) { showToast('অর্ডার করতে আগে লগইন করুন'); openAuth(); return; }
     overlay.style.display = 'flex';
@@ -10612,7 +10582,17 @@ function timeAgoStory(iso){
     reader.readAsDataURL(file);
 
     uploadToCloudinary(file).then(function (url) {
-      if (url) { lastUploadedImageUrl = url; console.log('Image uploaded to Cloudinary:', url); }
+      if (url) {
+        lastUploadedImageUrl = url;
+        console.log('Image uploaded to Cloudinary:', url);
+        // Tell the proxy about this upload so it can silently attach the
+        // URL to request_unavailable_product server-side (the proxy has
+        // no other way to see this — it only sees Gemini Live protocol
+        // messages and this one control message).
+        if (ws && ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({type: 'imageUploaded', url: url}));
+        }
+      }
     }).catch(function (err) {
       console.error('Cloudinary upload failed:', err);
     });
