@@ -2287,7 +2287,7 @@ img{max-width:100%;height:auto;}
 <script src="delta-shared.js"></script>
 </head>
 <body class="lang-bn">
-<!-- DELTA_VOICE_BUILD_MARKER: v2026-07-31-AUTO-HOMEPAGE-07 (do not remove — used to verify deploy sync) -->
+<!-- DELTA_VOICE_BUILD_MARKER: v2026-07-31-FIX-INFINITE-RECONNECT-08 (do not remove — used to verify deploy sync) -->
 
 <!-- WELCOME PINCODE GATE (first visit only) -->
 <div class="gate-overlay" id="gateOverlay" style="display:none;">
@@ -10411,11 +10411,9 @@ function timeAgoStory(iso){
     var city = (typeof CITY !== 'undefined' ? CITY : 'manteswar');
     var wsUrl = DELTA_VOICE_PROXY_URL + "?idToken=" + encodeURIComponent(idToken) + "&city=" + encodeURIComponent(city);
     ws = new WebSocket(wsUrl);
-    var thisConnectionOpenedAt = null;
 
     ws.onopen = function () {
       isConnecting = false;
-      thisConnectionOpenedAt = Date.now();
       // ⚠️ FIX: do NOT reset reconnectAttempts here. A real test showed
       // "সংযোগ ফিরে এসেছে" repeating 5+ times in a row — the connection
       // was flapping (opening, then immediately closing again), and
@@ -10557,14 +10555,18 @@ function timeAgoStory(iso){
       console.log('WebSocket closed — code:', event.code, 'reason:', event.reason, 'wasClean:', event.wasClean);
       if (event.code === 1000 || userClosedIntentionally) return; // clean/intentional close — nothing to do
 
-      // Only treat this as a fresh, healthy connection (reset the
-      // attempt budget) if it was actually open for a meaningful
-      // duration — otherwise a flapping connection (open → instantly
-      // close → open → instantly close...) would get an unlimited
-      // supply of "3 more attempts" forever, which is exactly what
-      // happened in testing ("সংযোগ ফিরে এসেছে" repeating 5+ times).
-      var wasStable = thisConnectionOpenedAt && (Date.now() - thisConnectionOpenedAt > 4000);
-      if (wasStable) reconnectAttempts = 0;
+      // ⚠️ FIX: previously reset reconnectAttempts to 0 here whenever the
+      // connection had been open >4 seconds, intending to distinguish
+      // "stable then dropped" from "instant flapping". In real testing
+      // this caused a 40+ MINUTE infinite reconnect loop — connections
+      // kept getting cut (by something external, ~150s in, still not
+      // root-caused) but each one lasted long enough to count as
+      // "stable", so it kept getting a fresh budget of 3 more attempts
+      // forever. There is now NO automatic reset here at all — the
+      // counter only resets when the customer manually reopens the
+      // overlay (see openDeltaVoiceLive below). This guarantees an
+      // absolute hard cap of 3 silent reconnects per voice session,
+      // regardless of how long connections stay up before dropping.
 
       // ⚠️ Auto-reconnect: network drops mid-conversation happen (mobile
       // data, rural connectivity) and shouldn't just dead-end the
@@ -10627,6 +10629,7 @@ function timeAgoStory(iso){
   window.openDeltaVoiceLive = function () {
     if (!currentUser) { showToast('অর্ডার করতে আগে লগইন করুন'); openAuth(); return; }
     userClosedIntentionally = false;
+    reconnectAttempts = 0; // fresh budget of 3 reconnects — only reset here, on a deliberate user action
     overlay.style.display = 'flex';
     if (!ws || ws.readyState !== WebSocket.OPEN) connect();
   };
