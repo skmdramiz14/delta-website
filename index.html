@@ -2287,7 +2287,7 @@ img{max-width:100%;height:auto;}
 <script src="delta-shared.js"></script>
 </head>
 <body class="lang-bn">
-<!-- DELTA_VOICE_BUILD_MARKER: v2026-07-31-DEBUGLOG-01 (do not remove — used to verify deploy sync) -->
+<!-- DELTA_VOICE_BUILD_MARKER: v2026-07-31-DOUBLEPRESS-FIX-02 (do not remove — used to verify deploy sync) -->
 
 <!-- WELCOME PINCODE GATE (first visit only) -->
 <div class="gate-overlay" id="gateOverlay" style="display:none;">
@@ -10230,7 +10230,7 @@ function timeAgoStory(iso){
   // server-side into that proxy; this file only renders what the proxy
   // forwards back (see ws.onmessage's 'toolResult' handling).
 
-  var ws = null, audioContext = null, micStream = null, processorNode = null;
+  var ws = null, audioContext = null, micStream = null, processorNode = null, isConnecting = false;
   var isRecording = false, cart = [], nextPlayTime = 0;
   var lastUploadedImageUrl = null;
   var INPUT_SAMPLE_RATE = 16000, OUTPUT_SAMPLE_RATE = 24000;
@@ -10389,10 +10389,12 @@ function timeAgoStory(iso){
   var DELTA_VOICE_PROXY_URL = "wss://geminiliveproxy-wdhe4amoeq-uc.a.run.app";
 
   async function connect() {
+    if (isConnecting) return; // ⚠️ FIX: prevents two overlapping connection attempts (each minting its own ephemeral token / opening its own Gemini session) if the entry button or an event fires more than once before the first attempt finishes
+    isConnecting = true;
     statusEl.textContent = 'সংযোগ করার চেষ্টা হচ্ছে...';
     dot.style.background = '#F59E0B';
 
-    if (!currentUser) { showToast('অর্ডার করতে আগে লগইন করুন'); openAuth(); return; }
+    if (!currentUser) { isConnecting = false; showToast('অর্ডার করতে আগে লগইন করুন'); openAuth(); return; }
 
     var idToken;
     try {
@@ -10401,6 +10403,7 @@ function timeAgoStory(iso){
       console.error('Failed to get ID token:', tokenErr);
       statusEl.textContent = '✗ সংযোগ শুরু করা যায়নি। আবার চেষ্টা করুন।';
       dot.style.background = '#DC2626';
+      isConnecting = false;
       return;
     }
 
@@ -10409,6 +10412,7 @@ function timeAgoStory(iso){
     ws = new WebSocket(wsUrl);
 
     ws.onopen = function () {
+      isConnecting = false;
       statusEl.textContent = '✓ সংযুক্ত! বাটন চেপে ধরে বলুন।';
       dot.style.background = '#0FA968';
       micBtn.disabled = false;
@@ -10493,10 +10497,12 @@ function timeAgoStory(iso){
     };
 
     ws.onerror = function (err) {
+      isConnecting = false;
       console.error('WebSocket error:', err);
       statusEl.textContent = '✗ সংযোগ ব্যর্থ হয়েছে।'; dot.style.background = '#DC2626';
     };
     ws.onclose = function (event) {
+      isConnecting = false;
       console.log('WebSocket closed — code:', event.code, 'reason:', event.reason, 'wasClean:', event.wasClean);
       if (event.code !== 1000) {
         statusEl.textContent = 'সংযোগ বন্ধ হয়ে গেছে। (code: ' + event.code + ')';
@@ -10507,6 +10513,8 @@ function timeAgoStory(iso){
 
   async function startRecording() {
     if (!ws || ws.readyState !== WebSocket.OPEN) return;
+    if (isRecording) return; // ⚠️ FIX: mousedown+touchstart can both fire for one press — without this guard, each duplicate call built a whole new, stacked mic/audio pipeline without cleaning up the previous one (matches the repeated "startRecording" log entries seen in testing).
+    isRecording = true; // set synchronously, before the await below, so a second overlapping call can't slip through the race window
     try {
       micStream = await navigator.mediaDevices.getUserMedia({audio: {sampleRate: INPUT_SAMPLE_RATE, channelCount: 1}});
       if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -10524,9 +10532,9 @@ function timeAgoStory(iso){
           ws.send(JSON.stringify({realtimeInput: {audio: {data: base64Data, mimeType: "audio/pcm;rate=" + INPUT_SAMPLE_RATE}}}));
         }
       };
-      isRecording = true;
       micBtn.style.background = '#DC2626';
     } catch (err) {
+      isRecording = false;
       addBubble('মাইক্রোফোন সমস্যা: ' + err.message, 'delta');
     }
   }
