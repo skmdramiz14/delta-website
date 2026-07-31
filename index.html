@@ -10443,6 +10443,9 @@ function timeAgoStory(iso){
       }
       if (response.type === 'toolResult') {
         var toolName = response.toolName, toolArgs = response.args || {}, result = response.result || {};
+        // ⚠️ TEMPORARY DEBUG LOG — remove once UI-card rendering is
+        // confirmed working. Open DevTools (F12) → Console to see this.
+        console.log('[DELTA voice] toolResult received:', toolName, JSON.parse(JSON.stringify(result)));
 
         if (result.cart) { cart = result.cart; updateCartDisplay(); }
 
