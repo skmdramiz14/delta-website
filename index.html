@@ -2287,7 +2287,7 @@ img{max-width:100%;height:auto;}
 <script src="delta-shared.js"></script>
 </head>
 <body class="lang-bn">
-<!-- DELTA_VOICE_BUILD_MARKER: v2026-07-31-AUTOCLOSE-ON-ORDER-05 (do not remove — used to verify deploy sync) -->
+<!-- DELTA_VOICE_BUILD_MARKER: v2026-07-31-AUTO-HOMEPAGE-07 (do not remove — used to verify deploy sync) -->
 
 <!-- WELCOME PINCODE GATE (first visit only) -->
 <div class="gate-overlay" id="gateOverlay" style="display:none;">
@@ -9138,7 +9138,7 @@ function loadMyOrders(){
           if(rejectedItem) rejectNote = '<div style="font-size:.76rem;color:#c0392b;margin-top:4px;">কারণ: '+rejectedItem.prescriptionRejectReason+'</div>';
         }
         var time = o.createdAt ? new Date(o.createdAt).toLocaleString('bn-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) : '';
-        var voiceTag = o.sourceChannel==='voice' ? ' <span style="font-size:.68rem;background:#eef9f0;color:#1a7a4c;padding:1px 7px;border-radius:8px;">🎙️ Voice</span>' : '';
+        var voiceTag = (o.sourceChannel && String(o.sourceChannel).indexOf('voice') === 0) ? ' <span style="font-size:.68rem;background:#eef9f0;color:#1a7a4c;padding:1px 7px;border-radius:8px;">🎙️ Voice</span>' : '';
         return '<div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px;">'+
           '<div style="display:flex;justify-content:space-between;margin-bottom:6px;">'+
             '<strong>'+(o.shopName||'দোকান')+voiceTag+'</strong>'+
@@ -10411,10 +10411,18 @@ function timeAgoStory(iso){
     var city = (typeof CITY !== 'undefined' ? CITY : 'manteswar');
     var wsUrl = DELTA_VOICE_PROXY_URL + "?idToken=" + encodeURIComponent(idToken) + "&city=" + encodeURIComponent(city);
     ws = new WebSocket(wsUrl);
+    var thisConnectionOpenedAt = null;
 
     ws.onopen = function () {
       isConnecting = false;
-      reconnectAttempts = 0; // successful (re)connection — reset the counter
+      thisConnectionOpenedAt = Date.now();
+      // ⚠️ FIX: do NOT reset reconnectAttempts here. A real test showed
+      // "সংযোগ ফিরে এসেছে" repeating 5+ times in a row — the connection
+      // was flapping (opening, then immediately closing again), and
+      // resetting the counter on every open gave it a fresh budget of 3
+      // attempts each time, so it never actually stopped. The counter is
+      // now only reset in onclose, and only if THIS connection was
+      // stably open for a few seconds first (see below).
       statusEl.textContent = '✓ সংযুক্ত! বাটন চেপে ধরে বলুন।';
       dot.style.background = '#0FA968';
       micBtn.disabled = false;
@@ -10505,17 +10513,24 @@ function timeAgoStory(iso){
         } else if (toolName === 'place_order' && result.success) {
           // ⚠️ Order placed — the conversation is naturally finished.
           // Wait a few seconds so Gemini's final spoken "ধন্যবাদ" reply
-          // has time to actually play, then close the connection
-          // cleanly (code 1000). This is an INTENTIONAL close, not a
-          // network drop — it must NOT trigger the auto-reconnect logic.
+          // has time to actually play, then close the connection AND
+          // return to the homepage (hide the overlay — there's no real
+          // "page" to redirect to since this overlay already sits on
+          // top of index.html itself). This is an INTENTIONAL close,
+          // not a network drop — it must NOT trigger auto-reconnect.
+          // ⚠️ Timing trade-off: 4s may cut off a longer "ধন্যবাদ" reply
+          // if Gemini's sentence runs long — if you notice the voice
+          // getting cut off mid-sentence in testing, raise this back
+          // toward 6000-7000ms.
           setTimeout(function () {
             userClosedIntentionally = true;
             if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null; }
             reconnectAttempts = 0;
             if (ws) ws.close(1000);
-            statusEl.textContent = '✓ অর্ডার সম্পন্ন — সংযোগ বন্ধ করা হয়েছে।';
-            micBtn.disabled = true;
-          }, 6000);
+            if (isRecording) stopRecording();
+            overlay.style.display = 'none'; // back to homepage — nothing else to do, it's already loaded underneath
+            showToast('✅ অর্ডার সফল! "আমার অর্ডার" থেকে ট্র্যাক করতে পারবেন', 'green');
+          }, 4000);
         }
         return;
       }
@@ -10541,6 +10556,15 @@ function timeAgoStory(iso){
       isConnecting = false;
       console.log('WebSocket closed — code:', event.code, 'reason:', event.reason, 'wasClean:', event.wasClean);
       if (event.code === 1000 || userClosedIntentionally) return; // clean/intentional close — nothing to do
+
+      // Only treat this as a fresh, healthy connection (reset the
+      // attempt budget) if it was actually open for a meaningful
+      // duration — otherwise a flapping connection (open → instantly
+      // close → open → instantly close...) would get an unlimited
+      // supply of "3 more attempts" forever, which is exactly what
+      // happened in testing ("সংযোগ ফিরে এসেছে" repeating 5+ times).
+      var wasStable = thisConnectionOpenedAt && (Date.now() - thisConnectionOpenedAt > 4000);
+      if (wasStable) reconnectAttempts = 0;
 
       // ⚠️ Auto-reconnect: network drops mid-conversation happen (mobile
       // data, rural connectivity) and shouldn't just dead-end the
