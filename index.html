@@ -2287,7 +2287,7 @@ img{max-width:100%;height:auto;}
 <script src="delta-shared.js"></script>
 </head>
 <body class="lang-bn">
-<!-- DELTA_VOICE_BUILD_MARKER: v2026-07-31-AUTORECONNECT-03 (do not remove — used to verify deploy sync) -->
+<!-- DELTA_VOICE_BUILD_MARKER: v2026-07-31-AUTOCLOSE-ON-ORDER-05 (do not remove — used to verify deploy sync) -->
 
 <!-- WELCOME PINCODE GATE (first visit only) -->
 <div class="gate-overlay" id="gateOverlay" style="display:none;">
@@ -10422,23 +10422,20 @@ function timeAgoStory(iso){
       if (isReconnect) {
         // ⚠️ RECONNECT PATH: network drops mid-conversation are a real,
         // expected occurrence (rural/mobile networks) — rather than
-        // dead-ending the customer, we open a fresh Gemini session but
-        // restore the cart they'd already built, and tell Gemini this is
-        // a resumed conversation so it doesn't re-greet from scratch or
-        // ask about items already added.
+        // dead-ending the customer, we open a fresh Gemini session and
+        // silently restore the cart they'd already built (server-side
+        // only, via restoreCart — no cost, doesn't reach Gemini at all).
+        // ⚠️ Deliberately NOT sending any clientContent message to Gemini
+        // here (unlike the first version of this fix) — that would
+        // trigger a small but real extra turn/cost each time a
+        // reconnect happens. Trade-off: Gemini has no memory of the
+        // interrupted conversation and won't proactively mention the
+        // reconnect — but get_cart_summary/place_order still work
+        // correctly since the cart itself is restored either way.
         if (cart.length > 0) {
           ws.send(JSON.stringify({type: 'restoreCart', cart: cart}));
         }
-        var cartSummary = cart.length > 0
-          ? cart.map(function (i) { return i.matchedProduct + ' ×' + i.quantity + i.unit; }).join(', ')
-          : null;
-        var resumeLine = cartSummary
-          ? "(system: নেটওয়ার্ক সমস্যায় সংযোগ একটু বিচ্ছিন্ন হয়েছিল, এখন আবার সংযুক্ত হয়েছে। কাস্টমারের কার্টে ইতিমধ্যে আছে: " + cartSummary + ". প্রথম থেকে আবার শুরু কোরো না — সংক্ষেপে বলো 'সংযোগ ফিরে এসেছে, চালিয়ে যান' এবং জিজ্ঞাসা করো আর কিছু লাগবে কিনা বা checkout করবে কিনা।)"
-          : "(system: নেটওয়ার্ক সমস্যায় সংযোগ একটু বিচ্ছিন্ন হয়েছিল, এখন আবার সংযুক্ত হয়েছে। সংক্ষেপে বলো 'সংযোগ ফিরে এসেছে, কী লাগবে বলুন')";
-        ws.send(JSON.stringify({
-          clientContent: {turns: [{role: "user", parts: [{text: resumeLine}]}], turnComplete: true},
-        }));
-        addBubble('— সংযোগ পুনরুদ্ধার হয়েছে —', 'delta');
+        addBubble('— সংযোগ ফিরে এসেছে, চালিয়ে যান —', 'delta');
         return;
       }
 
@@ -10505,6 +10502,20 @@ function timeAgoStory(iso){
           showroomEl.style.display = 'block';
           showroomEl.innerHTML = '<div style="font-size:13px; color:#0FA968; font-weight:600;">✅ Request পাঠানো হয়েছে — Request ID: ' + result.requestId + '</div>' +
             (toolArgs.imageUrl ? '<img src="' + toolArgs.imageUrl + '" style="width:70px; height:70px; object-fit:cover; border-radius:8px; margin-top:8px;">' : '');
+        } else if (toolName === 'place_order' && result.success) {
+          // ⚠️ Order placed — the conversation is naturally finished.
+          // Wait a few seconds so Gemini's final spoken "ধন্যবাদ" reply
+          // has time to actually play, then close the connection
+          // cleanly (code 1000). This is an INTENTIONAL close, not a
+          // network drop — it must NOT trigger the auto-reconnect logic.
+          setTimeout(function () {
+            userClosedIntentionally = true;
+            if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null; }
+            reconnectAttempts = 0;
+            if (ws) ws.close(1000);
+            statusEl.textContent = '✓ অর্ডার সম্পন্ন — সংযোগ বন্ধ করা হয়েছে।';
+            micBtn.disabled = true;
+          }, 6000);
         }
         return;
       }
