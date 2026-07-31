@@ -2287,7 +2287,7 @@ img{max-width:100%;height:auto;}
 <script src="delta-shared.js"></script>
 </head>
 <body class="lang-bn">
-<!-- DELTA_VOICE_BUILD_MARKER: v2026-07-31-FIX-INFINITE-RECONNECT-08 (do not remove — used to verify deploy sync) -->
+<!-- DELTA_VOICE_BUILD_MARKER: v2026-07-31-FIX-CLOSE-RACE-09 (do not remove — used to verify deploy sync) -->
 
 <!-- WELCOME PINCODE GATE (first visit only) -->
 <div class="gate-overlay" id="gateOverlay" style="display:none;">
@@ -10510,20 +10510,31 @@ function timeAgoStory(iso){
             (toolArgs.imageUrl ? '<img src="' + toolArgs.imageUrl + '" style="width:70px; height:70px; object-fit:cover; border-radius:8px; margin-top:8px;">' : '');
         } else if (toolName === 'place_order' && result.success) {
           // ⚠️ Order placed — the conversation is naturally finished.
+          // ⚠️ FIX (real bug hit in testing): set this flag IMMEDIATELY,
+          // not inside the delayed setTimeout below. Previously, if the
+          // connection happened to drop naturally (that still-unexplained
+          // ~150s external cause) during the 4-second wait, onclose saw
+          // userClosedIntentionally still false and triggered an unwanted
+          // reconnect + skipped the homepage-redirect entirely — exactly
+          // what happened in testing (order succeeded, but no redirect,
+          // and reconnecting kept happening). Now, the MOMENT the order
+          // succeeds, we commit to closing — no reconnect will ever be
+          // attempted after this point, no matter what happens to the
+          // connection in the meantime.
+          userClosedIntentionally = true;
+          if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null; }
+          reconnectAttempts = 0;
+
           // Wait a few seconds so Gemini's final spoken "ধন্যবাদ" reply
           // has time to actually play, then close the connection AND
           // return to the homepage (hide the overlay — there's no real
           // "page" to redirect to since this overlay already sits on
-          // top of index.html itself). This is an INTENTIONAL close,
-          // not a network drop — it must NOT trigger auto-reconnect.
+          // top of index.html itself).
           // ⚠️ Timing trade-off: 4s may cut off a longer "ধন্যবাদ" reply
           // if Gemini's sentence runs long — if you notice the voice
           // getting cut off mid-sentence in testing, raise this back
           // toward 6000-7000ms.
           setTimeout(function () {
-            userClosedIntentionally = true;
-            if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null; }
-            reconnectAttempts = 0;
             if (ws) ws.close(1000);
             if (isRecording) stopRecording();
             overlay.style.display = 'none'; // back to homepage — nothing else to do, it's already loaded underneath
