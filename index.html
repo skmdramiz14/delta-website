@@ -2287,7 +2287,7 @@ img{max-width:100%;height:auto;}
 <script src="delta-shared.js"></script>
 </head>
 <body class="lang-bn">
-<!-- DELTA_VOICE_BUILD_MARKER: v2026-07-31-DOUBLEPRESS-FIX-02 (do not remove — used to verify deploy sync) -->
+<!-- DELTA_VOICE_BUILD_MARKER: v2026-07-31-AUTORECONNECT-03 (do not remove — used to verify deploy sync) -->
 
 <!-- WELCOME PINCODE GATE (first visit only) -->
 <div class="gate-overlay" id="gateOverlay" style="display:none;">
@@ -10231,6 +10231,7 @@ function timeAgoStory(iso){
   // forwards back (see ws.onmessage's 'toolResult' handling).
 
   var ws = null, audioContext = null, micStream = null, processorNode = null, isConnecting = false;
+  var reconnectAttempts = 0, MAX_RECONNECT_ATTEMPTS = 3, reconnectTimer = null, userClosedIntentionally = false;
   var isRecording = false, cart = [], nextPlayTime = 0;
   var lastUploadedImageUrl = null;
   var INPUT_SAMPLE_RATE = 16000, OUTPUT_SAMPLE_RATE = 24000;
@@ -10388,10 +10389,10 @@ function timeAgoStory(iso){
   // deploy output rather than assuming): https://<region>-<project-id>.cloudfunctions.net/geminiLiveProxy
   var DELTA_VOICE_PROXY_URL = "wss://geminiliveproxy-wdhe4amoeq-uc.a.run.app";
 
-  async function connect() {
+  async function connect(isReconnect) {
     if (isConnecting) return; // ⚠️ FIX: prevents two overlapping connection attempts (each minting its own ephemeral token / opening its own Gemini session) if the entry button or an event fires more than once before the first attempt finishes
     isConnecting = true;
-    statusEl.textContent = 'সংযোগ করার চেষ্টা হচ্ছে...';
+    statusEl.textContent = isReconnect ? 'সংযোগ বিচ্ছিন্ন হয়েছে, আবার সংযুক্ত হচ্ছে...' : 'সংযোগ করার চেষ্টা হচ্ছে...';
     dot.style.background = '#F59E0B';
 
     if (!currentUser) { isConnecting = false; showToast('অর্ডার করতে আগে লগইন করুন'); openAuth(); return; }
@@ -10413,9 +10414,33 @@ function timeAgoStory(iso){
 
     ws.onopen = function () {
       isConnecting = false;
+      reconnectAttempts = 0; // successful (re)connection — reset the counter
       statusEl.textContent = '✓ সংযুক্ত! বাটন চেপে ধরে বলুন।';
       dot.style.background = '#0FA968';
       micBtn.disabled = false;
+
+      if (isReconnect) {
+        // ⚠️ RECONNECT PATH: network drops mid-conversation are a real,
+        // expected occurrence (rural/mobile networks) — rather than
+        // dead-ending the customer, we open a fresh Gemini session but
+        // restore the cart they'd already built, and tell Gemini this is
+        // a resumed conversation so it doesn't re-greet from scratch or
+        // ask about items already added.
+        if (cart.length > 0) {
+          ws.send(JSON.stringify({type: 'restoreCart', cart: cart}));
+        }
+        var cartSummary = cart.length > 0
+          ? cart.map(function (i) { return i.matchedProduct + ' ×' + i.quantity + i.unit; }).join(', ')
+          : null;
+        var resumeLine = cartSummary
+          ? "(system: নেটওয়ার্ক সমস্যায় সংযোগ একটু বিচ্ছিন্ন হয়েছিল, এখন আবার সংযুক্ত হয়েছে। কাস্টমারের কার্টে ইতিমধ্যে আছে: " + cartSummary + ". প্রথম থেকে আবার শুরু কোরো না — সংক্ষেপে বলো 'সংযোগ ফিরে এসেছে, চালিয়ে যান' এবং জিজ্ঞাসা করো আর কিছু লাগবে কিনা বা checkout করবে কিনা।)"
+          : "(system: নেটওয়ার্ক সমস্যায় সংযোগ একটু বিচ্ছিন্ন হয়েছিল, এখন আবার সংযুক্ত হয়েছে। সংক্ষেপে বলো 'সংযোগ ফিরে এসেছে, কী লাগবে বলুন')";
+        ws.send(JSON.stringify({
+          clientContent: {turns: [{role: "user", parts: [{text: resumeLine}]}], turnComplete: true},
+        }));
+        addBubble('— সংযোগ পুনরুদ্ধার হয়েছে —', 'delta');
+        return;
+      }
 
       // Proactively greet the customer — the proxy already sent Gemini
       // its `setup` message server-side, so we only send the "customer
@@ -10504,8 +10529,19 @@ function timeAgoStory(iso){
     ws.onclose = function (event) {
       isConnecting = false;
       console.log('WebSocket closed — code:', event.code, 'reason:', event.reason, 'wasClean:', event.wasClean);
-      if (event.code !== 1000) {
-        statusEl.textContent = 'সংযোগ বন্ধ হয়ে গেছে। (code: ' + event.code + ')';
+      if (event.code === 1000 || userClosedIntentionally) return; // clean/intentional close — nothing to do
+
+      // ⚠️ Auto-reconnect: network drops mid-conversation happen (mobile
+      // data, rural connectivity) and shouldn't just dead-end the
+      // customer. Retry a few times with a short, increasing delay.
+      if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+        reconnectAttempts++;
+        statusEl.textContent = 'সংযোগ বিচ্ছিন্ন হয়েছে, আবার চেষ্টা করা হচ্ছে (' + reconnectAttempts + '/' + MAX_RECONNECT_ATTEMPTS + ')...';
+        dot.style.background = '#F59E0B';
+        if (reconnectTimer) clearTimeout(reconnectTimer);
+        reconnectTimer = setTimeout(function () { connect(true); }, 1200 * reconnectAttempts);
+      } else {
+        statusEl.textContent = 'সংযোগ বন্ধ হয়ে গেছে। (code: ' + event.code + ') — বাটনে চেপে আবার চেষ্টা করুন।';
         dot.style.background = '#DC2626'; micBtn.disabled = true;
       }
     };
@@ -10555,13 +10591,17 @@ function timeAgoStory(iso){
   // লাগবে?") in the hero section, replacing the old openVoiceOrder().
   window.openDeltaVoiceLive = function () {
     if (!currentUser) { showToast('অর্ডার করতে আগে লগইন করুন'); openAuth(); return; }
+    userClosedIntentionally = false;
     overlay.style.display = 'flex';
     if (!ws || ws.readyState !== WebSocket.OPEN) connect();
   };
 
   document.getElementById('deltaVoiceClose').addEventListener('click', function () {
+    userClosedIntentionally = true;
+    if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null; }
+    reconnectAttempts = 0;
     overlay.style.display = 'none';
-    if (ws) ws.close();
+    if (ws) ws.close(1000);
     if (isRecording) stopRecording();
   });
 
