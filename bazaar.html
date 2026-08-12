@@ -954,8 +954,9 @@ async function uploadRequestImage(input){
   var box = document.getElementById('imgUploadBox');
   var hint = document.getElementById('imgUploadHint');
   hint.textContent = '⏳ আপলোড হচ্ছে...';
+  var compressed = await deltaCompressImage(file);
   var fd = new FormData();
-  fd.append('file', file);
+  fd.append('file', compressed);
   fd.append('upload_preset', PRESET);
   fd.append('cloud_name', CLOUD);
   fd.append('folder', 'delta/bazaar-requests');
