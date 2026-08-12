@@ -796,8 +796,9 @@ async function changeExistingThumbnail(contentId, inputEl){
   if(!file || !isOwner) return;
   if(file.size > 10*1024*1024){ alert('ছবি সর্বোচ্চ 10MB হতে পারবে'); return; }
   try{
+    var compressedThumbFile = await deltaCompressImage(file);
     var fd = new FormData();
-    fd.append('file', file); fd.append('upload_preset', PRESET); fd.append('cloud_name', CLOUD);
+    fd.append('file', compressedThumbFile); fd.append('upload_preset', PRESET); fd.append('cloud_name', CLOUD);
     fd.append('folder', 'delta/media_content_thumbs');
     var res = await fetch('https://api.cloudinary.com/v1_1/'+CLOUD+'/image/upload', {method:'POST', body:fd});
     var data = await res.json();
@@ -1094,8 +1095,9 @@ async function handleQuickAvatarUpload(input){
   if(!file || !currentUser) return;
   if(file.size > 10*1024*1024){ alert('ছবি সর্বোচ্চ 10MB হতে পারবে'); return; }
   try{
+    var compressedAvatar = await deltaCompressImage(file, 800);
     var fd = new FormData();
-    fd.append('file', file); fd.append('upload_preset', PRESET); fd.append('cloud_name', CLOUD);
+    fd.append('file', compressedAvatar); fd.append('upload_preset', PRESET); fd.append('cloud_name', CLOUD);
     fd.append('folder', 'delta/profile_images');
     var res = await fetch('https://api.cloudinary.com/v1_1/'+CLOUD+'/image/upload', {method:'POST', body:fd});
     var data = await res.json();
@@ -1115,8 +1117,9 @@ async function handleQuickCoverUpload(input){
   if(!file || !currentUser) return;
   if(file.size > 10*1024*1024){ alert('ছবি সর্বোচ্চ 10MB হতে পারবে'); return; }
   try{
+    var compressedCover = await deltaCompressImage(file);
     var fd = new FormData();
-    fd.append('file', file); fd.append('upload_preset', PRESET); fd.append('cloud_name', CLOUD);
+    fd.append('file', compressedCover); fd.append('upload_preset', PRESET); fd.append('cloud_name', CLOUD);
     fd.append('folder', 'delta/profile_images');
     var res = await fetch('https://api.cloudinary.com/v1_1/'+CLOUD+'/image/upload', {method:'POST', body:fd});
     var data = await res.json();
@@ -1150,8 +1153,9 @@ async function uploadEditImage(file, urlFieldId, statusId, previewId, isCircle){
   if(file.size > 10*1024*1024){ document.getElementById(statusId).textContent = 'ছবি সর্বোচ্চ 10MB হতে পারবে ⚠️'; return; }
   document.getElementById(statusId).textContent = 'আপলোড হচ্ছে...';
   try{
+    var compressedEditImg = await deltaCompressImage(file, isCircle ? 800 : 1600);
     var fd = new FormData();
-    fd.append('file', file); fd.append('upload_preset', PRESET); fd.append('cloud_name', CLOUD);
+    fd.append('file', compressedEditImg); fd.append('upload_preset', PRESET); fd.append('cloud_name', CLOUD);
     fd.append('folder', 'delta/profile_images');
     var res = await fetch('https://api.cloudinary.com/v1_1/'+CLOUD+'/image/upload', {method:'POST', body:fd});
     var data = await res.json();
