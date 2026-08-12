@@ -235,4 +235,75 @@ function lowercaseGeoFields(geoFields){
     country_lower: geoFields.country ? geoFields.country.toLowerCase() : null
   };
 }
+
+/**
+ * Resizes + compresses an image file/blob client-side (canvas re-encode)
+ * before it ever reaches Cloudinary. Added Aug 2026 after the Cloudinary
+ * Free plan (25 credits/mo) got disabled from ~40 credits usage — raw phone
+ * camera photos (often 8-15MB, 4000px+) were being uploaded and stored
+ * at full size everywhere (product photos, seller stories, bazaar catalog,
+ * Shorts frames), burning storage credits fast with no visible quality
+ * benefit since every on-site display is a card/thumbnail, never a full
+ * zoomed original.
+ *
+ * maxDim caps the longer edge at 1600px by default — comfortably above
+ * anything DELTA currently displays (product cards, story rings, catalog
+ * grids), so no visible quality loss, while cutting a typical 10MB camera
+ * photo down to a few hundred KB. Bump maxDim (not below the current
+ * default) only if a future feature needs full-screen zoom/lightbox.
+ *
+ * Non-image files (e.g. video blobs) are returned unchanged — video
+ * compression is a separate, more involved fix and intentionally out of
+ * scope here.
+ *
+ * Returns a Promise<Blob> — always resolves (never rejects) so a decode
+ * failure or unsupported type falls back to the original file rather than
+ * blocking the upload entirely.
+ */
+function deltaCompressImage(file, maxDim, quality){
+  maxDim = maxDim || 1600;
+  quality = quality || 0.85;
+  return new Promise(function(resolve){
+    if(!file || !file.type || file.type.indexOf('image/') !== 0){ resolve(file); return; }
+    if(file.type === 'image/svg+xml' || file.type === 'image/gif'){ resolve(file); return; } // don't touch vector/animated formats
+    try{
+      var img = new Image();
+      var objUrl = URL.createObjectURL(file);
+      img.onload = function(){
+        try{
+          var w = img.naturalWidth, h = img.naturalHeight;
+          if(w <= maxDim && h <= maxDim){ URL.revokeObjectURL(objUrl); resolve(file); return; } // already small enough
+          var scale = Math.min(maxDim / w, maxDim / h);
+          var canvas = document.createElement('canvas');
+          canvas.width = Math.round(w * scale);
+          canvas.height = Math.round(h * scale);
+          var ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          canvas.toBlob(function(blob){
+            URL.revokeObjectURL(objUrl);
+            resolve(blob || file); // fall back to original if canvas encoding fails
+          }, 'image/jpeg', quality);
+        }catch(e){ URL.revokeObjectURL(objUrl); resolve(file); }
+      };
+      img.onerror = function(){ URL.revokeObjectURL(objUrl); resolve(file); };
+      img.src = objUrl;
+    }catch(e){ resolve(file); }
+  });
+}
+
+/**
+ * Inserts Cloudinary's automatic-quality + automatic-format transformation
+ * (q_auto,f_auto) into a stored delivery URL, so the browser gets a
+ * WebP/AVIF-where-supported, visually-lossless-compressed version instead
+ * of the original upload — cuts delivery bandwidth credits with no visible
+ * quality change, and loads faster on the budget Android phones common in
+ * DELTA's Tier-3/4/5 target market. Safe no-op on any URL that isn't a
+ * res.cloudinary.com delivery URL (emoji fallback, external URL, etc.).
+ */
+function deltaOptimizeUrl(url){
+  if(!url || typeof url !== 'string') return url;
+  if(url.indexOf('res.cloudinary.com') === -1) return url;
+  if(url.indexOf('/upload/q_auto') !== -1 || url.indexOf('/upload/f_auto') !== -1) return url; // already optimized
+  return url.replace('/upload/', '/upload/q_auto,f_auto/');
+}
  
