@@ -404,6 +404,7 @@ select.form-input{cursor:pointer;}
 .pv-confirm-btn{width:100%;background:var(--green,#1a8a4a);color:#fff;border:none;padding:13px;border-radius:10px;font-weight:700;font-size:.9rem;cursor:pointer;margin-bottom:8px;}
 .pv-cancel-btn{width:100%;background:transparent;color:var(--muted);border:none;padding:8px;font-size:.82rem;cursor:pointer;}
 </style>
+<script src="delta-shared.js"></script>
 </head>
 <body>
 
@@ -3448,8 +3449,9 @@ async function handleImgUpload(input){
   var fill=document.getElementById('progFill');
   var msg=document.getElementById('uploadMsg');
   prog.style.display='block'; msg.textContent='ছবি আপলোড হচ্ছে...'; fill.style.width='20%';
+  var compressedFile=await deltaCompressImage(file);
   var fd=new FormData();
-  fd.append('file',file); fd.append('upload_preset',PRESET); fd.append('cloud_name',CLOUD);
+  fd.append('file',compressedFile); fd.append('upload_preset',PRESET); fd.append('cloud_name',CLOUD);
   fd.append('folder','delta/products');
   try{
     fill.style.width='60%';
@@ -3649,8 +3651,9 @@ function triggerShopGalleryImg(slot){
 }
 
 async function uploadBlobToCloudinary(blob, folder){
+  var compressedBlob = await deltaCompressImage(blob);
   var fd=new FormData();
-  fd.append('file', blob, 'cropped.jpg');
+  fd.append('file', compressedBlob, 'cropped.jpg');
   fd.append('upload_preset', PRESET); fd.append('cloud_name', CLOUD);
   fd.append('folder', folder);
   var res = await fetch('https://api.cloudinary.com/v1_1/'+CLOUD+'/image/upload', {method:'POST', body:fd});
@@ -5167,8 +5170,9 @@ async function uploadSaleImage(input){
   statusEl.textContent = 'Upload হচ্ছে...';
   statusEl.style.color = 'var(--orange)';
   try{
+    var compressedSaleImg = await deltaCompressImage(file);
     var fd = new FormData();
-    fd.append('file', file);
+    fd.append('file', compressedSaleImg);
     fd.append('upload_preset', PRESET);
     fd.append('folder', 'delta/sale-products');
     var res = await fetch('https://api.cloudinary.com/v1_1/'+CLOUD+'/image/upload',{method:'POST',body:fd});
