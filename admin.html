@@ -280,6 +280,7 @@ button,input,select{font-family:'DM Sans',sans-serif;}
   .stats-row{grid-template-columns:1fr 1fr;}
 }
 </style>
+<script src="delta-shared.js"></script>
 </head>
 <body>
 
@@ -6553,8 +6554,9 @@ async function uploadCatSlot(input, slotIndex){
   if(!file) return;
   var slot = document.getElementById('catSlot-'+slotIndex);
   slot.innerHTML = '<div style="font-size:.7rem;color:var(--muted)">⏳ হচ্ছে...</div>';
+  var compressed = await deltaCompressImage(file);
   var fd = new FormData();
-  fd.append('file', file);
+  fd.append('file', compressed);
   fd.append('upload_preset', PRESET);
   fd.append('cloud_name', CLOUD);
   fd.append('folder', 'delta/bazaar-catalog');
@@ -8803,8 +8805,9 @@ async function uploadEcoBanner(input){
   var preview = document.getElementById('ecoBannerPreview');
   var status = document.getElementById('ecoBannerStatus');
   preview.innerHTML = '<div style="font-size:.7rem;color:var(--muted);">⏳ আপলোড হচ্ছে...</div>';
+  var compressed = await deltaCompressImage(file);
   var fd = new FormData();
-  fd.append('file', file);
+  fd.append('file', compressed);
   fd.append('upload_preset', PRESET);
   fd.append('cloud_name', CLOUD);
   fd.append('folder', 'delta/ecosystem-banners');
