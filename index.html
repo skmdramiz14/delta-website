@@ -2287,7 +2287,7 @@ img{max-width:100%;height:auto;}
 <script src="delta-shared.js"></script>
 </head>
 <body class="lang-bn">
-<!-- DELTA_VOICE_BUILD_MARKER: v2026-07-31-FIX-CART-RACE-11 (do not remove — used to verify deploy sync) -->
+<!-- DELTA_VOICE_BUILD_MARKER: v2026-07-31-FIX-CART-URL-LENGTH-12 (do not remove — used to verify deploy sync) -->
 
 <!-- WELCOME PINCODE GATE (first visit only) -->
 <div class="gate-overlay" id="gateOverlay" style="display:none;">
@@ -10423,7 +10423,23 @@ function timeAgoStory(iso){
     // proxy has the correct cart in hand from the very first line of
     // code, before Gemini is even contacted — no race possible.
     if (isReconnect && cart.length > 0) {
-      wsUrl += "&cart=" + encodeURIComponent(JSON.stringify(cart));
+      // ⚠️ FIX: only send the fields tool-execution actually needs.
+      // The full cart items include imageUrl (a long Cloudinary URL)
+      // and Bengali text — with several items, the encoded URL could
+      // exceed a length limit somewhere in the request path (browser,
+      // Cloud Run, or an intermediate proxy), causing the server's
+      // JSON.parse to silently fail and fall back to an empty cart —
+      // exactly the "কার্টে কোনো জিনিস নেই" bug seen in testing. The
+      // client already has imageUrl cached for its own rendering; the
+      // server only needs enough to price and place the order.
+      var slimCart = cart.map(function (item) {
+        return {
+          itemName: item.itemName, matchedProduct: item.matchedProduct,
+          productId: item.productId, sellerId: item.sellerId,
+          price: item.price, quantity: item.quantity, unit: item.unit,
+        };
+      });
+      wsUrl += "&cart=" + encodeURIComponent(JSON.stringify(slimCart));
     }
     ws = new WebSocket(wsUrl);
 
