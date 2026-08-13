@@ -355,14 +355,16 @@ async function deltaUploadToImageKit(file, folder, fileName, maxDim, quality){
     throw new Error('আপলোড অনুমতি পাওয়া যায়নি — ইন্টারনেট সংযোগ চেক করুন। (' + (authErr.message||'') + ')');
   }
 
+  var effectiveFileName = fileName || ('delta_' + Date.now() + '_' + Math.random().toString(36).slice(2,8) + '.jpg');
   var fd = new FormData();
-  fd.append('file', uploadFile, fileName || ('delta_' + Date.now() + '.jpg'));
+  fd.append('file', uploadFile, effectiveFileName);
   fd.append('publicKey', authResult.publicKey);
   fd.append('signature', authResult.signature);
   fd.append('expire', authResult.expire);
   fd.append('token', authResult.token);
   fd.append('folder', folder || 'delta/misc');
-  if(fileName) fd.append('fileName', fileName);
+  fd.append('fileName', effectiveFileName); // ImageKit requires this as its own field —
+    // it does NOT read the filename off the multipart file part the way Cloudinary did.
   fd.append('useUniqueFileName', fileName ? 'false' : 'true');
 
   var uploadRes = await fetch('https://upload.imagekit.io/api/v1/files/upload', {
