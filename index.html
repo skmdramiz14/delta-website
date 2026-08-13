@@ -1,4 +1,4 @@
-<!DOCTYPE html>                                  
+<!DOCTYPE html>                                 
 <html lang="bn">     
 <head>   
 <meta charset="UTF-8">
@@ -8860,21 +8860,15 @@ async function uploadPrescriptionAndContinue(){
     // Gentler compression than default (higher res/quality) — this is a
     // prescription photo, and medicine-name/dosage text legibility for
     // pharmacist/admin review matters more here than the credit savings.
-    var compressedRx = await deltaCompressImage(file, 2000, 0.92);
-    var fd = new FormData();
-    fd.append('file', compressedRx);
-    fd.append('upload_preset', 'delta_products'); // same Cloudinary preset used elsewhere on DELTA
-    fd.append('folder', 'prescriptions'); // keep sensitive medical documents in their own
-      // folder, separate from public product photos — easier for admin to find/manage,
+    var uploadData = await deltaUploadToImageKit(file, 'delta/prescriptions', null, 2000, 0.92);
+      // 'prescriptions' folder keeps sensitive medical documents separate
+      // from public product photos — easier for admin to find/manage,
       // and avoids mixing sensitive uploads into the general product-photo library
-    var uploadRes = await fetch('https://api.cloudinary.com/v1_1/djthojcmy/image/upload', {method:'POST', body:fd});
-    var uploadData = await uploadRes.json();
-    if(!uploadData.secure_url) throw new Error('Upload failed');
 
     var qty = (item.convertedQuantity!=null) ? item.convertedQuantity : (item.quantity||1);
     cart.push(Object.assign({
       qty:qty, selected:true,
-      prescriptionUrl: uploadData.secure_url,
+      prescriptionUrl: uploadData.url,
       prescriptionStatus: 'pending_pharmacist_review' // NOT 'verified' — a human still has to approve this
     }, existing));
     updateCartBadge();
@@ -10658,18 +10652,16 @@ function timeAgoStory(iso){
     if (isRecording) stopRecording();
   });
 
-  // ── Cloudinary unsigned upload (same cloud_name/preset DELTA already
-  // uses for seller product photos) ──
+  // ── ImageKit signed upload (migrated from Cloudinary, Aug 2026) ──
+  // Function name kept as uploadToCloudinary so the caller below (and any
+  // other reference) doesn't need to change.
   async function uploadToCloudinary(file) {
-    var compressedVoiceImg = await deltaCompressImage(file);
-    var formData = new FormData();
-    formData.append('file', compressedVoiceImg);
-    formData.append('upload_preset', 'delta_products');
-    var response = await fetch('https://api.cloudinary.com/v1_1/djthojcmy/image/upload', {
-      method: 'POST', body: formData,
-    });
-    var data = await response.json();
-    return data.secure_url || null;
+    try{
+      var data = await deltaUploadToImageKit(file, 'delta/voice-order-images');
+      return data.url || null;
+    }catch(e){
+      return null;
+    }
   }
 
   document.getElementById('deltaVoiceImageInput').addEventListener('change', function (e) {
