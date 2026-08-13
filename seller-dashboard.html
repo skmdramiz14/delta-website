@@ -2012,7 +2012,8 @@ var PLAN_LABELS = {free:'⭐ FREE',basic:'🔵 BASIC',standard:'🟢 STANDARD',p
   var scripts = [
     'https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js',
     'https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js',
-    'https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js'
+    'https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js',
+    'https://www.gstatic.com/firebasejs/8.10.1/firebase-functions.js'
   ];
   var loaded = 0;
   scripts.forEach(function(src){
@@ -3449,22 +3450,16 @@ async function handleImgUpload(input){
   var fill=document.getElementById('progFill');
   var msg=document.getElementById('uploadMsg');
   prog.style.display='block'; msg.textContent='ছবি আপলোড হচ্ছে...'; fill.style.width='20%';
-  var compressedFile=await deltaCompressImage(file);
-  var fd=new FormData();
-  fd.append('file',compressedFile); fd.append('upload_preset',PRESET); fd.append('cloud_name',CLOUD);
-  fd.append('folder','delta/products');
   try{
     fill.style.width='60%';
-    var res=await fetch('https://api.cloudinary.com/v1_1/'+CLOUD+'/image/upload',{method:'POST',body:fd});
-    var data=await res.json(); fill.style.width='100%';
-    if(data.secure_url){
-      imgUrls[activeImgSlot]=data.secure_url;
-      var img=document.getElementById('img'+activeImgSlot);
-      img.src=data.secure_url; img.style.display='block';
-      document.getElementById('slot'+activeImgSlot).classList.add('has-img');
-      setTimeout(function(){prog.style.display='none';fill.style.width='0';},800);
-      showToast('ছবি আপলোড সফল ✅','green');
-    } else { throw new Error(data.error?data.error.message:'Upload failed'); }
+    var data=await deltaUploadToImageKit(file, 'delta/products');
+    fill.style.width='100%';
+    imgUrls[activeImgSlot]=data.url;
+    var img=document.getElementById('img'+activeImgSlot);
+    img.src=data.url; img.style.display='block';
+    document.getElementById('slot'+activeImgSlot).classList.add('has-img');
+    setTimeout(function(){prog.style.display='none';fill.style.width='0';},800);
+    showToast('ছবি আপলোড সফল ✅','green');
   }catch(e){prog.style.display='none';fill.style.width='0';showToast('ছবি আপলোড ব্যর্থ: '+e.message,'red');}
   input.value='';
 }
@@ -3651,15 +3646,12 @@ function triggerShopGalleryImg(slot){
 }
 
 async function uploadBlobToCloudinary(blob, folder){
-  var compressedBlob = await deltaCompressImage(blob);
-  var fd=new FormData();
-  fd.append('file', compressedBlob, 'cropped.jpg');
-  fd.append('upload_preset', PRESET); fd.append('cloud_name', CLOUD);
-  fd.append('folder', folder);
-  var res = await fetch('https://api.cloudinary.com/v1_1/'+CLOUD+'/image/upload', {method:'POST', body:fd});
-  var data = await res.json();
-  if(!data.secure_url) throw new Error(data.error ? data.error.message : 'Upload failed');
-  return data.secure_url;
+  // NOTE: function name kept as-is (despite now uploading to ImageKit, not
+  // Cloudinary) so every existing caller — shop gallery, seller story —
+  // keeps working unchanged. Internals switched Aug 2026 during the
+  // Cloudinary → ImageKit migration.
+  var data = await deltaUploadToImageKit(blob, folder, 'cropped_' + Date.now() + '.jpg');
+  return data.url;
 }
 
 function handleShopGalleryUpload(input){
@@ -3720,20 +3712,15 @@ async function handleStoryVideoUpload(input){
   var msg=document.getElementById('storyVideoMsg');
   var statusEl=document.getElementById('storyVideoStatus');
   prog.style.display='block'; msg.textContent='ভিডিও আপলোড হচ্ছে... (একটু সময় লাগবে)'; fill.style.width='15%';
-  var fd=new FormData();
-  fd.append('file',file); fd.append('upload_preset',PRESET); fd.append('cloud_name',CLOUD);
-  fd.append('folder','delta/seller_video');
   try{
     fill.style.width='50%';
-    var res=await fetch('https://api.cloudinary.com/v1_1/'+CLOUD+'/video/upload',{method:'POST',body:fd});
-    var data=await res.json(); fill.style.width='100%';
-    if(data.secure_url){
-      storyVideoUrl=data.secure_url;
-      statusEl.textContent='✅ ভিডিও যুক্ত হয়েছে';
-      msg.textContent='';
-      setTimeout(function(){prog.style.display='none';fill.style.width='0';},800);
-      showToast('ভিডিও আপলোড সফল ✅','green');
-    } else { throw new Error(data.error?data.error.message:'Upload failed'); }
+    var data=await deltaUploadToImageKit(file, 'delta/seller_video');
+    fill.style.width='100%';
+    storyVideoUrl=data.url;
+    statusEl.textContent='✅ ভিডিও যুক্ত হয়েছে';
+    msg.textContent='';
+    setTimeout(function(){prog.style.display='none';fill.style.width='0';},800);
+    showToast('ভিডিও আপলোড সফল ✅','green');
   }catch(e){
     prog.style.display='none'; fill.style.width='0';
     showToast('ভিডিও আপলোড ব্যর্থ: '+e.message,'red');
@@ -5170,20 +5157,12 @@ async function uploadSaleImage(input){
   statusEl.textContent = 'Upload হচ্ছে...';
   statusEl.style.color = 'var(--orange)';
   try{
-    var compressedSaleImg = await deltaCompressImage(file);
-    var fd = new FormData();
-    fd.append('file', compressedSaleImg);
-    fd.append('upload_preset', PRESET);
-    fd.append('folder', 'delta/sale-products');
-    var res = await fetch('https://api.cloudinary.com/v1_1/'+CLOUD+'/image/upload',{method:'POST',body:fd});
-    var data = await res.json();
-    if(data.secure_url){
-      document.getElementById('spImage').value = data.secure_url;
-      previewImg.src = data.secure_url;
-      previewDiv.style.display = 'block';
-      statusEl.textContent = '✅ Upload সফল';
-      statusEl.style.color = 'var(--green)';
-    }
+    var data = await deltaUploadToImageKit(file, 'delta/sale-products');
+    document.getElementById('spImage').value = data.url;
+    previewImg.src = data.url;
+    previewDiv.style.display = 'block';
+    statusEl.textContent = '✅ Upload সফল';
+    statusEl.style.color = 'var(--green)';
   }catch(e){
     statusEl.textContent = '❌ Upload failed';
     statusEl.style.color = 'var(--red)';
