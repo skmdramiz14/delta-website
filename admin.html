@@ -6554,23 +6554,11 @@ async function uploadCatSlot(input, slotIndex){
   if(!file) return;
   var slot = document.getElementById('catSlot-'+slotIndex);
   slot.innerHTML = '<div style="font-size:.7rem;color:var(--muted)">⏳ হচ্ছে...</div>';
-  var compressed = await deltaCompressImage(file);
-  var fd = new FormData();
-  fd.append('file', compressed);
-  fd.append('upload_preset', PRESET);
-  fd.append('cloud_name', CLOUD);
-  fd.append('folder', 'delta/bazaar-catalog');
   try {
-    var res = await fetch('https://api.cloudinary.com/v1_1/'+CLOUD+'/image/upload', {method:'POST',body:fd});
-    var data = await res.json();
-    if(data.secure_url){
-      catImages[slotIndex] = data.secure_url;
-      initCatImgSlots();
-      showToast('ছবি '+(slotIndex+1)+' আপলোড হয়েছে ✅','green');
-    } else {
-      initCatImgSlots();
-      showToast('ছবি '+(slotIndex+1)+' আপলোড ব্যর্থ','red');
-    }
+    var data = await deltaUploadToImageKit(file, 'delta/bazaar-catalog');
+    catImages[slotIndex] = data.url;
+    initCatImgSlots();
+    showToast('ছবি '+(slotIndex+1)+' আপলোড হয়েছে ✅','green');
   } catch(e) {
     initCatImgSlots();
     showToast('আপলোড সমস্যা: '+e.message,'red');
@@ -8805,23 +8793,11 @@ async function uploadEcoBanner(input){
   var preview = document.getElementById('ecoBannerPreview');
   var status = document.getElementById('ecoBannerStatus');
   preview.innerHTML = '<div style="font-size:.7rem;color:var(--muted);">⏳ আপলোড হচ্ছে...</div>';
-  var compressed = await deltaCompressImage(file);
-  var fd = new FormData();
-  fd.append('file', compressed);
-  fd.append('upload_preset', PRESET);
-  fd.append('cloud_name', CLOUD);
-  fd.append('folder', 'delta/ecosystem-banners');
   try{
-    var res = await fetch('https://api.cloudinary.com/v1_1/'+CLOUD+'/image/upload', {method:'POST', body:fd});
-    var data = await res.json();
-    if(data.secure_url){
-      document.getElementById('ecoBannerUrl').value = data.secure_url;
-      preview.innerHTML = '<img src="'+data.secure_url+'" style="width:100%;height:100%;object-fit:cover;">';
-      status.textContent = '✅ আপলোড সম্পন্ন';
-    } else {
-      preview.innerHTML = '📷 ছবি আপলোড করতে<br>ক্লিক করুন';
-      status.textContent = '❌ আপলোড ব্যর্থ, আবার চেষ্টা করুন';
-    }
+    var data = await deltaUploadToImageKit(file, 'delta/ecosystem-banners');
+    document.getElementById('ecoBannerUrl').value = data.url;
+    preview.innerHTML = '<img src="'+data.url+'" style="width:100%;height:100%;object-fit:cover;">';
+    status.textContent = '✅ আপলোড সম্পন্ন';
   }catch(e){
     preview.innerHTML = '📷 ছবি আপলোড করতে<br>ক্লিক করুন';
     status.textContent = '❌ সমস্যা: '+e.message;
