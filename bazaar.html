@@ -618,6 +618,7 @@ textarea.form-input{resize:vertical;min-height:70px;font-family:inherit;}
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-functions.js"></script>
 <script src="delta-shared.js"></script>
 <script>
 var FB_CFG = {
@@ -954,22 +955,11 @@ async function uploadRequestImage(input){
   var box = document.getElementById('imgUploadBox');
   var hint = document.getElementById('imgUploadHint');
   hint.textContent = '⏳ আপলোড হচ্ছে...';
-  var compressed = await deltaCompressImage(file);
-  var fd = new FormData();
-  fd.append('file', compressed);
-  fd.append('upload_preset', PRESET);
-  fd.append('cloud_name', CLOUD);
-  fd.append('folder', 'delta/bazaar-requests');
   try{
-    var res = await fetch('https://api.cloudinary.com/v1_1/'+CLOUD+'/image/upload', {method:'POST', body:fd});
-    var data = await res.json();
-    if(data.secure_url){
-      uploadedImageUrl = data.secure_url;
-      box.classList.add('has-img');
-      box.innerHTML = '<img src="'+data.secure_url+'">';
-    } else {
-      hint.textContent = '📷 আপলোড ব্যর্থ, আবার চেষ্টা করুন';
-    }
+    var data = await deltaUploadToImageKit(file, 'delta/bazaar-requests');
+    uploadedImageUrl = data.url;
+    box.classList.add('has-img');
+    box.innerHTML = '<img src="'+data.url+'">';
   }catch(e){
     hint.textContent = '📷 আপলোড ব্যর্থ, আবার চেষ্টা করুন';
   }
