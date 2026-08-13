@@ -306,4 +306,75 @@ function deltaOptimizeUrl(url){
   if(url.indexOf('/upload/q_auto') !== -1 || url.indexOf('/upload/f_auto') !== -1) return url; // already optimized
   return url.replace('/upload/', '/upload/q_auto,f_auto/');
 }
+
+/**
+ * Uploads a file to ImageKit — the replacement for every Cloudinary
+ * fd.append('file', file) + fetch('api.cloudinary.com/...') pattern
+ * previously used across bazaar.html, admin.html, seller-dashboard.html,
+ * index.html, create-studio.html, and media-profile.html.
+ *
+ * WHY THIS SHAPE: Cloudinary allowed unsigned browser uploads via
+ * upload_preset alone. ImageKit requires every upload to carry a signed
+ * token (token/expire/signature) that can only be generated server-side
+ * with the private key — so this function first calls the
+ * `getImageKitAuth` Cloud Function to get that signed permission slip,
+ * then uploads directly to ImageKit's upload API using it. The private
+ * key itself never reaches the browser at any point.
+ *
+ * Images are compressed client-side first via deltaCompressImage (same
+ * as before) — video/audio pass through untouched, matching the existing
+ * compression scope decision.
+ *
+ * @param {File|Blob} file - the file to upload
+ * @param {string} folder - ImageKit folder path, e.g. 'delta/products'
+ *   (mirrors the folder structure used on Cloudinary for continuity)
+ * @param {string} [fileName] - optional filename; ImageKit auto-generates
+ *   a unique name if omitted, similar to Cloudinary's default behavior
+ * @param {number} [maxDim] - passed through to deltaCompressImage
+ * @param {number} [quality] - passed through to deltaCompressImage
+ * @returns {Promise<{url:string, fileId:string, name:string}>} resolves
+ *   with the ImageKit delivery URL on success (data.url — the equivalent
+ *   of Cloudinary's data.secure_url in the old code), throws on failure
+ *   so existing try/catch blocks around upload calls keep working as-is.
+ */
+async function deltaUploadToImageKit(file, folder, fileName, maxDim, quality){
+  if(!file) throw new Error('কোনো ফাইল দেওয়া হয়নি');
+
+  // Compress images (no-op for video/audio/svg/gif — see deltaCompressImage)
+  var uploadFile = await deltaCompressImage(file, maxDim, quality);
+
+  // Get a signed auth token from the Cloud Function — this call requires
+  // Firebase to already be initialized on the page (all 6 upload-capable
+  // pages already load Firebase for other features, so this is safe).
+  var authResult;
+  try{
+    var getAuth = firebase.functions().httpsCallable('getImageKitAuth');
+    var authResponse = await getAuth();
+    authResult = authResponse.data;
+  }catch(authErr){
+    throw new Error('আপলোড অনুমতি পাওয়া যায়নি — ইন্টারনেট সংযোগ চেক করুন। (' + (authErr.message||'') + ')');
+  }
+
+  var fd = new FormData();
+  fd.append('file', uploadFile, fileName || ('delta_' + Date.now() + '.jpg'));
+  fd.append('publicKey', authResult.publicKey);
+  fd.append('signature', authResult.signature);
+  fd.append('expire', authResult.expire);
+  fd.append('token', authResult.token);
+  fd.append('folder', folder || 'delta/misc');
+  if(fileName) fd.append('fileName', fileName);
+  fd.append('useUniqueFileName', fileName ? 'false' : 'true');
+
+  var uploadRes = await fetch('https://upload.imagekit.io/api/v1/files/upload', {
+    method: 'POST',
+    body: fd
+  });
+  var uploadData = await uploadRes.json();
+  if(!uploadRes.ok || !uploadData.url){
+    throw new Error(uploadData.message || 'ImageKit আপলোড ব্যর্থ হয়েছে');
+  }
+  return uploadData; // { url, fileId, name, ... } — use uploadData.url same as old data.secure_url
+}
  
+
+
