@@ -1,5 +1,5 @@
 <!DOCTYPE html>                                 
-<html lang="bn">      
+<html lang="bn">     
 <head>   
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -2287,7 +2287,7 @@ img{max-width:100%;height:auto;}
 <script src="delta-shared.js"></script>
 </head>
 <body class="lang-bn">
-<!-- DELTA_VOICE_BUILD_MARKER: v2026-07-31-FIX-CLOSE-RACE-09 (do not remove — used to verify deploy sync) -->
+<!-- DELTA_VOICE_BUILD_MARKER: v2026-07-31-SESSION-RESUMPTION-10 (do not remove — used to verify deploy sync) -->
 
 <!-- WELCOME PINCODE GATE (first visit only) -->
 <div class="gate-overlay" id="gateOverlay" style="display:none;">
@@ -8857,18 +8857,20 @@ async function uploadPrescriptionAndContinue(){
 
   try{
     showToast('আপলোড হচ্ছে...');
-    // Gentler compression than default (higher res/quality) — this is a
-    // prescription photo, and medicine-name/dosage text legibility for
-    // pharmacist/admin review matters more here than the credit savings.
-    var uploadData = await deltaUploadToImageKit(file, 'delta/prescriptions', null, 2000, 0.92);
-      // 'prescriptions' folder keeps sensitive medical documents separate
-      // from public product photos — easier for admin to find/manage,
+    var fd = new FormData();
+    fd.append('file', file);
+    fd.append('upload_preset', 'delta_products'); // same Cloudinary preset used elsewhere on DELTA
+    fd.append('folder', 'prescriptions'); // keep sensitive medical documents in their own
+      // folder, separate from public product photos — easier for admin to find/manage,
       // and avoids mixing sensitive uploads into the general product-photo library
+    var uploadRes = await fetch('https://api.cloudinary.com/v1_1/djthojcmy/image/upload', {method:'POST', body:fd});
+    var uploadData = await uploadRes.json();
+    if(!uploadData.secure_url) throw new Error('Upload failed');
 
     var qty = (item.convertedQuantity!=null) ? item.convertedQuantity : (item.quantity||1);
     cart.push(Object.assign({
       qty:qty, selected:true,
-      prescriptionUrl: uploadData.url,
+      prescriptionUrl: uploadData.secure_url,
       prescriptionStatus: 'pending_pharmacist_review' // NOT 'verified' — a human still has to approve this
     }, existing));
     updateCartBadge();
@@ -10230,6 +10232,7 @@ function timeAgoStory(iso){
 
   var ws = null, audioContext = null, micStream = null, processorNode = null, isConnecting = false;
   var reconnectAttempts = 0, MAX_RECONNECT_ATTEMPTS = 3, reconnectTimer = null, userClosedIntentionally = false;
+  var sessionResumptionHandle = null; // ⚠️ Session resumption — see connect() and the sessionResumptionUpdate handling below
   var isRecording = false, cart = [], nextPlayTime = 0;
   var lastUploadedImageUrl = null;
   var INPUT_SAMPLE_RATE = 16000, OUTPUT_SAMPLE_RATE = 24000;
@@ -10408,6 +10411,9 @@ function timeAgoStory(iso){
 
     var city = (typeof CITY !== 'undefined' ? CITY : 'manteswar');
     var wsUrl = DELTA_VOICE_PROXY_URL + "?idToken=" + encodeURIComponent(idToken) + "&city=" + encodeURIComponent(city);
+    if (sessionResumptionHandle) {
+      wsUrl += "&sessionHandle=" + encodeURIComponent(sessionResumptionHandle);
+    }
     ws = new WebSocket(wsUrl);
 
     ws.onopen = function () {
@@ -10522,6 +10528,7 @@ function timeAgoStory(iso){
           userClosedIntentionally = true;
           if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null; }
           reconnectAttempts = 0;
+          sessionResumptionHandle = null;
 
           // Wait a few seconds so Gemini's final spoken "ধন্যবাদ" reply
           // has time to actually play, then close the connection AND
@@ -10551,6 +10558,19 @@ function timeAgoStory(iso){
         }
         if (sc.inputTranscription) addBubble(sc.inputTranscription.text, 'customer');
         if (sc.outputTranscription) addBubble(sc.outputTranscription.text, 'delta');
+      }
+
+      // ⚠️ Session resumption: Gemini periodically sends this so we can
+      // reconnect later with full conversational memory intact instead
+      // of starting a fresh, blank session (see connect()'s sessionHandle
+      // param). Google's own docs confirm Live API connections are
+      // capped at ~10 minutes by design — this is the documented way to
+      // survive that gracefully, not a workaround for a bug on our end.
+      if (response.sessionResumptionUpdate) {
+        var sru = response.sessionResumptionUpdate;
+        if (sru.resumable && sru.newHandle) {
+          sessionResumptionHandle = sru.newHandle;
+        }
       }
     };
 
@@ -10639,6 +10659,7 @@ function timeAgoStory(iso){
     if (!currentUser) { showToast('অর্ডার করতে আগে লগইন করুন'); openAuth(); return; }
     userClosedIntentionally = false;
     reconnectAttempts = 0; // fresh budget of 3 reconnects — only reset here, on a deliberate user action
+    if (!ws || ws.readyState !== WebSocket.OPEN) sessionResumptionHandle = null; // only start fresh if we're not just resuming an already-open session
     overlay.style.display = 'flex';
     if (!ws || ws.readyState !== WebSocket.OPEN) connect();
   };
@@ -10652,16 +10673,17 @@ function timeAgoStory(iso){
     if (isRecording) stopRecording();
   });
 
-  // ── ImageKit signed upload (migrated from Cloudinary, Aug 2026) ──
-  // Function name kept as uploadToCloudinary so the caller below (and any
-  // other reference) doesn't need to change.
+  // ── Cloudinary unsigned upload (same cloud_name/preset DELTA already
+  // uses for seller product photos) ──
   async function uploadToCloudinary(file) {
-    try{
-      var data = await deltaUploadToImageKit(file, 'delta/voice-order-images');
-      return data.url || null;
-    }catch(e){
-      return null;
-    }
+    var formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', 'delta_products');
+    var response = await fetch('https://api.cloudinary.com/v1_1/djthojcmy/image/upload', {
+      method: 'POST', body: formData,
+    });
+    var data = await response.json();
+    return data.secure_url || null;
   }
 
   document.getElementById('deltaVoiceImageInput').addEventListener('change', function (e) {
