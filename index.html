@@ -2287,7 +2287,7 @@ img{max-width:100%;height:auto;}
 <script src="delta-shared.js"></script>
 </head>
 <body class="lang-bn">
-<!-- DELTA_VOICE_BUILD_MARKER: v2026-07-31-SESSION-RESUMPTION-10 (do not remove — used to verify deploy sync) -->
+<!-- DELTA_VOICE_BUILD_MARKER: v2026-07-31-FIX-CART-RACE-11 (do not remove — used to verify deploy sync) -->
 
 <!-- WELCOME PINCODE GATE (first visit only) -->
 <div class="gate-overlay" id="gateOverlay" style="display:none;">
@@ -10414,6 +10414,17 @@ function timeAgoStory(iso){
     if (sessionResumptionHandle) {
       wsUrl += "&sessionHandle=" + encodeURIComponent(sessionResumptionHandle);
     }
+    // ⚠️ FIX (real bug hit in testing): previously the cart was restored
+    // via a message sent AFTER the connection opened — but a resumed
+    // Gemini session can immediately fire off a tool call (continuing
+    // right where it left off) before that message was processed,
+    // executing against a still-empty cart and silently dropping every
+    // item added before the disconnect. Sending it in the URL means the
+    // proxy has the correct cart in hand from the very first line of
+    // code, before Gemini is even contacted — no race possible.
+    if (isReconnect && cart.length > 0) {
+      wsUrl += "&cart=" + encodeURIComponent(JSON.stringify(cart));
+    }
     ws = new WebSocket(wsUrl);
 
     ws.onopen = function () {
@@ -10432,19 +10443,16 @@ function timeAgoStory(iso){
       if (isReconnect) {
         // ⚠️ RECONNECT PATH: network drops mid-conversation are a real,
         // expected occurrence (rural/mobile networks) — rather than
-        // dead-ending the customer, we open a fresh Gemini session and
-        // silently restore the cart they'd already built (server-side
-        // only, via restoreCart — no cost, doesn't reach Gemini at all).
+        // dead-ending the customer, we resume the SAME Gemini session
+        // (via sessionResumptionHandle, sent in the URL above — Gemini
+        // keeps its own memory of the conversation) and the cart was
+        // already restored server-side before this connection even
+        // opened (also sent in the URL, see wsUrl above — no race with
+        // an in-flight tool call, no separate message needed here).
         // ⚠️ Deliberately NOT sending any clientContent message to Gemini
-        // here (unlike the first version of this fix) — that would
-        // trigger a small but real extra turn/cost each time a
-        // reconnect happens. Trade-off: Gemini has no memory of the
-        // interrupted conversation and won't proactively mention the
-        // reconnect — but get_cart_summary/place_order still work
-        // correctly since the cart itself is restored either way.
-        if (cart.length > 0) {
-          ws.send(JSON.stringify({type: 'restoreCart', cart: cart}));
-        }
+        // — that would trigger a small but real extra turn/cost each
+        // reconnect, and is unnecessary now that session resumption
+        // means Gemini already remembers the conversation itself.
         addBubble('— সংযোগ ফিরে এসেছে, চালিয়ে যান —', 'delta');
         return;
       }
